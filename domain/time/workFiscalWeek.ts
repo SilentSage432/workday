@@ -27,7 +27,7 @@ function daysInMonth(year: number, month: number): number {
   return MONTH_LENGTHS[month - 1];
 }
 
-function addCivilDays(date: CivilDate, delta: number): CivilDate {
+export function addCivilDays(date: CivilDate, delta: number): CivilDate {
   let year = date.year;
   let month = date.month;
   let day = date.day;
@@ -139,4 +139,8 @@ export function workFiscalWeekStart(instant: Date, timeZone: string): CivilDate 
   const civil = civilDateInTimeZone(instant, timeZone);
   const daysSinceSaturday = DAYS_SINCE_SATURDAY[weekdayShort(instant, timeZone)];
   return addCivilDays(civil, -daysSinceSaturday);
+}
+
+export function workFiscalWeekDates(weekStart: CivilDate): CivilDate[] {
+  return Array.from({ length: 7 }, (_, index) => addCivilDays(weekStart, index));
 }

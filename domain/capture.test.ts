@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  captureAfterFailedSave,
+  captureAfterSuccessfulSave,
+  captureDraftHasMeaning,
+  collapseCapture,
   draftAfterFailedSave,
   emptyCaptureDraft,
+  initialCaptureSession,
   newTaskFromCapture,
+  openCapture,
   openTasksAfterCompletion,
 } from "@/domain/capture";
 import type { Task } from "@/domain/task";
@@ -81,6 +87,53 @@ describe("capture draft", () => {
   it("drops a task from the open list only by its id", () => {
     const other = { ...openTask, id: "task-2", title: "File the receipt" };
     expect(openTasksAfterCompletion([openTask, other], openTask.id)).toEqual([other]);
+  });
+
+  it("starts collapsed, with no draft", () => {
+    const session = initialCaptureSession();
+    expect(session.open).toBe(false);
+    expect(session.detailsOpen).toBe(false);
+    expect(captureDraftHasMeaning(session.draft)).toBe(false);
+  });
+
+  it("opens onto a title-only save", () => {
+    const opened = openCapture(initialCaptureSession());
+    expect(opened.open).toBe(true);
+    expect(opened.detailsOpen).toBe(false);
+    const task = newTaskFromCapture({ ...opened.draft, title: "Call the school" });
+    expect(task).toMatchObject({
+      title: "Call the school",
+      contextId: null,
+      plannedOn: null,
+      dueOn: null,
+      mustDo: false,
+    });
+  });
+
+  it("keeps a meaningful draft when Capture is closed", () => {
+    const opened = openCapture({
+      ...initialCaptureSession(),
+      draft: { ...emptyCaptureDraft(), title: "Call the school", mustDo: true },
+    });
+    const collapsed = collapseCapture({ ...opened, detailsOpen: true });
+    expect(collapsed.open).toBe(false);
+    expect(collapsed.draft.title).toBe("Call the school");
+    expect(collapsed.draft.mustDo).toBe(true);
+    expect(openCapture(collapsed).detailsOpen).toBe(true);
+  });
+
+  it("discards an empty draft when Capture is closed", () => {
+    const collapsed = collapseCapture(openCapture(initialCaptureSession()));
+    expect(collapsed).toEqual(initialCaptureSession());
+  });
+
+  it("clears the draft after a successful save and keeps it after a failed save", () => {
+    const open = openCapture({
+      ...initialCaptureSession(),
+      draft: { ...emptyCaptureDraft(), title: "Call the school" },
+    });
+    expect(captureAfterSuccessfulSave()).toEqual(initialCaptureSession());
+    expect(captureAfterFailedSave(open)).toEqual(open);
   });
 
   it("sends completion as the supplied instant", () => {

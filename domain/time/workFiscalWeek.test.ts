@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { formatCivilDate, formatCivilDateLabel, parseCivilDate, workFiscalWeekStart } from "./workFiscalWeek";
+import {
+  addCivilDays,
+  formatCivilDate,
+  formatCivilDateLabel,
+  parseCivilDate,
+  workFiscalWeekDates,
+  workFiscalWeekStart,
+} from "./workFiscalWeek";
 
 describe("workFiscalWeekStart", () => {
   it("starts a Work fiscal week on Saturday", () => {
@@ -16,6 +23,20 @@ describe("workFiscalWeekStart", () => {
     expect(formatCivilDate(workFiscalWeekStart(fridayNoonDenver, "America/Denver"))).toBe(
       "2026-09-26",
     );
+  });
+
+  it("lists Saturday through Friday for that Work week", () => {
+    const start = workFiscalWeekStart(new Date("2026-10-02T18:00:00.000Z"), "America/Denver");
+    expect(workFiscalWeekDates(start).map(formatCivilDate)).toEqual([
+      "2026-09-26",
+      "2026-09-27",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01",
+      "2026-10-02",
+    ]);
+    expect(formatCivilDate(addCivilDays(start, 7))).toBe("2026-10-03");
   });
 
   it("uses the supplied time zone when the same instant falls on different civil dates", () => {

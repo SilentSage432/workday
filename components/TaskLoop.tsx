@@ -1,14 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { WorkSchedule } from "@/components/WorkSchedule";
 import { activeThreadAfterCompletion, type ActiveThread } from "@/domain/activeThread";
 import { CANONICAL_CONTEXT_NAMES, type Context } from "@/domain/context";
 import {
-  draftAfterFailedSave,
-  emptyCaptureDraft,
+  captureAfterFailedSave,
+  captureAfterSuccessfulSave,
+  captureDraftHasMeaning,
+  collapseCapture,
+  initialCaptureSession,
   newTaskFromCapture,
+  openCapture,
   openTasksAfterCompletion,
-  type CaptureDraft,
+  type CaptureSession,
 } from "@/domain/capture";
 import type { Task } from "@/domain/task";
 import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
@@ -167,7 +172,8 @@ function SignedInLoop() {
   const [dataPhase, setDataPhase] = useState<DataPhase>("loading");
   const [dataError, setDataError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [draft, setDraft] = useState<CaptureDraft>(emptyCaptureDraft);
+  const [capture, setCapture] = useState<CaptureSession>(initialCaptureSession);
+  const [surface, setSurface] = useState<"tasks" | "schedule">("tasks");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
@@ -215,6 +221,12 @@ function SignedInLoop() {
     };
   }, [reloadKey]);
 
+  useEffect(() => {
+    if (capture.open) {
+      titleRef.current?.focus();
+    }
+  }, [capture.open]);
+
   async function onSignOut() {
     await getSupabaseBrowserClient().auth.signOut();
   }
@@ -224,12 +236,14 @@ function SignedInLoop() {
     setSaving(true);
     setSaveError(null);
     try {
-      const created = await createTask(getSupabaseBrowserClient(), newTaskFromCapture(draft));
+      const created = await createTask(
+        getSupabaseBrowserClient(),
+        newTaskFromCapture(capture.draft),
+      );
       setTasks((current) => [...current, created]);
-      setDraft(emptyCaptureDraft());
-      titleRef.current?.focus();
+      setCapture(captureAfterSuccessfulSave());
     } catch (error: unknown) {
-      setDraft((current) => draftAfterFailedSave(current));
+      setCapture((current) => captureAfterFailedSave(current));
       setSaveError(failureMessage(error, "Could not save this task."));
     } finally {
       setSaving(false);
@@ -299,7 +313,26 @@ function SignedInLoop() {
 
   return (
     <main className={pageClass}>
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-3">
+        {dataPhase === "ready" && surface === "schedule" ? (
+          <button
+            type="button"
+            onClick={() => setSurface("tasks")}
+            className="min-h-11 px-2 text-sm text-stone-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
+          >
+            Tasks
+          </button>
+        ) : dataPhase === "ready" ? (
+          <button
+            type="button"
+            onClick={() => setSurface("schedule")}
+            className="min-h-11 px-2 text-sm text-stone-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
+          >
+            Work schedule
+          </button>
+        ) : (
+          <span />
+        )}
         <button
           type="button"
           onClick={() => void onSignOut()}
@@ -324,7 +357,9 @@ function SignedInLoop() {
         </div>
       ) : null}
 
-      {dataPhase === "ready" ? (
+      {dataPhase === "ready" && surface === "schedule" ? <WorkSchedule /> : null}
+
+      {dataPhase === "ready" && surface === "tasks" ? (
         <>
           {resume ? (
             <section
@@ -375,100 +410,155 @@ function SignedInLoop() {
             </section>
           ) : null}
 
-          <form className="mt-8" onSubmit={(event) => void onCapture(event)}>
-            <label className="block text-xl font-medium tracking-tight" htmlFor="task-title">
-              What needs doing?
-            </label>
-            <input
-              id="task-title"
-              name="title"
-              type="text"
-              required
-              autoFocus={!resume}
-              ref={titleRef}
-              value={draft.title}
-              onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-              className={fieldClass}
-            />
-
-            <fieldset className="mt-6 space-y-4">
-              <legend className="text-sm text-stone-400">Optional</legend>
-              <div>
-                <label className="block text-sm font-medium" htmlFor="task-context">
-                  Context
+          <div className="mt-8">
+            {capture.open ? (
+              <form onSubmit={(event) => void onCapture(event)}>
+                <label className="block text-xl font-medium tracking-tight" htmlFor="task-title">
+                  What needs doing?
                 </label>
-                <select
-                  id="task-context"
-                  name="context"
-                  value={draft.contextId}
-                  onChange={(event) => setDraft({ ...draft, contextId: event.target.value })}
+                <input
+                  id="task-title"
+                  name="title"
+                  type="text"
+                  required
+                  ref={titleRef}
+                  value={capture.draft.title}
+                  onChange={(event) =>
+                    setCapture({
+                      ...capture,
+                      draft: { ...capture.draft, title: event.target.value },
+                    })
+                  }
                   className={fieldClass}
+                />
+                {capture.detailsOpen ? (
+                  <fieldset className="mt-4 space-y-4">
+                    <legend className="text-sm text-stone-400">Optional</legend>
+                    <div>
+                      <label className="block text-sm font-medium" htmlFor="task-context">
+                        Context
+                      </label>
+                      <select
+                        id="task-context"
+                        name="context"
+                        value={capture.draft.contextId}
+                        onChange={(event) =>
+                          setCapture({
+                            ...capture,
+                            draft: { ...capture.draft, contextId: event.target.value },
+                          })
+                        }
+                        className={fieldClass}
+                      >
+                        <option value="">None</option>
+                        {orderedContexts(contexts).map((context) => (
+                          <option key={context.id} value={context.id}>
+                            {context.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium" htmlFor="task-planned">
+                        Planned
+                      </label>
+                      <p id="task-planned-hint" className="text-sm text-stone-400">
+                        When you intend to work on it.
+                      </p>
+                      <input
+                        id="task-planned"
+                        name="planned"
+                        type="date"
+                        aria-describedby="task-planned-hint"
+                        value={capture.draft.plannedOn}
+                        onChange={(event) =>
+                          setCapture({
+                            ...capture,
+                            draft: { ...capture.draft, plannedOn: event.target.value },
+                          })
+                        }
+                        className={fieldClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium" htmlFor="task-due">
+                        Due
+                      </label>
+                      <p id="task-due-hint" className="text-sm text-stone-400">
+                        When completion is required.
+                      </p>
+                      <input
+                        id="task-due"
+                        name="due"
+                        type="date"
+                        aria-describedby="task-due-hint"
+                        value={capture.draft.dueOn}
+                        onChange={(event) =>
+                          setCapture({
+                            ...capture,
+                            draft: { ...capture.draft, dueOn: event.target.value },
+                          })
+                        }
+                        className={fieldClass}
+                      />
+                    </div>
+                    <label className="flex min-h-12 items-center gap-3 text-base" htmlFor="task-must-do">
+                      <input
+                        id="task-must-do"
+                        name="must-do"
+                        type="checkbox"
+                        checked={capture.draft.mustDo}
+                        onChange={(event) =>
+                          setCapture({
+                            ...capture,
+                            draft: { ...capture.draft, mustDo: event.target.checked },
+                          })
+                        }
+                        className="size-5"
+                      />
+                      Must do
+                    </label>
+                  </fieldset>
+                ) : null}
+                {saveError ? (
+                  <p role="alert" className="mt-4 text-sm text-stone-200">
+                    {saveError} The draft is still here.
+                  </p>
+                ) : null}
+                <button type="submit" disabled={saving} className={`mt-4 w-full ${primaryButtonClass}`}>
+                  {saving ? "Saving" : "Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCapture({ ...capture, detailsOpen: !capture.detailsOpen })}
+                  aria-expanded={capture.detailsOpen}
+                  className={`mt-3 w-full ${secondaryButtonClass}`}
                 >
-                  <option value="">None</option>
-                  {orderedContexts(contexts).map((context) => (
-                    <option key={context.id} value={context.id}>
-                      {context.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  {capture.detailsOpen ? "Fewer options" : "More options"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCapture((current) => collapseCapture(current))}
+                  className="mt-2 min-h-11 w-full text-sm text-stone-400"
+                >
+                  Close
+                </button>
+              </form>
+            ) : (
               <div>
-                <label className="block text-sm font-medium" htmlFor="task-planned">
-                  Planned
-                </label>
-                <p id="task-planned-hint" className="text-sm text-stone-400">
-                  When you intend to work on it.
-                </p>
-                <input
-                  id="task-planned"
-                  name="planned"
-                  type="date"
-                  aria-describedby="task-planned-hint"
-                  value={draft.plannedOn}
-                  onChange={(event) => setDraft({ ...draft, plannedOn: event.target.value })}
-                  className={fieldClass}
-                />
+                <button
+                  type="button"
+                  onClick={() => setCapture((current) => openCapture(current))}
+                  className={`w-full ${secondaryButtonClass}`}
+                >
+                  + Capture
+                </button>
+                {captureDraftHasMeaning(capture.draft) ? (
+                  <p className="mt-2 text-sm text-stone-400">An unsaved capture is still here.</p>
+                ) : null}
               </div>
-              <div>
-                <label className="block text-sm font-medium" htmlFor="task-due">
-                  Due
-                </label>
-                <p id="task-due-hint" className="text-sm text-stone-400">
-                  When completion is required.
-                </p>
-                <input
-                  id="task-due"
-                  name="due"
-                  type="date"
-                  aria-describedby="task-due-hint"
-                  value={draft.dueOn}
-                  onChange={(event) => setDraft({ ...draft, dueOn: event.target.value })}
-                  className={fieldClass}
-                />
-              </div>
-              <label className="flex min-h-12 items-center gap-3 text-base" htmlFor="task-must-do">
-                <input
-                  id="task-must-do"
-                  name="must-do"
-                  type="checkbox"
-                  checked={draft.mustDo}
-                  onChange={(event) => setDraft({ ...draft, mustDo: event.target.checked })}
-                  className="size-5"
-                />
-                Must do
-              </label>
-            </fieldset>
-
-            {saveError ? (
-              <p role="alert" className="mt-4 text-sm text-stone-200">
-                {saveError} The draft is still here.
-              </p>
-            ) : null}
-
-            <button type="submit" disabled={saving} className={`mt-6 w-full ${primaryButtonClass}`}>
-              {saving ? "Saving" : "Save"}
-            </button>
-          </form>
+            )}
+          </div>
 
           <section className="mt-12" aria-labelledby="open-tasks-heading">
             <h1 id="open-tasks-heading" className="text-lg font-medium">

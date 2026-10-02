@@ -79,6 +79,14 @@ describe("resume projection", () => {
     expect(projectResume({ activeThread: remaining, openTasks })?.task.id).toBe(taskA.id);
   });
 
+  it("leaves an existing thread in place when another task is captured", () => {
+    const thread = activeThreadFromEstablishment(taskA.id, establishedAt);
+    const captured = openTask("task-captured", "Remember this");
+    expect(projectResume({ activeThread: thread, openTasks: [taskA, captured] })?.task.id).toBe(
+      taskA.id,
+    );
+  });
+
   it("does not treat capture as establishing a thread", () => {
     const drafted = newTaskFromCapture({
       ...emptyCaptureDraft(),

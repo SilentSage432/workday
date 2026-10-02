@@ -65,7 +65,7 @@ Named positions:
 - final hour
 - closeout
 
-The Work schedule supplies today's start, end, and shift type. See [PRODUCT.md](PRODUCT.md). Remaining shift time is a Work fact NOW should eventually be able to reflect while that shift is underway.
+The Work schedule supplies today's start, end, and shift type. See [PRODUCT.md](PRODUCT.md). V0-003 stores those facts and can say whether a supplied instant is before, during, or after the entered bounds. It does not define the phase boundaries below. Remaining shift time is a Work fact NOW should eventually be able to reflect while that shift is underway.
 
 **Unresolved:** the boundaries of these positions. No durations or clock times are defined for them. "Lunch" has no established time. These labels are a Work form of relative position, not a required shape for every Context.
 

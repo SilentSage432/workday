@@ -15,7 +15,7 @@ The four canonical Context names are Work, Family, TeamLab, and Financial. There
 
 Notes, Blocks, Commitments, Active Thread, recurring obligations, occurrences, reminders, Work shifts, Work cadence, external calendar facts, Google Calendar, notification delivery, and voice.
 
-Active Thread storage came later, in [../implementation/V0-002.md](../implementation/V0-002.md). This document describes only the Context and Task schema.
+Active Thread storage came later, in [../implementation/V0-002.md](../implementation/V0-002.md). The Work schedule and confirmed time zone came later, in [../implementation/V0-003.md](../implementation/V0-003.md). This document describes only the Context and Task schema.
 
 NOW, Timeline, Today, Pulse, and Resume are projections. They are not tables. Queries do not order Tasks by what deserves attention.
 

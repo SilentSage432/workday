@@ -37,6 +37,62 @@ export function draftAfterFailedSave(draft: CaptureDraft): CaptureDraft {
   return { ...draft };
 }
 
+export type CaptureSession = {
+  open: boolean;
+  detailsOpen: boolean;
+  draft: CaptureDraft;
+};
+
+export function initialCaptureSession(): CaptureSession {
+  return {
+    open: false,
+    detailsOpen: false,
+    draft: emptyCaptureDraft(),
+  };
+}
+
+export function captureDraftHasMeaning(draft: CaptureDraft): boolean {
+  return (
+    draft.title.trim().length > 0 ||
+    draft.contextId.length > 0 ||
+    draft.plannedOn.length > 0 ||
+    draft.dueOn.length > 0 ||
+    draft.mustDo
+  );
+}
+
+export function openCapture(session: CaptureSession): CaptureSession {
+  const detailsFromDraft =
+    session.draft.contextId.length > 0 ||
+    session.draft.plannedOn.length > 0 ||
+    session.draft.dueOn.length > 0 ||
+    session.draft.mustDo;
+  return {
+    ...session,
+    open: true,
+    detailsOpen: session.detailsOpen || detailsFromDraft,
+  };
+}
+
+export function collapseCapture(session: CaptureSession): CaptureSession {
+  if (!captureDraftHasMeaning(session.draft)) {
+    return initialCaptureSession();
+  }
+  return { ...session, open: false };
+}
+
+export function captureAfterSuccessfulSave(): CaptureSession {
+  return initialCaptureSession();
+}
+
+export function captureAfterFailedSave(session: CaptureSession): CaptureSession {
+  return {
+    ...session,
+    open: true,
+    draft: draftAfterFailedSave(session.draft),
+  };
+}
+
 export function openTasksAfterCompletion(tasks: Task[], completedId: string): Task[] {
   return tasks.filter((task) => task.id !== completedId);
 }

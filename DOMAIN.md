@@ -54,6 +54,8 @@ Known types: Opening, Mid, and Closing.
 
 A shift has temporal boundaries, for example 6:00 AM → 3:00 PM. The user's actual work schedule should be enterable. Entry stays simple because the product is not workforce scheduling software. See [PRODUCT.md](PRODUCT.md) and [TIME_MODEL.md](TIME_MODEL.md).
 
+V0 stores that personal schedule as one state per civil date: no row yet, Off, or one scheduled shift with an explicit Opening, Mid, or Closing type. Local times use the IANA time zone the user confirmed. If the end is earlier than or equal to the start, the shift continues into the next civil date. The decision is [docs/decisions/2026-10-02-work-schedule.md](docs/decisions/2026-10-02-work-schedule.md).
+
 A shift type selects the Work cadence for that kind of shift. The work schedule and the cadence are different facts.
 
 Because a shift is fixed employment time, Timeline may show it as a Commitment and still show that it is a Shift. Do not drop Opening, Mid, or Closing in that presentation.

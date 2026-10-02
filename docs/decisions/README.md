@@ -12,6 +12,7 @@ ARCHITECTURE-001 recorded the runtime, persistence, projection, and delivery dec
 - [2026-10-02-boundaries-and-delivery.md](2026-10-02-boundaries-and-delivery.md)
 - [2026-10-02-context-and-task-storage.md](2026-10-02-context-and-task-storage.md)
 - [2026-10-02-active-thread.md](2026-10-02-active-thread.md)
+- [2026-10-02-work-schedule.md](2026-10-02-work-schedule.md)
 
 The architecture those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Unresolved implementation details do not get speculative ADRs.
 
