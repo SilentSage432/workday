@@ -1,3 +1,7 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Icon } from "@/components/Icon";
+import { LocalTimeField } from "@/components/LocalTimeField";
+import { emptyTwelveHourClock, twelveHourToLocalTime } from "@/components/twelveHourTime";
 import { formatLocalTimeLabel } from "@/domain/time/localTime";
 import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
 import {
@@ -6,11 +10,7 @@ import {
   shiftEndsNextCivilDate,
   type WorkScheduleEntry,
 } from "@/domain/workSchedule";
-import {
-  scheduleRowFact,
-  type ShiftDraft,
-  type WeekEditSession,
-} from "@/components/workScheduleSession";
+import { type DayDraft, type WeekDraft } from "@/components/weekDraft";
 
 const fieldClass =
   "mt-1 w-full min-h-12 rounded-md border border-stone-700 bg-stone-900 px-3 text-base text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300";
@@ -40,60 +40,79 @@ export function TodayScheduleFact({ entry }: { entry: WorkScheduleEntry | null }
 }
 
 export function WorkWeek({
-  weekDates,
-  entries,
+  draft,
   today,
-  session,
+  editing,
+  openWorkOn,
   rowError,
-  savingOn,
+  saving,
+  prompt,
   onBeginEdit,
-  onFinishEdit,
-  onOpenShift,
-  onMarkOff,
-  onClear,
-  onDraftChange,
-  onSaveShift,
-  onCancelShift,
+  onCancelEdit,
+  onSaveWeek,
+  onOpenDay,
+  onSetDay,
   onShiftWeek,
+  onDiscardPrompt,
+  onStay,
 }: {
-  weekDates: string[];
-  entries: WorkScheduleEntry[];
+  draft: WeekDraft;
   today: string | null;
-  session: WeekEditSession;
+  editing: boolean;
+  openWorkOn: string | null;
   rowError: { workOn: string; message: string } | null;
-  savingOn: string | null;
+  saving: boolean;
+  prompt: string | null;
   onBeginEdit: () => void;
-  onFinishEdit: () => void;
-  onOpenShift: (workOn: string) => void;
-  onMarkOff: (workOn: string) => void;
-  onClear: (workOn: string) => void;
-  onDraftChange: (draft: ShiftDraft) => void;
-  onSaveShift: () => void;
-  onCancelShift: () => void;
+  onCancelEdit: () => void;
+  onSaveWeek: () => void;
+  onOpenDay: (workOn: string) => void;
+  onSetDay: (workOn: string, day: DayDraft) => void;
   onShiftWeek: (delta: number) => void;
+  onDiscardPrompt: () => void;
+  onStay: () => void;
 }) {
   return (
     <>
       <div className="mt-6 flex items-center justify-between gap-3">
         <button type="button" onClick={() => onShiftWeek(-7)} className={secondaryButtonClass}>
-          Previous
+          <span className="inline-flex items-center justify-center gap-2">
+            <Icon icon={ChevronLeft} />
+            Previous
+          </span>
         </button>
         <button type="button" onClick={() => onShiftWeek(7)} className={secondaryButtonClass}>
-          Next
+          <span className="inline-flex items-center justify-center gap-2">
+            Next
+            <Icon icon={ChevronRight} />
+          </span>
         </button>
       </div>
       <h2 className="mt-4 text-sm text-stone-400">This week</h2>
       <p className="mt-1 text-sm text-stone-300">
-        {formatCivilDateLabel(weekDates[0])} – {formatCivilDateLabel(weekDates[6])}
+        {formatCivilDateLabel(draft.order[0])} – {formatCivilDateLabel(draft.order[6])}
       </p>
-      {session.notice ? (
-        <p role="status" className="mt-3 text-sm text-stone-200">
-          {session.notice}
-        </p>
+      {prompt ? (
+        <div className="mt-4" role="group" aria-labelledby="unsaved-week">
+          <p id="unsaved-week" className="text-sm text-stone-200">
+            {prompt}
+          </p>
+          <div className="mt-3 flex flex-col gap-2">
+            <button type="button" onClick={onSaveWeek} disabled={saving} className={primaryButtonClass}>
+              {saving ? "Saving" : "Save week"}
+            </button>
+            <button type="button" onClick={onDiscardPrompt} className={secondaryButtonClass}>
+              Discard changes
+            </button>
+            <button type="button" onClick={onStay} className="min-h-11 text-sm text-stone-400">
+              Stay
+            </button>
+          </div>
+        </div>
       ) : null}
       <ul className="mt-2">
-        {weekDates.map((workOn) => {
-          const entry = entries.find((item) => item.workOn === workOn) ?? null;
+        {draft.order.map((workOn) => {
+          const day = draft.days[workOn] ?? { state: "unknown" };
           const label = formatCivilDateLabel(workOn);
           return (
             <li key={workOn} className="border-t border-stone-800 py-3">
@@ -105,7 +124,7 @@ export function WorkWeek({
                   ) : null}
                 </p>
                 <div className="min-w-0">
-                  <DayFact entry={entry} />
+                  <DayFact day={editing ? day : (draft.baseline[workOn] ?? day)} />
                 </div>
               </div>
               {rowError?.workOn === workOn ? (
@@ -113,35 +132,47 @@ export function WorkWeek({
                   {rowError.message}
                 </p>
               ) : null}
-              {session.editing && session.draft?.workOn === workOn ? (
+              {editing && openWorkOn === workOn && day.state === "scheduled" ? (
                 <ShiftFields
-                  draft={session.draft}
+                  day={day}
                   describedBy={rowError?.workOn === workOn ? `day-error-${workOn}` : undefined}
-                  saving={savingOn === workOn}
-                  onChange={onDraftChange}
-                  onSave={onSaveShift}
-                  onCancel={onCancelShift}
+                  onChange={(next) => onSetDay(workOn, next)}
+                  onClose={() => onOpenDay("")}
                 />
               ) : null}
-              {session.editing && session.draft?.workOn !== workOn ? (
+              {editing && openWorkOn !== workOn ? (
                 <DayControls
                   workOn={workOn}
                   label={label}
-                  entry={entry}
-                  saving={savingOn === workOn}
-                  onOpenShift={onOpenShift}
-                  onMarkOff={onMarkOff}
-                  onClear={onClear}
+                  day={day}
+                  onOpen={() => {
+                    if (day.state !== "scheduled") {
+                      onSetDay(workOn, {
+                        state: "scheduled",
+                        start: emptyTwelveHourClock(),
+                        end: emptyTwelveHourClock(),
+                        shiftType: "",
+                      });
+                    }
+                    onOpenDay(workOn);
+                  }}
+                  onOff={() => onSetDay(workOn, { state: "off" })}
+                  onClear={() => onSetDay(workOn, { state: "unknown" })}
                 />
               ) : null}
             </li>
           );
         })}
       </ul>
-      {session.editing ? (
-        <button type="button" onClick={onFinishEdit} className={`mt-4 w-full ${secondaryButtonClass}`}>
-          Done
-        </button>
+      {editing ? (
+        <div className="mt-4 flex flex-col gap-2">
+          <button type="button" onClick={onSaveWeek} disabled={saving} className={primaryButtonClass}>
+            {saving ? "Saving" : "Save week"}
+          </button>
+          <button type="button" onClick={onCancelEdit} disabled={saving} className={secondaryButtonClass}>
+            Cancel
+          </button>
+        </div>
       ) : (
         <button type="button" onClick={onBeginEdit} className={`mt-4 w-full ${secondaryButtonClass}`}>
           Edit week
@@ -151,9 +182,12 @@ export function WorkWeek({
   );
 }
 
-function DayFact({ entry }: { entry: WorkScheduleEntry | null }) {
-  const fact = scheduleRowFact(entry);
-  if (fact.kind === "unknown") {
+function isShift(value: string): value is "opening" | "mid" | "closing" {
+  return value === "opening" || value === "mid" || value === "closing";
+}
+
+function DayFact({ day }: { day: DayDraft }) {
+  if (day.state === "unknown") {
     return (
       <p className="text-right text-sm text-stone-400">
         <span aria-hidden="true">—</span>
@@ -161,16 +195,22 @@ function DayFact({ entry }: { entry: WorkScheduleEntry | null }) {
       </p>
     );
   }
-  if (fact.kind === "off") {
+  if (day.state === "off") {
     return <p className="text-right text-sm text-stone-300">Off</p>;
   }
+  const startLocal = twelveHourToLocalTime(day.start);
+  const endLocal = twelveHourToLocalTime(day.end);
+  if (!startLocal || !endLocal || !isShift(day.shiftType)) {
+    return <p className="text-right text-sm text-stone-300">Shift</p>;
+  }
+  const continues = safeContinues(startLocal, endLocal);
   return (
     <div className="text-right text-sm break-words text-stone-300">
       <p>
-        {formatLocalTimeLabel(fact.startLocal)}–{formatLocalTimeLabel(fact.endLocal)}
+        {formatLocalTimeLabel(startLocal)}–{formatLocalTimeLabel(endLocal)}
       </p>
-      {fact.continuesAfterMidnight ? <p>continues after midnight</p> : null}
-      <p>{SHIFT_TYPE_LABELS[fact.shiftType]}</p>
+      {continues ? <p>continues after midnight</p> : null}
+      <p>{SHIFT_TYPE_LABELS[day.shiftType]}</p>
     </div>
   );
 }
@@ -178,28 +218,30 @@ function DayFact({ entry }: { entry: WorkScheduleEntry | null }) {
 function DayControls({
   workOn,
   label,
-  entry,
-  saving,
-  onOpenShift,
-  onMarkOff,
+  day,
+  onOpen,
+  onOff,
   onClear,
 }: {
   workOn: string;
   label: string;
-  entry: WorkScheduleEntry | null;
-  saving: boolean;
-  onOpenShift: (workOn: string) => void;
-  onMarkOff: (workOn: string) => void;
-  onClear: (workOn: string) => void;
+  day: DayDraft;
+  onOpen: () => void;
+  onOff: () => void;
+  onClear: () => void;
 }) {
-  const scheduled = entry?.state === "scheduled";
-  const off = entry?.state === "off";
+  const scheduled =
+    day.state === "scheduled" &&
+    twelveHourToLocalTime(day.start) !== null &&
+    twelveHourToLocalTime(day.end) !== null &&
+    isShift(day.shiftType);
+  const off = day.state === "off";
   return (
     <div className="mt-3 flex gap-2">
       <button
         id={`shift-control-${workOn}`}
         type="button"
-        onClick={() => onOpenShift(workOn)}
+        onClick={onOpen}
         className={`flex-1 ${secondaryButtonClass}`}
         aria-label={scheduled ? `Edit shift for ${label}` : `Shift for ${label}`}
       >
@@ -208,84 +250,54 @@ function DayControls({
       {off ? null : (
         <button
           type="button"
-          onClick={() => onMarkOff(workOn)}
-          disabled={saving}
+          onClick={onOff}
           className={`flex-1 ${secondaryButtonClass}`}
           aria-label={`Off for ${label}`}
         >
-          {saving ? "Saving" : "Off"}
+          Off
         </button>
       )}
-      {entry ? (
+      {day.state === "unknown" ? null : (
         <button
           type="button"
-          onClick={() => onClear(workOn)}
-          disabled={saving}
+          onClick={onClear}
           className={`flex-1 ${secondaryButtonClass}`}
           aria-label={`Remove ${label}`}
         >
-          {saving ? "Saving" : "Remove"}
+          Remove
         </button>
-      ) : null}
+      )}
     </div>
   );
 }
 
 function ShiftFields({
-  draft,
+  day,
   describedBy,
-  saving,
   onChange,
-  onSave,
-  onCancel,
+  onClose,
 }: {
-  draft: ShiftDraft;
+  day: Extract<DayDraft, { state: "scheduled" }>;
   describedBy?: string;
-  saving: boolean;
-  onChange: (draft: ShiftDraft) => void;
-  onSave: () => void;
-  onCancel: () => void;
+  onChange: (day: Extract<DayDraft, { state: "scheduled" }>) => void;
+  onClose: () => void;
 }) {
-  const continues =
-    draft.startLocal.length > 0 &&
-    draft.endLocal.length > 0 &&
-    safeContinues(draft.startLocal, draft.endLocal);
-
+  const startLocal = twelveHourToLocalTime(day.start);
+  const endLocal = twelveHourToLocalTime(day.end);
+  const continues = startLocal && endLocal ? safeContinues(startLocal, endLocal) : false;
   return (
     <div className="mt-3 space-y-3" aria-describedby={describedBy}>
-      <div>
-        <label className="block text-sm font-medium" htmlFor={`start-${draft.workOn}`}>
-          Start
-        </label>
-        <input
-          id={`start-${draft.workOn}`}
-          type="time"
-          value={draft.startLocal}
-          onChange={(event) => onChange({ ...draft, startLocal: event.target.value })}
-          className={fieldClass}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium" htmlFor={`end-${draft.workOn}`}>
-          End
-        </label>
-        <input
-          id={`end-${draft.workOn}`}
-          type="time"
-          value={draft.endLocal}
-          onChange={(event) => onChange({ ...draft, endLocal: event.target.value })}
-          className={fieldClass}
-        />
-      </div>
+      <LocalTimeField label="Start" value={day.start} onChange={(start) => onChange({ ...day, start })} />
+      <LocalTimeField label="End" value={day.end} onChange={(end) => onChange({ ...day, end })} />
       {continues ? <p className="text-sm text-stone-400">This shift continues after midnight.</p> : null}
       <div>
-        <label className="block text-sm font-medium" htmlFor={`type-${draft.workOn}`}>
+        <label className="block text-sm font-medium" htmlFor="shift-type-open">
           Shift type
         </label>
         <select
-          id={`type-${draft.workOn}`}
-          value={draft.shiftType}
-          onChange={(event) => onChange({ ...draft, shiftType: event.target.value })}
+          id="shift-type-open"
+          value={day.shiftType}
+          onChange={(event) => onChange({ ...day, shiftType: event.target.value })}
           className={fieldClass}
         >
           <option value="">Choose</option>
@@ -296,11 +308,8 @@ function ShiftFields({
           ))}
         </select>
       </div>
-      <button type="button" onClick={onSave} disabled={saving} className={`w-full ${primaryButtonClass}`}>
-        {saving ? "Saving" : "Save shift"}
-      </button>
-      <button type="button" onClick={onCancel} className="min-h-11 w-full text-sm text-stone-400">
-        Cancel
+      <button type="button" onClick={onClose} className="min-h-11 w-full text-sm text-stone-400">
+        Close
       </button>
     </div>
   );

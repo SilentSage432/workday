@@ -2,20 +2,16 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { useCapture } from "@/components/AppFrame";
+import { CapturePanel } from "@/components/CapturePanel";
 import { WorkOrientationView } from "@/components/WorkOrientation";
-import { WorkSchedule } from "@/components/WorkSchedule";
 import { activeThreadAfterCompletion, type ActiveThread } from "@/domain/activeThread";
 import { CANONICAL_CONTEXT_NAMES, type Context } from "@/domain/context";
 import {
   captureAfterFailedSave,
   captureAfterSuccessfulSave,
-  captureDraftHasMeaning,
-  collapseCapture,
-  initialCaptureSession,
   newTaskFromCapture,
-  openCapture,
   openTasksAfterCompletion,
-  type CaptureSession,
 } from "@/domain/capture";
 import type { Task } from "@/domain/task";
 import {
@@ -38,15 +34,10 @@ import {
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import { loadTemporalSettings, loadWorkSchedule } from "@/persistence/workSchedule";
 
-type SessionPhase = "loading" | "signed-out" | "signed-in";
 type DataPhase = "loading" | "ready" | "error";
 
 const CONTEXT_ORDER: readonly string[] = CANONICAL_CONTEXT_NAMES;
 
-const pageClass =
-  "mx-auto min-h-dvh max-w-lg overflow-x-hidden bg-stone-950 px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-stone-100";
-const fieldClass =
-  "mt-1 w-full min-h-12 rounded-md border border-stone-700 bg-stone-900 px-3 text-base text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300";
 const primaryButtonClass =
   "min-h-12 rounded-md bg-stone-100 px-4 text-center text-base text-stone-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300 disabled:opacity-60";
 const secondaryButtonClass =
@@ -60,13 +51,6 @@ function orderedContexts(contexts: Context[]): Context[] {
     const rightRank = rightOrder === -1 ? CONTEXT_ORDER.length : rightOrder;
     return leftRank - rightRank || left.name.localeCompare(right.name);
   });
-}
-
-function signInFailureMessage(message: string): string {
-  if (/invalid login credentials/i.test(message)) {
-    return "That email and password did not match.";
-  }
-  return "Could not sign in.";
 }
 
 function failureMessage(error: unknown, fallback: string): string {
@@ -93,121 +77,16 @@ async function readWorkWindow(client: SupabaseClient): Promise<{
 }
 
 export function TaskLoop() {
-  const [sessionPhase, setSessionPhase] = useState<SessionPhase>("loading");
-
-  useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        setSessionPhase("signed-out");
-        return;
-      }
-      setSessionPhase("signed-in");
-    });
-
-    return () => {
-      data.subscription.unsubscribe();
-    };
-  }, []);
-
-  if (sessionPhase === "loading") {
-    return (
-      <main className={pageClass}>
-        <p>Checking session.</p>
-      </main>
-    );
-  }
-
-  if (sessionPhase === "signed-out") {
-    return <SignIn />;
-  }
-
-  return <SignedInLoop />;
-}
-
-function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    const { error: signInError } = await getSupabaseBrowserClient().auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (signInError) {
-      setError(signInFailureMessage(signInError.message));
-    }
-    setSubmitting(false);
-  }
-
-  return (
-    <main className={`flex flex-col ${pageClass}`}>
-      <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-      <p className="mt-2 text-sm leading-6 text-stone-400">
-        For the person this instrument belongs to.
-      </p>
-      <form className="mt-8 space-y-4" onSubmit={onSubmit}>
-        <div>
-          <label className="block text-sm font-medium" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="username"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className={fieldClass}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className={fieldClass}
-          />
-        </div>
-        {error ? (
-          <p role="alert" className="text-sm text-stone-200">
-            {error}
-          </p>
-        ) : null}
-        <button type="submit" disabled={submitting} className={`w-full ${primaryButtonClass}`}>
-          {submitting ? "Signing in" : "Sign in"}
-        </button>
-      </form>
-    </main>
-  );
-}
-
-function SignedInLoop() {
   const [contexts, setContexts] = useState<Context[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeThread, setActiveThread] = useState<ActiveThread | null>(null);
   const [dataPhase, setDataPhase] = useState<DataPhase>("loading");
   const [dataError, setDataError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [capture, setCapture] = useState<CaptureSession>(initialCaptureSession);
-  const [surface, setSurface] = useState<"tasks" | "schedule">("tasks");
+  const { session: capture, update: setCapture } = useCapture();
   const [timeZone, setTimeZone] = useState<string | null>(null);
   const [workEntries, setWorkEntries] = useState<WorkScheduleEntry[]>([]);
   const [workNotice, setWorkNotice] = useState<string | null>(null);
-  const [workReload, setWorkReload] = useState(0);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
@@ -273,36 +152,6 @@ function SignedInLoop() {
     }
   }, [capture.open]);
 
-  useEffect(() => {
-    if (workReload === 0) return;
-    const client = getSupabaseBrowserClient();
-    let ignore = false;
-
-    async function refreshWork() {
-      try {
-        const window = await readWorkWindow(client);
-        if (ignore) return;
-        setTimeZone(window.timeZone);
-        setWorkEntries(window.entries);
-        setWorkNotice(null);
-      } catch (error: unknown) {
-        if (ignore) return;
-        setTimeZone(null);
-        setWorkEntries([]);
-        setWorkNotice(failureMessage(error, "Could not load today's Work schedule."));
-      }
-    }
-
-    void refreshWork();
-    return () => {
-      ignore = true;
-    };
-  }, [workReload]);
-
-  async function onSignOut() {
-    await getSupabaseBrowserClient().auth.signOut();
-  }
-
   async function onCapture(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
@@ -315,7 +164,7 @@ function SignedInLoop() {
       setTasks((current) => [...current, created]);
       setCapture(captureAfterSuccessfulSave());
     } catch (error: unknown) {
-      setCapture((current) => captureAfterFailedSave(current));
+      setCapture(captureAfterFailedSave(capture));
       setSaveError(failureMessage(error, "Could not save this task."));
     } finally {
       setSaving(false);
@@ -400,39 +249,7 @@ function SignedInLoop() {
       : null;
 
   return (
-    <main className={pageClass}>
-      <div className="flex items-center justify-between gap-3">
-        {dataPhase === "ready" && surface === "schedule" ? (
-          <button
-            type="button"
-            onClick={() => {
-              setSurface("tasks");
-              setWorkReload((current) => current + 1);
-            }}
-            className="min-h-11 px-2 text-sm text-stone-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
-          >
-            Tasks
-          </button>
-        ) : dataPhase === "ready" ? (
-          <button
-            type="button"
-            onClick={() => setSurface("schedule")}
-            className="min-h-11 px-2 text-sm text-stone-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
-          >
-            Work schedule
-          </button>
-        ) : (
-          <span />
-        )}
-        <button
-          type="button"
-          onClick={() => void onSignOut()}
-          className="min-h-11 px-2 text-sm text-stone-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
-        >
-          Sign out
-        </button>
-      </div>
-
+    <main>
       {dataPhase === "loading" ? <p className="mt-6">Loading tasks.</p> : null}
 
       {dataPhase === "error" ? (
@@ -448,9 +265,7 @@ function SignedInLoop() {
         </div>
       ) : null}
 
-      {dataPhase === "ready" && surface === "schedule" ? <WorkSchedule /> : null}
-
-      {dataPhase === "ready" && surface === "tasks" ? (
+      {dataPhase === "ready" ? (
         <>
           {resume ? (
             <section
@@ -509,153 +324,15 @@ function SignedInLoop() {
           ) : null}
 
           <div className="mt-8">
-            {capture.open ? (
-              <form onSubmit={(event) => void onCapture(event)}>
-                <label className="block text-xl font-medium tracking-tight" htmlFor="task-title">
-                  What needs doing?
-                </label>
-                <input
-                  id="task-title"
-                  name="title"
-                  type="text"
-                  required
-                  ref={titleRef}
-                  value={capture.draft.title}
-                  onChange={(event) =>
-                    setCapture({
-                      ...capture,
-                      draft: { ...capture.draft, title: event.target.value },
-                    })
-                  }
-                  className={fieldClass}
-                />
-                {capture.detailsOpen ? (
-                  <fieldset className="mt-4 space-y-4">
-                    <legend className="text-sm text-stone-400">Optional</legend>
-                    <div>
-                      <label className="block text-sm font-medium" htmlFor="task-context">
-                        Context
-                      </label>
-                      <select
-                        id="task-context"
-                        name="context"
-                        value={capture.draft.contextId}
-                        onChange={(event) =>
-                          setCapture({
-                            ...capture,
-                            draft: { ...capture.draft, contextId: event.target.value },
-                          })
-                        }
-                        className={fieldClass}
-                      >
-                        <option value="">None</option>
-                        {orderedContexts(contexts).map((context) => (
-                          <option key={context.id} value={context.id}>
-                            {context.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium" htmlFor="task-planned">
-                        Planned
-                      </label>
-                      <p id="task-planned-hint" className="text-sm text-stone-400">
-                        When you intend to work on it.
-                      </p>
-                      <input
-                        id="task-planned"
-                        name="planned"
-                        type="date"
-                        aria-describedby="task-planned-hint"
-                        value={capture.draft.plannedOn}
-                        onChange={(event) =>
-                          setCapture({
-                            ...capture,
-                            draft: { ...capture.draft, plannedOn: event.target.value },
-                          })
-                        }
-                        className={fieldClass}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium" htmlFor="task-due">
-                        Due
-                      </label>
-                      <p id="task-due-hint" className="text-sm text-stone-400">
-                        When completion is required.
-                      </p>
-                      <input
-                        id="task-due"
-                        name="due"
-                        type="date"
-                        aria-describedby="task-due-hint"
-                        value={capture.draft.dueOn}
-                        onChange={(event) =>
-                          setCapture({
-                            ...capture,
-                            draft: { ...capture.draft, dueOn: event.target.value },
-                          })
-                        }
-                        className={fieldClass}
-                      />
-                    </div>
-                    <label className="flex min-h-12 items-center gap-3 text-base" htmlFor="task-must-do">
-                      <input
-                        id="task-must-do"
-                        name="must-do"
-                        type="checkbox"
-                        checked={capture.draft.mustDo}
-                        onChange={(event) =>
-                          setCapture({
-                            ...capture,
-                            draft: { ...capture.draft, mustDo: event.target.checked },
-                          })
-                        }
-                        className="size-5"
-                      />
-                      Must do
-                    </label>
-                  </fieldset>
-                ) : null}
-                {saveError ? (
-                  <p role="alert" className="mt-4 text-sm text-stone-200">
-                    {saveError} The draft is still here.
-                  </p>
-                ) : null}
-                <button type="submit" disabled={saving} className={`mt-4 w-full ${primaryButtonClass}`}>
-                  {saving ? "Saving" : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCapture({ ...capture, detailsOpen: !capture.detailsOpen })}
-                  aria-expanded={capture.detailsOpen}
-                  className={`mt-3 w-full ${secondaryButtonClass}`}
-                >
-                  {capture.detailsOpen ? "Fewer options" : "More options"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCapture((current) => collapseCapture(current))}
-                  className="mt-2 min-h-11 w-full text-sm text-stone-400"
-                >
-                  Close
-                </button>
-              </form>
-            ) : (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setCapture((current) => openCapture(current))}
-                  className={`w-full ${secondaryButtonClass}`}
-                >
-                  + Capture
-                </button>
-                {captureDraftHasMeaning(capture.draft) ? (
-                  <p className="mt-2 text-sm text-stone-400">An unsaved capture is still here.</p>
-                ) : null}
-              </div>
-            )}
+            <CapturePanel
+              session={capture}
+              contexts={orderedContexts(contexts)}
+              saving={saving}
+              saveError={saveError}
+              titleRef={titleRef}
+              onChange={setCapture}
+              onSubmit={(event) => void onCapture(event)}
+            />
           </div>
 
           <section className="mt-12" aria-labelledby="open-tasks-heading">
