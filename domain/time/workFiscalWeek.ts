@@ -74,10 +74,28 @@ function part(
   return found.value;
 }
 
+const CIVIL_DATE_TEXT = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 export function formatCivilDate(date: CivilDate): string {
   const month = String(date.month).padStart(2, "0");
   const day = String(date.day).padStart(2, "0");
   return `${date.year}-${month}-${day}`;
+}
+
+export function parseCivilDate(value: string): CivilDate {
+  const match = CIVIL_DATE_TEXT.exec(value);
+  if (!match) {
+    throw new Error("A civil date must be YYYY-MM-DD.");
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) {
+    throw new Error("A civil date must be a real calendar day.");
+  }
+
+  return { year, month, day };
 }
 
 export function civilDateInTimeZone(instant: Date, timeZone: string): CivilDate {

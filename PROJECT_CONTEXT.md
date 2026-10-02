@@ -132,4 +132,4 @@ V0 is specified and not built. Open questions are listed in [docs/discovery/FOUN
 
 FOUNDATION-003 closed the planned pure-foundation phase. ARCHITECTURE-001 chooses the minimum runtime: Next.js, React, TypeScript, Tailwind, a dedicated Supabase project, Supabase Auth for one user, and Vercel from GitHub `main`. Projections such as NOW and Timeline are not stored. The decision records and the architecture document are in [docs/decisions/](docs/decisions/README.md) and [docs/architecture/ARCHITECTURE-001.md](docs/architecture/ARCHITECTURE-001.md).
 
-No application code, dependency install, schema, Supabase project, or Vercel connection exists yet. If the architecture is accepted, BOOTSTRAP-001 is next.
+BOOTSTRAP-001 made a runnable application shell. DATA-001 stores Context and Task for the signed-in user in the dedicated Supabase project. The schema, ownership rule, and due-date limitation are in [docs/data/DATA-001.md](docs/data/DATA-001.md). Capture, NOW, and completion experience are not built. Vercel is not connected.

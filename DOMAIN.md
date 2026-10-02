@@ -118,7 +118,7 @@ A Task means action is required. When the user explicitly records that something
 
 Aisle numbers, pack-down, zoning, customer calls, receiving follow-ups, audits, and manager work are Work examples. They are not built-in Task types.
 
-A Task is not required to belong to a Context. **Unresolved:** whether it can belong to one, to more than one, or span Contexts. V0 may store a Context when the user assigns one. That does not decide permanent multi-Context membership.
+A Task is not required to belong to a Context. **Unresolved:** whether it can belong to one, to more than one, or span Contexts. DATA-001 stores zero or one Context reference. That does not decide permanent multi-Context membership.
 
 A Task may have:
 
@@ -134,7 +134,7 @@ These facts stay independent. Planned is not due. A Task may be due Thursday and
 
 Today is not a Task type. It is intentional temporal commitment. It is not every unresolved Task, and it is not the Timeline. See [PRODUCT.md](PRODUCT.md).
 
-MUST DO is conceptually `mustDo` true or false. That is semantics, not a schema. The user sets it. While set, the Task stays prominent until the user completes, reschedules, or removes it.
+MUST DO is `mustDo` true or false. The user sets it. It is not a priority score, a task state, or a separate bucket. While set, the Task stays prominent until the user completes, reschedules, or removes it. DATA-001 stores that flag, a civil due date, a separate civil planned day, and a completion instant. A time-of-day due instant is not stored. See [docs/data/DATA-001.md](docs/data/DATA-001.md).
 
 Known operations include add, edit, complete, remove, reschedule, and carry forward.
 
@@ -146,7 +146,7 @@ No controlled vocabulary of work kinds is established. A Task is not a medical o
 
 A Note means information worth retaining when action has not been established.
 
-A Note does not burden the Task list and is not required to belong to a Context. The user may explicitly convert a Note into a Task. The resulting Task must not lose the originating information. No provenance schema is defined.
+A Note does not burden the Task list and is not required to belong to a Context. The user may explicitly convert a Note into a Task. The resulting Task must not lose the originating information. DATA-001 can record that a Task was created directly by the user. It does not yet store conversion from a Note, because Notes are not stored.
 
 **Unresolved:** which parts of the Note must be kept.
 

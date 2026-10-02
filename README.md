@@ -14,13 +14,13 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**BOOTSTRAP-001.** A runnable Next.js baseline exists. Product features are not built.
+**DATA-001.** Context and Task are durable in the dedicated Supabase project. Product experience is not built.
 
-Supabase is not connected. Vercel is not connected. No database schema exists.
+Vercel is not connected. NOW, Timeline, Today, Pulse, and Resume are still projections, not tables.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The next tranche is the first product vertical slice.
+The next tranche can capture a Task, show it, and complete it.
 
 ## Canonical documents
 
@@ -32,6 +32,7 @@ The next tranche is the first product vertical slice.
 | [TIME_MODEL.md](TIME_MODEL.md) | System-level time, chosen and obligated time, and the Work clocks |
 | [CADENCE.md](CADENCE.md) | The cadence primitive, and the Work cadences discovered so far |
 | [docs/architecture/ARCHITECTURE-001.md](docs/architecture/ARCHITECTURE-001.md) | Minimum production architecture for V0 |
+| [docs/data/DATA-001.md](docs/data/DATA-001.md) | First durable Context and Task schema |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |
