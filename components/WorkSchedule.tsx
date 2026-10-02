@@ -1,26 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { formatLocalTimeLabel } from "@/domain/time/localTime";
+import { useEffect, useRef, useState } from "react";
+import { TodayScheduleFact, WorkWeek } from "@/components/WorkWeek";
+import {
+  afterDaySaved,
+  beginWeekEdit,
+  cancelShiftDraft,
+  closedWeekEdit,
+  finishWeekEdit,
+  openShiftDraft,
+  requestWeekChange,
+  updateShiftDraft,
+  type WeekEditSession,
+} from "@/components/workScheduleSession";
 import {
   addCivilDays,
   civilDateInTimeZone,
   formatCivilDate,
-  formatCivilDateLabel,
   parseCivilDate,
   workFiscalWeekDates,
   workFiscalWeekStart,
 } from "@/domain/time/workFiscalWeek";
 import {
-  SHIFT_TYPE_LABELS,
-  SHIFT_TYPES,
   offWorkDay,
   scheduledWorkDay,
-  shiftEndsNextCivilDate,
   type TemporalSettings,
   type WorkScheduleEntry,
 } from "@/domain/workSchedule";
-import { projectWorkDay, type WorkDayFact } from "@/projections/workDay";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import {
   clearWorkScheduleEntry,
@@ -39,13 +45,6 @@ const secondaryButtonClass =
 
 type Phase = "loading" | "ready" | "error";
 
-type ShiftEditor = {
-  workOn: string;
-  startLocal: string;
-  endLocal: string;
-  shiftType: string;
-};
-
 function browserTimeZone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -56,24 +55,6 @@ function browserTimeZone(): string {
 
 function failureMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
-}
-
-function readFact(
-  entry: WorkScheduleEntry | null,
-  timeZone: string,
-  instant: Date,
-): WorkDayFact | { state: "unreadable" } {
-  try {
-    return projectWorkDay({ entry, timeZone, instant });
-  } catch {
-    return { state: "unreadable" };
-  }
-}
-
-function positionLabel(position: "before" | "during" | "after"): string {
-  if (position === "before") return "Before this shift";
-  if (position === "during") return "During this shift";
-  return "After this shift";
 }
 
 export function WorkSchedule() {
@@ -88,10 +69,11 @@ export function WorkSchedule() {
   const [instant, setInstant] = useState(() => new Date());
   const [entries, setEntries] = useState<WorkScheduleEntry[]>([]);
   const [entriesError, setEntriesError] = useState<string | null>(null);
-  const [editor, setEditor] = useState<ShiftEditor | null>(null);
+  const [session, setSession] = useState<WeekEditSession>(closedWeekEdit);
   const [rowError, setRowError] = useState<{ workOn: string; message: string } | null>(null);
   const [savingOn, setSavingOn] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const previousDraftOn = useRef<string | null>(null);
 
   useEffect(() => {
     const client = getSupabaseBrowserClient();
@@ -154,6 +136,16 @@ export function WorkSchedule() {
     };
   }, [settings, weekStart]);
 
+  useEffect(() => {
+    const open = session.draft?.workOn ?? null;
+    if (open) {
+      document.getElementById(`start-${open}`)?.focus();
+    } else if (previousDraftOn.current) {
+      document.getElementById(`shift-control-${previousDraftOn.current}`)?.focus();
+    }
+    previousDraftOn.current = open;
+  }, [session.draft?.workOn]);
+
   async function onSaveZone() {
     setSavingZone(true);
     setZoneError(null);
@@ -171,11 +163,20 @@ export function WorkSchedule() {
     }
   }
 
+  function entryOn(workOn: string): WorkScheduleEntry | null {
+    return entries.find((item) => item.workOn === workOn) ?? null;
+  }
+
   function shiftWeek(delta: number) {
     if (!weekStart) return;
-    setInstant(new Date());
-    setEditor(null);
-    setWeekStart(formatCivilDate(addCivilDays(parseCivilDate(weekStart), delta)));
+    const openEntry = session.draft ? entryOn(session.draft.workOn) : null;
+    const next = requestWeekChange(session, weekStart, delta, openEntry);
+    setSession(next.session);
+    if (next.weekStart !== weekStart) {
+      setInstant(new Date());
+      setRowError(null);
+      setWeekStart(next.weekStart);
+    }
   }
 
   function replaceEntry(entry: WorkScheduleEntry) {
@@ -191,7 +192,7 @@ export function WorkSchedule() {
     try {
       const saved = await saveWorkScheduleEntry(getSupabaseBrowserClient(), offWorkDay(workOn));
       replaceEntry(saved);
-      setEditor(null);
+      setSession((current) => afterDaySaved(current));
     } catch (error: unknown) {
       setRowError({
         workOn,
@@ -203,26 +204,27 @@ export function WorkSchedule() {
   }
 
   async function onSaveShift() {
-    if (!editor) return;
-    if (!editor.startLocal || !editor.endLocal || !editor.shiftType) {
+    if (!session.draft) return;
+    const draft = session.draft;
+    if (!draft.startLocal || !draft.endLocal || !draft.shiftType) {
       setRowError({
-        workOn: editor.workOn,
+        workOn: draft.workOn,
         message: "A shift needs a start, an end, and Opening, Mid, or Closing.",
       });
       return;
     }
-    setSavingOn(editor.workOn);
+    setSavingOn(draft.workOn);
     setRowError(null);
     try {
       const saved = await saveWorkScheduleEntry(
         getSupabaseBrowserClient(),
-        scheduledWorkDay(editor),
+        scheduledWorkDay(draft),
       );
       replaceEntry(saved);
-      setEditor(null);
+      setSession((current) => afterDaySaved(current));
     } catch (error: unknown) {
       setRowError({
-        workOn: editor.workOn,
+        workOn: draft.workOn,
         message: failureMessage(error, "Could not save this shift."),
       });
     } finally {
@@ -236,7 +238,7 @@ export function WorkSchedule() {
     try {
       await clearWorkScheduleEntry(getSupabaseBrowserClient(), workOn);
       setEntries((current) => current.filter((item) => item.workOn !== workOn));
-      setEditor(null);
+      setSession((current) => afterDaySaved(current));
     } catch (error: unknown) {
       setRowError({
         workOn,
@@ -267,9 +269,8 @@ export function WorkSchedule() {
   }
 
   const weekDates = weekStart ? workFiscalWeekDates(parseCivilDate(weekStart)).map(formatCivilDate) : [];
-  const today = settings
-    ? formatCivilDate(civilDateInTimeZone(instant, settings.timeZone))
-    : null;
+  const today = settings ? formatCivilDate(civilDateInTimeZone(instant, settings.timeZone)) : null;
+  const todayVisible = today !== null && weekDates.includes(today);
 
   return (
     <div className="mt-6">
@@ -336,260 +337,49 @@ export function WorkSchedule() {
         </form>
       )}
 
+      {settings && todayVisible ? (
+        <TodayScheduleFact entry={entries.find((item) => item.workOn === today) ?? null} />
+      ) : null}
+
       {settings && weekStart && weekDates.length === 7 ? (
         <>
-          {today && weekDates.includes(today) ? (
-            <TodayFact today={today} entries={entries} settings={settings} instant={instant} />
-          ) : null}
-          <div className="mt-6 flex items-center justify-between gap-3">
-            <button type="button" onClick={() => shiftWeek(-7)} className={secondaryButtonClass}>
-              Previous
-            </button>
-            <button type="button" onClick={() => shiftWeek(7)} className={secondaryButtonClass}>
-              Next
-            </button>
-          </div>
-          <p className="mt-4 text-sm text-stone-300">
-            {formatCivilDateLabel(weekDates[0])} – {formatCivilDateLabel(weekDates[6])}
-          </p>
           {entriesError ? (
             <p role="alert" className="mt-3 text-sm text-stone-200">
               {entriesError}
             </p>
           ) : null}
-          <ul className="mt-2">
-            {weekDates.map((workOn) => {
-              const entry = entries.find((item) => item.workOn === workOn) ?? null;
-              const fact = readFact(entry, settings.timeZone, instant);
-              const isToday = workOn === today;
-              return (
-                <li key={workOn} className="border-t border-stone-800 py-4">
-                  <p className="text-base font-medium">
-                    {formatCivilDateLabel(workOn)}
-                    {isToday ? <span className="ml-2 text-sm font-normal text-stone-400">Today</span> : null}
-                  </p>
-                  <DaySummary entry={entry} fact={fact} />
-                  {rowError?.workOn === workOn ? (
-                    <p role="alert" className="mt-2 text-sm text-stone-200">
-                      {rowError.message}
-                    </p>
-                  ) : null}
-                  {editor?.workOn === workOn ? (
-                    <ShiftFields
-                      editor={editor}
-                      onChange={setEditor}
-                      onSave={() => void onSaveShift()}
-                      onCancel={() => setEditor(null)}
-                      saving={savingOn === workOn}
-                    />
-                  ) : (
-                    <div className="mt-3 flex flex-wrap gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRowError(null);
-                          setEditor({
-                            workOn,
-                            startLocal: entry?.state === "scheduled" ? entry.startLocal : "",
-                            endLocal: entry?.state === "scheduled" ? entry.endLocal : "",
-                            shiftType: entry?.state === "scheduled" ? entry.shiftType : "",
-                          });
-                        }}
-                        className={`flex-1 ${secondaryButtonClass}`}
-                      >
-                        {entry?.state === "scheduled" ? "Edit" : "Shift"}
-                      </button>
-                      {entry?.state === "off" ? (
-                        <button
-                          type="button"
-                          onClick={() => void onClear(workOn)}
-                          disabled={savingOn === workOn}
-                          className={`flex-1 ${secondaryButtonClass}`}
-                        >
-                          {savingOn === workOn ? "Saving" : "Remove"}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => void onMarkOff(workOn)}
-                          disabled={savingOn === workOn}
-                          className={`flex-1 ${secondaryButtonClass}`}
-                        >
-                          {savingOn === workOn ? "Saving" : "Off"}
-                        </button>
-                      )}
-                      {entry?.state === "scheduled" ? (
-                        <button
-                          type="button"
-                          onClick={() => void onClear(workOn)}
-                          disabled={savingOn === workOn}
-                          className={`flex-1 ${secondaryButtonClass}`}
-                        >
-                          Remove
-                        </button>
-                      ) : null}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          <WorkWeek
+            weekDates={weekDates}
+            entries={entries}
+            today={today}
+            session={session}
+            rowError={rowError}
+            savingOn={savingOn}
+            onBeginEdit={() => setSession(beginWeekEdit())}
+            onFinishEdit={() =>
+              setSession((current) =>
+                finishWeekEdit(current, current.draft ? entryOn(current.draft.workOn) : null),
+              )
+            }
+            onOpenShift={(workOn) =>
+              setSession((current) =>
+                openShiftDraft(
+                  current,
+                  workOn,
+                  current.draft ? entryOn(current.draft.workOn) : null,
+                  entryOn(workOn),
+                ),
+              )
+            }
+            onMarkOff={(workOn) => void onMarkOff(workOn)}
+            onClear={(workOn) => void onClear(workOn)}
+            onDraftChange={(draft) => setSession((current) => updateShiftDraft(current, draft))}
+            onSaveShift={() => void onSaveShift()}
+            onCancelShift={() => setSession((current) => cancelShiftDraft(current))}
+            onShiftWeek={shiftWeek}
+          />
         </>
       ) : null}
     </div>
   );
-}
-
-function TodayFact({
-  today,
-  entries,
-  settings,
-  instant,
-}: {
-  today: string;
-  entries: WorkScheduleEntry[];
-  settings: TemporalSettings;
-  instant: Date;
-}) {
-  const todayEntry = entries.find((item) => item.workOn === today) ?? null;
-  const todayFact = readFact(todayEntry, settings.timeZone, instant);
-  const yesterday = formatCivilDate(addCivilDays(parseCivilDate(today), -1));
-  const yesterdayEntry = entries.find((item) => item.workOn === yesterday) ?? null;
-  const yesterdayFact = readFact(yesterdayEntry, settings.timeZone, instant);
-  const overnightStillOn =
-    yesterdayFact.state === "scheduled" &&
-    yesterdayFact.position === "during" &&
-    todayFact.state !== "scheduled";
-
-  return (
-    <section className="mt-6 rounded-md border border-stone-700 bg-stone-900 p-4" aria-labelledby="today-schedule">
-      <h2 id="today-schedule" className="text-sm font-medium text-stone-400">
-        Today
-      </h2>
-      <p className="mt-2 text-base">
-        {todayFact.state === "unknown" ? "No schedule entered" : null}
-        {todayFact.state === "off" ? "Off" : null}
-        {todayFact.state === "unreadable" ? "This saved time does not occur in this time zone." : null}
-        {todayFact.state === "scheduled"
-          ? `${formatLocalTimeLabel(todayFact.startLocal)}–${formatLocalTimeLabel(todayFact.endLocal)} · ${SHIFT_TYPE_LABELS[todayFact.shiftType]}`
-          : null}
-      </p>
-      {todayFact.state === "scheduled" ? (
-        <p className="mt-1 text-sm text-stone-300">{positionLabel(todayFact.position)}</p>
-      ) : null}
-      {overnightStillOn ? (
-        <p className="mt-2 text-sm text-stone-300">
-          {formatCivilDateLabel(yesterday)}&apos;s shift is still underway.
-        </p>
-      ) : null}
-    </section>
-  );
-}
-
-function DaySummary({
-  entry,
-  fact,
-}: {
-  entry: WorkScheduleEntry | null;
-  fact: WorkDayFact | { state: "unreadable" };
-}) {
-  if (!entry || fact.state === "unknown") {
-    return <p className="mt-1 text-sm text-stone-300">No schedule entered</p>;
-  }
-  if (entry.state === "off" || fact.state === "off") {
-    return <p className="mt-1 text-sm text-stone-300">Off</p>;
-  }
-  if (fact.state === "unreadable") {
-    return <p className="mt-1 text-sm text-stone-300">This saved time does not occur in this time zone.</p>;
-  }
-  return (
-    <div className="mt-1 text-sm text-stone-300">
-      <p>
-        {formatLocalTimeLabel(entry.startLocal)}–{formatLocalTimeLabel(entry.endLocal)}
-        {fact.state === "scheduled" && fact.endsNextCivilDate ? " · continues after midnight" : null}
-      </p>
-      <p>{SHIFT_TYPE_LABELS[entry.shiftType]}</p>
-    </div>
-  );
-}
-
-function ShiftFields({
-  editor,
-  onChange,
-  onSave,
-  onCancel,
-  saving,
-}: {
-  editor: ShiftEditor;
-  onChange: (editor: ShiftEditor) => void;
-  onSave: () => void;
-  onCancel: () => void;
-  saving: boolean;
-}) {
-  const continues =
-    editor.startLocal.length > 0 &&
-    editor.endLocal.length > 0 &&
-    safeContinues(editor.startLocal, editor.endLocal);
-
-  return (
-    <div className="mt-3 space-y-3">
-      <div>
-        <label className="block text-sm font-medium" htmlFor={`start-${editor.workOn}`}>
-          Start
-        </label>
-        <input
-          id={`start-${editor.workOn}`}
-          type="time"
-          value={editor.startLocal}
-          onChange={(event) => onChange({ ...editor, startLocal: event.target.value })}
-          className={fieldClass}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium" htmlFor={`end-${editor.workOn}`}>
-          End
-        </label>
-        <input
-          id={`end-${editor.workOn}`}
-          type="time"
-          value={editor.endLocal}
-          onChange={(event) => onChange({ ...editor, endLocal: event.target.value })}
-          className={fieldClass}
-        />
-      </div>
-      {continues ? <p className="text-sm text-stone-400">This shift continues after midnight.</p> : null}
-      <div>
-        <label className="block text-sm font-medium" htmlFor={`type-${editor.workOn}`}>
-          Shift type
-        </label>
-        <select
-          id={`type-${editor.workOn}`}
-          value={editor.shiftType}
-          onChange={(event) => onChange({ ...editor, shiftType: event.target.value })}
-          className={fieldClass}
-        >
-          <option value="">Choose</option>
-          {SHIFT_TYPES.map((shiftType) => (
-            <option key={shiftType} value={shiftType}>
-              {SHIFT_TYPE_LABELS[shiftType]}
-            </option>
-          ))}
-        </select>
-      </div>
-      <button type="button" onClick={onSave} disabled={saving} className={`w-full ${primaryButtonClass}`}>
-        {saving ? "Saving" : "Save shift"}
-      </button>
-      <button type="button" onClick={onCancel} className="min-h-11 w-full text-sm text-stone-400">
-        Cancel
-      </button>
-    </div>
-  );
-}
-
-function safeContinues(startLocal: string, endLocal: string): boolean {
-  try {
-    return shiftEndsNextCivilDate(startLocal, endLocal);
-  } catch {
-    return false;
-  }
 }

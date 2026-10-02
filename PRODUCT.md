@@ -163,7 +163,7 @@ This example is partial. It does not make Monday the user's universal week. Insi
 
 Opening, Mid, and Closing remain meaningful. The user chooses the type. It is not inferred from the clock. V0-004 can name the operative shift and, during an Opening shift, whether the FSR intended-before boundary is still ahead. It does not turn cadence steps into Tasks, and it does not sequence Mid or Closing. See [CADENCE.md](CADENCE.md) and [docs/implementation/V0-004.md](docs/implementation/V0-004.md).
 
-The entry surface is one Work fiscal week at a time. Each civil date is either not entered, Off, or one scheduled shift. Off is not the same fact as a date with nothing entered. A confirmed IANA time zone interprets the local times. The storage decision is [docs/decisions/2026-10-02-work-schedule.md](docs/decisions/2026-10-02-work-schedule.md).
+The entry surface is one Work fiscal week at a time. Each civil date is either not entered, Off, or one scheduled shift. Off is not the same fact as a date with nothing entered. Viewing that week and editing it are distinct modes. A confirmed IANA time zone interprets the local times. The storage decision is [docs/decisions/2026-10-02-work-schedule.md](docs/decisions/2026-10-02-work-schedule.md). The compact reading surface is [docs/implementation/V0-004A.md](docs/implementation/V0-004A.md).
 
 From the schedule, while the user is in Work, the product should eventually understand shift start, shift end, shift type, remaining shift time, which Work cadence applies, and which Work windows intersect the shift. V0-004 says the operative position, the Power Hour state, and the next established boundary. Remaining shift time, and any cadence step beyond the FSR boundary, are still not projected.
 
