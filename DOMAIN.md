@@ -126,7 +126,6 @@ A Task may have:
 - a planned day or other planned period, which in Work may be a shift
 - an explicit reminder, independent of both
 - a MUST DO flag
-- an active/resumable relationship
 - completion state
 - an optional association with a Block
 
@@ -138,7 +137,9 @@ MUST DO is `mustDo` true or false. The user sets it. It is not a priority score,
 
 Known operations include add, edit, complete, remove, reschedule, and carry forward.
 
-**Unresolved:** what reschedule writes, whether it clears MUST DO, what carry-forward means, and the active/resumable relationship beyond the fact that a Task may have one.
+The resumable relationship is the Active Thread, not a second flag on the Task. See [Active Thread](#active-thread).
+
+**Unresolved:** what reschedule writes, whether it clears MUST DO, and what carry-forward means.
 
 No controlled vocabulary of work kinds is established. A Task is not a medical order.
 
@@ -152,11 +153,13 @@ A Note does not burden the Task list and is not required to belong to a Context.
 
 ## Active Thread
 
-The Active Thread is the user's current explicit thread of intention. Resume offers that thread while it is still relevant. It is not required to belong to a Shift, a Block, or a Context. Product behavior is in [PRODUCT.md](PRODUCT.md).
+The Active Thread is the user's current explicit thread of intention. Resume offers that thread while its Task is still open. It is not required to belong to a Shift, a Block, or a Context. Product behavior is in [PRODUCT.md](PRODUCT.md). V0 stores one thread per user. See [docs/decisions/2026-10-02-active-thread.md](docs/decisions/2026-10-02-active-thread.md).
 
-The product does not invent the thread by detecting an interruption. A Block's start does not replace the thread by itself.
+The user establishes it with an explicit action on one open Task. Capture, MUST DO, a planned day, a due date, and the passage of time do not. The product does not invent the thread by detecting an interruption. A Block's start, a Context change, and a shift boundary do not replace or clear it.
 
-**Unresolved:** whether multiple Contexts can each retain a suspended thread at the same time.
+Switching the thread leaves the previous Task open. Clearing it leaves the Task open. Completing the referenced Task clears the thread and keeps the completed Task. V0 does not retain a second, suspended thread for another Context.
+
+**Unresolved:** whether a later version should retain a suspended thread per Context.
 
 ## Recurring Obligation
 
@@ -217,4 +220,4 @@ Objective in this table is a temporal meaning, not an extra primitive. Timeline 
 | Pulse | orients; a reminder reports | one explicit fact |
 | Objective | may contextualize, and is not automatically | Task |
 
-**Unresolved:** NOW's selection order, Context switching, multi-Context membership, suspended threads, occurrence-versus-Task, Commitment subtypes, external write-back, and the lifecycle gaps marked above. They are listed in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md).
+**Unresolved:** NOW's selection order, Context switching, multi-Context membership, a suspended thread per Context beyond the one current thread V0 stores, occurrence-versus-Task, Commitment subtypes, external write-back, and the lifecycle gaps marked above. They are listed in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md).

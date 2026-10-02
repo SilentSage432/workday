@@ -14,13 +14,13 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**V0-001.** A signed-in person can capture a Task, see open Tasks, and complete one.
+**V0-002.** A signed-in person can capture a Task, see open Tasks, complete one, and explicitly keep one Active Thread to resume.
 
-Vercel is not connected. NOW, Timeline, Today, Pulse, and Resume are still projections, not tables.
+NOW, Timeline, Today, and Pulse are still projections and are not built. Resume is a projection over the stored Active Thread. It is not a table.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The behavior of this slice is in [docs/implementation/V0-001.md](docs/implementation/V0-001.md).
+The behavior of this slice is in [docs/implementation/V0-002.md](docs/implementation/V0-002.md). The previous loop is in [docs/implementation/V0-001.md](docs/implementation/V0-001.md).
 
 ## Canonical documents
 
@@ -34,6 +34,7 @@ The behavior of this slice is in [docs/implementation/V0-001.md](docs/implementa
 | [docs/architecture/ARCHITECTURE-001.md](docs/architecture/ARCHITECTURE-001.md) | Minimum production architecture for V0 |
 | [docs/data/DATA-001.md](docs/data/DATA-001.md) | First durable Context and Task schema |
 | [docs/implementation/V0-001.md](docs/implementation/V0-001.md) | First usable sign-in, capture, and completion loop |
+| [docs/implementation/V0-002.md](docs/implementation/V0-002.md) | Active Thread and Resume |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { activeThreadAfterCompletion, type ActiveThread } from "@/domain/activeThread";
 import { CANONICAL_CONTEXT_NAMES, type Context } from "@/domain/context";
 import {
   draftAfterFailedSave,
@@ -11,6 +12,8 @@ import {
 } from "@/domain/capture";
 import type { Task } from "@/domain/task";
 import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
+import { projectResume } from "@/projections/resume";
+import { clearActiveThread, establishActiveThread, loadActiveThread } from "@/persistence/activeThread";
 import {
   completeTask,
   createTask,
@@ -23,6 +26,15 @@ type SessionPhase = "loading" | "signed-out" | "signed-in";
 type DataPhase = "loading" | "ready" | "error";
 
 const CONTEXT_ORDER: readonly string[] = CANONICAL_CONTEXT_NAMES;
+
+const pageClass =
+  "mx-auto min-h-dvh max-w-lg overflow-x-hidden bg-stone-950 px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-stone-100";
+const fieldClass =
+  "mt-1 w-full min-h-12 rounded-md border border-stone-700 bg-stone-900 px-3 text-base text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300";
+const primaryButtonClass =
+  "min-h-12 rounded-md bg-stone-100 px-4 text-center text-base text-stone-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300 disabled:opacity-60";
+const secondaryButtonClass =
+  "min-h-12 rounded-md border border-stone-600 bg-stone-900 px-4 text-center text-base text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300 disabled:opacity-60";
 
 function orderedContexts(contexts: Context[]): Context[] {
   return [...contexts].sort((left, right) => {
@@ -65,7 +77,7 @@ export function TaskLoop() {
 
   if (sessionPhase === "loading") {
     return (
-      <main className="mx-auto min-h-dvh max-w-lg bg-stone-50 px-4 py-8 text-stone-900">
+      <main className={pageClass}>
         <p>Checking session.</p>
       </main>
     );
@@ -99,9 +111,9 @@ function SignIn() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col bg-stone-50 px-4 py-8 text-stone-900">
+    <main className={`flex flex-col ${pageClass}`}>
       <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-      <p className="mt-2 text-sm leading-6 text-stone-600">
+      <p className="mt-2 text-sm leading-6 text-stone-400">
         For the person this instrument belongs to.
       </p>
       <form className="mt-8 space-y-4" onSubmit={onSubmit}>
@@ -117,7 +129,7 @@ function SignIn() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="mt-1 w-full min-h-12 rounded-md border border-stone-300 bg-white px-3 text-base"
+            className={fieldClass}
           />
         </div>
         <div>
@@ -132,19 +144,15 @@ function SignIn() {
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-1 w-full min-h-12 rounded-md border border-stone-300 bg-white px-3 text-base"
+            className={fieldClass}
           />
         </div>
         {error ? (
-          <p role="alert" className="text-sm text-stone-800">
+          <p role="alert" className="text-sm text-stone-200">
             {error}
           </p>
         ) : null}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="min-h-12 w-full rounded-md bg-stone-900 px-4 text-center text-base text-stone-50 disabled:opacity-60"
-        >
+        <button type="submit" disabled={submitting} className={`w-full ${primaryButtonClass}`}>
           {submitting ? "Signing in" : "Sign in"}
         </button>
       </form>
@@ -155,6 +163,7 @@ function SignIn() {
 function SignedInLoop() {
   const [contexts, setContexts] = useState<Context[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [activeThread, setActiveThread] = useState<ActiveThread | null>(null);
   const [dataPhase, setDataPhase] = useState<DataPhase>("loading");
   const [dataError, setDataError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -163,6 +172,10 @@ function SignedInLoop() {
   const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [completeError, setCompleteError] = useState<{ id: string; message: string } | null>(null);
+  const [startingId, setStartingId] = useState<string | null>(null);
+  const [startError, setStartError] = useState<{ id: string; message: string } | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -179,13 +192,15 @@ function SignedInLoop() {
           await client.auth.signOut();
           return;
         }
-        const [loadedContexts, loadedTasks] = await Promise.all([
+        const [loadedContexts, loadedTasks, loadedThread] = await Promise.all([
           loadContexts(client),
           loadOpenTasks(client),
+          loadActiveThread(client),
         ]);
         if (ignore) return;
         setContexts(loadedContexts);
         setTasks(loadedTasks);
+        setActiveThread(loadedThread);
         setDataPhase("ready");
       } catch (error: unknown) {
         if (ignore) return;
@@ -221,16 +236,58 @@ function SignedInLoop() {
     }
   }
 
+  async function onStart(taskId: string) {
+    setStartingId(taskId);
+    setStartError(null);
+    const hadThread = activeThread !== null;
+    try {
+      const established = await establishActiveThread(
+        getSupabaseBrowserClient(),
+        taskId,
+        new Date(),
+      );
+      setActiveThread(established);
+    } catch (error: unknown) {
+      const reason = failureMessage(error, "Could not make this the current thread.");
+      setStartError({
+        id: taskId,
+        message: hadThread ? `${reason} The current thread is unchanged.` : reason,
+      });
+    } finally {
+      setStartingId(null);
+    }
+  }
+
+  async function onLeave() {
+    setLeaving(true);
+    setLeaveError(null);
+    try {
+      await clearActiveThread(getSupabaseBrowserClient());
+      setActiveThread(null);
+    } catch (error: unknown) {
+      setLeaveError(
+        `${failureMessage(error, "Could not leave this thread.")} It is still active.`,
+      );
+    } finally {
+      setLeaving(false);
+    }
+  }
+
   async function onComplete(taskId: string) {
     setCompletingId(taskId);
     setCompleteError(null);
+    const wasActive = activeThread?.taskId === taskId;
     try {
       await completeTask(getSupabaseBrowserClient(), taskId, new Date());
       setTasks((current) => openTasksAfterCompletion(current, taskId));
+      setActiveThread((current) => activeThreadAfterCompletion(current, taskId));
     } catch (error: unknown) {
+      const reason = failureMessage(error, "Could not complete this task.");
       setCompleteError({
         id: taskId,
-        message: failureMessage(error, "Could not complete this task."),
+        message: wasActive
+          ? `${reason} This task is still open, and it is still the current thread.`
+          : `${reason} This task is still open.`,
       });
     } finally {
       setCompletingId(null);
@@ -238,14 +295,15 @@ function SignedInLoop() {
   }
 
   const contextNameById = new Map(contexts.map((context) => [context.id, context.name]));
+  const resume = projectResume({ activeThread, openTasks: tasks });
 
   return (
-    <main className="mx-auto min-h-dvh max-w-lg overflow-x-hidden bg-stone-50 px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-stone-900">
+    <main className={pageClass}>
       <div className="flex justify-end">
         <button
           type="button"
           onClick={() => void onSignOut()}
-          className="min-h-11 px-2 text-sm text-stone-500"
+          className="min-h-11 px-2 text-sm text-stone-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
         >
           Sign out
         </button>
@@ -259,7 +317,7 @@ function SignedInLoop() {
           <button
             type="button"
             onClick={() => setReloadKey((current) => current + 1)}
-            className="mt-4 min-h-12 rounded-md border border-stone-300 bg-white px-4 text-base"
+            className={`mt-4 ${secondaryButtonClass}`}
           >
             Try again
           </button>
@@ -268,7 +326,56 @@ function SignedInLoop() {
 
       {dataPhase === "ready" ? (
         <>
-          <form className="mt-2" onSubmit={(event) => void onCapture(event)}>
+          {resume ? (
+            <section
+              className="mt-2 rounded-md border border-stone-700 bg-stone-900 p-4"
+              aria-labelledby="resume-heading"
+            >
+              <h2 id="resume-heading" className="text-sm font-medium text-stone-400">
+                Resume
+              </h2>
+              <p className="mt-2 break-words text-xl font-medium">{resume.task.title}</p>
+              <p className="mt-1 text-sm text-stone-300">This is what you’re doing.</p>
+              <TaskFacts
+                task={resume.task}
+                contextName={
+                  resume.task.contextId
+                    ? (contextNameById.get(resume.task.contextId) ?? null)
+                    : null
+                }
+              />
+              {completeError?.id === resume.task.id ? (
+                <p role="alert" className="mt-3 text-sm text-stone-200">
+                  {completeError.message}
+                </p>
+              ) : null}
+              {leaveError ? (
+                <p role="alert" className="mt-3 text-sm text-stone-200">
+                  {leaveError}
+                </p>
+              ) : null}
+              <div className="mt-4 flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => void onComplete(resume.task.id)}
+                  disabled={completingId === resume.task.id}
+                  className={primaryButtonClass}
+                >
+                  {completingId === resume.task.id ? "Saving" : "Complete"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void onLeave()}
+                  disabled={leaving}
+                  className={secondaryButtonClass}
+                >
+                  {leaving ? "Saving" : "Leave thread"}
+                </button>
+              </div>
+            </section>
+          ) : null}
+
+          <form className="mt-8" onSubmit={(event) => void onCapture(event)}>
             <label className="block text-xl font-medium tracking-tight" htmlFor="task-title">
               What needs doing?
             </label>
@@ -277,15 +384,15 @@ function SignedInLoop() {
               name="title"
               type="text"
               required
-              autoFocus
+              autoFocus={!resume}
               ref={titleRef}
               value={draft.title}
               onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-              className="mt-3 w-full min-h-12 rounded-md border border-stone-300 bg-white px-3 text-base"
+              className={fieldClass}
             />
 
             <fieldset className="mt-6 space-y-4">
-              <legend className="text-sm text-stone-600">Optional</legend>
+              <legend className="text-sm text-stone-400">Optional</legend>
               <div>
                 <label className="block text-sm font-medium" htmlFor="task-context">
                   Context
@@ -295,7 +402,7 @@ function SignedInLoop() {
                   name="context"
                   value={draft.contextId}
                   onChange={(event) => setDraft({ ...draft, contextId: event.target.value })}
-                  className="mt-1 w-full min-h-12 rounded-md border border-stone-300 bg-white px-3 text-base"
+                  className={fieldClass}
                 >
                   <option value="">None</option>
                   {orderedContexts(contexts).map((context) => (
@@ -309,7 +416,7 @@ function SignedInLoop() {
                 <label className="block text-sm font-medium" htmlFor="task-planned">
                   Planned
                 </label>
-                <p id="task-planned-hint" className="text-sm text-stone-600">
+                <p id="task-planned-hint" className="text-sm text-stone-400">
                   When you intend to work on it.
                 </p>
                 <input
@@ -319,14 +426,14 @@ function SignedInLoop() {
                   aria-describedby="task-planned-hint"
                   value={draft.plannedOn}
                   onChange={(event) => setDraft({ ...draft, plannedOn: event.target.value })}
-                  className="mt-1 w-full min-h-12 rounded-md border border-stone-300 bg-white px-3 text-base"
+                  className={fieldClass}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium" htmlFor="task-due">
                   Due
                 </label>
-                <p id="task-due-hint" className="text-sm text-stone-600">
+                <p id="task-due-hint" className="text-sm text-stone-400">
                   When completion is required.
                 </p>
                 <input
@@ -336,7 +443,7 @@ function SignedInLoop() {
                   aria-describedby="task-due-hint"
                   value={draft.dueOn}
                   onChange={(event) => setDraft({ ...draft, dueOn: event.target.value })}
-                  className="mt-1 w-full min-h-12 rounded-md border border-stone-300 bg-white px-3 text-base"
+                  className={fieldClass}
                 />
               </div>
               <label className="flex min-h-12 items-center gap-3 text-base" htmlFor="task-must-do">
@@ -353,16 +460,12 @@ function SignedInLoop() {
             </fieldset>
 
             {saveError ? (
-              <p role="alert" className="mt-4 text-sm text-stone-800">
+              <p role="alert" className="mt-4 text-sm text-stone-200">
                 {saveError} The draft is still here.
               </p>
             ) : null}
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="mt-6 min-h-12 w-full rounded-md bg-stone-900 px-4 text-center text-base text-stone-50 disabled:opacity-60"
-            >
+            <button type="submit" disabled={saving} className={`mt-6 w-full ${primaryButtonClass}`}>
               {saving ? "Saving" : "Save"}
             </button>
           </form>
@@ -371,31 +474,55 @@ function SignedInLoop() {
             <h1 id="open-tasks-heading" className="text-lg font-medium">
               Open tasks
             </h1>
-            {tasks.length === 0 ? <p className="mt-4 text-stone-700">No open tasks.</p> : null}
+            {tasks.length === 0 ? <p className="mt-4 text-stone-300">No open tasks.</p> : null}
             <ul className="mt-2">
               {tasks.map((task) => {
                 const contextName = task.contextId
                   ? (contextNameById.get(task.contextId) ?? null)
                   : null;
+                const isCurrent = resume?.task.id === task.id;
                 const completionFailed = completeError?.id === task.id;
+                const startFailed = startError?.id === task.id;
                 return (
-                  <li key={task.id} className="border-t border-stone-200 py-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="min-w-0 flex-1 break-words text-base">{task.title}</p>
+                  <li key={task.id} className="border-t border-stone-800 py-4">
+                    <p className="min-w-0 break-words text-base">{task.title}</p>
+                    <TaskFacts task={task} contextName={contextName} />
+                    <div className="mt-3 flex gap-3">
+                      {isCurrent ? (
+                        <p className="flex min-h-11 flex-1 items-center text-sm text-stone-300">
+                          Current thread
+                        </p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => void onStart(task.id)}
+                          disabled={startingId !== null}
+                          aria-describedby={startFailed ? `start-error-${task.id}` : undefined}
+                          className={`flex-1 ${secondaryButtonClass}`}
+                        >
+                          {startingId === task.id ? "Saving" : "Start"}
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => void onComplete(task.id)}
                         disabled={completingId === task.id}
-                        aria-describedby={completionFailed ? `complete-error-${task.id}` : undefined}
-                        className="min-h-11 shrink-0 rounded-md border border-stone-300 bg-white px-3 text-sm disabled:opacity-60"
+                        aria-describedby={
+                          completionFailed ? `complete-error-${task.id}` : undefined
+                        }
+                        className={`flex-1 ${secondaryButtonClass}`}
                       >
                         {completingId === task.id ? "Saving" : "Complete"}
                       </button>
                     </div>
-                    <TaskFacts task={task} contextName={contextName} />
+                    {startFailed ? (
+                      <p id={`start-error-${task.id}`} role="alert" className="mt-2 text-sm">
+                        {startError.message}
+                      </p>
+                    ) : null}
                     {completionFailed ? (
                       <p id={`complete-error-${task.id}`} role="alert" className="mt-2 text-sm">
-                        {completeError.message} This task is still open.
+                        {completeError.message}
                       </p>
                     ) : null}
                   </li>
@@ -420,16 +547,16 @@ function TaskFacts({ task, contextName }: { task: Task; contextName: string | nu
   }
 
   return (
-    <div className="mt-2 space-y-1 text-sm text-stone-700">
+    <div className="mt-2 space-y-1 text-sm text-stone-300">
       {contextName ? (
         <p>
-          <span className="text-stone-500">Context </span>
+          <span className="text-stone-400">Context </span>
           {contextName}
         </p>
       ) : null}
       {dated.map((fact) => (
         <p key={fact.label}>
-          <span className="text-stone-500">{fact.label} </span>
+          <span className="text-stone-400">{fact.label} </span>
           {fact.value}
         </p>
       ))}

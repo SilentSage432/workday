@@ -97,9 +97,11 @@ A defining interaction is:
 
 If life interrupts the user, the thread does not disappear. The product does not detect the interruption and does not need to know why it happened.
 
-"Previous" is not an arbitrary earlier Task. If the user intentionally changes thread, the Active Thread changes. If that thread is completed or explicitly abandoned, it is no longer offered for Resume. Ending a Work shift, or reaching a Block's clock time, does not by itself abandon the thread.
+"Previous" is not an arbitrary earlier Task. If the user intentionally changes thread, the Active Thread changes and the previous Task stays open. If that thread is completed or explicitly left, it is no longer offered for Resume. Ending a Work shift, changing Context, or reaching a Block's clock time does not by itself abandon the thread.
 
-**Unresolved:** which user action establishes the thread; what happens to the prior thread on a switch; how a Task's active/resumable relationship relates to the one Active Thread; and whether more than one Context can retain a suspended thread at the same time.
+V0 establishes the thread with Start on one open Task. Leave thread clears it without completing the Task. The thread is that one relationship. It is not a separate active flag on the Task, and it is not inferred from MUST DO, a planned day, or a due date. The storage decision is [docs/decisions/2026-10-02-active-thread.md](docs/decisions/2026-10-02-active-thread.md).
+
+**Unresolved:** whether more than one Context can retain a suspended thread at the same time. V0 keeps only the one current thread.
 
 ## Reorientation
 
