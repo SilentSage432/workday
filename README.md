@@ -14,11 +14,13 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**ARCHITECTURE-001.** The minimum production architecture is decided and documented. The application is not scaffolded.
+**BOOTSTRAP-001.** A runnable Next.js baseline exists. Product features are not built.
 
-No dependencies are installed. No schema, Supabase project, Vercel project, commit of application code, or push exists from this tranche.
+Supabase is not connected. Vercel is not connected. No database schema exists.
 
-If this architecture is accepted, the next tranche is **BOOTSTRAP-001**.
+The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
+
+The next tranche is the first product vertical slice.
 
 ## Canonical documents
 
