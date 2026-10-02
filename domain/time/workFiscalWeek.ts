@@ -82,6 +82,16 @@ export function formatCivilDate(date: CivilDate): string {
   return `${date.year}-${month}-${day}`;
 }
 
+export function formatCivilDateLabel(value: string): string {
+  const date = parseCivilDate(value);
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(Date.UTC(date.year, date.month - 1, date.day, 12)));
+}
+
 export function parseCivilDate(value: string): CivilDate {
   const match = CIVIL_DATE_TEXT.exec(value);
   if (!match) {

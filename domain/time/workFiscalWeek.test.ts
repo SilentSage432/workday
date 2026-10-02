@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCivilDate, parseCivilDate, workFiscalWeekStart } from "./workFiscalWeek";
+import { formatCivilDate, formatCivilDateLabel, parseCivilDate, workFiscalWeekStart } from "./workFiscalWeek";
 
 describe("workFiscalWeekStart", () => {
   it("starts a Work fiscal week on Saturday", () => {
@@ -30,5 +30,9 @@ describe("parseCivilDate", () => {
   it("accepts a real calendar day and rejects a day that does not exist", () => {
     expect(formatCivilDate(parseCivilDate("2024-02-29"))).toBe("2024-02-29");
     expect(() => parseCivilDate("2026-02-29")).toThrow(/calendar day/);
+  });
+
+  it("labels a civil date without shifting the calendar day", () => {
+    expect(formatCivilDateLabel("2026-10-03")).toBe("Sat, Oct 3");
   });
 });

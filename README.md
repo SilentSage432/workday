@@ -14,13 +14,13 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**DATA-001.** Context and Task are durable in the dedicated Supabase project. Product experience is not built.
+**V0-001.** A signed-in person can capture a Task, see open Tasks, and complete one.
 
 Vercel is not connected. NOW, Timeline, Today, Pulse, and Resume are still projections, not tables.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The next tranche can capture a Task, show it, and complete it.
+The behavior of this slice is in [docs/implementation/V0-001.md](docs/implementation/V0-001.md).
 
 ## Canonical documents
 
@@ -33,6 +33,7 @@ The next tranche can capture a Task, show it, and complete it.
 | [CADENCE.md](CADENCE.md) | The cadence primitive, and the Work cadences discovered so far |
 | [docs/architecture/ARCHITECTURE-001.md](docs/architecture/ARCHITECTURE-001.md) | Minimum production architecture for V0 |
 | [docs/data/DATA-001.md](docs/data/DATA-001.md) | First durable Context and Task schema |
+| [docs/implementation/V0-001.md](docs/implementation/V0-001.md) | First usable sign-in, capture, and completion loop |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |
