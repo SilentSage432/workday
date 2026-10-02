@@ -20,6 +20,20 @@ export type WorkDayFact =
       position: ShiftPosition;
     };
 
+export function scheduledShiftBounds(
+  entry: { workOn: string; startLocal: string; endLocal: string },
+  timeZone: string,
+): { start: Date; end: Date } {
+  const endsNextCivilDate = shiftEndsNextCivilDate(entry.startLocal, entry.endLocal);
+  const endDate = endsNextCivilDate
+    ? addCivilDays(parseCivilDate(entry.workOn), 1)
+    : parseCivilDate(entry.workOn);
+  return {
+    start: instantFromZonedLocal(entry.workOn, entry.startLocal, timeZone),
+    end: instantFromZonedLocal(formatCivilDate(endDate), entry.endLocal, timeZone),
+  };
+}
+
 export function projectWorkDay(input: {
   entry: WorkScheduleEntry | null;
   timeZone: string;
@@ -33,11 +47,7 @@ export function projectWorkDay(input: {
   }
 
   const endsNextCivilDate = shiftEndsNextCivilDate(input.entry.startLocal, input.entry.endLocal);
-  const endDate = endsNextCivilDate
-    ? addCivilDays(parseCivilDate(input.entry.workOn), 1)
-    : parseCivilDate(input.entry.workOn);
-  const start = instantFromZonedLocal(input.entry.workOn, input.entry.startLocal, input.timeZone);
-  const end = instantFromZonedLocal(formatCivilDate(endDate), input.entry.endLocal, input.timeZone);
+  const { start, end } = scheduledShiftBounds(input.entry, input.timeZone);
   const at = input.instant.getTime();
 
   let position: ShiftPosition = "after";

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { WorkOrientationView } from "@/components/WorkOrientation";
 import { WorkSchedule } from "@/components/WorkSchedule";
 import { activeThreadAfterCompletion, type ActiveThread } from "@/domain/activeThread";
 import { CANONICAL_CONTEXT_NAMES, type Context } from "@/domain/context";
@@ -16,8 +18,16 @@ import {
   type CaptureSession,
 } from "@/domain/capture";
 import type { Task } from "@/domain/task";
-import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
+import {
+  addCivilDays,
+  civilDateInTimeZone,
+  formatCivilDate,
+  formatCivilDateLabel,
+  parseCivilDate,
+} from "@/domain/time/workFiscalWeek";
+import type { WorkScheduleEntry } from "@/domain/workSchedule";
 import { projectResume } from "@/projections/resume";
+import { projectWorkOrientation } from "@/projections/workOrientation";
 import { clearActiveThread, establishActiveThread, loadActiveThread } from "@/persistence/activeThread";
 import {
   completeTask,
@@ -26,6 +36,7 @@ import {
   loadOpenTasks,
 } from "@/persistence/contextsAndTasks";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
+import { loadTemporalSettings, loadWorkSchedule } from "@/persistence/workSchedule";
 
 type SessionPhase = "loading" | "signed-out" | "signed-in";
 type DataPhase = "loading" | "ready" | "error";
@@ -60,6 +71,25 @@ function signInFailureMessage(message: string): string {
 
 function failureMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
+}
+
+function entryOn(entries: WorkScheduleEntry[], workOn: string): WorkScheduleEntry | null {
+  return entries.find((entry) => entry.workOn === workOn) ?? null;
+}
+
+async function readWorkWindow(client: SupabaseClient): Promise<{
+  timeZone: string | null;
+  entries: WorkScheduleEntry[];
+}> {
+  const settings = await loadTemporalSettings(client);
+  if (!settings) {
+    return { timeZone: null, entries: [] };
+  }
+  const now = new Date();
+  const today = formatCivilDate(civilDateInTimeZone(now, settings.timeZone));
+  const yesterday = formatCivilDate(addCivilDays(parseCivilDate(today), -1));
+  const entries = await loadWorkSchedule(client, yesterday, today);
+  return { timeZone: settings.timeZone, entries };
 }
 
 export function TaskLoop() {
@@ -174,6 +204,10 @@ function SignedInLoop() {
   const [reloadKey, setReloadKey] = useState(0);
   const [capture, setCapture] = useState<CaptureSession>(initialCaptureSession);
   const [surface, setSurface] = useState<"tasks" | "schedule">("tasks");
+  const [timeZone, setTimeZone] = useState<string | null>(null);
+  const [workEntries, setWorkEntries] = useState<WorkScheduleEntry[]>([]);
+  const [workNotice, setWorkNotice] = useState<string | null>(null);
+  const [workReload, setWorkReload] = useState(0);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
@@ -208,6 +242,18 @@ function SignedInLoop() {
         setTasks(loadedTasks);
         setActiveThread(loadedThread);
         setDataPhase("ready");
+        try {
+          const window = await readWorkWindow(client);
+          if (ignore) return;
+          setTimeZone(window.timeZone);
+          setWorkEntries(window.entries);
+          setWorkNotice(null);
+        } catch (error: unknown) {
+          if (ignore) return;
+          setTimeZone(null);
+          setWorkEntries([]);
+          setWorkNotice(failureMessage(error, "Could not load today's Work schedule."));
+        }
       } catch (error: unknown) {
         if (ignore) return;
         setDataError(failureMessage(error, "Could not load tasks."));
@@ -226,6 +272,32 @@ function SignedInLoop() {
       titleRef.current?.focus();
     }
   }, [capture.open]);
+
+  useEffect(() => {
+    if (workReload === 0) return;
+    const client = getSupabaseBrowserClient();
+    let ignore = false;
+
+    async function refreshWork() {
+      try {
+        const window = await readWorkWindow(client);
+        if (ignore) return;
+        setTimeZone(window.timeZone);
+        setWorkEntries(window.entries);
+        setWorkNotice(null);
+      } catch (error: unknown) {
+        if (ignore) return;
+        setTimeZone(null);
+        setWorkEntries([]);
+        setWorkNotice(failureMessage(error, "Could not load today's Work schedule."));
+      }
+    }
+
+    void refreshWork();
+    return () => {
+      ignore = true;
+    };
+  }, [workReload]);
 
   async function onSignOut() {
     await getSupabaseBrowserClient().auth.signOut();
@@ -310,6 +382,22 @@ function SignedInLoop() {
 
   const contextNameById = new Map(contexts.map((context) => [context.id, context.name]));
   const resume = projectResume({ activeThread, openTasks: tasks });
+  const observedAt = new Date();
+  const workOrientation =
+    timeZone && !workNotice
+      ? projectWorkOrientation({
+          instant: observedAt,
+          timeZone,
+          todayEntry: entryOn(
+            workEntries,
+            formatCivilDate(civilDateInTimeZone(observedAt, timeZone)),
+          ),
+          previousEntry: entryOn(
+            workEntries,
+            formatCivilDate(addCivilDays(civilDateInTimeZone(observedAt, timeZone), -1)),
+          ),
+        })
+      : null;
 
   return (
     <main className={pageClass}>
@@ -317,7 +405,10 @@ function SignedInLoop() {
         {dataPhase === "ready" && surface === "schedule" ? (
           <button
             type="button"
-            onClick={() => setSurface("tasks")}
+            onClick={() => {
+              setSurface("tasks");
+              setWorkReload((current) => current + 1);
+            }}
             className="min-h-11 px-2 text-sm text-stone-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
           >
             Tasks
@@ -408,6 +499,13 @@ function SignedInLoop() {
                 </button>
               </div>
             </section>
+          ) : null}
+
+          {workOrientation ? <WorkOrientationView orientation={workOrientation} /> : null}
+          {workNotice ? (
+            <p className="mt-6 text-sm text-stone-300" role="status">
+              {workNotice}
+            </p>
           ) : null}
 
           <div className="mt-8">

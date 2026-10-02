@@ -14,13 +14,13 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**V0-003.** A signed-in person can resume one Active Thread, capture a Task when they ask to, and enter a personal Work schedule.
+**V0-004.** A signed-in person can resume one Active Thread, capture a Task when they ask to, enter a personal Work schedule, and see where the current moment sits in that Work day.
 
-NOW, Timeline, Today, Pulse, and Work cadence are still not built. Resume and the Work-day facts are projections. They are not tables.
+NOW, Timeline, Today, and Pulse are still not built. Resume and Work orientation are projections. They are not tables.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The behavior of this slice is in [docs/implementation/V0-003.md](docs/implementation/V0-003.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) and [docs/implementation/V0-002.md](docs/implementation/V0-002.md).
+The behavior of this slice is in [docs/implementation/V0-004.md](docs/implementation/V0-004.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md), [docs/implementation/V0-002.md](docs/implementation/V0-002.md), and [docs/implementation/V0-003.md](docs/implementation/V0-003.md).
 
 ## Canonical documents
 
@@ -36,6 +36,7 @@ The behavior of this slice is in [docs/implementation/V0-003.md](docs/implementa
 | [docs/implementation/V0-001.md](docs/implementation/V0-001.md) | First usable sign-in, capture, and completion loop |
 | [docs/implementation/V0-002.md](docs/implementation/V0-002.md) | Active Thread and Resume |
 | [docs/implementation/V0-003.md](docs/implementation/V0-003.md) | Quiet Capture and the Work schedule |
+| [docs/implementation/V0-004.md](docs/implementation/V0-004.md) | Deterministic Work orientation |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |

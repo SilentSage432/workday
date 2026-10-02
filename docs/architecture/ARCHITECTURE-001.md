@@ -91,7 +91,7 @@ The snapshot may include current time only via the clock, plus Contexts, Commitm
 
 The engine must not:
 
-- call an AI or LLM
+- call an AI or LLM. This exclusion is an architectural constraint, recorded in [../decisions/2026-10-02-deterministic-intelligence.md](../decisions/2026-10-02-deterministic-intelligence.md). It is not a V0 deferral.
 - invent meaning for unparsed speech
 - write or mutate source truth because time passed
 - mark a target or an objective as a deadline

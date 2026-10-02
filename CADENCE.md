@@ -33,6 +33,8 @@ Then:
 
 Then manager work and department responsibilities as available.
 
+V0-004 records the 10:00 intended-before boundary as a fact while an Opening shift contains the supplied instant. It does not encode the approximate 11:00 expectation, and passing 10:00 does not mean the replenishment is unfinished. See [docs/implementation/V0-004.md](docs/implementation/V0-004.md).
+
 After lunch, and later in the day, conditions become more fluid:
 
 - customer support

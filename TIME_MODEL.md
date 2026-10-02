@@ -65,7 +65,7 @@ Named positions:
 - final hour
 - closeout
 
-The Work schedule supplies today's start, end, and shift type. See [PRODUCT.md](PRODUCT.md). V0-003 stores those facts and can say whether a supplied instant is before, during, or after the entered bounds. It does not define the phase boundaries below. Remaining shift time is a Work fact NOW should eventually be able to reflect while that shift is underway.
+The Work schedule supplies today's start, end, and shift type. See [PRODUCT.md](PRODUCT.md). V0-003 stores those facts. V0-004 can say whether a supplied instant is before, during, or after the operative shift, including a shift that continues after midnight. It does not define the phase boundaries below. Remaining shift time is a Work fact NOW should eventually be able to reflect while that shift is underway.
 
 **Unresolved:** the boundaries of these positions. No durations or clock times are defined for them. "Lunch" has no established time. These labels are a Work form of relative position, not a required shape for every Context.
 
@@ -77,7 +77,7 @@ Known period:
 
 **Power Hour, 10:00 AM → 2:00 PM.**
 
-Power Hour is a Work Window. It is not a universal system Window. During Power Hour the intended Work condition is customer focus rather than task focus. Tasks do not disappear during Power Hour. The Active Thread remains, and the product can offer Resume when the user becomes available.
+Power Hour is a Work Window. It is not a universal system Window. During Power Hour the intended Work condition is customer focus rather than task focus. Tasks do not disappear during Power Hour. The Active Thread remains, and the product can offer Resume when the user becomes available. V0-004 projects that Window as before, during, or after on the civil date of a supplied instant. It does not clear the thread when the Window begins.
 
 ### Week clock
 

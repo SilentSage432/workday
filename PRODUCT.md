@@ -161,11 +161,11 @@ Conceptual shape:
 
 This example is partial. It does not make Monday the user's universal week. Inside Work, the Lowe's fiscal week begins Saturday. That fact does not redefine any other calendar. See [TIME_MODEL.md](TIME_MODEL.md).
 
-Opening, Mid, and Closing remain meaningful. The user chooses the type. It is not inferred from the clock. The discovered Work cadence may participate in orientation later. V0 does not project that cadence yet. See [CADENCE.md](CADENCE.md).
+Opening, Mid, and Closing remain meaningful. The user chooses the type. It is not inferred from the clock. V0-004 can name the operative shift and, during an Opening shift, whether the FSR intended-before boundary is still ahead. It does not turn cadence steps into Tasks, and it does not sequence Mid or Closing. See [CADENCE.md](CADENCE.md) and [docs/implementation/V0-004.md](docs/implementation/V0-004.md).
 
 The entry surface is one Work fiscal week at a time. Each civil date is either not entered, Off, or one scheduled shift. Off is not the same fact as a date with nothing entered. A confirmed IANA time zone interprets the local times. The storage decision is [docs/decisions/2026-10-02-work-schedule.md](docs/decisions/2026-10-02-work-schedule.md).
 
-From the schedule, while the user is in Work, the product should eventually understand shift start, shift end, shift type, remaining shift time, which Work cadence applies, and which Work windows intersect the shift. V0-003 can say whether a supplied instant is before, during, or after the entered bounds. It does not yet say which cadence applies.
+From the schedule, while the user is in Work, the product should eventually understand shift start, shift end, shift type, remaining shift time, which Work cadence applies, and which Work windows intersect the shift. V0-004 says the operative position, the Power Hour state, and the next established boundary. Remaining shift time, and any cadence step beyond the FSR boundary, are still not projected.
 
 **Unresolved:** how a shift boundary meets the rest of that day, and any schedule fact beyond the date, the local bounds, the explicit shift type, and Off.
 
