@@ -24,7 +24,9 @@ This list is not a finished model. It does not create a universal week, a univer
 
 Commitments, Blocks, reminders, and external calendar facts are further temporal facts. They are defined in [DOMAIN.md](DOMAIN.md). Timeline composes a day's shape from them without erasing their differences. See [PRODUCT.md](PRODUCT.md).
 
-**Unresolved:** which of these facts are universal and which exist only inside a Context; what constitutes a day; how system-level Today interacts with a Context cadence; and how a Work shift's start and end interact with the rest of that day.
+The civil day used by Today is the calendar date of a supplied instant in the confirmed IANA time zone. It is not the UTC date and not the server's local date. A browser suggestion is not that confirmed zone.
+
+**Unresolved:** which of these facts are universal and which exist only inside a Context; what constitutes a day beyond that confirmed civil date; how system-level Today interacts with a Context cadence; and how a Work shift's start and end interact with the rest of that day.
 
 ## Obligated and chosen time
 

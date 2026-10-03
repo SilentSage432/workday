@@ -17,7 +17,7 @@ Notes, Blocks, Commitments, Active Thread, recurring obligations, occurrences, r
 
 Active Thread storage came later, in [../implementation/V0-002.md](../implementation/V0-002.md). The Work schedule and confirmed time zone came later, in [../implementation/V0-003.md](../implementation/V0-003.md). V0-004 added no table. Power Hour and the FSR boundary are constants. V0-004B adds `save_work_week`, one transaction for the changed days of a visible Work week. It does not add a table. This document describes only the Context and Task schema.
 
-NOW, Timeline, Today, Pulse, and Resume are projections. They are not tables. Queries do not order Tasks by what deserves attention.
+NOW, Timeline, Today, Pulse, and Resume are projections. They are not tables. Queries do not order Tasks by what deserves attention. V0-005 does not add a column or a table. Today is the open Tasks whose `planned_on` is the confirmed civil date.
 
 ## Schema
 

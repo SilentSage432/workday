@@ -115,7 +115,7 @@ Work cadence steps and Work windows such as Power Hour are constants in the doma
 | --- | --- |
 | Task, Note, Block, user-owned Commitment, Context, Active Thread, Recurring Obligation, completed or explicitly activated occurrence, Shift pattern, reminder, provenance, Work window and cadence constants | NOW, Today, Timeline, Pulse, Resume presentation, shift-relative position |
 
-NOW is not a table. Timeline is not a table. Today is the set of tasks whose planned day is the operational date under consideration, not a stored bucket and not the Timeline.
+NOW is not a table. Timeline is not a table. Today is the set of tasks whose planned day is the operational date under consideration, not a stored bucket and not the Timeline. In V0-005 that date is the civil date of a supplied instant in the confirmed IANA time zone.
 
 A Work shift is stored as a shift pattern. The projection may present that interval beside Commitments. It does not convert the shift row into a Commitment row. That storage question from FOUNDATION-003 stays open, and this choice avoids answering it by collapsing the tables.
 

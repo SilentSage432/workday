@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useCapture } from "@/components/AppFrame";
 import { CapturePanel } from "@/components/CapturePanel";
+import { TaskFacts } from "@/components/TaskFacts";
+import { OpenTaskPlanButton, TodayPlan, type TodayZoneStatus } from "@/components/TodayPlan";
 import { WorkOrientationView } from "@/components/WorkOrientation";
 import { activeThreadAfterCompletion, type ActiveThread } from "@/domain/activeThread";
 import { CANONICAL_CONTEXT_NAMES, type Context } from "@/domain/context";
@@ -18,11 +20,11 @@ import {
   addCivilDays,
   civilDateInTimeZone,
   formatCivilDate,
-  formatCivilDateLabel,
   parseCivilDate,
 } from "@/domain/time/workFiscalWeek";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
 import { projectResume } from "@/projections/resume";
+import { projectTodayTasks } from "@/projections/today";
 import { projectWorkOrientation } from "@/projections/workOrientation";
 import { clearActiveThread, establishActiveThread, loadActiveThread } from "@/persistence/activeThread";
 import {
@@ -30,6 +32,7 @@ import {
   createTask,
   loadContexts,
   loadOpenTasks,
+  updateTask,
 } from "@/persistence/contextsAndTasks";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import { loadTemporalSettings, loadWorkSchedule } from "@/persistence/workSchedule";
@@ -61,19 +64,14 @@ function entryOn(entries: WorkScheduleEntry[], workOn: string): WorkScheduleEntr
   return entries.find((entry) => entry.workOn === workOn) ?? null;
 }
 
-async function readWorkWindow(client: SupabaseClient): Promise<{
-  timeZone: string | null;
-  entries: WorkScheduleEntry[];
-}> {
-  const settings = await loadTemporalSettings(client);
-  if (!settings) {
-    return { timeZone: null, entries: [] };
-  }
+async function readWorkWindow(
+  client: SupabaseClient,
+  timeZone: string,
+): Promise<WorkScheduleEntry[]> {
   const now = new Date();
-  const today = formatCivilDate(civilDateInTimeZone(now, settings.timeZone));
+  const today = formatCivilDate(civilDateInTimeZone(now, timeZone));
   const yesterday = formatCivilDate(addCivilDays(parseCivilDate(today), -1));
-  const entries = await loadWorkSchedule(client, yesterday, today);
-  return { timeZone: settings.timeZone, entries };
+  return loadWorkSchedule(client, yesterday, today);
 }
 
 export function TaskLoop() {
@@ -84,6 +82,7 @@ export function TaskLoop() {
   const [dataError, setDataError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const { session: capture, update: setCapture } = useCapture();
+  const [zoneStatus, setZoneStatus] = useState<TodayZoneStatus>("unconfirmed");
   const [timeZone, setTimeZone] = useState<string | null>(null);
   const [workEntries, setWorkEntries] = useState<WorkScheduleEntry[]>([]);
   const [workNotice, setWorkNotice] = useState<string | null>(null);
@@ -93,6 +92,8 @@ export function TaskLoop() {
   const [completeError, setCompleteError] = useState<{ id: string; message: string } | null>(null);
   const [startingId, setStartingId] = useState<string | null>(null);
   const [startError, setStartError] = useState<{ id: string; message: string } | null>(null);
+  const [planningId, setPlanningId] = useState<string | null>(null);
+  const [planError, setPlanError] = useState<{ id: string; message: string } | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -120,19 +121,37 @@ export function TaskLoop() {
         setContexts(loadedContexts);
         setTasks(loadedTasks);
         setActiveThread(loadedThread);
-        setDataPhase("ready");
         try {
-          const window = await readWorkWindow(client);
+          const settings = await loadTemporalSettings(client);
           if (ignore) return;
-          setTimeZone(window.timeZone);
-          setWorkEntries(window.entries);
-          setWorkNotice(null);
-        } catch (error: unknown) {
+          if (!settings) {
+            setZoneStatus("unconfirmed");
+            setTimeZone(null);
+            setWorkEntries([]);
+            setWorkNotice(null);
+          } else {
+            setZoneStatus("confirmed");
+            setTimeZone(settings.timeZone);
+            try {
+              const entries = await readWorkWindow(client, settings.timeZone);
+              if (ignore) return;
+              setWorkEntries(entries);
+              setWorkNotice(null);
+            } catch (error: unknown) {
+              if (ignore) return;
+              setWorkEntries([]);
+              setWorkNotice(failureMessage(error, "Could not load today's Work schedule."));
+            }
+          }
+        } catch {
           if (ignore) return;
+          setZoneStatus("unavailable");
           setTimeZone(null);
           setWorkEntries([]);
-          setWorkNotice(failureMessage(error, "Could not load today's Work schedule."));
+          setWorkNotice(null);
         }
+        if (ignore) return;
+        setDataPhase("ready");
       } catch (error: unknown) {
         if (ignore) return;
         setDataError(failureMessage(error, "Could not load tasks."));
@@ -208,6 +227,22 @@ export function TaskLoop() {
     }
   }
 
+  async function onSetPlanned(taskId: string, plannedOn: string | null) {
+    setPlanningId(taskId);
+    setPlanError(null);
+    try {
+      const updated = await updateTask(getSupabaseBrowserClient(), taskId, { plannedOn });
+      setTasks((current) => current.map((task) => (task.id === taskId ? updated : task)));
+    } catch (error: unknown) {
+      setPlanError({
+        id: taskId,
+        message: `${failureMessage(error, "Could not change this plan.")} The planned day is unchanged.`,
+      });
+    } finally {
+      setPlanningId(null);
+    }
+  }
+
   async function onComplete(taskId: string) {
     setCompletingId(taskId);
     setCompleteError(null);
@@ -230,8 +265,18 @@ export function TaskLoop() {
   }
 
   const contextNameById = new Map(contexts.map((context) => [context.id, context.name]));
+  const contextName = (contextId: string | null) =>
+    contextId ? (contextNameById.get(contextId) ?? null) : null;
   const resume = projectResume({ activeThread, openTasks: tasks });
   const observedAt = new Date();
+  const civilDate =
+    zoneStatus === "confirmed" && timeZone
+      ? formatCivilDate(civilDateInTimeZone(observedAt, timeZone))
+      : null;
+  const todayTasks = civilDate ? projectTodayTasks({ openTasks: tasks, civilDate }) : [];
+  const otherOpenTasks = civilDate
+    ? tasks.filter((task) => task.plannedOn !== civilDate)
+    : tasks;
   const workOrientation =
     timeZone && !workNotice
       ? projectWorkOrientation({
@@ -277,14 +322,7 @@ export function TaskLoop() {
               </h2>
               <p className="mt-2 break-words text-xl font-medium">{resume.task.title}</p>
               <p className="mt-1 text-sm text-stone-300">This is what you’re doing.</p>
-              <TaskFacts
-                task={resume.task}
-                contextName={
-                  resume.task.contextId
-                    ? (contextNameById.get(resume.task.contextId) ?? null)
-                    : null
-                }
-              />
+              <TaskFacts task={resume.task} contextName={contextName(resume.task.contextId)} />
               {completeError?.id === resume.task.id ? (
                 <p role="alert" className="mt-3 text-sm text-stone-200">
                   {completeError.message}
@@ -323,6 +361,23 @@ export function TaskLoop() {
             </p>
           ) : null}
 
+          <TodayPlan
+            zoneStatus={zoneStatus}
+            civilDate={civilDate}
+            tasks={todayTasks}
+            contextName={contextName}
+            activeTaskId={resume?.task.id ?? null}
+            planningId={planningId}
+            planError={planError}
+            completingId={completingId}
+            completeError={completeError}
+            startingId={startingId}
+            startError={startError}
+            onPlan={(taskId, plannedOn) => void onSetPlanned(taskId, plannedOn)}
+            onStart={(taskId) => void onStart(taskId)}
+            onComplete={(taskId) => void onComplete(taskId)}
+          />
+
           <div className="mt-8">
             <CapturePanel
               session={capture}
@@ -339,19 +394,20 @@ export function TaskLoop() {
             <h1 id="open-tasks-heading" className="text-lg font-medium">
               Open tasks
             </h1>
-            {tasks.length === 0 ? <p className="mt-4 text-stone-300">No open tasks.</p> : null}
+            {otherOpenTasks.length === 0 ? (
+              <p className="mt-4 text-stone-300">
+                {tasks.length === 0 ? "No open tasks." : "Every open task is planned today."}
+              </p>
+            ) : null}
             <ul className="mt-2">
-              {tasks.map((task) => {
-                const contextName = task.contextId
-                  ? (contextNameById.get(task.contextId) ?? null)
-                  : null;
+              {otherOpenTasks.map((task) => {
                 const isCurrent = resume?.task.id === task.id;
                 const completionFailed = completeError?.id === task.id;
                 const startFailed = startError?.id === task.id;
                 return (
                   <li key={task.id} className="border-t border-stone-800 py-4">
                     <p className="min-w-0 break-words text-base">{task.title}</p>
-                    <TaskFacts task={task} contextName={contextName} />
+                    <TaskFacts task={task} contextName={contextName(task.contextId)} />
                     <div className="mt-3 flex gap-3">
                       {isCurrent ? (
                         <p className="flex min-h-11 flex-1 items-center text-sm text-stone-300">
@@ -380,6 +436,18 @@ export function TaskLoop() {
                         {completingId === task.id ? "Saving" : "Complete"}
                       </button>
                     </div>
+                    <OpenTaskPlanButton
+                      task={task}
+                      civilDate={civilDate}
+                      pending={planningId === task.id}
+                      disabled={planningId !== null}
+                      onPlan={(taskId, plannedOn) => void onSetPlanned(taskId, plannedOn)}
+                    />
+                    {planError?.id === task.id ? (
+                      <p role="alert" className="mt-2 text-sm">
+                        {planError.message}
+                      </p>
+                    ) : null}
                     {startFailed ? (
                       <p id={`start-error-${task.id}`} role="alert" className="mt-2 text-sm">
                         {startError.message}
@@ -398,34 +466,5 @@ export function TaskLoop() {
         </>
       ) : null}
     </main>
-  );
-}
-
-function TaskFacts({ task, contextName }: { task: Task; contextName: string | null }) {
-  const dated = [
-    task.plannedOn ? { label: "Planned", value: formatCivilDateLabel(task.plannedOn) } : null,
-    task.dueOn ? { label: "Due", value: formatCivilDateLabel(task.dueOn) } : null,
-  ].filter((fact) => fact !== null);
-
-  if (!contextName && dated.length === 0 && !task.mustDo) {
-    return null;
-  }
-
-  return (
-    <div className="mt-2 space-y-1 text-sm text-stone-300">
-      {contextName ? (
-        <p>
-          <span className="text-stone-400">Context </span>
-          {contextName}
-        </p>
-      ) : null}
-      {dated.map((fact) => (
-        <p key={fact.label}>
-          <span className="text-stone-400">{fact.label} </span>
-          {fact.value}
-        </p>
-      ))}
-      {task.mustDo ? <p>Must do</p> : null}
-    </div>
   );
 }

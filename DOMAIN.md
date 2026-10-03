@@ -133,7 +133,7 @@ A Task may have:
 
 These facts stay independent. Planned is not due. A Task may be due Thursday and planned for Monday. Changing the planned day or period must not silently change the due boundary.
 
-Today is not a Task type. It is intentional temporal commitment. It is not every unresolved Task, and it is not the Timeline. See [PRODUCT.md](PRODUCT.md).
+Today is not a Task type. It means this open Task is deliberately planned for the user's current civil day: `plannedOn` equals that date. It is not every unresolved Task, and it is not the Timeline. Due, Must Do, and Active Thread stay independent of it. See [PRODUCT.md](PRODUCT.md).
 
 MUST DO is `mustDo` true or false. The user sets it. It is not a priority score, a task state, or a separate bucket. While set, the Task stays prominent until the user completes, reschedules, or removes it. DATA-001 stores that flag, a civil due date, a separate civil planned day, and a completion instant. A time-of-day due instant is not stored. See [docs/data/DATA-001.md](docs/data/DATA-001.md).
 

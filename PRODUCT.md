@@ -136,7 +136,7 @@ The user may later convert a Note into a Task only by explicit intent. The Task 
 
 **Unresolved:** which originating information must be kept; whether a Task or Note can belong to one Context, to more than one, or span Contexts. Absence of a Context remains representable.
 
-Today is intentional temporal commitment for the current day. It does not automatically collect every unresolved Task. In the Work discovery, that commitment was described as the workday or shift. Today is not identical to a Shift. What a day is, and how Today meets a Context cadence, is unresolved.
+Today means this Task is deliberately planned for the user's current civil day. That relationship is `planned_on` equal to the civil date of a supplied instant in the confirmed IANA time zone. It is not stored separately. Due, Must Do, Active Thread, and the day the Task was created do not establish it. It is not priority, and it does not reserve time. In the Work discovery, that commitment was described as the workday or shift. Today is not identical to a Shift. How Today meets a Context cadence remains unresolved. See [docs/implementation/V0-005.md](docs/implementation/V0-005.md).
 
 Planned and due stay independent. A Task may be due Thursday and planned for Monday. Changing the plan must not silently change the due boundary.
 
