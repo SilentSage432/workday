@@ -36,7 +36,7 @@ A Commitment is the fixed or externally constrained case. A Block is the chosen 
 
 Obligated does not mean more important. Chosen does not mean optional. The user establishes what deserves protection. Protected time with the user's children is not a checklist and is not a lesser kind of time because nobody else imposed it.
 
-Availability is established, not assumed. Unscheduled time must not automatically be interpreted as allocatable time. Protected Time is the part of that model this product stores now: time the user has deliberately made unavailable for allocation. It is not a statement that the rest of the day is free.
+Availability is established, not assumed. Unscheduled time must not automatically be interpreted as allocatable time. Protected Time is time the user has deliberately made unavailable for allocation. It is not a statement that the rest of the day is free. A Block is a separate fact: time the user has chosen a purpose for. It does not make that time protected, and it does not calculate what remains.
 
 If a Block's clock time arrives and life is different, the user remains authoritative. The product favors Start, Resume, Adjust, and Skip over judgment. Exact effects of Start, Adjust, and Skip are not defined. Resume is defined in [PRODUCT.md](PRODUCT.md).
 

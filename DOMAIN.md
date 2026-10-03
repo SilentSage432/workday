@@ -76,17 +76,21 @@ A Commitment is not necessarily a Task. It may come from an external source. Man
 
 ## Block
 
-A Block is time the user deliberately reserves.
+A Block is time the user has deliberately chosen a purpose for.
 
 > I have chosen what this time is for.
 
-Examples: protected family time, TeamLab build time, budgeting time, and an entire day reserved for a chosen purpose.
+The purpose is the user's words, at most 80 characters. It is required. It is not a category, a productivity score, or a copy of a Context name.
 
-A Block may have a start and end, may span an entire day, may relate to a Context, and may have Tasks associated with it. It does not require Tasks. It does not require a productivity outcome.
+An optional Context says which area of life the Block belongs to. TeamLab and "Work on Studio" are different facts. A Block without a Context is valid. V0 does not store a Task on a Block, and a Block does not require an outcome.
 
-Protected time with the user's children is not a checklist. Chosen time is not less important because it was not externally imposed.
+A Block is not Protected Time. Protected Time means the time is unavailable for allocation. A Block means the user chose what the time is for. Creating, editing, or removing one does not change the other. They may overlap. A Block is not a Work shift, not Today, and not a Commitment.
 
-**Unresolved:** what Start, Adjust, and Skip change when a Block and the lived day differ. The user remains authoritative. See [PRODUCT.md](PRODUCT.md).
+An all-day Block is one civil date. A timed Block is a local start and local end on a civil date, read in the confirmed IANA time zone. If the end is earlier than or equal to the start, the Block continues into the next civil date and no further. A later change of the confirmed zone reinterprets those local times. The decision is [docs/decisions/2026-10-02-blocks.md](docs/decisions/2026-10-02-blocks.md).
+
+Chosen time is not less important because nobody else imposed it.
+
+**Unresolved:** what Start, Adjust, and Skip change when a Block and the lived day differ. Whether a later version associates Tasks with a Block remains open. The user remains authoritative. See [PRODUCT.md](PRODUCT.md).
 
 ## Protected Time
 
@@ -219,8 +223,8 @@ Objective in this table is a temporal meaning, not an extra primitive. Timeline 
 | Work schedule | states boundaries and type of | Shift |
 | Shift | is fixed employment time and may be represented as | Commitment |
 | Shift type | selects | a Work cadence |
-| Block | is chosen time and may relate to | a Context |
-| Block | may have, and does not require | Tasks |
+| Block | is chosen purpose and may relate to | a Context |
+| Block | is not required to contain, and V0 does not store | a Task |
 | External temporal source | may supply, with provenance | Commitment |
 | Google Calendar | is the first identified | external temporal source |
 | Capture | may produce | Task or Note |

@@ -173,6 +173,8 @@ From the schedule, while the user is in Work, the product should eventually unde
 
 Protected Time is time the user has deliberately made unavailable for allocation. Protected does not mean occupied. It is not Work Off, not a Task plan, and not a claim that any remaining hour is free. The Schedule surface can show it beside the Work week without making it a Work setting. See [docs/implementation/V0-006.md](docs/implementation/V0-006.md).
 
+A Block is time the user has deliberately chosen a purpose for. It is not Protected Time, and neither changes the other. See [docs/implementation/V0-007.md](docs/implementation/V0-007.md).
+
 ## Reminders
 
 A reminder is an explicit attention point the user establishes. Caregiving examples the user named are pod-change reminders, Dexcom-related reminders, and doctor appointments. Appointments are Commitments. The reminders are not medical advice. The product must not interpret device data, change care timing, or infer urgency. An external calendar event is not automatically a reminder.
