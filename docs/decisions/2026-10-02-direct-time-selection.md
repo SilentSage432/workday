@@ -23,7 +23,9 @@ The timed column scrolls. A vertical finger movement can mean scroll or selectio
 
 A tap, or a press that does not move onto another boundary, selects one snapping increment: 15 minutes. Nothing is persisted, so the tap does not create a fact.
 
-The timed surface receives the gesture, including where a fact is drawn. Timed facts are not pointer targets in this tranche. Their accessible names stay in the tree. The all-day region is not selectable. There is no "select whole day" action and no all-day creation.
+The timed surface receives the gesture, including where a fact is drawn. Timed facts are not pointer targets. Their accessible names stay in the tree. The all-day region is not selectable. There is no "select whole day" action and no all-day creation.
+
+Phone use after a fact was established showed that painting the fact and being able to refer to that time are separate. Domain overlap can be legal while the painted region still swallows the touch. The correction is interaction only: a transparent layer above the paint receives the pointer, and the facts remain read-only. Established temporal truth must not make its underlying temporal territory unreachable. That does not decide how a later gesture would talk about the fact itself. See [../implementation/V0-013A.md](../implementation/V0-013A.md).
 
 There is no edge auto-scroll. A drag is clamped to the visible intersection of the timed surface and the 28rem scrollport. Hours that are scrolled out of view are not selected until the user scrolls to them.
 

@@ -1086,3 +1086,193 @@ describe("establishing selected temporal truth", () => {
     expect(ordinarySink).toHaveLength(1);
   });
 });
+
+function article(container: HTMLElement, kind: string) {
+  const node = container.querySelector<HTMLElement>(`article[data-source-kind="${kind}"]`);
+  if (!node) throw new Error(`Missing ${kind}`);
+  return node;
+}
+
+function paint(node: HTMLElement) {
+  return {
+    start: node.dataset.startMinute ?? "",
+    end: node.dataset.endMinute ?? "",
+    label: node.getAttribute("aria-label"),
+    text: node.textContent,
+  };
+}
+
+function touchAt(surface: HTMLElement, minute: number, pointerId: number, type: "pointerdown" | "pointermove" | "pointerup") {
+  const target = type === "pointerdown" ? surface : window;
+  pointer(target, type, { pointerId, pointerType: "touch", clientX: 48, clientY: minute });
+}
+
+describe("temporal reachability through established truth", () => {
+  function occupied() {
+    return renderCanvas({ model: modelFor(day, zone, true) });
+  }
+
+  it("puts the time surface above painted facts and leaves those facts read-only", () => {
+    const view = occupied();
+    const column = view.container.querySelector("[data-time-column]");
+    expect(column?.lastElementChild).toBe(view.surface);
+    expect(view.surface.className).toContain("pointer-events-auto");
+    expect(view.surface.className).toContain("z-[21]");
+    expect(view.surface.className).toContain("touch-pan-y");
+    expect(view.surface.getAttribute("aria-hidden")).toBe("true");
+    const articles = [...view.container.querySelectorAll("article")];
+    expect(articles.map((node) => node.getAttribute("data-source-kind"))).toEqual(
+      expect.arrayContaining(["work_schedule", "protected_time", "block", "commitment"]),
+    );
+    for (const node of articles) {
+      expect(node.className).toContain("pointer-events-none");
+      expect(view.surface.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+      expect(node.querySelector("button, input, textarea, a")).toBeNull();
+      expect(node.getAttribute("draggable")).toBeNull();
+    }
+    expect(article(view.container, "protected_time").getAttribute("style")).toContain("repeating-linear-gradient");
+  });
+
+  it.each([
+    ["work_schedule", 9 * 60],
+    ["protected_time", 12 * 60 + 15],
+    ["block", 18 * 60 + 15],
+    ["commitment", 19 * 60 + 15],
+  ] as const)("taps %s into a 15-minute temporal selection", (kind, minute) => {
+    const view = occupied();
+    const fact = article(view.container, kind);
+    const before = paint(fact);
+    expect(Number(before.start)).toBeLessThanOrEqual(minute);
+    expect(Number(before.end)).toBeGreaterThan(minute);
+    touchAt(view.surface, minute, 21, "pointerdown");
+    touchAt(view.surface, minute, 21, "pointerup");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(minute));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(minute + 15));
+    expect(view.container.querySelector("[data-temporal-handoff]")).not.toBeNull();
+    expect(paint(fact)).toEqual(before);
+    expect(fact.querySelector("button, input, textarea, a")).toBeNull();
+    expect(view.container.textContent).not.toMatch(/conflict|capacity|free\/busy|\bavailable\b|priority/i);
+  });
+
+  it.each([
+    ["work_schedule", 9 * 60, 11 * 60],
+    ["protected_time", 12 * 60, 13 * 60],
+    ["block", 18 * 60, 19 * 60],
+    ["commitment", 19 * 60, 19 * 60 + 30],
+  ] as const)("hold-drags downward from %s into a temporal selection", (kind, start, end) => {
+    vi.useFakeTimers();
+    const view = occupied();
+    const fact = article(view.container, kind);
+    const before = paint(fact);
+    touchAt(view.surface, start, 22, "pointerdown");
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS);
+    });
+    touchAt(view.surface, end, 22, "pointermove");
+    touchAt(view.surface, end, 22, "pointerup");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(start));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(end));
+    expect(view.container.querySelector("[data-temporal-handoff]")).not.toBeNull();
+    expect(paint(fact)).toEqual(before);
+    expect(article(view.container, "protected_time").isConnected).toBe(true);
+  });
+
+  it("drags upward from inside a block and downward from inside protected time", () => {
+    vi.useFakeTimers();
+    const upward = occupied();
+    touchAt(upward.surface, 18 * 60 + 45, 23, "pointerdown");
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS);
+    });
+    touchAt(upward.surface, 18 * 60, 23, "pointermove");
+    touchAt(upward.surface, 18 * 60, 23, "pointerup");
+    expect(selection(upward.container)?.dataset.startMinute).toBe(String(18 * 60));
+    expect(selection(upward.container)?.dataset.endMinute).toBe(String(18 * 60 + 45));
+    expect(paint(article(upward.container, "block")).start).toBe(String(18 * 60));
+
+    const downward = occupied();
+    touchAt(downward.surface, 12 * 60, 24, "pointerdown");
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS);
+    });
+    touchAt(downward.surface, 13 * 60, 24, "pointermove");
+    touchAt(downward.surface, 13 * 60, 24, "pointerup");
+    expect(selection(downward.container)?.dataset.startMinute).toBe(String(12 * 60));
+    expect(selection(downward.container)?.dataset.endMinute).toBe(String(13 * 60));
+    expect(article(downward.container, "protected_time").getAttribute("style")).toContain("repeating-linear-gradient");
+    expect(selection(downward.container)?.className).toContain("z-20");
+  });
+
+  it("selects through overlapping block and commitment without changing either fact", () => {
+    const view = occupied();
+    const block = article(view.container, "block");
+    const commitment = article(view.container, "commitment");
+    const before = [paint(block), paint(commitment)];
+    const minute = 18 * 60 + 45;
+    expect(Number(block.dataset.startMinute)).toBeLessThanOrEqual(minute);
+    expect(Number(block.dataset.endMinute)).toBeGreaterThan(minute);
+    expect(Number(commitment.dataset.startMinute)).toBeLessThanOrEqual(minute);
+    expect(Number(commitment.dataset.endMinute)).toBeGreaterThan(minute);
+    touchAt(view.surface, minute, 25, "pointerdown");
+    touchAt(view.surface, minute, 25, "pointerup");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(minute));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(minute + 15));
+    expect([paint(block), paint(commitment)]).toEqual(before);
+    expect(view.container.querySelector("[data-selection='time']")).not.toBeNull();
+    expect(view.container.textContent).not.toMatch(/conflict|winner|capacity|unavailable for allocation/i);
+  });
+
+  it("keeps the 220ms hold and the 10px slop when the touch begins on work", () => {
+    vi.useFakeTimers();
+    const early = occupied();
+    touchAt(early.surface, 9 * 60, 26, "pointerdown");
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS - 1);
+    });
+    expect(selection(early.container)).toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(selection(early.container)?.dataset.startMinute).toBe(String(9 * 60));
+    expect(selection(early.container)?.dataset.endMinute).toBe(String(9 * 60 + 15));
+
+    const inside = occupied();
+    touchAt(inside.surface, 9 * 60, 27, "pointerdown");
+    touchAt(inside.surface, 9 * 60 + 4, 27, "pointermove");
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS);
+    });
+    expect(selection(inside.container)?.dataset.startMinute).toBe(String(9 * 60));
+
+    const scroll = occupied();
+    const work = article(scroll.container, "work_schedule");
+    const before = paint(work);
+    touchAt(scroll.surface, 9 * 60, 28, "pointerdown");
+    touchAt(scroll.surface, 9 * 60 + 24, 28, "pointermove");
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS);
+    });
+    touchAt(scroll.surface, 9 * 60 + 24, 28, "pointerup");
+    expect(selection(scroll.container)).toBeNull();
+    expect(scroll.container.querySelector("[data-temporal-handoff]")).toBeNull();
+    expect(paint(work)).toEqual(before);
+  });
+
+  it("does not abandon an open selection when a scroll begins on protected time", () => {
+    vi.useFakeTimers();
+    const view = occupied();
+    selectHours(view.surface, 20, 21, 29);
+    clickLabel(view.container, "Choose a purpose");
+    typeInto(view.container, "canvas-block-purpose", "Write");
+    const protectedTime = article(view.container, "protected_time");
+    const before = paint(protectedTime);
+    touchAt(view.surface, 12 * 60, 30, "pointerdown");
+    touchAt(view.surface, 12 * 60 + 40, 30, "pointermove");
+    touchAt(view.surface, 12 * 60 + 40, 30, "pointerup");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(20 * 60));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-block-purpose")?.value).toBe("Write");
+    expect(paint(protectedTime)).toEqual(before);
+    expect(view.container.querySelector("[data-temporal-handoff]")?.parentElement?.className).toContain("z-30");
+  });
+});

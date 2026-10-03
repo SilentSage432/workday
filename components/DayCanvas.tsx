@@ -1112,10 +1112,8 @@ function TimedAxis({
           ))}
         </div>
         <div
-          ref={surfaceRef}
-          data-time-surface="true"
-          onPointerDown={onPointerDown}
-          className="relative min-w-0 flex-1 touch-pan-y select-none border-l border-stone-800"
+          data-time-column="true"
+          className="relative isolate min-w-0 flex-1 select-none border-l border-stone-800"
           style={{ height: AXIS_HEIGHT }}
         >
           {HOURS.map((hour) => (
@@ -1133,6 +1131,14 @@ function TimedAxis({
             <TimedFact key={`${item.sourceKind}:${item.sourceId}`} item={item} />
           ))}
           {selection ? <TimeSelectionMark selection={selection} /> : null}
+          {/* Above the paint, below the contextual surface. Facts stay visible and are not the gesture target. */}
+          <div
+            ref={surfaceRef}
+            data-time-surface="true"
+            onPointerDown={onPointerDown}
+            aria-hidden="true"
+            className="pointer-events-auto absolute inset-0 z-[21] touch-pan-y"
+          />
         </div>
       </div>
     </div>

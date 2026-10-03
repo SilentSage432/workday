@@ -22,6 +22,13 @@ Real use of V0-012A on a phone carried these observations into this tranche:
 - The precise time controls are capable, and they feel overly eager on a phone. Pressing one appeared to enter a highly granular editing state immediately. Precision should be available without those controls hijacking the interaction.
 - The user values selecting time that already contains an established fact and giving that same territory additional meaning. Established temporal truth does not close that territory. Overlap is not a conflict.
 
+Real use of this tranche on a phone then separated two claims that had been traveling together:
+
+- Domain overlap is legal. A new Protected Time, Block, or Commitment can be saved over Work and over other established facts. Save is not refused, and nothing is marked a conflict.
+- Canvas reachability is a different question. After Protected Time was saved, the contextual surface closed, the transient selection disappeared, and the hatched fact remained. A new touch on that rendered region did not start a temporal selection. The same territory had been selectable before the fact was painted there.
+
+Established temporal truth must not make its underlying temporal territory unreachable. That is an interaction invariant. It is not a claim that an established fact can never itself become interactive. Talking about an existing fact — editing it, moving it, resizing it, or deleting it — remains unresolved. V0-013A restores the ability to refer to the time. It does not invent fact interaction.
+
 ## What is asked
 
 Protected Time needs the selected range. Its label stays optional and secondary.
@@ -41,3 +48,5 @@ Persistence stores local `HH:MM` text. It does not choose an instant. If the sel
 No migration, new table, new column, or generic event table. No auto-save. No conflict, capacity, availability, free/busy, or priority. Existing facts stay read-only. Resize handles stay deferred. The canvas time controls are steppers so a phone does not open a native minute wheel. Manage schedule keeps its existing time fields.
 
 The tranche record is [../implementation/V0-013.md](../implementation/V0-013.md).
+
+V0-013A corrects canvas reachability after the phone evidence above. The time column keeps a pointer layer above the painted facts. Those facts stay visible and read-only. Domain overlap is unchanged. See [../implementation/V0-013A.md](../implementation/V0-013A.md).
