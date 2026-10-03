@@ -123,7 +123,8 @@ export type SelectionInput =
   | { type: "clear" }
   | { type: "discard" }
   | { type: "choose"; meaning: IntendedMeaning }
-  | { type: "change-meaning" };
+  | { type: "change-meaning" }
+  | { type: "refine"; startMinute: number; endMinute: number };
 
 export function initialSelectionSession(): SelectionSession {
   return { gesture: { phase: "idle" }, visible: null, intendedMeaning: null };
@@ -161,6 +162,30 @@ export function ratioFromVisiblePointer(clientY: number, surface: Box, scroll: B
 export function axisRatioFromMinute(minute: number): number {
   if (!Number.isFinite(minute)) return 0;
   return Math.min(Math.max(minute, 0), DAY_AXIS_MINUTES) / DAY_AXIS_MINUTES;
+}
+
+/**
+ * Gesture snapping only. Stored local times are minute-level civil clock text.
+ * A precise edit of a selection uses that minute precision. It does not snap.
+ */
+export type LocalRangeOrder = "valid" | "incomplete" | "empty" | "reversed" | "outside";
+
+export function localRangeOrder(startMinute: number | null, endMinute: number | null): LocalRangeOrder {
+  if (startMinute === null || endMinute === null) return "incomplete";
+  if (!Number.isInteger(startMinute) || !Number.isInteger(endMinute)) return "outside";
+  if (startMinute < 0 || startMinute >= DAY_AXIS_MINUTES || endMinute <= 0 || endMinute > DAY_AXIS_MINUTES) {
+    return "outside";
+  }
+  if (startMinute === endMinute) return "empty";
+  if (startMinute > endMinute) return "reversed";
+  return "valid";
+}
+
+export function localRangeOrderSentence(order: Exclude<LocalRangeOrder, "valid">): string {
+  if (order === "incomplete") return "Choose a start and an end.";
+  if (order === "empty") return "The start and the end are the same moment.";
+  if (order === "reversed") return "The start is after the end.";
+  return "That time is outside this civil day.";
 }
 
 /** Nearest increment. A tie at the halfway minute rounds toward the later boundary. */
@@ -220,7 +245,7 @@ export function minuteToLocalText(minute: number): string {
 export function formatSelectionRange(selection: TimeSelection): string {
   const start = formatLocalTimeLabel(minuteToLocalText(selection.startMinute));
   const end = formatLocalTimeLabel(minuteToLocalText(selection.endMinute));
-  if (selection.startMinute === 0 && selection.endMinute === DAY_AXIS_MINUTES) {
+  if (selection.endMinute === DAY_AXIS_MINUTES) {
     return `${start} – ${end}, end of this civil day`;
   }
   return `${start} – ${end}`;
@@ -241,18 +266,12 @@ export function selectionLocalClock(selection: TimeSelection, timeZone: string):
   const elapsed = civilDayElapsedMs(selection.civilDate, timeZone);
   if (elapsed === DAY_ELAPSED_MS) return "ordinary";
 
-  let absent = false;
   let repeated = false;
-  for (
-    let minute = selection.startMinute;
-    minute < selection.endMinute;
-    minute += SELECTION_INCREMENT_MINUTES
-  ) {
+  for (let minute = selection.startMinute; minute < selection.endMinute; minute += 1) {
     const occurrence = localMinuteOccurrence(selection.civilDate, minute, timeZone);
-    if (occurrence === "absent") absent = true;
+    if (occurrence === "absent") return "absent";
     if (occurrence === "repeated") repeated = true;
   }
-  if (absent) return "absent";
   if (repeated) return "repeated";
   return "ordinary";
 }
@@ -276,9 +295,21 @@ export function reduceSelection(session: SelectionSession, input: SelectionInput
       return chooseMeaning(session, input.meaning);
     case "change-meaning":
       return changeMeaning(session);
+    case "refine":
+      return refineSelection(session, input.startMinute, input.endMinute);
     default:
       return session;
   }
+}
+
+function refineSelection(session: SelectionSession, startMinute: number, endMinute: number): SelectionSession {
+  if (session.gesture.phase !== "idle" || !session.visible) return session;
+  if (localRangeOrder(startMinute, endMinute) !== "valid") return session;
+  return {
+    gesture: session.gesture,
+    visible: { civilDate: session.visible.civilDate, startMinute, endMinute },
+    intendedMeaning: session.intendedMeaning,
+  };
 }
 
 function chooseMeaning(session: SelectionSession, meaning: IntendedMeaning): SelectionSession {

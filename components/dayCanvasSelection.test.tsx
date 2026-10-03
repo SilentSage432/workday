@@ -402,6 +402,16 @@ function clickLabel(container: HTMLElement, label: string) {
   });
 }
 
+function setClock(container: HTMLElement, label: string, value: string) {
+  const select = container.querySelector<HTMLSelectElement>(`[aria-label="${label}"]`);
+  if (!select) throw new Error(`Missing ${label}`);
+  const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
+  setter?.call(select, value);
+  act(() => {
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+}
+
 function meaningPanel(container: HTMLElement) {
   return container.querySelector<HTMLElement>("[data-meaning-choice]");
 }
@@ -489,6 +499,9 @@ describe("temporal meaning choice on the day canvas", () => {
           <button type="button" onClick={() => setDiscardToken("America/Boise:0:1")}>
             Open tools
           </button>
+          <button type="button" onClick={() => setDiscardToken("America/Denver:0:0")}>
+            Change zone
+          </button>
           <DayCanvas
             {...canvasProps({
               selectedDay,
@@ -520,6 +533,7 @@ describe("temporal meaning choice on the day canvas", () => {
     const expectCleared = () => {
       expect(selection(view.container)).toBeNull();
       expect(meaningPanel(view.container)).toBeNull();
+      expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
       expect(view.container.textContent).not.toContain("What this time is for.");
     };
 
@@ -545,6 +559,10 @@ describe("temporal meaning choice on the day canvas", () => {
 
     choose();
     clickLabel(view.container, "Reload day");
+    expectCleared();
+
+    choose();
+    clickLabel(view.container, "Change zone");
     expectCleared();
   });
 
@@ -608,5 +626,135 @@ describe("temporal meaning choice on the day canvas", () => {
     );
     expect(meaningPanel(fall.container)?.dataset.meaningChoice).toBe("commitment");
     expect(fall.container.querySelector("[data-selection-label]")?.textContent).toContain("1:00 AM – 2:00 AM");
+  });
+
+  it("opens the handoff on the canvas as soon as the selection settles", () => {
+    const view = renderCanvas();
+    pointer(view.surface, "pointerdown", { pointerId: 1, pointerType: "mouse", clientX: 40, clientY: 18 * 60 });
+    pointer(window, "pointermove", { pointerId: 1, pointerType: "mouse", clientX: 40, clientY: 21 * 60 });
+    expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
+    expect(view.container.querySelector("[data-selection-readout='dragging']")).not.toBeNull();
+    pointer(window, "pointerup", { pointerId: 1, pointerType: "mouse", clientX: 40, clientY: 21 * 60 });
+
+    const frame = view.container.querySelector("[data-canvas-frame]");
+    const handoff = frame?.querySelector("[data-temporal-handoff]");
+    expect(handoff).not.toBeNull();
+    expect(handoff?.getAttribute("aria-label")).toBe("Selected time");
+    expect(handoff?.querySelector("[data-meaning-choice='asking']")).not.toBeNull();
+    expect(handoff?.querySelector("[data-selection-label]")?.textContent).toContain("6:00 PM – 9:00 PM");
+    expect(selection(view.container)).not.toBeNull();
+    expect(view.container.querySelector("[data-selection-readout]")).toBeNull();
+    expect(view.container.querySelectorAll('[aria-label="Clear selected time"]')).toHaveLength(1);
+    expect(view.container.textContent).not.toContain("Continue");
+    expect(view.container.querySelector("[data-resize-handle]")).toBeNull();
+    expect(handoff?.querySelector('[aria-label="Start minute"]')).not.toBeNull();
+    expect(handoff?.querySelector('[aria-label="End minute"]')).not.toBeNull();
+  });
+
+  it("updates the one selection when the start or end minute changes", () => {
+    const view = renderCanvas({ model: modelFor(day, zone, true) });
+    const facts = () => view.container.querySelectorAll("[data-source-kind]").length;
+    selectHours(view.surface, 18, 21);
+    const before = facts();
+    setClock(view.container, "End minute", "7");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 7));
+    expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("6:00 PM – 9:07 PM");
+    setClock(view.container, "Start minute", "15");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60 + 15));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 7));
+    expect(facts()).toBe(before);
+    expect(view.container.querySelectorAll("[data-selection='time']")).toHaveLength(1);
+  });
+
+  it("keeps the previous range when a precise edit is reversed or empty", () => {
+    const view = renderCanvas();
+    selectHours(view.surface, 18, 21);
+    setClock(view.container, "Start hour", "10");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
+    expect(view.container.querySelector("[data-range-order='reversed']")?.textContent).toContain(
+      "The start is after the end.",
+    );
+    setClock(view.container, "Start hour", "6");
+    setClock(view.container, "End hour", "6");
+    setClock(view.container, "End minute", "0");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
+    expect(view.container.querySelector("[data-range-order='empty']")?.textContent).toContain(
+      "The start and the end are the same moment.",
+    );
+  });
+
+  it("keeps a chosen meaning while the same range is refined, and drops it for a new gesture", () => {
+    const view = renderCanvas();
+    selectHours(view.surface, 18, 21);
+    for (const [action, meaning] of [
+      ["Protect this time", "protected_time"],
+      ["Choose a purpose", "block"],
+      ["Add a commitment", "commitment"],
+    ] as const) {
+      clickLabel(view.container, action);
+      setClock(view.container, "End minute", "20");
+      expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe(meaning);
+      expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 20));
+      expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+      clickLabel(view.container, "Change meaning");
+      expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("asking");
+      expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 20));
+      setClock(view.container, "End minute", "0");
+    }
+
+    clickLabel(view.container, "Protect this time");
+    selectHours(view.surface, 8, 9, 4);
+    expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("asking");
+    expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("8:00 AM – 9:00 AM");
+    expect(view.container.textContent).not.toContain("Unavailable for allocation.");
+  });
+
+  it("leaves a tap inside the selected region on the current interaction", () => {
+    const view = renderCanvas();
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Choose a purpose");
+    pointer(view.surface, "pointerdown", { pointerId: 9, pointerType: "mouse", clientX: 40, clientY: 19 * 60 });
+    pointer(window, "pointerup", { pointerId: 9, pointerType: "mouse", clientX: 40, clientY: 19 * 60 });
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
+    expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("block");
+  });
+
+  it("keeps the local-clock sentence when a refined range enters a gap or a repeated hour", () => {
+    const spring = renderCanvas({
+      selectedDay: "2026-03-08",
+      timeZone: "America/Denver",
+      model: modelFor("2026-03-08", "America/Denver", false),
+      discardToken: "America/Denver:0:0",
+    });
+    selectHours(spring.surface, 1, 2);
+    setClock(spring.container, "End hour", "2");
+    setClock(spring.container, "End minute", "10");
+    expect(selection(spring.container)?.dataset.startMinute).toBe("60");
+    expect(selection(spring.container)?.dataset.endMinute).toBe("130");
+    expect(spring.container.querySelector("[data-clock='absent']")?.textContent).toContain(
+      "Part of this local clock range does not occur.",
+    );
+
+    const fall = renderCanvas({
+      selectedDay: "2026-11-01",
+      timeZone: "America/Denver",
+      model: modelFor("2026-11-01", "America/Denver", false),
+      today: "2026-11-01",
+      discardToken: "America/Denver:0:0",
+    });
+    selectHours(fall.surface, 3, 4);
+    setClock(fall.container, "Start hour", "1");
+    setClock(fall.container, "Start minute", "7");
+    setClock(fall.container, "End hour", "1");
+    setClock(fall.container, "End minute", "20");
+    expect(selection(fall.container)?.dataset.startMinute).toBe("67");
+    expect(selection(fall.container)?.dataset.endMinute).toBe("80");
+    expect(fall.container.querySelector("[data-clock='repeated']")?.textContent).toContain(
+      "Part of this local clock range occurs twice.",
+    );
   });
 });

@@ -80,3 +80,7 @@ V0-011 left the selected range without a kind. Phone use earned the gesture. The
 - The day session remounts empty when the civil day or the discard token changes, so navigation, Manage schedule, and a source refresh cannot keep a stale intention.
 
 The tranche record is [../implementation/V0-012.md](../implementation/V0-012.md).
+
+## Later
+
+V0-012A moves this handoff onto the day canvas. The same three meanings remain. Refining the start or end keeps the intended meaning. A new gesture still clears it. Grabbing the edge of the band to resize it is recorded evidence and is not built. See [2026-10-03-contextual-temporal-handoff.md](2026-10-03-contextual-temporal-handoff.md).

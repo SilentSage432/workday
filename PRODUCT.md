@@ -60,7 +60,7 @@ Nothing established is not the same as available.
 
 Timeline is a projection. It is not a stored primitive, a calendar event, or a generic event. The question it serves is: "What is the shape of this time?"
 
-V0-009 answers that for a requested half-open civil range, not for an implied today. V0-010 draws one selected civil day of that answer on Schedule. V0-011 lets the user select a transient local-clock span on that day. V0-012 lets the user name the kind of truth they intend for that span: protect it, choose a purpose for it, or add a commitment. Neither the span nor that intention is stored. Neither creates a fact. Timeline composes four established sources and keeps their meanings:
+V0-009 answers that for a requested half-open civil range, not for an implied today. V0-010 draws one selected civil day of that answer on Schedule. V0-011 lets the user select a transient local-clock span on that day. V0-012 lets the user name the kind of truth they intend for that span: protect it, choose a purpose for it, or add a commitment. V0-012A places that question on the canvas with the selected range, and lets the start and end be refined before anything is established. Neither the span nor that intention is stored. Neither creates a fact. Timeline composes four established sources and keeps their meanings:
 
 - a scheduled Work shift, including Opening, Mid, or Closing
 - Protected Time
@@ -71,7 +71,7 @@ Work Off is not occupied time. A missing Work row is unknown and is not occupied
 
 Planned Tasks, reminders, relevant recurring-obligation occurrences, and meaningful Windows remain intended composition sources. They are not part of the V0-009 projection. A planned Task and a Block meet time for different reasons. Today is not the Timeline.
 
-The day surface is where the user selects time and then says what that time means. V0-012 records the intended kind and stops. It does not yet ask for the fields that would establish the fact. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Week, month, and NOW are not built.
+The day surface is where the user selects time, refines it, and then says what that time means. V0-012A records the intended kind and stops. It does not yet ask for the fields that would establish the fact. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Week, month, and NOW are not built.
 
 Experience before V0-009 suggests the user may drag a Task into time. The Task would remain a Task. The allocation would be a Block associated with that Task. That relationship is not stored.
 
@@ -207,7 +207,7 @@ A good notification might say "Resume: Cycle Counts." A poor strategy repeatedly
 V0 is the smallest system that can generate real use. It is specified here and not built. Text and in-app behavior are enough to start. Voice, push, and Google Calendar may follow after the core is coherent.
 
 1. **NOW.** A useful projection of the current day from facts the system knows. The full attention hierarchy stays open.
-2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. V0-010 shows one civil day of that projection. V0-011 can select a transient local-clock span on that day. V0-012 can name a transient intended meaning for that span. It does not edit established facts, and it does not yet create one. Planned Tasks are not on that projection yet.
+2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. V0-010 shows one civil day of that projection. V0-011 can select a transient local-clock span on that day. V0-012 can name a transient intended meaning for that span. V0-012A can refine that span on the canvas before the meaning is chosen, and can still refine it afterward. It does not edit established facts, and it does not yet create one. Planned Tasks are not on that projection yet.
 3. **Capture.** Create a Task or a Note quickly. Text is sufficient. Voice does not block first use.
 4. **Tasks.** Create, edit, complete, an optional due boundary, a planned day, MUST DO, and a Context when the user assigns one. Not project management.
 5. **Notes.** Create, retain, and convert explicitly to a Task while keeping provenance.

@@ -127,6 +127,8 @@ V0-011 adds `components/daySelection.ts`. It maps a pointer on that geometry to 
 
 V0-012 keeps an intended meaning beside that range: protect the time, choose a purpose, or add a commitment. The meaning is interaction state in the same session. It is not a domain primitive, not a Timeline fact, and not a row. The decision is [../decisions/2026-10-03-temporal-meaning-choice.md](../decisions/2026-10-03-temporal-meaning-choice.md).
 
+V0-012A draws that handoff over the day canvas and lets the same selection be refined by minute. The refined minutes are still the one transient selection. The decision is [../decisions/2026-10-03-contextual-temporal-handoff.md](../decisions/2026-10-03-contextual-temporal-handoff.md).
+
 ## Persistence
 
 Supabase Postgres is the durable store. This product gets its own Supabase project. That project must not be the one used by Wealth Engine, DeptSync, Carb Buddy, or any other TeamLab system.

@@ -8,6 +8,7 @@ import {
   axisRatioFromMinute,
   formatSelectionRange,
   initialSelectionSession,
+  localRangeOrder,
   minuteFromAxisRatio,
   minuteFromPointerY,
   normalizeLocalRange,
@@ -249,6 +250,12 @@ describe("day selection clock", () => {
     expect(selectionLocalClock(later, "America/Denver")).toBe("ordinary");
     expect(repeated).toEqual({ civilDate: "2026-11-01", startMinute: 60, endMinute: 120 });
     expect(formatSelectionRange(repeated)).toBe("1:00 AM – 2:00 AM");
+    const insideGap = { civilDate: "2026-03-08", startMinute: 2 * 60 + 5, endMinute: 2 * 60 + 20 };
+    const insideRepeat = { civilDate: "2026-11-01", startMinute: 67, endMinute: 80 };
+    expect(selectionLocalClock(insideGap, "America/Denver")).toBe("absent");
+    expect(selectionLocalClock(insideRepeat, "America/Denver")).toBe("repeated");
+    expect(insideGap).toEqual({ civilDate: "2026-03-08", startMinute: 125, endMinute: 140 });
+    expect(insideRepeat).toEqual({ civilDate: "2026-11-01", startMinute: 67, endMinute: 80 });
   });
 
   it("leaves an ordinary civil day unmarked", () => {
@@ -345,6 +352,28 @@ describe("temporal meaning choice", () => {
     const dragging = down(initialSelectionSession(), { ratio: 18 / 24 });
     expect(reduceSelection(dragging, { type: "choose", meaning: "block" })).toEqual(dragging);
   });
+
+  it("refines the same selection by the minute and keeps the intended meaning", () => {
+    const chosen = reduceSelection(settled(), { type: "choose", meaning: "commitment" });
+    const refined = reduceSelection(chosen, { type: "refine", startMinute: 18 * 60 + 7, endMinute: 20 * 60 + 4 });
+    expect(refined.visible).toEqual({ civilDate: day, startMinute: 18 * 60 + 7, endMinute: 20 * 60 + 4 });
+    expect(refined.intendedMeaning).toBe("commitment");
+    expect(formatSelectionRange(refined.visible as TimeSelection)).toBe("6:07 PM – 8:04 PM");
+    expect(refined.visible).not.toHaveProperty("x");
+  });
+
+  it("leaves an invalid refinement unchanged instead of reordering it", () => {
+    const chosen = reduceSelection(settled(), { type: "choose", meaning: "block" });
+    expect(reduceSelection(chosen, { type: "refine", startMinute: 21 * 60, endMinute: 18 * 60 })).toEqual(chosen);
+    expect(reduceSelection(chosen, { type: "refine", startMinute: 18 * 60, endMinute: 18 * 60 })).toEqual(chosen);
+    expect(reduceSelection(chosen, { type: "refine", startMinute: -5, endMinute: 30 })).toEqual(chosen);
+    expect(localRangeOrder(21 * 60, 18 * 60)).toBe("reversed");
+    expect(localRangeOrder(18 * 60, 18 * 60)).toBe("empty");
+    expect(localRangeOrder(-1, 30)).toBe("outside");
+    expect(localRangeOrder(18 * 60, 18 * 60 + 1)).toBe("valid");
+    expect(localRangeOrder(0, DAY_AXIS_MINUTES)).toBe("valid");
+    expect(SELECTION_INCREMENT_MINUTES).toBe(15);
+  });
 });
 
 describe("day selection boundaries", () => {
@@ -361,5 +390,6 @@ describe("day selection boundaries", () => {
     expect(schedule).toContain("if (!managing) setSelectionDiscard");
     expect(schedule).not.toContain("intendedMeaning");
     expect(schedule).not.toContain("Protect this time");
+    expect(canvas).not.toMatch(/\bfixed\b|data-resize-handle|resize handle/);
   });
 });

@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { Icon } from "@/components/Icon";
+import { LocalTimeField } from "@/components/LocalTimeField";
 import {
   CHANGE_MEANING_LABEL,
   INTENDED_MEANINGS,
@@ -12,6 +13,10 @@ import {
   formatSelectionRange,
   initialSelectionSession,
   intendedMeaningCopy,
+  localRangeOrder,
+  localRangeOrderSentence,
+  minuteFromAxisRatio,
+  minuteToLocalText,
   ratioFromVisiblePointer,
   reduceSelection,
   selectionClockSentence,
@@ -21,9 +26,10 @@ import {
   type SelectionSession,
   type TimeSelection,
 } from "@/components/daySelection";
-import { formatLocalTimeLabel } from "@/domain/time/localTime";
+import { localTimeToTwelveHour, twelveHourToLocalTime, type TwelveHourClock } from "@/components/twelveHourTime";
+import { localMinutes, parseLocalTime, formatLocalTimeLabel } from "@/domain/time/localTime";
 import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
-import type { DayCanvasModel, DayCanvasTimedPlacement } from "@/projections/dayCanvas";
+import { DAY_AXIS_MINUTES, type DayCanvasModel, type DayCanvasTimedPlacement } from "@/projections/dayCanvas";
 
 /**
  * Display floor for a timed fact. It is not the fact's duration.
@@ -206,12 +212,16 @@ function DayCanvasSession({
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
     const surface = event.currentTarget;
+    const ratioOf = (clientY: number) => ratioOnSurface(surface, clientY);
+    const visibleNow = sessionRef.current.visible;
+    if (sessionRef.current.gesture.phase === "idle" && visibleNow) {
+      const minute = minuteFromAxisRatio(ratioOf(event.clientY));
+      if (minute >= visibleNow.startMinute && minute < visibleNow.endMinute) return;
+    }
     const pointerId = event.pointerId;
     const kind = event.pointerType;
     detach();
     clearHold();
-
-    const ratioOf = (clientY: number) => ratioOnSurface(surface, clientY);
 
     const onMove = (native: PointerEvent) => {
       if (native.pointerId !== pointerId) return;
@@ -314,6 +324,10 @@ function DayCanvasSession({
     publish(reduceSelection(sessionRef.current, { type: "change-meaning" }));
   }
 
+  function refineBounds(startMinute: number, endMinute: number) {
+    publish(reduceSelection(sessionRef.current, { type: "refine", startMinute, endMinute }));
+  }
+
   const visible = session.visible;
   const clock = visible ? selectionLocalClock(visible, timeZone) : "ordinary";
 
@@ -371,6 +385,7 @@ function DayCanvasSession({
           onClear={clearSelection}
           onChooseMeaning={chooseMeaning}
           onChangeMeaning={changeMeaning}
+          onRefine={refineBounds}
         />
       ) : null}
     </section>
@@ -389,6 +404,7 @@ function DayCanvasBody({
   onClear,
   onChooseMeaning,
   onChangeMeaning,
+  onRefine,
 }: {
   model: DayCanvasModel;
   surfaceRef: RefObject<HTMLDivElement | null>;
@@ -401,6 +417,7 @@ function DayCanvasBody({
   onClear: () => void;
   onChooseMeaning: (meaning: IntendedMeaning) => void;
   onChangeMeaning: () => void;
+  onRefine: (startMinute: number, endMinute: number) => void;
 }) {
   return (
     <div className="mt-4 max-w-full">
@@ -439,8 +456,8 @@ function DayCanvasBody({
           </ul>
         </section>
       ) : null}
-      {selection ? (
-        <div className="mt-3 flex items-start justify-between gap-3" data-clock={clock}>
+      {selection && !selectionSettled ? (
+        <div className="mt-3 flex items-start justify-between gap-3" data-clock={clock} data-selection-readout="dragging">
           <div>
             <p data-selection-label className="text-sm text-stone-100">
               <span className="sr-only">Selected time </span>
@@ -457,26 +474,162 @@ function DayCanvasBody({
             Clear
           </button>
         </div>
-      ) : model.axis === "local-clock" ? (
+      ) : !selection && model.axis === "local-clock" ? (
         <p id="day-selection-hint" className="mt-3 text-sm text-stone-500">
           {HINT}
         </p>
       ) : null}
-      {selection && selectionSettled ? (
-        <MeaningHandoff
-          intendedMeaning={intendedMeaning}
-          onChooseMeaning={onChooseMeaning}
-          onChangeMeaning={onChangeMeaning}
-        />
-      ) : null}
       {model.axis === "local-clock" ? (
-        <TimedAxis model={model} surfaceRef={surfaceRef} selection={selection} onPointerDown={onPointerDown} />
+        <div className="relative mt-4 max-h-[28rem] max-w-full" data-canvas-frame="true">
+          <TimedAxis model={model} surfaceRef={surfaceRef} selection={selection} onPointerDown={onPointerDown} />
+          {selection && selectionSettled ? (
+            <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center p-3">
+              <TemporalHandoff
+                key={`${selection.civilDate}:${selection.startMinute}:${selection.endMinute}`}
+                selection={selection}
+                intendedMeaning={intendedMeaning}
+                clockSentence={clockSentence}
+                clock={clock}
+                onClear={onClear}
+                onChooseMeaning={onChooseMeaning}
+                onChangeMeaning={onChangeMeaning}
+                onRefine={onRefine}
+              />
+            </div>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );
 }
 
-function MeaningHandoff({
+function TemporalHandoff({
+  selection,
+  intendedMeaning,
+  clockSentence,
+  clock,
+  onClear,
+  onChooseMeaning,
+  onChangeMeaning,
+  onRefine,
+}: {
+  selection: TimeSelection;
+  intendedMeaning: IntendedMeaning | null;
+  clockSentence: string | null;
+  clock: "ordinary" | "absent" | "repeated";
+  onClear: () => void;
+  onChooseMeaning: (meaning: IntendedMeaning) => void;
+  onChangeMeaning: () => void;
+  onRefine: (startMinute: number, endMinute: number) => void;
+}) {
+  const [draft, setDraft] = useState<BoundDraft | null>(null);
+  const shown = draft ?? draftFromSelection(selection);
+  const problem = draft ? draftProblem(shown) : null;
+
+  function edit(next: BoundDraft) {
+    const minutes = minutesFromDraft(next);
+    if (!minutes || localRangeOrder(minutes.startMinute, minutes.endMinute) !== "valid") {
+      setDraft(next);
+      return;
+    }
+    setDraft(null);
+    onRefine(minutes.startMinute, minutes.endMinute);
+  }
+
+  return (
+    <div
+      data-temporal-handoff="true"
+      role="region"
+      aria-label="Selected time"
+      data-clock={clock}
+      className="pointer-events-auto max-h-full w-full max-w-full overflow-y-auto rounded-md border border-stone-600 bg-stone-950/95 p-3"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p data-selection-label className="text-sm text-stone-100">
+          <span className="sr-only">Selected time </span>
+          {formatSelectionRange(selection)}
+        </p>
+        <button
+          type="button"
+          onClick={onClear}
+          aria-label="Clear selected time"
+          className="min-h-11 shrink-0 px-3 text-sm text-stone-300"
+        >
+          Clear
+        </button>
+      </div>
+      {clockSentence ? <p className="mt-2 text-sm text-stone-400">{clockSentence}</p> : null}
+      <div className="mt-3 space-y-3">
+        <LocalTimeField label="Start" value={shown.start} onChange={(start) => edit({ ...shown, start })} />
+        {shown.endOfCivilDay ? (
+          <p className="text-sm text-stone-300">
+            <span className="font-medium text-stone-100">End. </span>
+            End of this civil day
+          </p>
+        ) : (
+          <LocalTimeField label="End" value={shown.end} onChange={(end) => edit({ ...shown, end, endOfCivilDay: false })} />
+        )}
+        <button
+          type="button"
+          aria-pressed={shown.endOfCivilDay}
+          onClick={() => edit({ ...shown, endOfCivilDay: !shown.endOfCivilDay })}
+          className="min-h-11 max-w-full text-left text-sm text-stone-300"
+        >
+          End of this civil day
+        </button>
+      </div>
+      {problem ? (
+        <p data-range-order={problem} className="mt-2 text-sm text-stone-300">
+          {localRangeOrderSentence(problem)}
+        </p>
+      ) : null}
+      <MeaningChoice
+        intendedMeaning={intendedMeaning}
+        onChooseMeaning={onChooseMeaning}
+        onChangeMeaning={onChangeMeaning}
+      />
+    </div>
+  );
+}
+
+type BoundDraft = {
+  start: TwelveHourClock;
+  end: TwelveHourClock;
+  endOfCivilDay: boolean;
+};
+
+function draftFromSelection(selection: TimeSelection): BoundDraft {
+  const endOfCivilDay = selection.endMinute >= DAY_AXIS_MINUTES;
+  const endMinute = endOfCivilDay ? 23 * 60 + 59 : selection.endMinute;
+  return {
+    start: localTimeToTwelveHour(minuteToLocalText(selection.startMinute)),
+    end: localTimeToTwelveHour(minuteToLocalText(endMinute)),
+    endOfCivilDay,
+  };
+}
+
+function minutesFromDraft(draft: BoundDraft): { startMinute: number; endMinute: number } | null {
+  const startText = twelveHourToLocalTime(draft.start);
+  if (!startText) return null;
+  if (draft.endOfCivilDay) {
+    return { startMinute: localMinutes(parseLocalTime(startText)), endMinute: DAY_AXIS_MINUTES };
+  }
+  const endText = twelveHourToLocalTime(draft.end);
+  if (!endText) return null;
+  return {
+    startMinute: localMinutes(parseLocalTime(startText)),
+    endMinute: localMinutes(parseLocalTime(endText)),
+  };
+}
+
+function draftProblem(draft: BoundDraft): Exclude<ReturnType<typeof localRangeOrder>, "valid"> | null {
+  const minutes = minutesFromDraft(draft);
+  if (!minutes) return "incomplete";
+  const order = localRangeOrder(minutes.startMinute, minutes.endMinute);
+  return order === "valid" ? null : order;
+}
+
+function MeaningChoice({
   intendedMeaning,
   onChooseMeaning,
   onChangeMeaning,
@@ -536,7 +689,7 @@ function TimedAxis({
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
 }) {
   return (
-    <div className="mt-4 max-h-[28rem] max-w-full overflow-y-auto" data-axis-scroll="midnight">
+    <div className="max-h-[28rem] max-w-full overflow-y-auto" data-axis-scroll="midnight">
       <div className="flex max-w-full pt-3" data-axis="local-clock">
         <div className="relative w-14 shrink-0" style={{ height: AXIS_HEIGHT }}>
           {HOURS.map((hour) => (
