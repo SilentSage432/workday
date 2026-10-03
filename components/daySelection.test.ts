@@ -377,7 +377,7 @@ describe("temporal meaning choice", () => {
 });
 
 describe("day selection boundaries", () => {
-  it("does not persist, compose Timeline, or infer availability", () => {
+  it("keeps persistence out of the selection session and writes only through the schedule", () => {
     const selection = readFileSync(new URL("./daySelection.ts", import.meta.url), "utf8");
     const canvas = readFileSync(new URL("./DayCanvas.tsx", import.meta.url), "utf8");
     const schedule = readFileSync(new URL("./WorkSchedule.tsx", import.meta.url), "utf8");
@@ -385,8 +385,12 @@ describe("day selection boundaries", () => {
     expect(selection).not.toMatch(/defineProtectedTime|defineBlock|defineCommitment|defineTask|\.insert\(/);
     expect(canvas).not.toMatch(/supabase|projectTimeline|Date\.now|capacity|conflict|draggable/);
     expect(canvas).not.toMatch(/defineProtectedTime|defineBlock|defineCommitment|defineTask|\.insert\(/);
+    expect(canvas).toContain("onEstablish");
     expect(canvas).not.toContain("resolvedOptions");
     expect(schedule).toContain("noteCanvasReload");
+    expect(schedule).toContain("createProtectedTime");
+    expect(schedule).toContain("createBlock");
+    expect(schedule).toContain("createCommitment");
     expect(schedule).toContain("if (!managing) setSelectionDiscard");
     expect(schedule).not.toContain("intendedMeaning");
     expect(schedule).not.toContain("Protect this time");

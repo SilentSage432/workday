@@ -64,3 +64,5 @@ The direct-manipulation hypothesis recorded here, also not built, is that the to
 - DST sentences still describe the local range. A refined minute inside a spring-forward gap or a repeated fall-back hour is still named. No instant is kept.
 
 The tranche record is [../implementation/V0-012A.md](../implementation/V0-012A.md).
+
+V0-013 continues from this surface. It asks for the minimum fields and persists only after an explicit Save. See [2026-10-03-explicit-temporal-establishment.md](2026-10-03-explicit-temporal-establishment.md).

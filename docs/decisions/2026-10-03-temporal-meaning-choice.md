@@ -84,3 +84,5 @@ The tranche record is [../implementation/V0-012.md](../implementation/V0-012.md)
 ## Later
 
 V0-012A moves this handoff onto the day canvas. The same three meanings remain. Refining the start or end keeps the intended meaning. A new gesture still clears it. Grabbing the edge of the band to resize it is recorded evidence and is not built. See [2026-10-03-contextual-temporal-handoff.md](2026-10-03-contextual-temporal-handoff.md).
+
+V0-013 establishes a fact from that intention only after an explicit Save. The intention itself is still not temporal truth. See [2026-10-03-explicit-temporal-establishment.md](2026-10-03-explicit-temporal-establishment.md).

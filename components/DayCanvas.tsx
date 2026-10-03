@@ -1,9 +1,14 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import {
+  establishFromSelection,
+  establishmentBlocked,
+  type CanvasContextOption,
+  type CanvasEstablishment,
+} from "@/components/canvasEstablishment";
 import { Icon } from "@/components/Icon";
-import { LocalTimeField } from "@/components/LocalTimeField";
 import {
   CHANGE_MEANING_LABEL,
   INTENDED_MEANINGS,
@@ -56,6 +61,17 @@ function ratioOnSurface(surface: HTMLElement, clientY: number): number {
   );
 }
 
+type CompletionDraft = {
+  label: string;
+  purpose: string;
+  contextId: string;
+  title: string;
+};
+
+function emptyCompletion(): CompletionDraft {
+  return { label: "", purpose: "", contextId: "", title: "" };
+}
+
 export function DayCanvas({
   selectedDay,
   today,
@@ -64,9 +80,11 @@ export function DayCanvas({
   model,
   timeZone,
   discardToken,
+  contexts = [],
   onPreviousDay,
   onNextDay,
   onToday,
+  onEstablish,
 }: {
   selectedDay: string;
   today: string | null;
@@ -75,9 +93,11 @@ export function DayCanvas({
   model: DayCanvasModel | null;
   timeZone: string;
   discardToken: string;
+  contexts?: CanvasContextOption[];
   onPreviousDay: () => void;
   onNextDay: () => void;
   onToday: () => void;
+  onEstablish?: (establishment: CanvasEstablishment) => Promise<void>;
 }) {
   return (
     <DayCanvasSession
@@ -88,9 +108,11 @@ export function DayCanvas({
       error={error}
       model={model}
       timeZone={timeZone}
+      contexts={contexts}
       onPreviousDay={onPreviousDay}
       onNextDay={onNextDay}
       onToday={onToday}
+      onEstablish={onEstablish}
     />
   );
 }
@@ -102,9 +124,11 @@ function DayCanvasSession({
   error,
   model,
   timeZone,
+  contexts,
   onPreviousDay,
   onNextDay,
   onToday,
+  onEstablish,
 }: {
   selectedDay: string;
   today: string | null;
@@ -112,16 +136,29 @@ function DayCanvasSession({
   error: string | null;
   model: DayCanvasModel | null;
   timeZone: string;
+  contexts: CanvasContextOption[];
   onPreviousDay: () => void;
   onNextDay: () => void;
   onToday: () => void;
+  onEstablish?: (establishment: CanvasEstablishment) => Promise<void>;
 }) {
   const [session, setSession] = useState<SelectionSession>(initialSelectionSession);
+  const [completion, setCompletion] = useState(emptyCompletion);
+  const [saving, setSaving] = useState(false);
+  const [establishError, setEstablishError] = useState<string | null>(null);
   const sessionRef = useRef(session);
   const selectingRef = useRef(false);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const endGesture = useRef<(() => void) | null>(null);
+  const dismissTouchTap = useRef(false);
+  const meaningKey = session.intendedMeaning ?? "";
+  const [trackedMeaning, setTrackedMeaning] = useState(meaningKey);
+  if (trackedMeaning !== meaningKey) {
+    setTrackedMeaning(meaningKey);
+    setCompletion(emptyCompletion());
+    setEstablishError(null);
+  }
 
   function publish(next: SelectionSession) {
     sessionRef.current = next;
@@ -214,12 +251,18 @@ function DayCanvasSession({
     const surface = event.currentTarget;
     const ratioOf = (clientY: number) => ratioOnSurface(surface, clientY);
     const visibleNow = sessionRef.current.visible;
-    if (sessionRef.current.gesture.phase === "idle" && visibleNow) {
+    const handoffOpen = sessionRef.current.gesture.phase === "idle" && visibleNow !== null;
+    if (handoffOpen && visibleNow) {
       const minute = minuteFromAxisRatio(ratioOf(event.clientY));
       if (minute >= visibleNow.startMinute && minute < visibleNow.endMinute) return;
     }
     const pointerId = event.pointerId;
     const kind = event.pointerType;
+    if (handoffOpen && kind !== "touch") {
+      armOutsidePointer(event, surface, ratioOf);
+      return;
+    }
+    dismissTouchTap.current = handoffOpen && kind === "touch";
     detach();
     clearHold();
 
@@ -234,7 +277,10 @@ function DayCanvasSession({
         y: native.clientY,
         civilDate: selectedDay,
       });
-      if (next.gesture.phase === "idle") clearHold();
+      if (next.gesture.phase === "idle") {
+        clearHold();
+        dismissTouchTap.current = false;
+      }
       publish(next);
     };
     const stop = () => {
@@ -246,6 +292,13 @@ function DayCanvasSession({
     };
     const onUp = (native: PointerEvent) => {
       if (native.pointerId !== pointerId) return;
+      if (dismissTouchTap.current && sessionRef.current.gesture.phase === "pending") {
+        dismissTouchTap.current = false;
+        stop();
+        releaseCapture(surface, pointerId);
+        clearSelection();
+        return;
+      }
       const next = reduceSelection(sessionRef.current, {
         type: "up",
         pointerId,
@@ -258,6 +311,7 @@ function DayCanvasSession({
     };
     const onCancel = (native: PointerEvent) => {
       if (native.pointerId !== pointerId) return;
+      dismissTouchTap.current = false;
       const next = reduceSelection(sessionRef.current, { type: "cancel", pointerId });
       stop();
       releaseCapture(surface, pointerId);
@@ -284,6 +338,7 @@ function DayCanvasSession({
     if (kind === "touch") {
       holdTimer.current = setTimeout(() => {
         holdTimer.current = null;
+        dismissTouchTap.current = false;
         const held = reduceSelection(sessionRef.current, {
           type: "hold",
           pointerId,
@@ -308,6 +363,89 @@ function DayCanvasSession({
     }
   }
 
+  function armOutsidePointer(
+    event: ReactPointerEvent<HTMLDivElement>,
+    surface: HTMLDivElement,
+    ratioOf: (clientY: number) => number,
+  ) {
+    const pointerId = event.pointerId;
+    const kind = event.pointerType;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startRatio = ratioOf(event.clientY);
+    let started = false;
+    detach();
+    clearHold();
+
+    const onMove = (native: PointerEvent) => {
+      if (native.pointerId !== pointerId) return;
+      if (!started) {
+        if (Math.hypot(native.clientX - startX, native.clientY - startY) <= SELECTION_MOVE_SLOP_PX) return;
+        started = true;
+        publish(
+          reduceSelection(sessionRef.current, {
+            type: "down",
+            pointerId,
+            pointerType: kind,
+            ratio: startRatio,
+            x: startX,
+            y: startY,
+            civilDate: selectedDay,
+          }),
+        );
+      }
+      publish(
+        reduceSelection(sessionRef.current, {
+          type: "move",
+          pointerId,
+          pointerType: kind,
+          ratio: ratioOf(native.clientY),
+          x: native.clientX,
+          y: native.clientY,
+          civilDate: selectedDay,
+        }),
+      );
+    };
+    const stop = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+      endGesture.current = null;
+    };
+    const onUp = (native: PointerEvent) => {
+      if (native.pointerId !== pointerId) return;
+      stop();
+      releaseCapture(surface, pointerId);
+      if (!started) {
+        clearSelection();
+        return;
+      }
+      publish(
+        reduceSelection(sessionRef.current, {
+          type: "up",
+          pointerId,
+          ratio: ratioOf(native.clientY),
+          civilDate: selectedDay,
+        }),
+      );
+    };
+    const onCancel = (native: PointerEvent) => {
+      if (native.pointerId !== pointerId || !started) {
+        if (native.pointerId === pointerId) stop();
+        return;
+      }
+      const next = reduceSelection(sessionRef.current, { type: "cancel", pointerId });
+      stop();
+      releaseCapture(surface, pointerId);
+      publish(next);
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+    endGesture.current = stop;
+  }
+
   function clearSelection() {
     const gesture = sessionRef.current.gesture;
     detach();
@@ -326,6 +464,35 @@ function DayCanvasSession({
 
   function refineBounds(startMinute: number, endMinute: number) {
     publish(reduceSelection(sessionRef.current, { type: "refine", startMinute, endMinute }));
+  }
+
+  async function establish() {
+    const current = sessionRef.current;
+    if (!current.visible || !current.intendedMeaning || saving) return;
+    const currentClock = selectionLocalClock(current.visible, timeZone);
+    if (establishmentBlocked(currentClock)) return;
+    if (current.intendedMeaning === "block" && completion.purpose.trim().length === 0) return;
+    if (current.intendedMeaning === "commitment" && completion.title.trim().length === 0) return;
+    setSaving(true);
+    setEstablishError(null);
+    try {
+      const establishment = establishFromSelection({
+        selection: current.visible,
+        meaning: current.intendedMeaning,
+        clock: currentClock,
+        label: completion.label,
+        purpose: completion.purpose,
+        contextId: completion.contextId,
+        title: completion.title,
+      });
+      if (!onEstablish) {
+        throw new Error("Could not establish this time.");
+      }
+      await onEstablish(establishment);
+    } catch (error: unknown) {
+      setEstablishError(error instanceof Error && error.message ? error.message : "Could not establish this time.");
+      setSaving(false);
+    }
   }
 
   const visible = session.visible;
@@ -386,6 +553,14 @@ function DayCanvasSession({
           onChooseMeaning={chooseMeaning}
           onChangeMeaning={changeMeaning}
           onRefine={refineBounds}
+          completion={completion}
+          contexts={contexts}
+          saving={saving}
+          establishError={establishError}
+          onCompletion={setCompletion}
+          onEstablish={() => {
+            void establish();
+          }}
         />
       ) : null}
     </section>
@@ -405,6 +580,12 @@ function DayCanvasBody({
   onChooseMeaning,
   onChangeMeaning,
   onRefine,
+  completion,
+  contexts,
+  saving,
+  establishError,
+  onCompletion,
+  onEstablish,
 }: {
   model: DayCanvasModel;
   surfaceRef: RefObject<HTMLDivElement | null>;
@@ -418,6 +599,12 @@ function DayCanvasBody({
   onChooseMeaning: (meaning: IntendedMeaning) => void;
   onChangeMeaning: () => void;
   onRefine: (startMinute: number, endMinute: number) => void;
+  completion: CompletionDraft;
+  contexts: CanvasContextOption[];
+  saving: boolean;
+  establishError: string | null;
+  onCompletion: (next: CompletionDraft) => void;
+  onEstablish: () => void;
 }) {
   return (
     <div className="mt-4 max-w-full">
@@ -494,6 +681,12 @@ function DayCanvasBody({
                 onChooseMeaning={onChooseMeaning}
                 onChangeMeaning={onChangeMeaning}
                 onRefine={onRefine}
+                completion={completion}
+                contexts={contexts}
+                saving={saving}
+                establishError={establishError}
+                onCompletion={onCompletion}
+                onEstablish={onEstablish}
               />
             </div>
           ) : null}
@@ -512,6 +705,12 @@ function TemporalHandoff({
   onChooseMeaning,
   onChangeMeaning,
   onRefine,
+  completion,
+  contexts,
+  saving,
+  establishError,
+  onCompletion,
+  onEstablish,
 }: {
   selection: TimeSelection;
   intendedMeaning: IntendedMeaning | null;
@@ -521,10 +720,17 @@ function TemporalHandoff({
   onChooseMeaning: (meaning: IntendedMeaning) => void;
   onChangeMeaning: () => void;
   onRefine: (startMinute: number, endMinute: number) => void;
+  completion: CompletionDraft;
+  contexts: CanvasContextOption[];
+  saving: boolean;
+  establishError: string | null;
+  onCompletion: (next: CompletionDraft) => void;
+  onEstablish: () => void;
 }) {
   const [draft, setDraft] = useState<BoundDraft | null>(null);
   const shown = draft ?? draftFromSelection(selection);
   const problem = draft ? draftProblem(shown) : null;
+  const unresolved = establishmentBlocked(clock);
 
   function edit(next: BoundDraft) {
     const minutes = minutesFromDraft(next);
@@ -535,6 +741,13 @@ function TemporalHandoff({
     setDraft(null);
     onRefine(minutes.startMinute, minutes.endMinute);
   }
+
+  const saveDisabled =
+    saving ||
+    problem !== null ||
+    unresolved !== null ||
+    (intendedMeaning === "block" && completion.purpose.trim().length === 0) ||
+    (intendedMeaning === "commitment" && completion.title.trim().length === 0);
 
   return (
     <div
@@ -549,25 +762,40 @@ function TemporalHandoff({
           <span className="sr-only">Selected time </span>
           {formatSelectionRange(selection)}
         </p>
-        <button
-          type="button"
-          onClick={onClear}
-          aria-label="Clear selected time"
-          className="min-h-11 shrink-0 px-3 text-sm text-stone-300"
-        >
-          Clear
-        </button>
+        <div className="flex shrink-0 items-center">
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label="Clear selected time"
+            className="min-h-11 px-3 text-sm text-stone-300"
+          >
+            Clear
+          </button>
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label="Close selected time"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center text-stone-300"
+          >
+            <Icon icon={X} />
+          </button>
+        </div>
       </div>
       {clockSentence ? <p className="mt-2 text-sm text-stone-400">{clockSentence}</p> : null}
+      {unresolved ? <p className="mt-2 text-sm text-stone-300">{unresolved}</p> : null}
       <div className="mt-3 space-y-3">
-        <LocalTimeField label="Start" value={shown.start} onChange={(start) => edit({ ...shown, start })} />
+        <TimeBoundControl label="Start" value={shown.start} onChange={(start) => edit({ ...shown, start })} />
         {shown.endOfCivilDay ? (
           <p className="text-sm text-stone-300">
             <span className="font-medium text-stone-100">End. </span>
             End of this civil day
           </p>
         ) : (
-          <LocalTimeField label="End" value={shown.end} onChange={(end) => edit({ ...shown, end, endOfCivilDay: false })} />
+          <TimeBoundControl
+            label="End"
+            value={shown.end}
+            onChange={(end) => edit({ ...shown, end, endOfCivilDay: false })}
+          />
         )}
         <button
           type="button"
@@ -588,6 +816,186 @@ function TemporalHandoff({
         onChooseMeaning={onChooseMeaning}
         onChangeMeaning={onChangeMeaning}
       />
+      {intendedMeaning ? (
+        <CompletionFields
+          meaning={intendedMeaning}
+          completion={completion}
+          contexts={contexts}
+          saving={saving}
+          saveDisabled={saveDisabled}
+          establishError={establishError}
+          onCompletion={onCompletion}
+          onEstablish={onEstablish}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+const fieldClass =
+  "mt-1 w-full min-h-12 rounded-md border border-stone-700 bg-stone-900 px-3 text-base text-stone-100";
+
+function TimeBoundControl({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: TwelveHourClock;
+  onChange: (value: TwelveHourClock) => void;
+}) {
+  const hour = value.hour ?? 12;
+  const minute = value.minute ?? 0;
+  return (
+    <fieldset>
+      <legend className="text-sm font-medium">{label}</legend>
+      <p className="mt-1 text-base text-stone-100">
+        {hour}:{String(minute).padStart(2, "0")} {value.meridiem}
+      </p>
+      <div className="mt-1 flex max-w-full flex-wrap gap-2">
+        <Stepper label={`Earlier ${label} hour`} onStep={() => onChange({ ...value, hour: wrapHour(hour, -1) })} />
+        <Stepper label={`Later ${label} hour`} onStep={() => onChange({ ...value, hour: wrapHour(hour, 1) })} />
+        <Stepper
+          label={`Earlier ${label} minute`}
+          onStep={() => onChange({ ...value, minute: wrapMinute(minute, -1) })}
+        />
+        <Stepper label={`Later ${label} minute`} onStep={() => onChange({ ...value, minute: wrapMinute(minute, 1) })} />
+        <button
+          type="button"
+          aria-label={`${label} AM or PM`}
+          onClick={() => onChange({ ...value, meridiem: value.meridiem === "AM" ? "PM" : "AM" })}
+          className="min-h-11 min-w-11 rounded-md border border-stone-700 px-3 text-sm text-stone-200"
+        >
+          {value.meridiem}
+        </button>
+      </div>
+    </fieldset>
+  );
+}
+
+function Stepper({ label, onStep }: { label: string; onStep: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onStep}
+      className="min-h-11 min-w-11 rounded-md border border-stone-700 px-3 text-sm text-stone-200"
+    >
+      {label.startsWith("Earlier") ? "−" : "+"}
+    </button>
+  );
+}
+
+function wrapHour(hour: number, delta: number): number {
+  return ((hour - 1 + delta + 12) % 12) + 1;
+}
+
+function wrapMinute(minute: number, delta: number): number {
+  return (minute + delta + 60) % 60;
+}
+
+function CompletionFields({
+  meaning,
+  completion,
+  contexts,
+  saving,
+  saveDisabled,
+  establishError,
+  onCompletion,
+  onEstablish,
+}: {
+  meaning: IntendedMeaning;
+  completion: CompletionDraft;
+  contexts: CanvasContextOption[];
+  saving: boolean;
+  saveDisabled: boolean;
+  establishError: string | null;
+  onCompletion: (next: CompletionDraft) => void;
+  onEstablish: () => void;
+}) {
+  return (
+    <div className="mt-3" data-establishment={meaning}>
+      {meaning === "protected_time" ? (
+        <>
+          <label className="block text-sm text-stone-400" htmlFor="canvas-protected-label">
+            Label
+          </label>
+          <input
+            id="canvas-protected-label"
+            type="text"
+            maxLength={80}
+            value={completion.label}
+            onChange={(event) => onCompletion({ ...completion, label: event.target.value })}
+            className={fieldClass}
+          />
+          <p className="mt-1 text-sm text-stone-500">Optional.</p>
+        </>
+      ) : null}
+      {meaning === "block" ? (
+        <>
+          <label className="block text-sm font-medium" htmlFor="canvas-block-purpose">
+            Purpose
+          </label>
+          <input
+            id="canvas-block-purpose"
+            type="text"
+            maxLength={80}
+            value={completion.purpose}
+            onChange={(event) => onCompletion({ ...completion, purpose: event.target.value })}
+            className={fieldClass}
+          />
+          {contexts.length > 0 ? (
+            <>
+              <label className="mt-3 block text-sm text-stone-400" htmlFor="canvas-block-context">
+                Context
+              </label>
+              <select
+                id="canvas-block-context"
+                value={completion.contextId}
+                onChange={(event) => onCompletion({ ...completion, contextId: event.target.value })}
+                className={fieldClass}
+              >
+                <option value="">None</option>
+                {contexts.map((context) => (
+                  <option key={context.id} value={context.id}>
+                    {context.name}
+                  </option>
+                ))}
+              </select>
+            </>
+          ) : null}
+          <p className="mt-1 text-sm text-stone-500">Optional. It does not replace the purpose.</p>
+        </>
+      ) : null}
+      {meaning === "commitment" ? (
+        <>
+          <label className="block text-sm font-medium" htmlFor="canvas-commitment-title">
+            Title
+          </label>
+          <input
+            id="canvas-commitment-title"
+            type="text"
+            maxLength={80}
+            value={completion.title}
+            onChange={(event) => onCompletion({ ...completion, title: event.target.value })}
+            className={fieldClass}
+          />
+        </>
+      ) : null}
+      {establishError ? (
+        <p id="canvas-establish-error" role="alert" className="mt-3 text-sm text-stone-200">
+          {establishError}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        onClick={onEstablish}
+        disabled={saveDisabled}
+        aria-describedby={establishError ? "canvas-establish-error" : undefined}
+        className="mt-3 min-h-12 w-full max-w-full rounded-md bg-stone-100 px-4 text-base text-stone-950 disabled:opacity-60"
+      >
+        {saving ? "Saving" : "Save"}
+      </button>
     </div>
   );
 }

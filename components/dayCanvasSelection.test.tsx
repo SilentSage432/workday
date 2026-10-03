@@ -5,6 +5,7 @@ import { act, useState, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DayCanvas } from "@/components/DayCanvas";
+import type { CanvasEstablishment } from "@/components/canvasEstablishment";
 import { SELECTION_HOLD_MS } from "@/components/daySelection";
 import { defineBlock } from "@/domain/block";
 import { defineCommitment } from "@/domain/commitment";
@@ -191,7 +192,8 @@ describe("day canvas time selection", () => {
     expect(selection(view.container)?.dataset.endMinute).toBe(String(18 * 60 + 15));
 
     pointer(view.surface, "pointerdown", { pointerId: 1, pointerType: "mouse", clientX: 20, clientY: 10 * 60 });
-    pointer(window, "pointerup", { pointerId: 1, pointerType: "mouse", clientX: 20, clientY: 10 * 60 });
+    pointer(window, "pointermove", { pointerId: 1, pointerType: "mouse", clientX: 20, clientY: 11 * 60 });
+    pointer(window, "pointerup", { pointerId: 1, pointerType: "mouse", clientX: 20, clientY: 11 * 60 });
     expect(selection(view.container)?.dataset.startMinute).toBe(String(10 * 60));
     expect(view.container.querySelectorAll("[data-selection='time']")).toHaveLength(1);
 
@@ -402,13 +404,23 @@ function clickLabel(container: HTMLElement, label: string) {
   });
 }
 
-function setClock(container: HTMLElement, label: string, value: string) {
-  const select = container.querySelector<HTMLSelectElement>(`[aria-label="${label}"]`);
-  if (!select) throw new Error(`Missing ${label}`);
-  const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
-  setter?.call(select, value);
+function step(container: HTMLElement, label: string, times = 1) {
+  for (let index = 0; index < times; index += 1) {
+    const button = container.querySelector<HTMLButtonElement>(`[aria-label="${label}"]`);
+    if (!button) throw new Error(`Missing ${label}`);
+    act(() => {
+      button.click();
+    });
+  }
+}
+
+function typeInto(container: HTMLElement, id: string, value: string) {
+  const field = container.querySelector<HTMLInputElement>(`#${id}`);
+  if (!field) throw new Error(`Missing ${id}`);
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+  setter?.call(field, value);
   act(() => {
-    select.dispatchEvent(new Event("change", { bubbles: true }));
+    field.dispatchEvent(new Event("input", { bubbles: true }));
   });
 }
 
@@ -647,8 +659,10 @@ describe("temporal meaning choice on the day canvas", () => {
     expect(view.container.querySelectorAll('[aria-label="Clear selected time"]')).toHaveLength(1);
     expect(view.container.textContent).not.toContain("Continue");
     expect(view.container.querySelector("[data-resize-handle]")).toBeNull();
-    expect(handoff?.querySelector('[aria-label="Start minute"]')).not.toBeNull();
-    expect(handoff?.querySelector('[aria-label="End minute"]')).not.toBeNull();
+    expect(handoff?.querySelector('[aria-label="Later Start minute"]')).not.toBeNull();
+    expect(handoff?.querySelector('[aria-label="Later End minute"]')).not.toBeNull();
+    expect(handoff?.querySelector("select")).toBeNull();
+    expect(handoff?.querySelector('input[type="time"]')).toBeNull();
   });
 
   it("updates the one selection when the start or end minute changes", () => {
@@ -656,11 +670,11 @@ describe("temporal meaning choice on the day canvas", () => {
     const facts = () => view.container.querySelectorAll("[data-source-kind]").length;
     selectHours(view.surface, 18, 21);
     const before = facts();
-    setClock(view.container, "End minute", "7");
+    step(view.container, "Later End minute", 7);
     expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
     expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 7));
     expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("6:00 PM – 9:07 PM");
-    setClock(view.container, "Start minute", "15");
+    step(view.container, "Later Start minute", 15);
     expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60 + 15));
     expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 7));
     expect(facts()).toBe(before);
@@ -670,16 +684,18 @@ describe("temporal meaning choice on the day canvas", () => {
   it("keeps the previous range when a precise edit is reversed or empty", () => {
     const view = renderCanvas();
     selectHours(view.surface, 18, 21);
-    setClock(view.container, "Start hour", "10");
+    step(view.container, "End AM or PM");
     expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
     expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
     expect(view.container.querySelector("[data-range-order='reversed']")?.textContent).toContain(
       "The start is after the end.",
     );
-    setClock(view.container, "Start hour", "6");
-    setClock(view.container, "End hour", "6");
-    setClock(view.container, "End minute", "0");
-    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+    step(view.container, "End AM or PM");
+    step(view.container, "Later Start hour", 2);
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(20 * 60));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
+    step(view.container, "Later Start hour");
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(20 * 60));
     expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
     expect(view.container.querySelector("[data-range-order='empty']")?.textContent).toContain(
       "The start and the end are the same moment.",
@@ -695,14 +711,14 @@ describe("temporal meaning choice on the day canvas", () => {
       ["Add a commitment", "commitment"],
     ] as const) {
       clickLabel(view.container, action);
-      setClock(view.container, "End minute", "20");
+      step(view.container, "Later End minute", 20);
       expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe(meaning);
       expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 20));
       expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
       clickLabel(view.container, "Change meaning");
       expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("asking");
       expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 20));
-      setClock(view.container, "End minute", "0");
+      step(view.container, "Earlier End minute", 20);
     }
 
     clickLabel(view.container, "Protect this time");
@@ -731,8 +747,7 @@ describe("temporal meaning choice on the day canvas", () => {
       discardToken: "America/Denver:0:0",
     });
     selectHours(spring.surface, 1, 2);
-    setClock(spring.container, "End hour", "2");
-    setClock(spring.container, "End minute", "10");
+    step(spring.container, "Later End minute", 10);
     expect(selection(spring.container)?.dataset.startMinute).toBe("60");
     expect(selection(spring.container)?.dataset.endMinute).toBe("130");
     expect(spring.container.querySelector("[data-clock='absent']")?.textContent).toContain(
@@ -747,14 +762,327 @@ describe("temporal meaning choice on the day canvas", () => {
       discardToken: "America/Denver:0:0",
     });
     selectHours(fall.surface, 3, 4);
-    setClock(fall.container, "Start hour", "1");
-    setClock(fall.container, "Start minute", "7");
-    setClock(fall.container, "End hour", "1");
-    setClock(fall.container, "End minute", "20");
+    step(fall.container, "Earlier Start hour", 2);
+    step(fall.container, "Later Start minute", 7);
+    step(fall.container, "Earlier End hour", 3);
+    step(fall.container, "Later End minute", 20);
     expect(selection(fall.container)?.dataset.startMinute).toBe("67");
     expect(selection(fall.container)?.dataset.endMinute).toBe("80");
     expect(fall.container.querySelector("[data-clock='repeated']")?.textContent).toContain(
       "Part of this local clock range occurs twice.",
     );
+  });
+});
+
+function EstablishHarness({
+  sink,
+  fail,
+  occupied = false,
+  contexts = [],
+  selectedDay = day,
+  timeZone = zone,
+}: {
+  sink: CanvasEstablishment[];
+  fail?: string;
+  occupied?: boolean;
+  contexts?: { id: string; name: string }[];
+  selectedDay?: string;
+  timeZone?: string;
+}) {
+  const [token, setToken] = useState(`${timeZone}:0:0`);
+  return (
+    <DayCanvas
+      {...canvasProps({
+        selectedDay,
+        timeZone,
+        today: selectedDay,
+        model: modelFor(selectedDay, timeZone, occupied),
+        discardToken: token,
+        contexts,
+      })}
+      onEstablish={async (establishment) => {
+        sink.push(establishment);
+        if (fail) throw new Error(fail);
+        setToken(`${timeZone}:1:0`);
+      }}
+    />
+  );
+}
+
+function renderHarness(node: ReactNode) {
+  const view = mount(node);
+  mounted.push(view);
+  const surface = view.container.querySelector<HTMLElement>('[data-time-surface="true"]');
+  if (!surface) throw new Error("The timed surface was not rendered.");
+  rect(surface);
+  return { ...view, surface };
+}
+
+function saveButton(container: HTMLElement) {
+  const button = [...container.querySelectorAll("button")].find((item) => item.textContent === "Save");
+  if (!button) throw new Error("Missing Save");
+  return button;
+}
+
+async function clickSave(container: HTMLElement) {
+  const button = saveButton(container);
+  await act(async () => {
+    button.click();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
+describe("establishing selected temporal truth", () => {
+  it("writes nothing until the explicit Save for each meaning", async () => {
+    const sink: CanvasEstablishment[] = [];
+    const view = renderHarness(
+      <EstablishHarness sink={sink} contexts={[{ id: "context-1", name: "Deep work" }]} />,
+    );
+    selectHours(view.surface, 18, 21);
+    step(view.container, "Later End minute", 2);
+    expect(sink).toHaveLength(0);
+
+    clickLabel(view.container, "Protect this time");
+    typeInto(view.container, "canvas-protected-label", "Family");
+    expect(sink).toHaveLength(0);
+    expect(saveButton(view.container).hasAttribute("disabled")).toBe(false);
+    await clickSave(view.container);
+    expect(sink).toHaveLength(1);
+    expect(sink[0]?.meaning).toBe("protected_time");
+    if (sink[0]?.meaning !== "protected_time") throw new Error("Expected protected time.");
+    expect(sink[0].input).toMatchObject({
+      kind: "timed",
+      startsOn: day,
+      startLocal: "18:00",
+      endLocal: "21:02",
+      label: "Family",
+    });
+    expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
+    expect(selection(view.container)).toBeNull();
+  });
+
+  it("requires a purpose, keeps Context optional, and does not infer it", async () => {
+    const sink: CanvasEstablishment[] = [];
+    const view = renderHarness(
+      <EstablishHarness sink={sink} contexts={[{ id: "context-1", name: "Deep work" }]} />,
+    );
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Choose a purpose");
+    expect(saveButton(view.container).hasAttribute("disabled")).toBe(true);
+    await clickSave(view.container);
+    expect(sink).toHaveLength(0);
+    typeInto(view.container, "canvas-block-purpose", "Write");
+    expect(sink).toHaveLength(0);
+    const context = view.container.querySelector<HTMLSelectElement>("#canvas-block-context");
+    expect(context?.value).toBe("");
+    await clickSave(view.container);
+    expect(sink).toHaveLength(1);
+    if (sink[0]?.meaning !== "block") throw new Error("Expected a block.");
+    expect(sink[0].input).toMatchObject({
+      kind: "timed",
+      purpose: "Write",
+      contextId: null,
+      startLocal: "18:00",
+      endLocal: "21:00",
+    });
+    expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
+
+    const chosen: CanvasEstablishment[] = [];
+    const again = renderHarness(
+      <EstablishHarness sink={chosen} contexts={[{ id: "context-1", name: "Deep work" }]} />,
+    );
+    selectHours(again.surface, 8, 9, 4);
+    clickLabel(again.container, "Choose a purpose");
+    typeInto(again.container, "canvas-block-purpose", "Read");
+    const select = again.container.querySelector<HTMLSelectElement>("#canvas-block-context");
+    if (!select) throw new Error("Missing context");
+    const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
+    setter?.call(select, "context-1");
+    act(() => {
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await clickSave(again.container);
+    if (chosen[0]?.meaning !== "block") throw new Error("Expected a block.");
+    expect(chosen[0].input).toMatchObject({ purpose: "Read", contextId: "context-1" });
+  });
+
+  it("requires a commitment title and establishes only that fact", async () => {
+    const sink: CanvasEstablishment[] = [];
+    const view = renderHarness(<EstablishHarness sink={sink} />);
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Add a commitment");
+    expect(saveButton(view.container).hasAttribute("disabled")).toBe(true);
+    typeInto(view.container, "canvas-commitment-title", "School pickup");
+    expect(sink).toHaveLength(0);
+    await clickSave(view.container);
+    if (sink[0]?.meaning !== "commitment") throw new Error("Expected a commitment.");
+    expect(sink[0].input).toMatchObject({
+      kind: "timed",
+      title: "School pickup",
+      origin: "user_created",
+      startLocal: "18:00",
+      endLocal: "21:00",
+    });
+    expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
+    expect(selection(view.container)).toBeNull();
+  });
+
+  it("keeps the draft and the surface when persistence fails, and allows another Save", async () => {
+    const sink: CanvasEstablishment[] = [];
+    const view = renderHarness(<EstablishHarness sink={sink} fail="The block was not saved." />);
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Choose a purpose");
+    typeInto(view.container, "canvas-block-purpose", "Write");
+    await clickSave(view.container);
+    expect(sink).toHaveLength(1);
+    expect(view.container.querySelector("[data-temporal-handoff]")).not.toBeNull();
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+    expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("block");
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-block-purpose")?.value).toBe("Write");
+    expect(view.container.querySelector("[role='alert']")?.textContent).toContain("The block was not saved.");
+    await clickSave(view.container);
+    expect(sink).toHaveLength(2);
+    expect(view.container.querySelector("[data-temporal-handoff]")).not.toBeNull();
+  });
+
+  it("abandons from Close, Clear, and a completed outside tap without writing", () => {
+    const sink: CanvasEstablishment[] = [];
+    const view = renderHarness(<EstablishHarness sink={sink} />);
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Choose a purpose");
+    typeInto(view.container, "canvas-block-purpose", "Write");
+    act(() => {
+      view.container.querySelector<HTMLButtonElement>('[aria-label="Close selected time"]')?.click();
+    });
+    expect(selection(view.container)).toBeNull();
+    expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
+    expect(sink).toHaveLength(0);
+
+    selectHours(view.surface, 18, 21, 2);
+    clickLabel(view.container, "Add a commitment");
+    typeInto(view.container, "canvas-commitment-title", "Pickup");
+    clickLabel(view.container, "Clear");
+    expect(selection(view.container)).toBeNull();
+    expect(sink).toHaveLength(0);
+
+    selectHours(view.surface, 18, 21, 3);
+    clickLabel(view.container, "Protect this time");
+    typeInto(view.container, "canvas-protected-label", "Rest");
+    pointer(view.surface, "pointerdown", { pointerId: 11, pointerType: "mouse", clientX: 40, clientY: 10 * 60 });
+    pointer(window, "pointermove", { pointerId: 11, pointerType: "mouse", clientX: 44, clientY: 10 * 60 + 4 });
+    pointer(window, "pointerup", { pointerId: 11, pointerType: "mouse", clientX: 44, clientY: 10 * 60 + 4 });
+    expect(selection(view.container)).toBeNull();
+    expect(sink).toHaveLength(0);
+  });
+
+  it("does not treat a scroll or an in-progress drag as abandonment", () => {
+    const sink: CanvasEstablishment[] = [];
+    const view = renderHarness(<EstablishHarness sink={sink} />);
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Choose a purpose");
+    typeInto(view.container, "canvas-block-purpose", "Write");
+
+    pointer(view.surface, "pointerdown", { pointerId: 12, pointerType: "touch", clientX: 40, clientY: 10 * 60 });
+    pointer(window, "pointermove", { pointerId: 12, pointerType: "touch", clientX: 40, clientY: 10 * 60 + 40 });
+    pointer(window, "pointerup", { pointerId: 12, pointerType: "touch", clientX: 40, clientY: 10 * 60 + 40 });
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-block-purpose")?.value).toBe("Write");
+    expect(sink).toHaveLength(0);
+
+    pointer(view.surface, "pointerdown", { pointerId: 13, pointerType: "mouse", clientX: 40, clientY: 8 * 60 });
+    pointer(window, "pointermove", { pointerId: 13, pointerType: "mouse", clientX: 40, clientY: 9 * 60 });
+    pointer(window, "pointerup", { pointerId: 13, pointerType: "mouse", clientX: 40, clientY: 9 * 60 });
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(8 * 60));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(9 * 60));
+    expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("asking");
+    expect(view.container.querySelector("#canvas-block-purpose")).toBeNull();
+    expect(sink).toHaveLength(0);
+  });
+
+  it("keeps meaning-specific drafts across refinement and clears them when the meaning changes", () => {
+    const view = renderCanvas();
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Choose a purpose");
+    typeInto(view.container, "canvas-block-purpose", "Write");
+    step(view.container, "Later End minute", 4);
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-block-purpose")?.value).toBe("Write");
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60 + 4));
+
+    clickLabel(view.container, "Change meaning");
+    clickLabel(view.container, "Add a commitment");
+    expect(view.container.querySelector("#canvas-block-purpose")).toBeNull();
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-commitment-title")?.value).toBe("");
+    typeInto(view.container, "canvas-commitment-title", "Pickup");
+    step(view.container, "Later Start minute", 3);
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-commitment-title")?.value).toBe("Pickup");
+
+    clickLabel(view.container, "Change meaning");
+    clickLabel(view.container, "Protect this time");
+    expect(view.container.querySelector("#canvas-commitment-title")).toBeNull();
+    typeInto(view.container, "canvas-protected-label", "Rest");
+    step(view.container, "Later End minute");
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-protected-label")?.value).toBe("Rest");
+    expect(view.container.textContent).not.toContain("Write");
+    expect(view.container.textContent).not.toContain("Pickup");
+  });
+
+  it("still establishes over work, protected time, a block, and a commitment", async () => {
+    const sink: CanvasEstablishment[] = [];
+    const view = renderHarness(<EstablishHarness sink={sink} occupied />);
+    selectHours(view.surface, 8, 20);
+    const kinds = [...view.container.querySelectorAll("[data-source-kind]")].map(
+      (node) => (node as HTMLElement).dataset.sourceKind,
+    );
+    expect(kinds).toEqual(expect.arrayContaining(["work_schedule", "protected_time", "block", "commitment"]));
+    clickLabel(view.container, "Protect this time");
+    expect(view.container.textContent).not.toMatch(/conflict|capacity|free\/busy|\bavailable\b|priority/i);
+    expect(saveButton(view.container).hasAttribute("disabled")).toBe(false);
+    await clickSave(view.container);
+    expect(sink).toHaveLength(1);
+    expect(sink[0]?.meaning).toBe("protected_time");
+  });
+
+  it("refuses to save an unresolved spring-forward or fall-back range", async () => {
+    const springSink: CanvasEstablishment[] = [];
+    const spring = renderHarness(
+      <EstablishHarness
+        sink={springSink}
+        selectedDay="2026-03-08"
+        timeZone="America/Denver"
+      />,
+    );
+    selectHours(spring.surface, 1, 3);
+    clickLabel(spring.container, "Protect this time");
+    expect(spring.container.querySelector("[data-clock='absent']")?.textContent).toContain(
+      "Part of this local clock range does not occur.",
+    );
+    expect(spring.container.textContent).toContain("Save stays unavailable for this local clock range.");
+    expect(saveButton(spring.container).hasAttribute("disabled")).toBe(true);
+    await clickSave(spring.container);
+    expect(springSink).toHaveLength(0);
+    expect(spring.container.querySelector("[data-temporal-handoff]")).not.toBeNull();
+
+    const fallSink: CanvasEstablishment[] = [];
+    const fall = renderHarness(
+      <EstablishHarness sink={fallSink} selectedDay="2026-11-01" timeZone="America/Denver" />,
+    );
+    selectHours(fall.surface, 1, 2);
+    clickLabel(fall.container, "Add a commitment");
+    typeInto(fall.container, "canvas-commitment-title", "Repeated hour");
+    expect(fall.container.querySelector("[data-clock='repeated']")).not.toBeNull();
+    expect(saveButton(fall.container).hasAttribute("disabled")).toBe(true);
+    await clickSave(fall.container);
+    expect(fallSink).toHaveLength(0);
+
+    const ordinarySink: CanvasEstablishment[] = [];
+    const ordinary = renderHarness(
+      <EstablishHarness sink={ordinarySink} selectedDay="2026-03-08" timeZone="America/Denver" />,
+    );
+    selectHours(ordinary.surface, 8, 9, 6);
+    clickLabel(ordinary.container, "Protect this time");
+    expect(saveButton(ordinary.container).hasAttribute("disabled")).toBe(false);
+    await clickSave(ordinary.container);
+    expect(ordinarySink).toHaveLength(1);
   });
 });

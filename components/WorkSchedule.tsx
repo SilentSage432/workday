@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { BlocksSection } from "@/components/BlocksSection";
 import { CommitmentsSection } from "@/components/CommitmentsSection";
 import { DayCanvas } from "@/components/DayCanvas";
+import type { CanvasContextOption, CanvasEstablishment } from "@/components/canvasEstablishment";
 import { Icon } from "@/components/Icon";
 import { useBlockNavigation } from "@/components/navigationGuard";
 import { ProtectedTimeSection } from "@/components/ProtectedTimeSection";
@@ -27,10 +28,10 @@ import {
   workFiscalWeekStart,
 } from "@/domain/time/workFiscalWeek";
 import type { TemporalSettings, WorkScheduleEntry } from "@/domain/workSchedule";
-import { loadBlocks } from "@/persistence/block";
-import { loadCommitments } from "@/persistence/commitment";
+import { createBlock, loadBlocks } from "@/persistence/block";
+import { createCommitment, loadCommitments } from "@/persistence/commitment";
 import { loadContexts } from "@/persistence/contextsAndTasks";
-import { loadProtectedTime } from "@/persistence/protectedTime";
+import { createProtectedTime, loadProtectedTime } from "@/persistence/protectedTime";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import {
   loadTemporalSettings,
@@ -96,6 +97,7 @@ export function WorkSchedule() {
   const [canvasReload, setCanvasReload] = useState(0);
   const [managing, setManaging] = useState(false);
   const [selectionDiscard, setSelectionDiscard] = useState(0);
+  const [blockContexts, setBlockContexts] = useState<CanvasContextOption[]>([]);
 
   const dirty = editing && draft !== null && weekDraftIsDirty(draft);
   useBlockNavigation(dirty, () => {
@@ -191,7 +193,12 @@ export function WorkSchedule() {
         ]);
         if (ignore) return;
         const contextNames: Record<string, string> = {};
-        for (const context of contexts) contextNames[context.id] = context.name;
+        const options: CanvasContextOption[] = [];
+        for (const context of contexts) {
+          contextNames[context.id] = context.name;
+          options.push({ id: context.id, name: context.name });
+        }
+        setBlockContexts(options);
         setCanvas(
           composeDayCanvas({
             selectedDay: day,
@@ -349,6 +356,18 @@ export function WorkSchedule() {
     setSelectionDiscard((current) => current + 1);
   }
 
+  async function establishSelection(establishment: CanvasEstablishment) {
+    const client = getSupabaseBrowserClient();
+    if (establishment.meaning === "protected_time") {
+      await createProtectedTime(client, establishment.input);
+    } else if (establishment.meaning === "block") {
+      await createBlock(client, establishment.input);
+    } else {
+      await createCommitment(client, establishment.input);
+    }
+    noteCanvasReload();
+  }
+
   function shiftDay(delta: -1 | 1) {
     setSelectedDay((current) => (current ? adjacentCivilDay(current, delta) : current));
   }
@@ -395,9 +414,11 @@ export function WorkSchedule() {
           model={canvas}
           timeZone={settings.timeZone}
           discardToken={`${settings.timeZone}:${canvasReload}:${selectionDiscard}`}
+          contexts={blockContexts}
           onPreviousDay={() => shiftDay(-1)}
           onNextDay={() => shiftDay(1)}
           onToday={showConfirmedToday}
+          onEstablish={establishSelection}
         />
       ) : (
         <p className="mt-2 text-sm leading-6 text-stone-400">

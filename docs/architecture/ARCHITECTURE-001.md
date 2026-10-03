@@ -129,6 +129,8 @@ V0-012 keeps an intended meaning beside that range: protect the time, choose a p
 
 V0-012A draws that handoff over the day canvas and lets the same selection be refined by minute. The refined minutes are still the one transient selection. The decision is [../decisions/2026-10-03-contextual-temporal-handoff.md](../decisions/2026-10-03-contextual-temporal-handoff.md).
 
+V0-013 turns that selection into an existing Protected Time, Block, or Commitment only when the user saves it. The canvas does not insert a row itself. Schedule calls the existing create functions and reloads the day. The decision is [../decisions/2026-10-03-explicit-temporal-establishment.md](../decisions/2026-10-03-explicit-temporal-establishment.md).
+
 ## Persistence
 
 Supabase Postgres is the durable store. This product gets its own Supabase project. That project must not be the one used by Wealth Engine, DeptSync, Carb Buddy, or any other TeamLab system.
