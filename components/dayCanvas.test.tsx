@@ -24,6 +24,8 @@ function markup(model: DayCanvasModel, selectedDay = day) {
       phase="ready"
       error={null}
       model={model}
+      timeZone={zone}
+      discardToken="0"
       onPreviousDay={noop}
       onNextDay={noop}
       onToday={noop}
@@ -176,7 +178,12 @@ describe("day canvas presentation", () => {
     expect(nav).toContain('href="/schedule"');
     expect(nav).not.toContain("NOW");
     expect(frame).toContain("pb-[calc(5rem+env(safe-area-inset-bottom))]");
-    expect(canvas).not.toMatch(/onPointerDown|onMouseDown|draggable|Date\.now|resolvedOptions/);
+    expect(canvas).toContain("onPointerDown");
+    expect(canvas).toContain("data-time-surface");
+    expect(canvas).not.toMatch(/onMouseDown|draggable|Date\.now|resolvedOptions/);
+    expect(schedule).toContain("noteCanvasReload");
+    expect(schedule).toContain("setSelectionDiscard");
+    expect(schedule).toContain("discardToken");
     expect(canvas).toContain("max-w-full");
     expect(canvas).toContain("overflow-y-auto");
     expect(canvas).toContain('data-axis-scroll="midnight"');

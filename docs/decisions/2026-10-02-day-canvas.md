@@ -64,3 +64,7 @@ V0-009 composed the four facts and left the day-shaped screen unbuilt. Schedule 
 - The first usage can now show whether Work and Protected Time should stay layered behind Blocks and Commitments.
 
 The tranche record is [../implementation/V0-010.md](../implementation/V0-010.md).
+
+## Later
+
+V0-011 adds a transient local-clock selection on this canvas. The canvas still does not create or edit temporal facts. See [2026-10-02-direct-time-selection.md](2026-10-02-direct-time-selection.md).

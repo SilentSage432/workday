@@ -121,7 +121,9 @@ A Work shift is stored as a shift pattern. The projection may present that inter
 
 V0-009 adds `projections/timeline.ts`. It takes a requested half-open civil range, the confirmed IANA zone, and already loaded Work schedule entries, Protected Time, Blocks, and Commitments. It returns those facts together without merging them, ranking them, or storing a timeline row. It does not read the clock. Planned Tasks are not part of this projection. The decision is [../decisions/2026-10-02-timeline-composition.md](../decisions/2026-10-02-timeline-composition.md).
 
-V0-010 adds `projections/dayCanvas.ts`. It asks Timeline for one civil day and returns visual geometry for a read-only canvas. That geometry is not a second composition and not a stored row. The decision is [../decisions/2026-10-02-day-canvas.md](../decisions/2026-10-02-day-canvas.md).
+V0-010 adds `projections/dayCanvas.ts`. It asks Timeline for one civil day and returns visual geometry for the canvas. That geometry is not a second composition and not a stored row. The decision is [../decisions/2026-10-02-day-canvas.md](../decisions/2026-10-02-day-canvas.md).
+
+V0-011 adds `components/daySelection.ts`. It maps a pointer on that geometry to a transient local-clock range. The range is not a projection of stored facts, not a Timeline fact, and not a row. The decision is [../decisions/2026-10-02-direct-time-selection.md](../decisions/2026-10-02-direct-time-selection.md).
 
 ## Persistence
 

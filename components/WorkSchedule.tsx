@@ -95,6 +95,7 @@ export function WorkSchedule() {
   const [canvasError, setCanvasError] = useState<string | null>(null);
   const [canvasReload, setCanvasReload] = useState(0);
   const [managing, setManaging] = useState(false);
+  const [selectionDiscard, setSelectionDiscard] = useState(0);
 
   const dirty = editing && draft !== null && weekDraftIsDirty(draft);
   useBlockNavigation(dirty, () => {
@@ -255,7 +256,7 @@ export function WorkSchedule() {
       setEditing(false);
       setOpenWorkOn(null);
       setPending(null);
-      setCanvasReload((current) => current + 1);
+      noteCanvasReload();
       return true;
     } catch (error: unknown) {
       setWeekError(failureMessage(error, "This week was not saved."));
@@ -343,6 +344,11 @@ export function WorkSchedule() {
     }
   }
 
+  function noteCanvasReload() {
+    setCanvasReload((current) => current + 1);
+    setSelectionDiscard((current) => current + 1);
+  }
+
   function shiftDay(delta: -1 | 1) {
     setSelectedDay((current) => (current ? adjacentCivilDay(current, delta) : current));
   }
@@ -376,8 +382,6 @@ export function WorkSchedule() {
   const today = settings ? formatCivilDate(civilDateInTimeZone(instant, settings.timeZone)) : null;
   const todayVisible = today !== null && dates.includes(today);
 
-  const refreshCanvas = () => setCanvasReload((current) => current + 1);
-
   return (
     <div className="mt-6">
       <h1 className="text-xl font-medium tracking-tight">Schedule</h1>
@@ -389,6 +393,8 @@ export function WorkSchedule() {
           phase={canvasPhase}
           error={canvasError}
           model={canvas}
+          timeZone={settings.timeZone}
+          discardToken={`${settings.timeZone}:${canvasReload}:${selectionDiscard}`}
           onPreviousDay={() => shiftDay(-1)}
           onNextDay={() => shiftDay(1)}
           onToday={showConfirmedToday}
@@ -469,6 +475,7 @@ export function WorkSchedule() {
         aria-controls="schedule-tools"
         onClick={() => {
           if (managing && dirty) return;
+          if (!managing) setSelectionDiscard((current) => current + 1);
           setManaging((current) => !current);
         }}
         className={`mt-8 ${secondaryButtonClass}`}
@@ -537,17 +544,17 @@ export function WorkSchedule() {
         <ProtectedTimeSection
           key={`protected-${settings?.timeZone ?? "none"}`}
           timeZone={settings?.timeZone ?? null}
-          onStored={refreshCanvas}
+          onStored={noteCanvasReload}
         />
         <BlocksSection
           key={`block-${settings?.timeZone ?? "none"}`}
           timeZone={settings?.timeZone ?? null}
-          onStored={refreshCanvas}
+          onStored={noteCanvasReload}
         />
         <CommitmentsSection
           key={`commitment-${settings?.timeZone ?? "none"}`}
           timeZone={settings?.timeZone ?? null}
-          onStored={refreshCanvas}
+          onStored={noteCanvasReload}
         />
       </div>
     </div>
