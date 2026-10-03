@@ -25,7 +25,13 @@ A tap, or a press that does not move onto another boundary, selects one snapping
 
 The timed surface receives the gesture, including where a fact is drawn. Timed facts are not pointer targets. Their accessible names stay in the tree. The all-day region is not selectable. There is no "select whole day" action and no all-day creation.
 
-Phone use after a fact was established showed that painting the fact and being able to refer to that time are separate. Domain overlap can be legal while the painted region still swallows the touch. The correction is interaction only: a transparent layer above the paint receives the pointer, and the facts remain read-only. Established temporal truth must not make its underlying temporal territory unreachable. That does not decide how a later gesture would talk about the fact itself. See [../implementation/V0-013A.md](../implementation/V0-013A.md).
+Phone use after a fact was established showed that painting the fact and being able to refer to that time are separate. Domain overlap can be legal while the painted region still swallows the touch. The correction is interaction only: a transparent layer above the paint receives the pointer, and the facts remain read-only. Established temporal truth must not make its underlying temporal territory unreachable. See [../implementation/V0-013A.md](../implementation/V0-013A.md).
+
+A later phone session, on the diagnostic build, selected time across an established Protected Time. The same session showed the other expectation: a touch on the striped object was a reference to that existing fact. Current interaction evidence, still waiting on phone acceptance:
+
+Touch time to talk about time. Touch established truth to talk about that truth.
+
+A short tap on the painted fact refers to that fact. A hold or drag that begins there still refers to the time. Movement past the slop before the hold remains a scroll. The reference is transient and does not make the fact editable. It is an interaction distinction, not a ranking of facts. Future operations on a referenced fact remain unresolved. See [../implementation/V0-014.md](../implementation/V0-014.md).
 
 There is no edge auto-scroll. A drag is clamped to the visible intersection of the timed surface and the 28rem scrollport. Hours that are scrolled out of view are not selected until the user scrolls to them.
 

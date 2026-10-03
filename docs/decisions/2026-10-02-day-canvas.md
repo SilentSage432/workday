@@ -75,4 +75,6 @@ V0-012A places that handoff on the canvas and lets the same selection be refined
 
 V0-013 can create a Protected Time, a Block, or a Commitment from that selection after an explicit Save. Existing facts on the canvas stay read-only. See [2026-10-03-explicit-temporal-establishment.md](2026-10-03-explicit-temporal-establishment.md).
 
-V0-013A keeps those facts visible and makes the time underneath them selectable again. Overlap stays legal. Fact editing stays unresolved. See [../implementation/V0-013A.md](../implementation/V0-013A.md).
+V0-013A keeps those facts visible and makes the time underneath them selectable again. Overlap stays legal. See [../implementation/V0-013A.md](../implementation/V0-013A.md).
+
+V0-014 lets a short tap on a painted fact refer to that fact, while a hold still refers to the time underneath it. The reference is transient. It does not edit the fact. Fact operations beyond that reference stay unresolved. See [../implementation/V0-014.md](../implementation/V0-014.md).

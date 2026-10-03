@@ -4,6 +4,10 @@ Date: 2026-10-03.
 
 Baseline that failed acceptance: `d2d38a51cd10558c69eedc07fc4e960bcb0b583a`.
 
+## Retired
+
+V0-014 removed the amber readout and the production probe. The phone evidence from this build is what made that removal possible. On Samsung/Chrome, with `DIAG V0-013A-DIAG` visible, the temporal surface received the touch, capture occurred, and the user selected 4:45 PM–5:15 PM across an established Protected Time of about 4:45 PM–5:00 PM. Temporal reachability is supported. The remaining expectation was to touch the striped object as that existing fact. The sections below are the diagnostic record, including the interpretation that was current when the probe shipped. The product no longer shows the readout. See [V0-014.md](V0-014.md).
+
 ## Failed phone acceptance
 
 V0-013A is not accepted. On a Samsung phone in Chrome, a touch on Protected Time that was already established before V0-013A still does not start a temporal selection. That was the acceptance condition.

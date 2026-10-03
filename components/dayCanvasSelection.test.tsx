@@ -1102,12 +1102,58 @@ function paint(node: HTMLElement) {
   };
 }
 
-function touchAt(surface: HTMLElement, minute: number, pointerId: number, type: "pointerdown" | "pointermove" | "pointerup") {
+function touchAt(
+  surface: HTMLElement,
+  minute: number,
+  pointerId: number,
+  type: "pointerdown" | "pointermove" | "pointerup",
+  clientX = 48,
+) {
   const target = type === "pointerdown" ? surface : window;
-  pointer(target, type, { pointerId, pointerType: "touch", clientX: 48, clientY: minute });
+  pointer(target, type, { pointerId, pointerType: "touch", clientX, clientY: minute });
+}
+
+/**
+ * happy-dom does not lay out the canvas and does not hit-test.
+ * These boxes stand in for the painted articles. A passing test shows the
+ * gesture uses those boxes. It does not show what a browser would hit.
+ */
+function placePaintedFacts(container: HTMLElement) {
+  const columnWidth = 390;
+  for (const node of container.querySelectorAll<HTMLElement>("article[data-start-minute]")) {
+    const start = Number(node.dataset.startMinute);
+    const end = Number(node.dataset.endMinute);
+    const lane = Number(node.dataset.lane ?? "0");
+    const laneCount = Math.max(1, Number(node.dataset.laneCount ?? "1"));
+    const foreground = node.dataset.layer === "foreground";
+    const width = foreground ? columnWidth / laneCount - 8 : columnWidth;
+    const left = foreground ? 8 + lane * (columnWidth / laneCount) : 0;
+    const top = start;
+    const height = Math.max(end - start, 1);
+    node.getBoundingClientRect = () =>
+      ({
+        x: left,
+        y: top,
+        top,
+        left,
+        right: left + width,
+        bottom: top + height,
+        width,
+        height,
+        toJSON() {
+          return {};
+        },
+      }) as DOMRect;
+  }
+}
+
+function inside(node: HTMLElement, minute: number) {
+  const box = node.getBoundingClientRect();
+  return { x: box.left + Math.min(12, box.width / 2), y: minute };
 }
 
 describe("temporal reachability through established truth", () => {
+  // happy-dom does not prove browser hit-testing. Fact taps below use placed boxes.
   function occupied() {
     return renderCanvas({ model: modelFor(day, zone, true) });
   }
@@ -1134,24 +1180,35 @@ describe("temporal reachability through established truth", () => {
   });
 
   it.each([
-    ["work_schedule", 9 * 60],
-    ["protected_time", 12 * 60 + 15],
-    ["block", 18 * 60 + 15],
-    ["commitment", 19 * 60 + 15],
-  ] as const)("taps %s into a 15-minute temporal selection", (kind, minute) => {
+    ["work_schedule", 9 * 60, "Work", "Mid", "8:00 AM – 5:00 PM"],
+    ["protected_time", 12 * 60 + 15, "Protected", "Family", "12:00 PM – 1:00 PM"],
+    ["block", 18 * 60 + 15, "Block", "Studio", "6:00 PM – 7:00 PM"],
+    ["commitment", 19 * 60 + 15, "Commitment", "School", "6:30 PM – 7:30 PM"],
+  ] as const)("taps %s and refers to that fact", (kind, minute, label, primary, range) => {
     const view = occupied();
+    placePaintedFacts(view.container);
     const fact = article(view.container, kind);
     const before = paint(fact);
     expect(Number(before.start)).toBeLessThanOrEqual(minute);
     expect(Number(before.end)).toBeGreaterThan(minute);
-    touchAt(view.surface, minute, 21, "pointerdown");
-    touchAt(view.surface, minute, 21, "pointerup");
-    expect(selection(view.container)?.dataset.startMinute).toBe(String(minute));
-    expect(selection(view.container)?.dataset.endMinute).toBe(String(minute + 15));
-    expect(view.container.querySelector("[data-temporal-handoff]")).not.toBeNull();
+    const point = inside(fact, minute);
+    touchAt(view.surface, minute, 21, "pointerdown", point.x);
+    touchAt(view.surface, minute, 21, "pointerup", point.x);
+    expect(selection(view.container)).toBeNull();
+    expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
+    expect(fact.getAttribute("data-fact-selected")).toBe("true");
+    expect(view.container.querySelectorAll("[data-fact-selected='true']")).toHaveLength(1);
+    const readout = view.container.querySelector("[data-selected-fact]");
+    expect(readout?.getAttribute("data-selected-fact")).toBe(`${kind}:${fact.dataset.sourceId}`);
+    expect(readout?.textContent).toContain(label);
+    expect(readout?.textContent).toContain(primary);
+    expect(readout?.textContent).toContain(range);
+    expect(readout?.querySelectorAll("button")).toHaveLength(1);
+    expect(readout?.querySelector("button")?.getAttribute("aria-label")).toBe("Close selected fact");
+    expect(readout?.textContent).not.toMatch(/edit|delete|move|resize|duplicate|convert/i);
     expect(paint(fact)).toEqual(before);
     expect(fact.querySelector("button, input, textarea, a")).toBeNull();
-    expect(view.container.textContent).not.toMatch(/conflict|capacity|free\/busy|\bavailable\b|priority/i);
+    expect(view.container.textContent).not.toMatch(/conflict|capacity|free\/busy|\bavailable\b|priority|winner/i);
   });
 
   it.each([
@@ -1162,17 +1219,21 @@ describe("temporal reachability through established truth", () => {
   ] as const)("hold-drags downward from %s into a temporal selection", (kind, start, end) => {
     vi.useFakeTimers();
     const view = occupied();
+    placePaintedFacts(view.container);
     const fact = article(view.container, kind);
     const before = paint(fact);
-    touchAt(view.surface, start, 22, "pointerdown");
+    const x = inside(fact, start).x;
+    touchAt(view.surface, start, 22, "pointerdown", x);
     act(() => {
       vi.advanceTimersByTime(SELECTION_HOLD_MS);
     });
-    touchAt(view.surface, end, 22, "pointermove");
-    touchAt(view.surface, end, 22, "pointerup");
+    touchAt(view.surface, end, 22, "pointermove", x);
+    touchAt(view.surface, end, 22, "pointerup", x);
     expect(selection(view.container)?.dataset.startMinute).toBe(String(start));
     expect(selection(view.container)?.dataset.endMinute).toBe(String(end));
     expect(view.container.querySelector("[data-temporal-handoff]")).not.toBeNull();
+    expect(view.container.querySelector("[data-selected-fact]")).toBeNull();
+    expect(view.container.querySelector("[data-fact-selected='true']")).toBeNull();
     expect(paint(fact)).toEqual(before);
     expect(article(view.container, "protected_time").isConnected).toBe(true);
   });
@@ -1180,81 +1241,126 @@ describe("temporal reachability through established truth", () => {
   it("drags upward from inside a block and downward from inside protected time", () => {
     vi.useFakeTimers();
     const upward = occupied();
-    touchAt(upward.surface, 18 * 60 + 45, 23, "pointerdown");
+    placePaintedFacts(upward.container);
+    const block = article(upward.container, "block");
+    const upX = inside(block, 18 * 60 + 45).x;
+    touchAt(upward.surface, 18 * 60 + 45, 23, "pointerdown", upX);
     act(() => {
       vi.advanceTimersByTime(SELECTION_HOLD_MS);
     });
-    touchAt(upward.surface, 18 * 60, 23, "pointermove");
-    touchAt(upward.surface, 18 * 60, 23, "pointerup");
+    touchAt(upward.surface, 18 * 60, 23, "pointermove", upX);
+    touchAt(upward.surface, 18 * 60, 23, "pointerup", upX);
     expect(selection(upward.container)?.dataset.startMinute).toBe(String(18 * 60));
     expect(selection(upward.container)?.dataset.endMinute).toBe(String(18 * 60 + 45));
     expect(paint(article(upward.container, "block")).start).toBe(String(18 * 60));
+    expect(upward.container.querySelector("[data-selected-fact]")).toBeNull();
 
     const downward = occupied();
-    touchAt(downward.surface, 12 * 60, 24, "pointerdown");
+    placePaintedFacts(downward.container);
+    const protectedTime = article(downward.container, "protected_time");
+    const downX = inside(protectedTime, 12 * 60).x;
+    touchAt(downward.surface, 12 * 60, 24, "pointerdown", downX);
     act(() => {
       vi.advanceTimersByTime(SELECTION_HOLD_MS);
     });
-    touchAt(downward.surface, 13 * 60, 24, "pointermove");
-    touchAt(downward.surface, 13 * 60, 24, "pointerup");
+    touchAt(downward.surface, 13 * 60, 24, "pointermove", downX);
+    touchAt(downward.surface, 13 * 60, 24, "pointerup", downX);
     expect(selection(downward.container)?.dataset.startMinute).toBe(String(12 * 60));
     expect(selection(downward.container)?.dataset.endMinute).toBe(String(13 * 60));
     expect(article(downward.container, "protected_time").getAttribute("style")).toContain("repeating-linear-gradient");
     expect(selection(downward.container)?.className).toContain("z-20");
+    expect(downward.container.querySelector("[data-selected-fact]")).toBeNull();
   });
 
-  it("selects through overlapping block and commitment without changing either fact", () => {
+  it("addresses the painted box under a tap where a block and a commitment share the hour", () => {
     const view = occupied();
+    placePaintedFacts(view.container);
     const block = article(view.container, "block");
     const commitment = article(view.container, "commitment");
     const before = [paint(block), paint(commitment)];
     const minute = 18 * 60 + 45;
-    expect(Number(block.dataset.startMinute)).toBeLessThanOrEqual(minute);
-    expect(Number(block.dataset.endMinute)).toBeGreaterThan(minute);
-    expect(Number(commitment.dataset.startMinute)).toBeLessThanOrEqual(minute);
-    expect(Number(commitment.dataset.endMinute)).toBeGreaterThan(minute);
-    touchAt(view.surface, minute, 25, "pointerdown");
-    touchAt(view.surface, minute, 25, "pointerup");
-    expect(selection(view.container)?.dataset.startMinute).toBe(String(minute));
-    expect(selection(view.container)?.dataset.endMinute).toBe(String(minute + 15));
+    expect(block.getBoundingClientRect().right).toBeLessThanOrEqual(commitment.getBoundingClientRect().left);
+    touchAt(view.surface, minute, 25, "pointerdown", inside(block, minute).x);
+    touchAt(view.surface, minute, 25, "pointerup", inside(block, minute).x);
+    expect(selection(view.container)).toBeNull();
+    expect(view.container.querySelector("[data-selected-fact]")?.getAttribute("data-selected-fact")).toBe(
+      "block:studio",
+    );
+    touchAt(view.surface, minute, 26, "pointerdown", inside(commitment, minute).x);
+    touchAt(view.surface, minute, 26, "pointerup", inside(commitment, minute).x);
+    expect(view.container.querySelector("[data-selected-fact]")?.getAttribute("data-selected-fact")).toBe(
+      "commitment:school",
+    );
+    expect(view.container.querySelectorAll("[data-fact-selected='true']")).toHaveLength(1);
+    expect(block.getAttribute("data-fact-selected")).toBe("false");
     expect([paint(block), paint(commitment)]).toEqual(before);
-    expect(view.container.querySelector("[data-selection='time']")).not.toBeNull();
-    expect(view.container.textContent).not.toMatch(/conflict|winner|capacity|unavailable for allocation/i);
+    expect(view.container.textContent).not.toMatch(/conflict|winner|capacity|unavailable for allocation|priority/i);
+  });
+
+  it("keeps a temporal selection legal across a block and a commitment", () => {
+    vi.useFakeTimers();
+    const view = occupied();
+    placePaintedFacts(view.container);
+    const block = article(view.container, "block");
+    const commitment = article(view.container, "commitment");
+    const before = [paint(block), paint(commitment)];
+    const x = inside(block, 18 * 60).x;
+    touchAt(view.surface, 18 * 60, 27, "pointerdown", x);
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS);
+    });
+    touchAt(view.surface, 19 * 60 + 30, 27, "pointermove", x);
+    touchAt(view.surface, 19 * 60 + 30, 27, "pointerup", x);
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+    expect(selection(view.container)?.dataset.endMinute).toBe(String(19 * 60 + 30));
+    expect([paint(block), paint(commitment)]).toEqual(before);
+    expect(view.container.querySelector("[data-selected-fact]")).toBeNull();
+    expect(view.container.textContent).not.toMatch(/conflict|winner|capacity|unavailable for allocation|priority/i);
   });
 
   it("keeps the 220ms hold and the 10px slop when the touch begins on work", () => {
     vi.useFakeTimers();
     const early = occupied();
-    touchAt(early.surface, 9 * 60, 26, "pointerdown");
+    placePaintedFacts(early.container);
+    const earlyX = inside(article(early.container, "work_schedule"), 9 * 60).x;
+    touchAt(early.surface, 9 * 60, 26, "pointerdown", earlyX);
     act(() => {
       vi.advanceTimersByTime(SELECTION_HOLD_MS - 1);
     });
     expect(selection(early.container)).toBeNull();
+    expect(early.container.querySelector("[data-selected-fact]")).toBeNull();
     act(() => {
       vi.advanceTimersByTime(1);
     });
     expect(selection(early.container)?.dataset.startMinute).toBe(String(9 * 60));
     expect(selection(early.container)?.dataset.endMinute).toBe(String(9 * 60 + 15));
+    expect(early.container.querySelector("[data-selected-fact]")).toBeNull();
 
-    const inside = occupied();
-    touchAt(inside.surface, 9 * 60, 27, "pointerdown");
-    touchAt(inside.surface, 9 * 60 + 4, 27, "pointermove");
+    const held = occupied();
+    placePaintedFacts(held.container);
+    const heldX = inside(article(held.container, "work_schedule"), 9 * 60).x;
+    touchAt(held.surface, 9 * 60, 27, "pointerdown", heldX);
+    touchAt(held.surface, 9 * 60 + 4, 27, "pointermove", heldX);
     act(() => {
       vi.advanceTimersByTime(SELECTION_HOLD_MS);
     });
-    expect(selection(inside.container)?.dataset.startMinute).toBe(String(9 * 60));
+    expect(selection(held.container)?.dataset.startMinute).toBe(String(9 * 60));
+    expect(held.container.querySelector("[data-selected-fact]")).toBeNull();
 
     const scroll = occupied();
+    placePaintedFacts(scroll.container);
     const work = article(scroll.container, "work_schedule");
     const before = paint(work);
-    touchAt(scroll.surface, 9 * 60, 28, "pointerdown");
-    touchAt(scroll.surface, 9 * 60 + 24, 28, "pointermove");
+    const scrollX = inside(work, 9 * 60).x;
+    touchAt(scroll.surface, 9 * 60, 28, "pointerdown", scrollX);
+    touchAt(scroll.surface, 9 * 60 + 24, 28, "pointermove", scrollX);
     act(() => {
       vi.advanceTimersByTime(SELECTION_HOLD_MS);
     });
-    touchAt(scroll.surface, 9 * 60 + 24, 28, "pointerup");
+    touchAt(scroll.surface, 9 * 60 + 24, 28, "pointerup", scrollX);
     expect(selection(scroll.container)).toBeNull();
     expect(scroll.container.querySelector("[data-temporal-handoff]")).toBeNull();
+    expect(scroll.container.querySelector("[data-selected-fact]")).toBeNull();
     expect(paint(work)).toEqual(before);
   });
 
@@ -1264,15 +1370,83 @@ describe("temporal reachability through established truth", () => {
     selectHours(view.surface, 20, 21, 29);
     clickLabel(view.container, "Choose a purpose");
     typeInto(view.container, "canvas-block-purpose", "Write");
+    placePaintedFacts(view.container);
     const protectedTime = article(view.container, "protected_time");
     const before = paint(protectedTime);
-    touchAt(view.surface, 12 * 60, 30, "pointerdown");
-    touchAt(view.surface, 12 * 60 + 40, 30, "pointermove");
-    touchAt(view.surface, 12 * 60 + 40, 30, "pointerup");
+    const x = inside(protectedTime, 12 * 60).x;
+    touchAt(view.surface, 12 * 60, 30, "pointerdown", x);
+    touchAt(view.surface, 12 * 60 + 40, 30, "pointermove", x);
+    touchAt(view.surface, 12 * 60 + 40, 30, "pointerup", x);
     expect(selection(view.container)?.dataset.startMinute).toBe(String(20 * 60));
     expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
     expect(view.container.querySelector<HTMLInputElement>("#canvas-block-purpose")?.value).toBe("Write");
     expect(paint(protectedTime)).toEqual(before);
+    expect(view.container.querySelector("[data-selected-fact]")).toBeNull();
     expect(view.container.querySelector("[data-temporal-handoff]")?.parentElement?.className).toContain("z-30");
+  });
+
+  it("does not write a fact reference, and dismissal removes it", async () => {
+    const sink = vi.fn(async () => undefined);
+    const view = renderCanvas({ model: modelFor(day, zone, true), onEstablish: sink });
+    placePaintedFacts(view.container);
+    const fact = article(view.container, "protected_time");
+    const point = inside(fact, 12 * 60 + 15);
+    touchAt(view.surface, point.y, 31, "pointerdown", point.x);
+    touchAt(view.surface, point.y, 31, "pointerup", point.x);
+    expect(sink).not.toHaveBeenCalled();
+    expect(view.container.querySelector("[data-selected-fact]")).not.toBeNull();
+    const close = view.container.querySelector<HTMLButtonElement>("button[aria-label='Close selected fact']");
+    expect(close).not.toBeNull();
+    act(() => {
+      close?.click();
+    });
+    expect(view.container.querySelector("[data-selected-fact]")).toBeNull();
+    expect(view.container.querySelector("[data-fact-selected='true']")).toBeNull();
+    expect(view.container.querySelector("#day-selection-hint")).not.toBeNull();
+    expect(sink).not.toHaveBeenCalled();
+  });
+
+  it("replaces one fact reference with another and clears it when time is selected", () => {
+    vi.useFakeTimers();
+    const view = occupied();
+    placePaintedFacts(view.container);
+    const work = article(view.container, "work_schedule");
+    const protectedTime = article(view.container, "protected_time");
+    const workPoint = inside(work, 9 * 60);
+    touchAt(view.surface, workPoint.y, 32, "pointerdown", workPoint.x);
+    touchAt(view.surface, workPoint.y, 32, "pointerup", workPoint.x);
+    expect(view.container.querySelector("[data-selected-fact]")?.getAttribute("data-selected-fact")).toBe(
+      `work_schedule:${work.dataset.sourceId}`,
+    );
+    const protectedPoint = inside(protectedTime, 12 * 60 + 15);
+    touchAt(view.surface, protectedPoint.y, 33, "pointerdown", protectedPoint.x);
+    touchAt(view.surface, protectedPoint.y, 33, "pointerup", protectedPoint.x);
+    expect(view.container.querySelector("[data-selected-fact]")?.getAttribute("data-selected-fact")).toBe(
+      "protected_time:protect",
+    );
+    expect(work.getAttribute("data-fact-selected")).toBe("false");
+
+    touchAt(view.surface, 20 * 60, 34, "pointerdown", 48);
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS);
+    });
+    touchAt(view.surface, 21 * 60, 34, "pointerup", 48);
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(20 * 60));
+    expect(view.container.querySelector("[data-selected-fact]")).toBeNull();
+    expect(view.container.querySelector("[data-fact-selected='true']")).toBeNull();
+  });
+
+  it("refers to a fact when a settled temporal selection is tapped on that fact", () => {
+    const view = occupied();
+    placePaintedFacts(view.container);
+    selectHours(view.surface, 20, 21, 35);
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(20 * 60));
+    const fact = article(view.container, "block");
+    const point = inside(fact, 18 * 60 + 15);
+    touchAt(view.surface, point.y, 36, "pointerdown", point.x);
+    touchAt(view.surface, point.y, 36, "pointerup", point.x);
+    expect(selection(view.container)).toBeNull();
+    expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
+    expect(view.container.querySelector("[data-selected-fact]")?.getAttribute("data-selected-fact")).toBe("block:studio");
   });
 });

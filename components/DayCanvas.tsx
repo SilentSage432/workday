@@ -3,17 +3,12 @@
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import {
-  REACHABILITY_DIAGNOSTIC_ID,
-  attachReachabilityProbe,
-  describeElement,
-  measureReachability,
-} from "@/components/canvasReachabilityDiagnostic";
-import {
   establishFromSelection,
   establishmentBlocked,
   type CanvasContextOption,
   type CanvasEstablishment,
 } from "@/components/canvasEstablishment";
+import { factAddress, topmostRenderedFact, type FactAddress, type RenderedFactBox } from "@/components/factAddress";
 import { Icon } from "@/components/Icon";
 import {
   CHANGE_MEANING_LABEL,
@@ -55,7 +50,8 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const PROTECTED_HATCH =
   "repeating-linear-gradient(135deg, transparent, transparent 4px, rgb(168 162 158 / 0.35) 4px, rgb(168 162 158 / 0.35) 5px)";
 
-const HINT = "Hold briefly, then drag, to select time. A tap selects 15 minutes.";
+const HINT =
+  "Hold briefly, then drag, to select time. A tap selects 15 minutes. A tap on an established fact refers to that fact.";
 
 function ratioOnSurface(surface: HTMLElement, clientY: number): number {
   const rect = surface.getBoundingClientRect();
@@ -64,6 +60,37 @@ function ratioOnSurface(surface: HTMLElement, clientY: number): number {
     clientY,
     { top: rect.top, height: rect.height },
     scroller ? { top: scroller.top, height: scroller.height } : null,
+  );
+}
+
+function factAtPoint(surface: HTMLElement, x: number, y: number): FactAddress | null {
+  const column = surface.parentElement;
+  if (!column) return null;
+  const facts: RenderedFactBox[] = [];
+  column.querySelectorAll<HTMLElement>("article[data-source-kind][data-source-id]").forEach((article, paintIndex) => {
+    const address = factAddress(article.dataset.sourceKind ?? "", article.dataset.sourceId ?? "");
+    if (!address) return;
+    const box = article.getBoundingClientRect();
+    const parsed = Number(getComputedStyle(article).zIndex);
+    facts.push({
+      ...address,
+      left: box.left,
+      top: box.top,
+      right: box.right,
+      bottom: box.bottom,
+      zIndex: Number.isFinite(parsed) ? parsed : 0,
+      paintIndex,
+    });
+  });
+  return topmostRenderedFact(facts, x, y);
+}
+
+function placementFor(model: DayCanvasModel, fact: FactAddress | null): DayCanvasTimedPlacement | null {
+  if (!fact) return null;
+  return (
+    [...model.context, ...model.foreground].find(
+      (item) => item.sourceKind === fact.sourceKind && item.sourceId === fact.sourceId,
+    ) ?? null
   );
 }
 
@@ -158,16 +185,8 @@ function DayCanvasSession({
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const endGesture = useRef<(() => void) | null>(null);
   const dismissTouchTap = useRef(false);
-  const sectionRef = useRef<HTMLElement>(null);
-  const logRef = useRef<string[]>([]);
-  const [geometry, setGeometry] = useState("surface=not-mounted");
-  const [eventLog, setEventLog] = useState<string[]>([]);
-  const pushRef = useRef<(lines: string[]) => void>(() => undefined);
-  pushRef.current = (lines) => {
-    const next = [...logRef.current, ...lines].slice(-18);
-    logRef.current = next;
-    setEventLog(next);
-  };
+  const factCandidate = useRef<FactAddress | null>(null);
+  const [referencedFact, setReferencedFact] = useState<FactAddress | null>(null);
   const meaningKey = session.intendedMeaning ?? "";
   const [trackedMeaning, setTrackedMeaning] = useState(meaningKey);
   if (trackedMeaning !== meaningKey) {
@@ -195,31 +214,6 @@ function DayCanvasSession({
   }
 
   const surfaceReady = phase === "ready" && model?.axis === "local-clock" && model.selectedDay === selectedDay;
-
-  useEffect(() => {
-    const root = sectionRef.current;
-    if (!root) return;
-    const frame = requestAnimationFrame(() => {
-      setGeometry(
-        measureReachability(root, (x, y) => {
-          if (typeof document.elementFromPoint !== "function") return null;
-          try {
-            return document.elementFromPoint(x, y);
-          } catch {
-            return null;
-          }
-        }).join("\n"),
-      );
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [surfaceReady, selectedDay, model]);
-
-  useEffect(() => {
-    return attachReachabilityProbe(
-      (lines) => pushRef.current(lines),
-      () => surfaceRef.current,
-    );
-  }, [surfaceReady]);
 
   useEffect(() => {
     const surface = surfaceRef.current;
@@ -263,6 +257,8 @@ function DayCanvasSession({
       if (gesture.phase !== "pending") return;
       if (Math.hypot(touch.clientX - gesture.x, touch.clientY - gesture.y) <= SELECTION_MOVE_SLOP_PX) return;
       clearHold();
+      factCandidate.current = null;
+      dismissTouchTap.current = false;
       publish(
         reduceSelection(sessionRef.current, {
           type: "move",
@@ -287,33 +283,39 @@ function DayCanvasSession({
     }
   }
 
+  function addressFact(fact: FactAddress) {
+    factCandidate.current = null;
+    dismissTouchTap.current = false;
+    publish(initialSelectionSession());
+    setReferencedFact(fact);
+  }
+
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    pushRef.current([
-      `listener=surface-react enter currentTarget=${describeElement(event.currentTarget)} target=${describeElement(event.target)}`,
-    ]);
-    if (!event.isPrimary || event.button !== 0) {
-      pushRef.current(["listener=surface-react return=button"]);
-      return;
-    }
+    if (!event.isPrimary || event.button !== 0) return;
     const surface = event.currentTarget;
     const ratioOf = (clientY: number) => ratioOnSurface(surface, clientY);
+    const factHit = factAtPoint(surface, event.clientX, event.clientY);
     const visibleNow = sessionRef.current.visible;
     const handoffOpen = sessionRef.current.gesture.phase === "idle" && visibleNow !== null;
+    const kind = event.pointerType;
     if (handoffOpen && visibleNow) {
       const minute = minuteFromAxisRatio(ratioOf(event.clientY));
       if (minute >= visibleNow.startMinute && minute < visibleNow.endMinute) {
-        pushRef.current(["listener=surface-react return=inside-selection"]);
+        if (factHit) armFactPointer(event, surface, ratioOf, factHit, "tap-only");
         return;
       }
     }
+    if (factHit && kind !== "touch" && !handoffOpen) {
+      armFactPointer(event, surface, ratioOf, factHit, "time-on-drag");
+      return;
+    }
     const pointerId = event.pointerId;
-    const kind = event.pointerType;
     if (handoffOpen && kind !== "touch") {
-      pushRef.current(["listener=surface-react return=outside-pointer"]);
+      factCandidate.current = factHit;
       armOutsidePointer(event, surface, ratioOf);
       return;
     }
-    pushRef.current(["listener=surface-react begin"]);
+    factCandidate.current = factHit;
     dismissTouchTap.current = handoffOpen && kind === "touch";
     detach();
     clearHold();
@@ -332,6 +334,7 @@ function DayCanvasSession({
       if (next.gesture.phase === "idle") {
         clearHold();
         dismissTouchTap.current = false;
+        factCandidate.current = null;
       }
       publish(next);
     };
@@ -344,6 +347,13 @@ function DayCanvasSession({
     };
     const onUp = (native: PointerEvent) => {
       if (native.pointerId !== pointerId) return;
+      const fact = factCandidate.current;
+      if (fact && sessionRef.current.gesture.phase === "pending") {
+        stop();
+        releaseCapture(surface, pointerId);
+        addressFact(fact);
+        return;
+      }
       if (dismissTouchTap.current && sessionRef.current.gesture.phase === "pending") {
         dismissTouchTap.current = false;
         stop();
@@ -360,10 +370,12 @@ function DayCanvasSession({
       stop();
       releaseCapture(surface, pointerId);
       publish(next);
+      if (next.visible) setReferencedFact(null);
     };
     const onCancel = (native: PointerEvent) => {
       if (native.pointerId !== pointerId) return;
       dismissTouchTap.current = false;
+      factCandidate.current = null;
       const next = reduceSelection(sessionRef.current, { type: "cancel", pointerId });
       stop();
       releaseCapture(surface, pointerId);
@@ -397,6 +409,8 @@ function DayCanvasSession({
           civilDate: selectedDay,
         });
         if (held.gesture.phase !== "selecting") return;
+        factCandidate.current = null;
+        setReferencedFact(null);
         try {
           surface.setPointerCapture(pointerId);
         } catch {
@@ -407,6 +421,7 @@ function DayCanvasSession({
       return;
     }
 
+    setReferencedFact(null);
     event.preventDefault();
     try {
       surface.setPointerCapture(pointerId);
@@ -434,6 +449,8 @@ function DayCanvasSession({
       if (!started) {
         if (Math.hypot(native.clientX - startX, native.clientY - startY) <= SELECTION_MOVE_SLOP_PX) return;
         started = true;
+        factCandidate.current = null;
+        setReferencedFact(null);
         publish(
           reduceSelection(sessionRef.current, {
             type: "down",
@@ -469,6 +486,12 @@ function DayCanvasSession({
       stop();
       releaseCapture(surface, pointerId);
       if (!started) {
+        const fact = factCandidate.current;
+        factCandidate.current = null;
+        if (fact) {
+          addressFact(fact);
+          return;
+        }
         clearSelection();
         return;
       }
@@ -496,6 +519,104 @@ function DayCanvasSession({
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onCancel);
     endGesture.current = stop;
+  }
+
+  function armFactPointer(
+    event: ReactPointerEvent<HTMLDivElement>,
+    surface: HTMLDivElement,
+    ratioOf: (clientY: number) => number,
+    fact: FactAddress,
+    mode: "time-on-drag" | "tap-only",
+  ) {
+    const pointerId = event.pointerId;
+    const kind = event.pointerType;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startRatio = ratioOf(event.clientY);
+    let dragged = false;
+    factCandidate.current = null;
+    detach();
+    clearHold();
+
+    const onMove = (native: PointerEvent) => {
+      if (native.pointerId !== pointerId) return;
+      if (!dragged) {
+        if (Math.hypot(native.clientX - startX, native.clientY - startY) <= SELECTION_MOVE_SLOP_PX) return;
+        dragged = true;
+        if (mode === "tap-only") return;
+        setReferencedFact(null);
+        publish(
+          reduceSelection(sessionRef.current, {
+            type: "down",
+            pointerId,
+            pointerType: kind,
+            ratio: startRatio,
+            x: startX,
+            y: startY,
+            civilDate: selectedDay,
+          }),
+        );
+      }
+      if (mode === "tap-only") return;
+      publish(
+        reduceSelection(sessionRef.current, {
+          type: "move",
+          pointerId,
+          pointerType: kind,
+          ratio: ratioOf(native.clientY),
+          x: native.clientX,
+          y: native.clientY,
+          civilDate: selectedDay,
+        }),
+      );
+    };
+    const stop = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+      endGesture.current = null;
+    };
+    const onUp = (native: PointerEvent) => {
+      if (native.pointerId !== pointerId) return;
+      stop();
+      releaseCapture(surface, pointerId);
+      if (!dragged || mode === "tap-only") {
+        if (!dragged) addressFact(fact);
+        return;
+      }
+      publish(
+        reduceSelection(sessionRef.current, {
+          type: "up",
+          pointerId,
+          ratio: ratioOf(native.clientY),
+          civilDate: selectedDay,
+        }),
+      );
+    };
+    const onCancel = (native: PointerEvent) => {
+      if (native.pointerId !== pointerId) return;
+      if (!dragged || mode === "tap-only") {
+        stop();
+        return;
+      }
+      const next = reduceSelection(sessionRef.current, { type: "cancel", pointerId });
+      stop();
+      releaseCapture(surface, pointerId);
+      publish(next);
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+    endGesture.current = stop;
+
+    if (mode === "tap-only" && kind === "touch") return;
+    event.preventDefault();
+    try {
+      surface.setPointerCapture(pointerId);
+    } catch {
+      // The window listener still receives the release.
+    }
   }
 
   function clearSelection() {
@@ -549,20 +670,13 @@ function DayCanvasSession({
 
   const visible = session.visible;
   const clock = visible ? selectionLocalClock(visible, timeZone) : "ordinary";
-
-  const selectionLabel = visible ? `${visible.startMinute}-${visible.endMinute}` : "none";
+  const addressed = model ? placementFor(model, referencedFact) : null;
 
   return (
-    <section ref={sectionRef} className="mt-4" aria-labelledby="day-canvas-heading">
+    <section className="mt-4" aria-labelledby="day-canvas-heading">
       <h2 id="day-canvas-heading" className="sr-only">
         Day
       </h2>
-      <pre
-        data-reachability-diagnostic={REACHABILITY_DIAGNOSTIC_ID}
-        className="mt-3 max-h-[46vh] overflow-auto whitespace-pre-wrap rounded-md border border-amber-600 bg-stone-950 p-2 font-mono text-[11px] leading-4 text-amber-100"
-      >
-        {`DIAG ${REACHABILITY_DIAGNOSTIC_ID}\n${geometry}\ngesture=${session.gesture.phase} selection=${selectionLabel}\n${eventLog.join("\n") || "events=none"}`}
-      </pre>
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
@@ -605,6 +719,8 @@ function DayCanvasSession({
           surfaceRef={surfaceRef}
           selection={visible}
           selectionSettled={session.gesture.phase === "idle"}
+          addressed={addressed}
+          onDismissFact={() => setReferencedFact(null)}
           intendedMeaning={session.intendedMeaning}
           clockSentence={selectionClockSentence(clock)}
           clock={clock}
@@ -632,6 +748,8 @@ function DayCanvasBody({
   surfaceRef,
   selection,
   selectionSettled,
+  addressed,
+  onDismissFact,
   intendedMeaning,
   clockSentence,
   clock,
@@ -651,6 +769,8 @@ function DayCanvasBody({
   surfaceRef: RefObject<HTMLDivElement | null>;
   selection: TimeSelection | null;
   selectionSettled: boolean;
+  addressed: DayCanvasTimedPlacement | null;
+  onDismissFact: () => void;
   intendedMeaning: IntendedMeaning | null;
   clockSentence: string | null;
   clock: "ordinary" | "absent" | "repeated";
@@ -721,6 +841,34 @@ function DayCanvasBody({
             Clear
           </button>
         </div>
+      ) : addressed && !selection ? (
+        <div
+          className="mt-3 flex items-start justify-between gap-3"
+          data-selected-fact={`${addressed.sourceKind}:${addressed.sourceId}`}
+        >
+          <div>
+            <p className="text-sm text-stone-100">
+              <span className="text-stone-400">{addressed.kindLabel}</span>
+              <span className="text-stone-500"> · </span>
+              {addressed.primary}
+            </p>
+            <p className="mt-1 text-sm text-stone-400">
+              {formatSelectionRange({
+                civilDate: model.selectedDay,
+                startMinute: addressed.visibleStartMinute,
+                endMinute: addressed.visibleEndMinute,
+              })}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onDismissFact}
+            aria-label="Close selected fact"
+            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-stone-300"
+          >
+            <Icon icon={X} />
+          </button>
+        </div>
       ) : !selection && model.axis === "local-clock" ? (
         <p id="day-selection-hint" className="mt-3 text-sm text-stone-500">
           {HINT}
@@ -728,7 +876,13 @@ function DayCanvasBody({
       ) : null}
       {model.axis === "local-clock" ? (
         <div className="relative mt-4 max-h-[28rem] max-w-full" data-canvas-frame="true">
-          <TimedAxis model={model} surfaceRef={surfaceRef} selection={selection} onPointerDown={onPointerDown} />
+          <TimedAxis
+            model={model}
+            surfaceRef={surfaceRef}
+            selection={selection}
+            addressed={addressed}
+            onPointerDown={onPointerDown}
+          />
           {selection && selectionSettled ? (
             <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center p-3">
               <TemporalHandoff
@@ -1149,11 +1303,13 @@ function TimedAxis({
   model,
   surfaceRef,
   selection,
+  addressed,
   onPointerDown,
 }: {
   model: DayCanvasModel;
   surfaceRef: RefObject<HTMLDivElement | null>;
   selection: TimeSelection | null;
+  addressed: DayCanvasTimedPlacement | null;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
 }) {
   return (
@@ -1185,13 +1341,13 @@ function TimedAxis({
             />
           ))}
           {model.context.map((item) => (
-            <TimedFact key={`${item.sourceKind}:${item.sourceId}`} item={item} />
+            <TimedFact key={`${item.sourceKind}:${item.sourceId}`} item={item} selected={sameFact(item, addressed)} />
           ))}
           {model.foreground.map((item) => (
-            <TimedFact key={`${item.sourceKind}:${item.sourceId}`} item={item} />
+            <TimedFact key={`${item.sourceKind}:${item.sourceId}`} item={item} selected={sameFact(item, addressed)} />
           ))}
           {selection ? <TimeSelectionMark selection={selection} /> : null}
-          {/* Above the paint, below the contextual surface. Facts stay visible and are not the gesture target. */}
+          {/* The surface receives the pointer. A short tap on a painted box addresses that fact. A hold addresses the time. */}
           <div
             ref={surfaceRef}
             data-time-surface="true"
@@ -1219,11 +1375,16 @@ export function TimeSelectionMark({ selection }: { selection: TimeSelection }) {
   );
 }
 
-function TimedFact({ item }: { item: DayCanvasTimedPlacement }) {
+function sameFact(item: DayCanvasTimedPlacement, addressed: DayCanvasTimedPlacement | null): boolean {
+  return addressed !== null && item.sourceKind === addressed.sourceKind && item.sourceId === addressed.sourceId;
+}
+
+function TimedFact({ item, selected }: { item: DayCanvasTimedPlacement; selected: boolean }) {
   const minutes = item.visibleEndMinute - item.visibleStartMinute;
   return (
     <article
       data-source-kind={item.sourceKind}
+      data-source-id={item.sourceId}
       data-layer={item.layer}
       data-lane={item.lane}
       data-lane-count={item.laneCount}
@@ -1231,8 +1392,9 @@ function TimedFact({ item }: { item: DayCanvasTimedPlacement }) {
       data-start-minute={item.visibleStartMinute}
       data-end-minute={item.visibleEndMinute}
       data-clipped={item.clipped ? "true" : "false"}
+      data-fact-selected={selected ? "true" : "false"}
       aria-label={item.accessibleLabel}
-      className={`pointer-events-none absolute overflow-hidden px-1 py-0.5 ${placementClass(item)}`}
+      className={`pointer-events-none absolute overflow-hidden px-1 py-0.5 ${placementClass(item)}${selected ? " outline outline-2 -outline-offset-2 outline-stone-100" : ""}`}
       style={placementStyle(item)}
     >
       <FactText
