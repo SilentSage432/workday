@@ -3,6 +3,12 @@
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import {
+  REACHABILITY_DIAGNOSTIC_ID,
+  attachReachabilityProbe,
+  describeElement,
+  measureReachability,
+} from "@/components/canvasReachabilityDiagnostic";
+import {
   establishFromSelection,
   establishmentBlocked,
   type CanvasContextOption,
@@ -152,6 +158,16 @@ function DayCanvasSession({
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const endGesture = useRef<(() => void) | null>(null);
   const dismissTouchTap = useRef(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const logRef = useRef<string[]>([]);
+  const [geometry, setGeometry] = useState("surface=not-mounted");
+  const [eventLog, setEventLog] = useState<string[]>([]);
+  const pushRef = useRef<(lines: string[]) => void>(() => undefined);
+  pushRef.current = (lines) => {
+    const next = [...logRef.current, ...lines].slice(-18);
+    logRef.current = next;
+    setEventLog(next);
+  };
   const meaningKey = session.intendedMeaning ?? "";
   const [trackedMeaning, setTrackedMeaning] = useState(meaningKey);
   if (trackedMeaning !== meaningKey) {
@@ -179,6 +195,31 @@ function DayCanvasSession({
   }
 
   const surfaceReady = phase === "ready" && model?.axis === "local-clock" && model.selectedDay === selectedDay;
+
+  useEffect(() => {
+    const root = sectionRef.current;
+    if (!root) return;
+    const frame = requestAnimationFrame(() => {
+      setGeometry(
+        measureReachability(root, (x, y) => {
+          if (typeof document.elementFromPoint !== "function") return null;
+          try {
+            return document.elementFromPoint(x, y);
+          } catch {
+            return null;
+          }
+        }).join("\n"),
+      );
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [surfaceReady, selectedDay, model]);
+
+  useEffect(() => {
+    return attachReachabilityProbe(
+      (lines) => pushRef.current(lines),
+      () => surfaceRef.current,
+    );
+  }, [surfaceReady]);
 
   useEffect(() => {
     const surface = surfaceRef.current;
@@ -247,21 +288,32 @@ function DayCanvasSession({
   }
 
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!event.isPrimary || event.button !== 0) return;
+    pushRef.current([
+      `listener=surface-react enter currentTarget=${describeElement(event.currentTarget)} target=${describeElement(event.target)}`,
+    ]);
+    if (!event.isPrimary || event.button !== 0) {
+      pushRef.current(["listener=surface-react return=button"]);
+      return;
+    }
     const surface = event.currentTarget;
     const ratioOf = (clientY: number) => ratioOnSurface(surface, clientY);
     const visibleNow = sessionRef.current.visible;
     const handoffOpen = sessionRef.current.gesture.phase === "idle" && visibleNow !== null;
     if (handoffOpen && visibleNow) {
       const minute = minuteFromAxisRatio(ratioOf(event.clientY));
-      if (minute >= visibleNow.startMinute && minute < visibleNow.endMinute) return;
+      if (minute >= visibleNow.startMinute && minute < visibleNow.endMinute) {
+        pushRef.current(["listener=surface-react return=inside-selection"]);
+        return;
+      }
     }
     const pointerId = event.pointerId;
     const kind = event.pointerType;
     if (handoffOpen && kind !== "touch") {
+      pushRef.current(["listener=surface-react return=outside-pointer"]);
       armOutsidePointer(event, surface, ratioOf);
       return;
     }
+    pushRef.current(["listener=surface-react begin"]);
     dismissTouchTap.current = handoffOpen && kind === "touch";
     detach();
     clearHold();
@@ -498,11 +550,19 @@ function DayCanvasSession({
   const visible = session.visible;
   const clock = visible ? selectionLocalClock(visible, timeZone) : "ordinary";
 
+  const selectionLabel = visible ? `${visible.startMinute}-${visible.endMinute}` : "none";
+
   return (
-    <section className="mt-4" aria-labelledby="day-canvas-heading">
+    <section ref={sectionRef} className="mt-4" aria-labelledby="day-canvas-heading">
       <h2 id="day-canvas-heading" className="sr-only">
         Day
       </h2>
+      <pre
+        data-reachability-diagnostic={REACHABILITY_DIAGNOSTIC_ID}
+        className="mt-3 max-h-[46vh] overflow-auto whitespace-pre-wrap rounded-md border border-amber-600 bg-stone-950 p-2 font-mono text-[11px] leading-4 text-amber-100"
+      >
+        {`DIAG ${REACHABILITY_DIAGNOSTIC_ID}\n${geometry}\ngesture=${session.gesture.phase} selection=${selectionLabel}\n${eventLog.join("\n") || "events=none"}`}
+      </pre>
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
