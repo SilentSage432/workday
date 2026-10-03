@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  INTENDED_MEANINGS,
   SELECTION_HOLD_MS,
   SELECTION_INCREMENT_MINUTES,
   SELECTION_MOVE_SLOP_PX,
@@ -212,9 +213,9 @@ describe("day selection gesture", () => {
   it("clears on an explicit clear and on discard", () => {
     let session = down(initialSelectionSession(), { ratio: 18 / 24 });
     session = reduceSelection(session, { type: "up", pointerId: 1, ratio: 18 / 24, civilDate: day });
-    expect(reduceSelection(session, { type: "clear" }).visible).toBeNull();
-    expect(reduceSelection(session, { type: "discard" }).visible).toBeNull();
-    expect(reduceSelection(session, { type: "discard" }).gesture).toEqual({ phase: "idle" });
+    session = reduceSelection(session, { type: "choose", meaning: "protected_time" });
+    expect(reduceSelection(session, { type: "clear" })).toEqual(initialSelectionSession());
+    expect(reduceSelection(session, { type: "discard" })).toEqual(initialSelectionSession());
   });
 
   it("stores a civil date and local minutes, not a pointer position", () => {
@@ -258,17 +259,107 @@ describe("day selection clock", () => {
   });
 });
 
+describe("temporal meaning choice", () => {
+  function settled(): SelectionSession {
+    let session = down(initialSelectionSession(), { ratio: 18 / 24 });
+    session = reduceSelection(session, {
+      type: "move",
+      pointerId: 1,
+      pointerType: "mouse",
+      ratio: 21 / 24,
+      x: 0,
+      y: 0,
+      civilDate: day,
+    });
+    session = reduceSelection(session, { type: "up", pointerId: 1, ratio: 21 / 24, civilDate: day });
+    return session;
+  }
+
+  it("offers only protect, purpose, and commitment after a settled range", () => {
+    const session = settled();
+    expect(session.visible).toEqual({ civilDate: day, startMinute: 18 * 60, endMinute: 21 * 60 });
+    expect(session.intendedMeaning).toBeNull();
+    expect(INTENDED_MEANINGS.map((item) => item.action)).toEqual([
+      "Protect this time",
+      "Choose a purpose",
+      "Add a commitment",
+    ]);
+    expect(INTENDED_MEANINGS.map((item) => item.meaning)).toEqual(["protected_time", "block", "commitment"]);
+    const actions = INTENDED_MEANINGS.map((item) => item.action).join(" ");
+    expect(actions).not.toMatch(/\bwork\b|\btask\b|shift|opening|closing/i);
+  });
+
+  it("records each intended meaning without changing the range", () => {
+    const range = { civilDate: day, startMinute: 18 * 60, endMinute: 21 * 60 };
+    for (const meaning of ["protected_time", "block", "commitment"] as const) {
+      const chosen = reduceSelection(settled(), { type: "choose", meaning });
+      expect(chosen.visible).toEqual(range);
+      expect(chosen.intendedMeaning).toBe(meaning);
+      expect(Object.keys(chosen.visible ?? {}).sort()).toEqual(["civilDate", "endMinute", "startMinute"]);
+    }
+  });
+
+  it("clears only the meaning when the user changes it", () => {
+    const chosen = reduceSelection(settled(), { type: "choose", meaning: "block" });
+    const changed = reduceSelection(chosen, { type: "change-meaning" });
+    expect(changed.visible).toEqual(chosen.visible);
+    expect(changed.intendedMeaning).toBeNull();
+  });
+
+  it("drops the previous meaning when a new range replaces the selection", () => {
+    let session = reduceSelection(settled(), { type: "choose", meaning: "commitment" });
+    session = down(session, { ratio: 10 / 24 });
+    expect(session.intendedMeaning).toBeNull();
+    session = reduceSelection(session, { type: "up", pointerId: 1, ratio: 10 / 24, civilDate: day });
+    expect(session.visible).toEqual({ civilDate: day, startMinute: 10 * 60, endMinute: 10 * 60 + 15 });
+    expect(session.intendedMeaning).toBeNull();
+  });
+
+  it("restores the previous meaning when a replacement gesture is cancelled or scrolls away", () => {
+    let session = reduceSelection(settled(), { type: "choose", meaning: "protected_time" });
+    session = down(session, { pointerType: "touch", ratio: 8 / 24, y: 40 });
+    session = reduceSelection(session, { type: "hold", pointerId: 1, civilDate: day });
+    expect(session.intendedMeaning).toBeNull();
+    session = reduceSelection(session, { type: "cancel", pointerId: 1 });
+    expect(session.visible).toEqual({ civilDate: day, startMinute: 18 * 60, endMinute: 21 * 60 });
+    expect(session.intendedMeaning).toBe("protected_time");
+
+    session = down(session, { pointerType: "touch", ratio: 8 / 24, y: 40 });
+    session = reduceSelection(session, {
+      type: "move",
+      pointerId: 1,
+      pointerType: "touch",
+      ratio: 0.4,
+      x: 0,
+      y: 40 + SELECTION_MOVE_SLOP_PX + 4,
+      civilDate: day,
+    });
+    expect(session.visible).toEqual({ civilDate: day, startMinute: 18 * 60, endMinute: 21 * 60 });
+    expect(session.intendedMeaning).toBe("protected_time");
+  });
+
+  it("ignores a meaning choice when no range is settled", () => {
+    expect(reduceSelection(initialSelectionSession(), { type: "choose", meaning: "block" })).toEqual(
+      initialSelectionSession(),
+    );
+    const dragging = down(initialSelectionSession(), { ratio: 18 / 24 });
+    expect(reduceSelection(dragging, { type: "choose", meaning: "block" })).toEqual(dragging);
+  });
+});
+
 describe("day selection boundaries", () => {
   it("does not persist, compose Timeline, or infer availability", () => {
     const selection = readFileSync(new URL("./daySelection.ts", import.meta.url), "utf8");
     const canvas = readFileSync(new URL("./DayCanvas.tsx", import.meta.url), "utf8");
     const schedule = readFileSync(new URL("./WorkSchedule.tsx", import.meta.url), "utf8");
     expect(selection).not.toMatch(/supabase|projectTimeline|Date\.now|capacity|availability|conflict/i);
+    expect(selection).not.toMatch(/defineProtectedTime|defineBlock|defineCommitment|defineTask|\.insert\(/);
     expect(canvas).not.toMatch(/supabase|projectTimeline|Date\.now|capacity|conflict|draggable/);
+    expect(canvas).not.toMatch(/defineProtectedTime|defineBlock|defineCommitment|defineTask|\.insert\(/);
     expect(canvas).not.toContain("resolvedOptions");
     expect(schedule).toContain("noteCanvasReload");
     expect(schedule).toContain("if (!managing) setSelectionDiscard");
-    expect(selection).not.toContain("protected_time");
-    expect(selection).not.toContain("commitment");
+    expect(schedule).not.toContain("intendedMeaning");
+    expect(schedule).not.toContain("Protect this time");
   });
 });

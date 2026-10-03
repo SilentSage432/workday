@@ -125,6 +125,8 @@ V0-010 adds `projections/dayCanvas.ts`. It asks Timeline for one civil day and r
 
 V0-011 adds `components/daySelection.ts`. It maps a pointer on that geometry to a transient local-clock range. The range is not a projection of stored facts, not a Timeline fact, and not a row. The decision is [../decisions/2026-10-02-direct-time-selection.md](../decisions/2026-10-02-direct-time-selection.md).
 
+V0-012 keeps an intended meaning beside that range: protect the time, choose a purpose, or add a commitment. The meaning is interaction state in the same session. It is not a domain primitive, not a Timeline fact, and not a row. The decision is [../decisions/2026-10-03-temporal-meaning-choice.md](../decisions/2026-10-03-temporal-meaning-choice.md).
+
 ## Persistence
 
 Supabase Postgres is the durable store. This product gets its own Supabase project. That project must not be the one used by Wealth Engine, DeptSync, Carb Buddy, or any other TeamLab system.

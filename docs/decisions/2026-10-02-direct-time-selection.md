@@ -75,3 +75,7 @@ V0-010 made one civil day spatially true and left it read-only. The phone can no
 - DST identification is a reading of the existing zone conversion. The `Date` used to ask the question is not kept.
 
 The tranche record is [../implementation/V0-011.md](../implementation/V0-011.md).
+
+## Later
+
+V0-012 asks "What does this time mean?" after a settled selection. The answer is a transient intended kind: protect the time, choose a purpose, or add a commitment. It is not stored, and it does not create a fact. See [2026-10-03-temporal-meaning-choice.md](2026-10-03-temporal-meaning-choice.md).

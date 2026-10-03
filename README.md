@@ -14,13 +14,13 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**V0-011.** Schedule shows one selected civil day from the Timeline projection. The user can select a transient local-clock span on that day. The selection is not stored and does not create a fact. Month, week, and NOW are not built.
+**V0-012.** Schedule shows one selected civil day from the Timeline projection. The user can select a transient local-clock span and name what that time means: protect it, choose a purpose, or add a commitment. The choice is not stored and does not create a fact. Month, week, and NOW are not built.
 
 Today, Resume, Work orientation, and Timeline are projections. They are not tables. The day canvas is a view of Timeline, not a table.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The behavior of this slice is in [docs/implementation/V0-011.md](docs/implementation/V0-011.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-010.md](docs/implementation/V0-010.md).
+The behavior of this slice is in [docs/implementation/V0-012.md](docs/implementation/V0-012.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-011.md](docs/implementation/V0-011.md).
 
 ## Canonical documents
 
@@ -46,6 +46,7 @@ The behavior of this slice is in [docs/implementation/V0-011.md](docs/implementa
 | [docs/implementation/V0-009.md](docs/implementation/V0-009.md) | Timeline composition |
 | [docs/implementation/V0-010.md](docs/implementation/V0-010.md) | Read-only day temporal canvas |
 | [docs/implementation/V0-011.md](docs/implementation/V0-011.md) | Direct time selection on the day canvas |
+| [docs/implementation/V0-012.md](docs/implementation/V0-012.md) | Temporal meaning choice on a selected span |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |

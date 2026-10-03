@@ -378,3 +378,235 @@ describe("day canvas time selection", () => {
     expect(selection(fall.container)?.dataset.endMinute).toBe("120");
   });
 });
+
+const MEANING_ACTIONS = ["Protect this time", "Choose a purpose", "Add a commitment"] as const;
+
+function selectHours(
+  surface: HTMLElement,
+  startHour: number,
+  endHour: number,
+  pointerId = 1,
+) {
+  pointer(surface, "pointerdown", { pointerId, pointerType: "mouse", clientX: 40, clientY: startHour * 60 });
+  if (endHour !== startHour) {
+    pointer(window, "pointermove", { pointerId, pointerType: "mouse", clientX: 40, clientY: endHour * 60 });
+  }
+  pointer(window, "pointerup", { pointerId, pointerType: "mouse", clientX: 40, clientY: endHour * 60 });
+}
+
+function clickLabel(container: HTMLElement, label: string) {
+  const button = [...container.querySelectorAll("button")].find((item) => item.textContent === label);
+  if (!button) throw new Error(`Missing button: ${label}`);
+  act(() => {
+    button.click();
+  });
+}
+
+function meaningPanel(container: HTMLElement) {
+  return container.querySelector<HTMLElement>("[data-meaning-choice]");
+}
+
+describe("temporal meaning choice on the day canvas", () => {
+  it("asks what a completed selection means and hides the question while the drag is open", () => {
+    const view = renderCanvas();
+    pointer(view.surface, "pointerdown", { pointerId: 1, pointerType: "mouse", clientX: 40, clientY: 18 * 60 });
+    pointer(window, "pointermove", { pointerId: 1, pointerType: "mouse", clientX: 40, clientY: 21 * 60 });
+    expect(view.container.textContent).not.toContain("What does this time mean?");
+    expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("6:00 PM – 9:00 PM");
+    pointer(window, "pointerup", { pointerId: 1, pointerType: "mouse", clientX: 40, clientY: 21 * 60 });
+
+    const panel = meaningPanel(view.container);
+    expect(panel?.dataset.meaningChoice).toBe("asking");
+    expect(panel?.getAttribute("role")).toBeNull();
+    const actions = [...(panel?.querySelectorAll("[data-meaning-action]") ?? [])];
+    expect(actions.map((button) => button.textContent)).toEqual([...MEANING_ACTIONS]);
+    expect(actions).toHaveLength(3);
+    for (const button of actions) expect((button as HTMLButtonElement).disabled).toBe(false);
+    expect(panel?.textContent).toContain("What does this time mean?");
+    expect(panel?.textContent).not.toMatch(/\b(available|free|conflict|priority|recommendation|should)\b|open slot/i);
+    expect(panel?.textContent).not.toMatch(/\bwork\b|\btask\b|shift|opening|closing|add work|make this a shift/i);
+    expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("Selected time");
+    expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("6:00 PM – 9:00 PM");
+  });
+
+  it("records each intended meaning, keeps the range, and writes no fact", () => {
+    const view = renderCanvas({ model: modelFor(day, zone, true) });
+    const facts = () => view.container.querySelectorAll("[data-source-kind]").length;
+    selectHours(view.surface, 18, 21);
+    const before = facts();
+    const cases = [
+      ["Protect this time", "protected_time", "Protected time", "Unavailable for allocation."],
+      ["Choose a purpose", "block", "Block", "What this time is for."],
+      ["Add a commitment", "commitment", "Commitment", "An established constraint."],
+    ] as const;
+
+    for (const [action, meaning, title, sentence] of cases) {
+      clickLabel(view.container, action);
+      const panel = meaningPanel(view.container);
+      expect(panel?.dataset.meaningChoice).toBe(meaning);
+      expect(panel?.textContent).toContain(title);
+      expect(panel?.textContent).toContain(sentence);
+      expect(panel?.textContent).not.toMatch(/\b(available|free|conflict|priority|recommendation|should)\b|open slot/i);
+      expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("6:00 PM – 9:00 PM");
+      expect(selection(view.container)?.dataset.startMinute).toBe(String(18 * 60));
+      expect(selection(view.container)?.dataset.endMinute).toBe(String(21 * 60));
+      expect(facts()).toBe(before);
+      expect(view.container.querySelector("[data-meaning-choice] input, [data-meaning-choice] textarea, [data-meaning-choice] select")).toBeNull();
+      clickLabel(view.container, "Change meaning");
+      expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("asking");
+      expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("6:00 PM – 9:00 PM");
+      expect(view.container.textContent).not.toContain(sentence);
+    }
+  });
+
+  it("clears meaning with the range, and a new range starts without the previous meaning", () => {
+    const view = renderCanvas();
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Protect this time");
+    clickLabel(view.container, "Clear");
+    expect(selection(view.container)).toBeNull();
+    expect(meaningPanel(view.container)).toBeNull();
+    expect(view.container.textContent).not.toContain("Unavailable for allocation.");
+    expect(view.container.textContent).toContain("Hold briefly, then drag, to select time.");
+
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Add a commitment");
+    selectHours(view.surface, 10, 11, 2);
+    expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("asking");
+    expect(view.container.querySelector("[data-selection-label]")?.textContent).toContain("10:00 AM – 11:00 AM");
+    expect(view.container.textContent).not.toContain("An established constraint.");
+  });
+
+  it("clears a chosen meaning on day navigation, Manage schedule, and a source refresh", () => {
+    function Harness() {
+      const [selectedDay, setSelectedDay] = useState(day);
+      const [discardToken, setDiscardToken] = useState("America/Boise:0:0");
+      return (
+        <>
+          <button type="button" onClick={() => setDiscardToken("America/Boise:1:1")}>
+            Reload day
+          </button>
+          <button type="button" onClick={() => setDiscardToken("America/Boise:0:1")}>
+            Open tools
+          </button>
+          <DayCanvas
+            {...canvasProps({
+              selectedDay,
+              model: modelFor(selectedDay, zone, false),
+              today: "2026-10-02",
+              discardToken,
+              onPreviousDay: () => setSelectedDay(adjacentCivilDay(selectedDay, -1)),
+              onNextDay: () => setSelectedDay(adjacentCivilDay(selectedDay, 1)),
+              onToday: () => setSelectedDay("2026-10-02"),
+            })}
+          />
+        </>
+      );
+    }
+
+    const view = mount(<Harness />);
+    mounted.push(view);
+    const surface = () => {
+      const node = view.container.querySelector<HTMLElement>('[data-time-surface="true"]');
+      if (!node) throw new Error("The timed surface was not rendered.");
+      rect(node);
+      return node;
+    };
+    const choose = () => {
+      selectHours(surface(), 18, 21);
+      clickLabel(view.container, "Choose a purpose");
+      expect(meaningPanel(view.container)?.dataset.meaningChoice).toBe("block");
+    };
+    const expectCleared = () => {
+      expect(selection(view.container)).toBeNull();
+      expect(meaningPanel(view.container)).toBeNull();
+      expect(view.container.textContent).not.toContain("What this time is for.");
+    };
+
+    choose();
+    act(() => {
+      view.container.querySelector<HTMLButtonElement>('[aria-label="Previous day"]')?.click();
+    });
+    expectCleared();
+
+    choose();
+    act(() => {
+      view.container.querySelector<HTMLButtonElement>('[aria-label="Next day"]')?.click();
+    });
+    expectCleared();
+
+    choose();
+    clickLabel(view.container, "Today");
+    expectCleared();
+
+    choose();
+    clickLabel(view.container, "Open tools");
+    expectCleared();
+
+    choose();
+    clickLabel(view.container, "Reload day");
+    expectCleared();
+  });
+
+  it("keeps every meaning choice available across Work, Protected Time, a Block, and a Commitment", () => {
+    const view = renderCanvas({ model: modelFor(day, zone, true) });
+    const ranges = [
+      [10, 11],
+      [12, 13],
+      [18, 19],
+      [10, 19],
+    ] as const;
+    for (const [start, end] of ranges) {
+      selectHours(view.surface, start, end, start);
+      const panel = meaningPanel(view.container);
+      expect(panel?.dataset.meaningChoice).toBe("asking");
+      const buttons = [...(panel?.querySelectorAll("button") ?? [])] as HTMLButtonElement[];
+      expect(buttons.map((button) => button.textContent)).toEqual([...MEANING_ACTIONS]);
+      for (const button of buttons) expect(button.disabled).toBe(false);
+      expect(panel?.textContent).not.toMatch(/occupied|conflict|available|free|priority/i);
+    }
+    expect(view.container.innerHTML).toContain('data-source-kind="work_schedule"');
+    expect(view.container.innerHTML).toContain('data-source-kind="protected_time"');
+    expect(view.container.innerHTML).toContain('data-source-kind="block"');
+    expect(view.container.innerHTML).toContain('data-source-kind="commitment"');
+  });
+
+  it("keeps an unresolved local-clock sentence beside the meaning question", () => {
+    const spring = renderCanvas({
+      selectedDay: "2026-03-08",
+      timeZone: "America/Denver",
+      model: modelFor("2026-03-08", "America/Denver", false),
+      discardToken: "America/Denver:0:0",
+    });
+    selectHours(spring.surface, 2, 3);
+    expect(spring.container.querySelector("[data-clock='absent']")?.textContent).toContain(
+      "Part of this local clock range does not occur.",
+    );
+    expect(meaningPanel(spring.container)?.dataset.meaningChoice).toBe("asking");
+    clickLabel(spring.container, "Protect this time");
+    expect(spring.container.querySelector("[data-clock='absent']")?.textContent).toContain(
+      "Part of this local clock range does not occur.",
+    );
+    expect(meaningPanel(spring.container)?.dataset.meaningChoice).toBe("protected_time");
+    expect(selection(spring.container)?.dataset.startMinute).toBe("120");
+    expect(selection(spring.container)?.dataset.endMinute).toBe("180");
+
+    const fall = renderCanvas({
+      selectedDay: "2026-11-01",
+      timeZone: "America/Denver",
+      model: modelFor("2026-11-01", "America/Denver", false),
+      today: "2026-11-01",
+      discardToken: "America/Denver:0:0",
+    });
+    selectHours(fall.surface, 1, 2);
+    expect(fall.container.querySelector("[data-clock='repeated']")?.textContent).toContain(
+      "Part of this local clock range occurs twice.",
+    );
+    clickLabel(fall.container, "Add a commitment");
+    expect(fall.container.querySelector("[data-clock='repeated']")?.textContent).toContain(
+      "Part of this local clock range occurs twice.",
+    );
+    expect(meaningPanel(fall.container)?.dataset.meaningChoice).toBe("commitment");
+    expect(fall.container.querySelector("[data-selection-label]")?.textContent).toContain("1:00 AM – 2:00 AM");
+  });
+});

@@ -4,15 +4,20 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { Icon } from "@/components/Icon";
 import {
+  CHANGE_MEANING_LABEL,
+  INTENDED_MEANINGS,
+  MEANING_QUESTION,
   SELECTION_HOLD_MS,
   SELECTION_MOVE_SLOP_PX,
   formatSelectionRange,
   initialSelectionSession,
+  intendedMeaningCopy,
   ratioFromVisiblePointer,
   reduceSelection,
   selectionClockSentence,
   selectionFrame,
   selectionLocalClock,
+  type IntendedMeaning,
   type SelectionSession,
   type TimeSelection,
 } from "@/components/daySelection";
@@ -301,6 +306,14 @@ function DayCanvasSession({
     publish(initialSelectionSession());
   }
 
+  function chooseMeaning(meaning: IntendedMeaning) {
+    publish(reduceSelection(sessionRef.current, { type: "choose", meaning }));
+  }
+
+  function changeMeaning() {
+    publish(reduceSelection(sessionRef.current, { type: "change-meaning" }));
+  }
+
   const visible = session.visible;
   const clock = visible ? selectionLocalClock(visible, timeZone) : "ordinary";
 
@@ -350,10 +363,14 @@ function DayCanvasSession({
           model={model}
           surfaceRef={surfaceRef}
           selection={visible}
+          selectionSettled={session.gesture.phase === "idle"}
+          intendedMeaning={session.intendedMeaning}
           clockSentence={selectionClockSentence(clock)}
           clock={clock}
           onPointerDown={onPointerDown}
           onClear={clearSelection}
+          onChooseMeaning={chooseMeaning}
+          onChangeMeaning={changeMeaning}
         />
       ) : null}
     </section>
@@ -364,18 +381,26 @@ function DayCanvasBody({
   model,
   surfaceRef,
   selection,
+  selectionSettled,
+  intendedMeaning,
   clockSentence,
   clock,
   onPointerDown,
   onClear,
+  onChooseMeaning,
+  onChangeMeaning,
 }: {
   model: DayCanvasModel;
   surfaceRef: RefObject<HTMLDivElement | null>;
   selection: TimeSelection | null;
+  selectionSettled: boolean;
+  intendedMeaning: IntendedMeaning | null;
   clockSentence: string | null;
   clock: "ordinary" | "absent" | "repeated";
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onClear: () => void;
+  onChooseMeaning: (meaning: IntendedMeaning) => void;
+  onChangeMeaning: () => void;
 }) {
   return (
     <div className="mt-4 max-w-full">
@@ -437,9 +462,64 @@ function DayCanvasBody({
           {HINT}
         </p>
       ) : null}
+      {selection && selectionSettled ? (
+        <MeaningHandoff
+          intendedMeaning={intendedMeaning}
+          onChooseMeaning={onChooseMeaning}
+          onChangeMeaning={onChangeMeaning}
+        />
+      ) : null}
       {model.axis === "local-clock" ? (
         <TimedAxis model={model} surfaceRef={surfaceRef} selection={selection} onPointerDown={onPointerDown} />
       ) : null}
+    </div>
+  );
+}
+
+function MeaningHandoff({
+  intendedMeaning,
+  onChooseMeaning,
+  onChangeMeaning,
+}: {
+  intendedMeaning: IntendedMeaning | null;
+  onChooseMeaning: (meaning: IntendedMeaning) => void;
+  onChangeMeaning: () => void;
+}) {
+  if (intendedMeaning) {
+    const copy = intendedMeaningCopy(intendedMeaning);
+    return (
+      <div className="mt-3 max-w-full" data-meaning-choice={intendedMeaning} aria-live="polite">
+        <p className="text-sm text-stone-100">{copy.title}</p>
+        <p className="mt-1 text-sm text-stone-400">{copy.sentence}</p>
+        <button
+          type="button"
+          onClick={onChangeMeaning}
+          className="mt-1 min-h-11 max-w-full px-0 text-left text-sm text-stone-300"
+        >
+          {CHANGE_MEANING_LABEL}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 max-w-full" data-meaning-choice="asking" aria-live="polite">
+      <p id="meaning-question" className="text-sm text-stone-300">
+        {MEANING_QUESTION}
+      </p>
+      <div role="group" aria-labelledby="meaning-question" className="mt-1 flex max-w-full flex-col">
+        {INTENDED_MEANINGS.map((item) => (
+          <button
+            key={item.meaning}
+            type="button"
+            data-meaning-action={item.meaning}
+            onClick={() => onChooseMeaning(item.meaning)}
+            className="min-h-11 max-w-full border-t border-stone-800 px-0 text-left text-sm text-stone-200 first:border-t-0"
+          >
+            {item.action}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

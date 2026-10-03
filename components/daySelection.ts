@@ -30,6 +30,52 @@ export type TimeSelection = {
 
 export type SelectionClock = "ordinary" | "absent" | "repeated";
 
+/**
+ * The kind of truth the user intends to establish for the selected range.
+ * Interaction only. It is not a row, a Timeline fact, or a domain primitive.
+ */
+export type IntendedMeaning = "protected_time" | "block" | "commitment";
+
+export const MEANING_QUESTION = "What does this time mean?";
+
+export const CHANGE_MEANING_LABEL = "Change meaning";
+
+export const INTENDED_MEANINGS = [
+  {
+    meaning: "protected_time",
+    action: "Protect this time",
+    title: "Protected time",
+    sentence: "Unavailable for allocation.",
+  },
+  {
+    meaning: "block",
+    action: "Choose a purpose",
+    title: "Block",
+    sentence: "What this time is for.",
+  },
+  {
+    meaning: "commitment",
+    action: "Add a commitment",
+    title: "Commitment",
+    sentence: "An established constraint.",
+  },
+] as const satisfies ReadonlyArray<{
+  meaning: IntendedMeaning;
+  action: string;
+  title: string;
+  sentence: string;
+}>;
+
+const INTENDED_MEANING_COPY = {
+  protected_time: INTENDED_MEANINGS[0],
+  block: INTENDED_MEANINGS[1],
+  commitment: INTENDED_MEANINGS[2],
+} as const;
+
+export function intendedMeaningCopy(meaning: IntendedMeaning): (typeof INTENDED_MEANINGS)[number] {
+  return INTENDED_MEANING_COPY[meaning];
+}
+
 type PointerKind = "touch" | "mouse" | "pen";
 
 export type SelectionGesture =
@@ -42,6 +88,7 @@ export type SelectionGesture =
       x: number;
       y: number;
       prior: TimeSelection | null;
+      priorMeaning: IntendedMeaning | null;
     }
   | {
       phase: "selecting";
@@ -49,11 +96,13 @@ export type SelectionGesture =
       anchorMinute: number;
       currentMinute: number;
       prior: TimeSelection | null;
+      priorMeaning: IntendedMeaning | null;
     };
 
 export type SelectionSession = {
   gesture: SelectionGesture;
   visible: TimeSelection | null;
+  intendedMeaning: IntendedMeaning | null;
 };
 
 type PointerSample = {
@@ -72,10 +121,12 @@ export type SelectionInput =
   | { type: "hold"; pointerId: number; civilDate: string }
   | { type: "cancel"; pointerId: number }
   | { type: "clear" }
-  | { type: "discard" };
+  | { type: "discard" }
+  | { type: "choose"; meaning: IntendedMeaning }
+  | { type: "change-meaning" };
 
 export function initialSelectionSession(): SelectionSession {
-  return { gesture: { phase: "idle" }, visible: null };
+  return { gesture: { phase: "idle" }, visible: null, intendedMeaning: null };
 }
 
 export function minuteFromAxisRatio(ratio: number): number {
@@ -221,9 +272,23 @@ export function reduceSelection(session: SelectionSession, input: SelectionInput
       return releaseGesture(session, input.pointerId, input.civilDate);
     case "cancel":
       return cancelGesture(session, input.pointerId);
+    case "choose":
+      return chooseMeaning(session, input.meaning);
+    case "change-meaning":
+      return changeMeaning(session);
     default:
       return session;
   }
+}
+
+function chooseMeaning(session: SelectionSession, meaning: IntendedMeaning): SelectionSession {
+  if (session.gesture.phase !== "idle" || !session.visible) return session;
+  return { ...session, intendedMeaning: meaning };
+}
+
+function changeMeaning(session: SelectionSession): SelectionSession {
+  if (session.gesture.phase !== "idle" || !session.visible) return session;
+  return { ...session, intendedMeaning: null };
 }
 
 function beginGesture(
@@ -232,6 +297,7 @@ function beginGesture(
 ): SelectionSession {
   const anchorMinute = snapMinute(minuteFromAxisRatio(input.ratio));
   const kind = pointerKind(input.pointerType);
+  const priorMeaning = session.intendedMeaning;
   if (kind === "touch") {
     return {
       gesture: {
@@ -242,8 +308,10 @@ function beginGesture(
         x: input.x,
         y: input.y,
         prior: session.visible,
+        priorMeaning,
       },
       visible: session.visible,
+      intendedMeaning: priorMeaning,
     };
   }
   return {
@@ -253,8 +321,10 @@ function beginGesture(
       anchorMinute,
       currentMinute: anchorMinute,
       prior: session.visible,
+      priorMeaning,
     },
     visible: selectionFromMinutes(input.civilDate, anchorMinute, anchorMinute),
+    intendedMeaning: null,
   };
 }
 
@@ -270,8 +340,10 @@ function holdGesture(session: SelectionSession, pointerId: number, civilDate: st
       anchorMinute: gesture.anchorMinute,
       currentMinute: gesture.anchorMinute,
       prior: gesture.prior,
+      priorMeaning: gesture.priorMeaning,
     },
     visible: selectionFromMinutes(civilDate, gesture.anchorMinute, gesture.anchorMinute),
+    intendedMeaning: null,
   };
 }
 
@@ -283,12 +355,13 @@ function moveGesture(
   if (gesture.phase === "idle" || gesture.pointerId !== input.pointerId) return session;
   if (gesture.phase === "pending") {
     if (Math.hypot(input.x - gesture.x, input.y - gesture.y) <= SELECTION_MOVE_SLOP_PX) return session;
-    return { gesture: { phase: "idle" }, visible: gesture.prior };
+    return { gesture: { phase: "idle" }, visible: gesture.prior, intendedMeaning: gesture.priorMeaning };
   }
   const currentMinute = snapMinute(minuteFromAxisRatio(input.ratio));
   return {
     gesture: { ...gesture, currentMinute },
     visible: selectionFromMinutes(input.civilDate, gesture.anchorMinute, currentMinute),
+    intendedMeaning: null,
   };
 }
 
@@ -299,15 +372,16 @@ function releaseGesture(session: SelectionSession, pointerId: number, civilDate:
     return {
       gesture: { phase: "idle" },
       visible: selectionFromMinutes(civilDate, gesture.anchorMinute, gesture.anchorMinute),
+      intendedMeaning: null,
     };
   }
-  return { gesture: { phase: "idle" }, visible: session.visible };
+  return { gesture: { phase: "idle" }, visible: session.visible, intendedMeaning: session.intendedMeaning };
 }
 
 function cancelGesture(session: SelectionSession, pointerId: number): SelectionSession {
   const gesture = session.gesture;
   if (gesture.phase === "idle" || gesture.pointerId !== pointerId) return session;
-  return { gesture: { phase: "idle" }, visible: gesture.prior };
+  return { gesture: { phase: "idle" }, visible: gesture.prior, intendedMeaning: gesture.priorMeaning };
 }
 
 function pointerKind(pointerType: string): PointerKind {

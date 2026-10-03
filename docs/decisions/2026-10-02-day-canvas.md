@@ -68,3 +68,5 @@ The tranche record is [../implementation/V0-010.md](../implementation/V0-010.md)
 ## Later
 
 V0-011 adds a transient local-clock selection on this canvas. The canvas still does not create or edit temporal facts. See [2026-10-02-direct-time-selection.md](2026-10-02-direct-time-selection.md).
+
+V0-012 records a transient intended meaning for that selection. It still does not create a fact. See [2026-10-03-temporal-meaning-choice.md](2026-10-03-temporal-meaning-choice.md).
