@@ -32,7 +32,7 @@ The civil day used by Today is the calendar date of a supplied instant in the co
 
 Some time is externally constrained or obligated. Some time is deliberately chosen and protected.
 
-A Commitment is the fixed or externally constrained case. A Block is the chosen case. A Work shift is fixed employment time, so it can be represented as a Commitment, and it remains a Shift with a type and a cadence. Timeline must not flatten that distinction into one generic event.
+A Commitment means this time is constrained by something the user has committed to. A Block is the chosen case. A Work shift remains a Shift with a type and a cadence. Timeline may later present that shift beside a Commitment. It must not flatten those facts into one generic event, and V0-008 does not store a shift as a Commitment row.
 
 Obligated does not mean more important. Chosen does not mean optional. The user establishes what deserves protection. Protected time with the user's children is not a checklist and is not a lesser kind of time because nobody else imposed it.
 
@@ -48,7 +48,7 @@ An external temporal source supplies time-related facts and keeps provenance. Th
 
 Google Calendar is the first identified source. The user already uses it. A Google Calendar event may later be represented as a Commitment and participate in Timeline, NOW, and Pulse. Reading that truth and writing back to the calendar are separate authority decisions. Neither direction, nor any API or account model, is chosen.
 
-Manual Commitment entry can exist before any calendar connection. The first running app is not required to include Google Calendar. The model leaves room for that boundary.
+A Commitment entered in this application is stored with origin `user_created`. Google Calendar is not connected. No event id, sync token, or write-back is stored. When an external source exists, that source keeps authority over edit and delete. That authority is not decided here.
 
 Wealth Engine and DeptSync are other systems in the user's ecosystem. Each keeps authority over its own truth. No integration is authorized. This product coordinates time and attention. It does not need to become those systems.
 

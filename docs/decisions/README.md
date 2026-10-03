@@ -18,6 +18,7 @@ ARCHITECTURE-001 recorded the runtime, persistence, projection, and delivery dec
 - [2026-10-02-today.md](2026-10-02-today.md)
 - [2026-10-02-protected-time.md](2026-10-02-protected-time.md)
 - [2026-10-02-blocks.md](2026-10-02-blocks.md)
+- [2026-10-02-commitments.md](2026-10-02-commitments.md)
 
 The architecture those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Unresolved implementation details do not get speculative ADRs.
 

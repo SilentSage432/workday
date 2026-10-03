@@ -66,13 +66,19 @@ Shift does not contain the rest of the product. An Active Thread, a Task, a Note
 
 ## Commitment
 
-A Commitment is time that is fixed or externally constrained.
+A Commitment is time constrained by something the user has committed to.
 
-Examples: appointments, school activities, scheduled events, and a Work shift. Doctor appointments named by the user are Commitments. Examples are not a subtype catalog.
+> This time is constrained by something I have committed to.
 
-A Commitment is not necessarily a Task. It may come from an external source. Manual creation is also allowed. Provenance must say which is which. The product must not claim ownership of an externally sourced Commitment.
+Examples such as an appointment, a school event, or a reservation illustrate the fact. They are not a subtype catalog. The title is the user's words, required, and at most 80 characters. It is not inferred, and it is not a category.
 
-**Unresolved:** the subtype list, which external events become Commitments, and whether a Shift is stored as a Commitment or only presented as one.
+A Commitment is not a Task, not Today, not a Work shift, and not Protected Time. It does not require an outcome or a Context. Creating, editing, or removing one does not change a Task, Today, a Block, Protected Time, the Work schedule, or the Active Thread. They may overlap.
+
+An all-day Commitment is one civil date. A timed Commitment is a local start and local end on a civil date, read in the confirmed IANA time zone. If the end is earlier than or equal to the start, it continues into the next civil date and no further. A later change of the confirmed zone reinterprets those local times. The decision is [docs/decisions/2026-10-02-commitments.md](docs/decisions/2026-10-02-commitments.md).
+
+`origin` records where the truth came from. A Commitment entered in this application is `user_created`. That word is provenance, not a kind of Commitment. Google Calendar may later supply an externally sourced Commitment. That source would keep authority over what this application may edit or delete. No external id, sync, or write-back is stored yet.
+
+**Unresolved:** which external events become Commitments, and whether a Shift is stored as a Commitment or only presented as one. V0-008 does not copy a Work shift into `commitments`.
 
 ## Block
 
@@ -238,4 +244,4 @@ Objective in this table is a temporal meaning, not an extra primitive. Timeline 
 | Pulse | orients; a reminder reports | one explicit fact |
 | Objective | may contextualize, and is not automatically | Task |
 
-**Unresolved:** NOW's selection order, Context switching, multi-Context membership, a suspended thread per Context beyond the one current thread V0 stores, occurrence-versus-Task, Commitment subtypes, external write-back, and the lifecycle gaps marked above. They are listed in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md).
+**Unresolved:** NOW's selection order, Context switching, multi-Context membership, a suspended thread per Context beyond the one current thread V0 stores, occurrence-versus-Task, external write-back, and the lifecycle gaps marked above. They are listed in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md). Commitment has no subtype catalog.

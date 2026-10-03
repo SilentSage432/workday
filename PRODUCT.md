@@ -175,6 +175,8 @@ Protected Time is time the user has deliberately made unavailable for allocation
 
 A Block is time the user has deliberately chosen a purpose for. It is not Protected Time, and neither changes the other. See [docs/implementation/V0-007.md](docs/implementation/V0-007.md).
 
+A Commitment is time constrained by something the user has committed to. It is not a Block and not Protected Time. V0-008 stores a user-created Commitment on Schedule. It does not connect Google Calendar. See [docs/implementation/V0-008.md](docs/implementation/V0-008.md).
+
 ## Reminders
 
 A reminder is an explicit attention point the user establishes. Caregiving examples the user named are pod-change reminders, Dexcom-related reminders, and doctor appointments. Appointments are Commitments. The reminders are not medical advice. The product must not interpret device data, change care timing, or infer urgency. An external calendar event is not automatically a reminder.
@@ -201,7 +203,7 @@ V0 is the smallest system that can generate real use. It is specified here and n
 4. **Tasks.** Create, edit, complete, an optional due boundary, a planned day, MUST DO, and a Context when the user assigns one. Not project management.
 5. **Notes.** Create, retain, and convert explicitly to a Task while keeping provenance.
 6. **Blocks.** Reserve a time range, or potentially a whole day. A Block may relate to a Context. It does not require Tasks or an outcome.
-7. **Commitments.** Represent fixed or external time. Manual creation may exist first. External calendar sourcing may follow.
+7. **Commitments.** Time constrained by something the user has committed to. User-created rows exist. External calendar sourcing may follow.
 8. **Active Thread / Resume.** The user explicitly sets the thread. The system can offer Resume on return. No automatic interruption detection.
 9. **Contexts.** Work, Family, TeamLab, and Financial. No workspace administration. Unassigned Tasks and Notes remain allowed. Permanent membership in several Contexts is not decided.
 10. **Work schedule.** Manual entry sufficient to know shift boundaries. Opening, Mid, and Closing stay meaningful.

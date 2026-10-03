@@ -8,6 +8,8 @@
 
 `block.ts` classifies stored Blocks the same way. It does not read Protected Time, and it does not calculate overlap, capacity, or free time.
 
+`commitment.ts` classifies stored Commitments the same way. It does not read Protected Time, Blocks, the Work schedule, or Tasks. It does not calculate a Timeline, capacity, availability, or a conflict. A local time that cannot be mapped to an instant stays unresolved when the civil date can still contain the interval, and past when that date is already before yesterday. That past reading uses the civil bound, not a fabricated instant.
+
 `workDay.ts` reports whether a Work date is unknown, Off, or a scheduled shift, and whether a supplied instant is before, during, or after that shift.
 
 `workOrientation.ts` composes that fact with Power Hour and the next established Work boundary. It does not read the clock, the network, or Supabase. It does not rank Tasks or select an Opening step.
