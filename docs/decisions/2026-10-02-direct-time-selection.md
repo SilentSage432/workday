@@ -31,7 +31,9 @@ A later phone session, on the diagnostic build, selected time across an establis
 
 Touch time to talk about time. Touch established truth to talk about that truth.
 
-A short tap on the painted fact refers to that fact. A hold or drag that begins there still refers to the time. Movement past the slop before the hold remains a scroll. The reference is transient and does not make the fact editable. It is an interaction distinction, not a ranking of facts. Future operations on a referenced fact remain unresolved. See [../implementation/V0-014.md](../implementation/V0-014.md).
+A short tap on the painted fact refers to that fact. A hold or drag that begins there still refers to the time. Movement past the slop before the hold remains a scroll. The reference is transient. It is an interaction distinction, not a ranking of facts. See [../implementation/V0-014.md](../implementation/V0-014.md).
+
+On a phone, that reference selected an existing Protected Time and showed its bounds. Reference alone did not make the fact usable. Explicit edit and confirmed delete of a user-created Protected Time, Block, or Commitment now sit on that reference. They do not replace the tap, hold, or scroll distinction, and they do not establish drag or resize. See [../implementation/V0-015.md](../implementation/V0-015.md).
 
 There is no edge auto-scroll. A drag is clamped to the visible intersection of the timed surface and the 28rem scrollport. Hours that are scrolled out of view are not selected until the user scrolls to them.
 

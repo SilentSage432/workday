@@ -96,6 +96,7 @@ describe("commitment persistence", () => {
     });
 
     let updatedId = "";
+    let ownedBy = "";
     const updated = client(() => ({
       update(row: unknown) {
         writes.push(row);
@@ -103,14 +104,17 @@ describe("commitment persistence", () => {
           eq(column: string, value: string) {
             if (column === "id") updatedId = value;
             return {
-              eq: () => ({
-                select: () => ({
-                  single: async () => ({
-                    data: { ...allDayRow, title: "Dentist" },
-                    error: null,
+              eq(nextColumn: string, nextValue: string) {
+                if (nextColumn === "user_id") ownedBy = nextValue;
+                return {
+                  select: () => ({
+                    single: async () => ({
+                      data: { ...allDayRow, title: "Dentist" },
+                      error: null,
+                    }),
                   }),
-                }),
-              }),
+                };
+              },
             };
           },
         };
@@ -122,22 +126,30 @@ describe("commitment persistence", () => {
       defineCommitment({ kind: "all_day", startsOn: "2026-10-10", title: "Dentist" }),
     );
     expect(updatedId).toBe("commitment-1");
+    expect(ownedBy).toBe("user-1");
     expect(saved.title).toBe("Dentist");
     expect(writes[1]).toMatchObject({ origin: "user_created" });
 
     let deleted = "";
+    let deletedOwner = "";
     const removed = client(() => ({
       delete() {
         return {
           eq(_column: string, value: string) {
             deleted = value;
-            return { eq: async () => ({ error: null }) };
+            return {
+              eq(column: string, owner: string) {
+                if (column === "user_id") deletedOwner = owner;
+                return Promise.resolve({ error: null });
+              },
+            };
           },
         };
       },
     }));
     await deleteCommitment(removed, "commitment-1");
     expect(deleted).toBe("commitment-1");
+    expect(deletedOwner).toBe("user-1");
   });
 
   it("does not report a failed write as saved", async () => {

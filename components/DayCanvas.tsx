@@ -5,8 +5,11 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, ty
 import {
   establishFromSelection,
   establishmentBlocked,
+  updateFromStored,
   type CanvasContextOption,
   type CanvasEstablishment,
+  type CanvasFactRemoval,
+  type CanvasFactUpdate,
 } from "@/components/canvasEstablishment";
 import { factAddress, topmostRenderedFact, type FactAddress, type RenderedFactBox } from "@/components/factAddress";
 import { Icon } from "@/components/Icon";
@@ -35,7 +38,12 @@ import {
 import { localTimeToTwelveHour, twelveHourToLocalTime, type TwelveHourClock } from "@/components/twelveHourTime";
 import { localMinutes, parseLocalTime, formatLocalTimeLabel } from "@/domain/time/localTime";
 import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
-import { DAY_AXIS_MINUTES, type DayCanvasModel, type DayCanvasTimedPlacement } from "@/projections/dayCanvas";
+import {
+  DAY_AXIS_MINUTES,
+  type DayCanvasModel,
+  type DayCanvasStoredFact,
+  type DayCanvasTimedPlacement,
+} from "@/projections/dayCanvas";
 
 /**
  * Display floor for a timed fact. It is not the fact's duration.
@@ -101,6 +109,31 @@ type CompletionDraft = {
   title: string;
 };
 
+type FactDraft = CompletionDraft & {
+  startsOn: string;
+  bounds: BoundDraft;
+};
+
+type FactInteraction =
+  | { phase: "view"; fact: FactAddress }
+  | { phase: "edit"; fact: FactAddress; draft: FactDraft }
+  | { phase: "confirm-delete"; fact: FactAddress };
+
+function draftFromStored(stored: DayCanvasStoredFact): FactDraft {
+  return {
+    startsOn: stored.startsOn,
+    bounds: {
+      start: localTimeToTwelveHour(stored.startLocal),
+      end: localTimeToTwelveHour(stored.endLocal),
+      endOfCivilDay: false,
+    },
+    label: stored.sourceKind === "protected_time" ? stored.label ?? "" : "",
+    purpose: stored.sourceKind === "block" ? stored.purpose : "",
+    contextId: stored.sourceKind === "block" ? stored.contextId ?? "" : "",
+    title: stored.sourceKind === "commitment" ? stored.title : "",
+  };
+}
+
 function emptyCompletion(): CompletionDraft {
   return { label: "", purpose: "", contextId: "", title: "" };
 }
@@ -118,6 +151,8 @@ export function DayCanvas({
   onNextDay,
   onToday,
   onEstablish,
+  onUpdateFact,
+  onDeleteFact,
 }: {
   selectedDay: string;
   today: string | null;
@@ -131,6 +166,8 @@ export function DayCanvas({
   onNextDay: () => void;
   onToday: () => void;
   onEstablish?: (establishment: CanvasEstablishment) => Promise<void>;
+  onUpdateFact?: (change: CanvasFactUpdate) => Promise<void>;
+  onDeleteFact?: (target: CanvasFactRemoval) => Promise<void>;
 }) {
   return (
     <DayCanvasSession
@@ -146,6 +183,8 @@ export function DayCanvas({
       onNextDay={onNextDay}
       onToday={onToday}
       onEstablish={onEstablish}
+      onUpdateFact={onUpdateFact}
+      onDeleteFact={onDeleteFact}
     />
   );
 }
@@ -162,6 +201,8 @@ function DayCanvasSession({
   onNextDay,
   onToday,
   onEstablish,
+  onUpdateFact,
+  onDeleteFact,
 }: {
   selectedDay: string;
   today: string | null;
@@ -174,6 +215,8 @@ function DayCanvasSession({
   onNextDay: () => void;
   onToday: () => void;
   onEstablish?: (establishment: CanvasEstablishment) => Promise<void>;
+  onUpdateFact?: (change: CanvasFactUpdate) => Promise<void>;
+  onDeleteFact?: (target: CanvasFactRemoval) => Promise<void>;
 }) {
   const [session, setSession] = useState<SelectionSession>(initialSelectionSession);
   const [completion, setCompletion] = useState(emptyCompletion);
@@ -186,7 +229,9 @@ function DayCanvasSession({
   const endGesture = useRef<(() => void) | null>(null);
   const dismissTouchTap = useRef(false);
   const factCandidate = useRef<FactAddress | null>(null);
-  const [referencedFact, setReferencedFact] = useState<FactAddress | null>(null);
+  const [factInteraction, setFactInteraction] = useState<FactInteraction | null>(null);
+  const [revising, setRevising] = useState(false);
+  const [reviseError, setReviseError] = useState<string | null>(null);
   const meaningKey = session.intendedMeaning ?? "";
   const [trackedMeaning, setTrackedMeaning] = useState(meaningKey);
   if (trackedMeaning !== meaningKey) {
@@ -286,8 +331,14 @@ function DayCanvasSession({
   function addressFact(fact: FactAddress) {
     factCandidate.current = null;
     dismissTouchTap.current = false;
+    setReviseError(null);
     publish(initialSelectionSession());
-    setReferencedFact(fact);
+    setFactInteraction({ phase: "view", fact });
+  }
+
+  function releaseFact() {
+    setReviseError(null);
+    setFactInteraction(null);
   }
 
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -370,7 +421,7 @@ function DayCanvasSession({
       stop();
       releaseCapture(surface, pointerId);
       publish(next);
-      if (next.visible) setReferencedFact(null);
+      if (next.visible) releaseFact();
     };
     const onCancel = (native: PointerEvent) => {
       if (native.pointerId !== pointerId) return;
@@ -410,7 +461,7 @@ function DayCanvasSession({
         });
         if (held.gesture.phase !== "selecting") return;
         factCandidate.current = null;
-        setReferencedFact(null);
+        releaseFact();
         try {
           surface.setPointerCapture(pointerId);
         } catch {
@@ -421,7 +472,7 @@ function DayCanvasSession({
       return;
     }
 
-    setReferencedFact(null);
+    releaseFact();
     event.preventDefault();
     try {
       surface.setPointerCapture(pointerId);
@@ -450,7 +501,7 @@ function DayCanvasSession({
         if (Math.hypot(native.clientX - startX, native.clientY - startY) <= SELECTION_MOVE_SLOP_PX) return;
         started = true;
         factCandidate.current = null;
-        setReferencedFact(null);
+        releaseFact();
         publish(
           reduceSelection(sessionRef.current, {
             type: "down",
@@ -544,7 +595,7 @@ function DayCanvasSession({
         if (Math.hypot(native.clientX - startX, native.clientY - startY) <= SELECTION_MOVE_SLOP_PX) return;
         dragged = true;
         if (mode === "tap-only") return;
-        setReferencedFact(null);
+        releaseFact();
         publish(
           reduceSelection(sessionRef.current, {
             type: "down",
@@ -670,7 +721,79 @@ function DayCanvasSession({
 
   const visible = session.visible;
   const clock = visible ? selectionLocalClock(visible, timeZone) : "ordinary";
-  const addressed = model ? placementFor(model, referencedFact) : null;
+  const addressed = model ? placementFor(model, factInteraction?.fact ?? null) : null;
+
+  function beginFactEdit() {
+    if (!addressed?.stored || !factInteraction) return;
+    setReviseError(null);
+    setFactInteraction({
+      phase: "edit",
+      fact: factInteraction.fact,
+      draft: draftFromStored(addressed.stored),
+    });
+  }
+
+  function cancelFactEdit() {
+    if (!factInteraction) return;
+    setReviseError(null);
+    setFactInteraction({ phase: "view", fact: factInteraction.fact });
+  }
+
+  async function saveFact() {
+    if (!factInteraction || factInteraction.phase !== "edit" || !addressed?.stored || revising) return;
+    const minutes = minutesFromDraft(factInteraction.draft.bounds);
+    if (!minutes || localRangeOrder(minutes.startMinute, minutes.endMinute) !== "valid") return;
+    const meaning = addressed.stored.sourceKind;
+    if (meaning === "block" && factInteraction.draft.purpose.trim().length === 0) return;
+    if (meaning === "commitment" && factInteraction.draft.title.trim().length === 0) return;
+    const clock = selectionLocalClock(
+      {
+        civilDate: factInteraction.draft.startsOn,
+        startMinute: minutes.startMinute,
+        endMinute: minutes.endMinute,
+      },
+      timeZone,
+    );
+    if (establishmentBlocked(clock)) return;
+    setRevising(true);
+    setReviseError(null);
+    try {
+      const change = updateFromStored({
+        id: factInteraction.fact.sourceId,
+        startsOn: factInteraction.draft.startsOn,
+        meaning,
+        startMinute: minutes.startMinute,
+        endMinute: minutes.endMinute,
+        clock,
+        label: factInteraction.draft.label,
+        purpose: factInteraction.draft.purpose,
+        contextId: factInteraction.draft.contextId,
+        title: factInteraction.draft.title,
+      });
+      if (!onUpdateFact) {
+        throw new Error("Could not save this fact.");
+      }
+      await onUpdateFact(change);
+    } catch (error: unknown) {
+      setReviseError(error instanceof Error && error.message ? error.message : "Could not save this fact.");
+      setRevising(false);
+    }
+  }
+
+  async function confirmFactDelete() {
+    if (!factInteraction || factInteraction.phase !== "confirm-delete" || !addressed?.stored || revising) return;
+    setRevising(true);
+    setReviseError(null);
+    try {
+      if (!onDeleteFact) {
+        throw new Error("Could not delete this fact.");
+      }
+      await onDeleteFact({ meaning: addressed.stored.sourceKind, id: factInteraction.fact.sourceId });
+    } catch (error: unknown) {
+      setReviseError(error instanceof Error && error.message ? error.message : "Could not delete this fact.");
+      setRevising(false);
+    }
+  }
 
   return (
     <section className="mt-4" aria-labelledby="day-canvas-heading">
@@ -716,11 +839,31 @@ function DayCanvasSession({
       {phase === "ready" && model && model.selectedDay === selectedDay ? (
         <DayCanvasBody
           model={model}
+          timeZone={timeZone}
           surfaceRef={surfaceRef}
           selection={visible}
           selectionSettled={session.gesture.phase === "idle"}
           addressed={addressed}
-          onDismissFact={() => setReferencedFact(null)}
+          factInteraction={factInteraction}
+          revising={revising}
+          reviseError={reviseError}
+          onDismissFact={() => releaseFact()}
+          onBeginFactEdit={beginFactEdit}
+          onCancelFactEdit={cancelFactEdit}
+          onFactDraft={(draft) => {
+            setFactInteraction((current) => (current?.phase === "edit" ? { ...current, draft } : current));
+          }}
+          onSaveFact={() => {
+            void saveFact();
+          }}
+          onAskDelete={() => {
+            if (!factInteraction) return;
+            setReviseError(null);
+            setFactInteraction({ phase: "confirm-delete", fact: factInteraction.fact });
+          }}
+          onConfirmDelete={() => {
+            void confirmFactDelete();
+          }}
           intendedMeaning={session.intendedMeaning}
           clockSentence={selectionClockSentence(clock)}
           clock={clock}
@@ -743,13 +886,234 @@ function DayCanvasSession({
   );
 }
 
+function SelectedFactSurface({
+  model,
+  timeZone,
+  addressed,
+  factInteraction,
+  contexts,
+  revising,
+  reviseError,
+  onDismissFact,
+  onBeginFactEdit,
+  onCancelFactEdit,
+  onFactDraft,
+  onSaveFact,
+  onAskDelete,
+  onConfirmDelete,
+}: {
+  model: DayCanvasModel;
+  timeZone: string;
+  addressed: DayCanvasTimedPlacement;
+  factInteraction: FactInteraction | null;
+  contexts: CanvasContextOption[];
+  revising: boolean;
+  reviseError: string | null;
+  onDismissFact: () => void;
+  onBeginFactEdit: () => void;
+  onCancelFactEdit: () => void;
+  onFactDraft: (draft: FactDraft) => void;
+  onSaveFact: () => void;
+  onAskDelete: () => void;
+  onConfirmDelete: () => void;
+}) {
+  const stored = addressed.stored;
+  const draft = factInteraction?.phase === "edit" ? factInteraction.draft : null;
+  const confirming = factInteraction?.phase === "confirm-delete";
+  return (
+    <div className="mt-3" data-selected-fact={`${addressed.sourceKind}:${addressed.sourceId}`}>
+      {draft && stored ? (
+        <FactEditor
+          timeZone={timeZone}
+          stored={stored}
+          draft={draft}
+          contexts={contexts}
+          revising={revising}
+          reviseError={reviseError}
+          onFactDraft={onFactDraft}
+          onSaveFact={onSaveFact}
+          onCancelFactEdit={onCancelFactEdit}
+        />
+      ) : confirming && stored ? (
+        <div data-fact-delete-confirm={stored.sourceKind}>
+          <p className="text-sm text-stone-100">{deleteQuestion(stored.sourceKind)}</p>
+          {reviseError ? (
+            <p role="alert" className="mt-2 text-sm text-stone-200">
+              {reviseError}
+            </p>
+          ) : null}
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onCancelFactEdit}
+              className="min-h-11 px-3 text-sm text-stone-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onConfirmDelete}
+              disabled={revising}
+              className="min-h-11 px-3 text-sm text-stone-100 disabled:opacity-60"
+            >
+              {revising ? "Deleting" : "Delete"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm text-stone-100">
+              <span className="text-stone-400">{addressed.kindLabel}</span>
+              <span className="text-stone-500"> · </span>
+              {addressed.primary}
+            </p>
+            <p className="mt-1 text-sm text-stone-400">
+              {formatSelectionRange({
+                civilDate: model.selectedDay,
+                startMinute: addressed.visibleStartMinute,
+                endMinute: addressed.visibleEndMinute,
+              })}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center">
+            {stored ? (
+              <>
+                <button type="button" onClick={onBeginFactEdit} className="min-h-11 px-3 text-sm text-stone-200">
+                  Edit
+                </button>
+                <button type="button" onClick={onAskDelete} className="min-h-11 px-3 text-sm text-stone-200">
+                  Delete
+                </button>
+              </>
+            ) : null}
+            <button
+              type="button"
+              onClick={onDismissFact}
+              aria-label="Close selected fact"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center text-stone-300"
+            >
+              <Icon icon={X} />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function deleteQuestion(kind: DayCanvasStoredFact["sourceKind"]): string {
+  if (kind === "protected_time") return "Delete this Protected Time?";
+  if (kind === "block") return "Delete this Block?";
+  return "Delete this Commitment?";
+}
+
+function FactEditor({
+  timeZone,
+  stored,
+  draft,
+  contexts,
+  revising,
+  reviseError,
+  onFactDraft,
+  onSaveFact,
+  onCancelFactEdit,
+}: {
+  timeZone: string;
+  stored: DayCanvasStoredFact;
+  draft: FactDraft;
+  contexts: CanvasContextOption[];
+  revising: boolean;
+  reviseError: string | null;
+  onFactDraft: (draft: FactDraft) => void;
+  onSaveFact: () => void;
+  onCancelFactEdit: () => void;
+}) {
+  const minutes = minutesFromDraft(draft.bounds);
+  const problem = draftProblem(draft.bounds);
+  const clock = minutes
+    ? selectionLocalClock(
+        { civilDate: draft.startsOn, startMinute: minutes.startMinute, endMinute: minutes.endMinute },
+        timeZone,
+      )
+    : "ordinary";
+  const unresolved = establishmentBlocked(clock);
+  const saveDisabled =
+    revising ||
+    problem !== null ||
+    unresolved !== null ||
+    (stored.sourceKind === "block" && draft.purpose.trim().length === 0) ||
+    (stored.sourceKind === "commitment" && draft.title.trim().length === 0);
+
+  function editBounds(bounds: BoundDraft) {
+    onFactDraft({ ...draft, bounds });
+  }
+
+  return (
+    <div data-fact-edit={stored.sourceKind}>
+      <div className="space-y-3">
+        <TimeBoundControl label="Start" value={draft.bounds.start} onChange={(start) => editBounds({ ...draft.bounds, start })} />
+        {draft.bounds.endOfCivilDay ? (
+          <p className="text-sm text-stone-300">
+            <span className="font-medium text-stone-100">End. </span>
+            End of this civil day
+          </p>
+        ) : (
+          <TimeBoundControl
+            label="End"
+            value={draft.bounds.end}
+            onChange={(end) => editBounds({ ...draft.bounds, end, endOfCivilDay: false })}
+          />
+        )}
+        <button
+          type="button"
+          aria-pressed={draft.bounds.endOfCivilDay}
+          onClick={() => editBounds({ ...draft.bounds, endOfCivilDay: !draft.bounds.endOfCivilDay })}
+          className="min-h-11 max-w-full text-left text-sm text-stone-300"
+        >
+          End of this civil day
+        </button>
+      </div>
+      {problem ? (
+        <p data-range-order={problem} className="mt-2 text-sm text-stone-300">
+          {localRangeOrderSentence(problem)}
+        </p>
+      ) : null}
+      {unresolved ? <p className="mt-2 text-sm text-stone-300">{unresolved}</p> : null}
+      <CompletionFields
+        meaning={stored.sourceKind}
+        completion={draft}
+        contexts={contexts}
+        saving={revising}
+        saveDisabled={saveDisabled}
+        establishError={reviseError}
+        onCompletion={(next) => onFactDraft({ ...draft, ...next })}
+        onEstablish={onSaveFact}
+      />
+      <button type="button" onClick={onCancelFactEdit} className="mt-1 min-h-11 px-0 text-sm text-stone-300">
+        Cancel
+      </button>
+    </div>
+  );
+}
+
 function DayCanvasBody({
   model,
+  timeZone,
   surfaceRef,
   selection,
   selectionSettled,
   addressed,
+  factInteraction,
+  revising,
+  reviseError,
   onDismissFact,
+  onBeginFactEdit,
+  onCancelFactEdit,
+  onFactDraft,
+  onSaveFact,
+  onAskDelete,
+  onConfirmDelete,
   intendedMeaning,
   clockSentence,
   clock,
@@ -766,11 +1130,21 @@ function DayCanvasBody({
   onEstablish,
 }: {
   model: DayCanvasModel;
+  timeZone: string;
   surfaceRef: RefObject<HTMLDivElement | null>;
   selection: TimeSelection | null;
   selectionSettled: boolean;
   addressed: DayCanvasTimedPlacement | null;
+  factInteraction: FactInteraction | null;
+  revising: boolean;
+  reviseError: string | null;
   onDismissFact: () => void;
+  onBeginFactEdit: () => void;
+  onCancelFactEdit: () => void;
+  onFactDraft: (draft: FactDraft) => void;
+  onSaveFact: () => void;
+  onAskDelete: () => void;
+  onConfirmDelete: () => void;
   intendedMeaning: IntendedMeaning | null;
   clockSentence: string | null;
   clock: "ordinary" | "absent" | "repeated";
@@ -842,33 +1216,22 @@ function DayCanvasBody({
           </button>
         </div>
       ) : addressed && !selection ? (
-        <div
-          className="mt-3 flex items-start justify-between gap-3"
-          data-selected-fact={`${addressed.sourceKind}:${addressed.sourceId}`}
-        >
-          <div>
-            <p className="text-sm text-stone-100">
-              <span className="text-stone-400">{addressed.kindLabel}</span>
-              <span className="text-stone-500"> · </span>
-              {addressed.primary}
-            </p>
-            <p className="mt-1 text-sm text-stone-400">
-              {formatSelectionRange({
-                civilDate: model.selectedDay,
-                startMinute: addressed.visibleStartMinute,
-                endMinute: addressed.visibleEndMinute,
-              })}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onDismissFact}
-            aria-label="Close selected fact"
-            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-stone-300"
-          >
-            <Icon icon={X} />
-          </button>
-        </div>
+        <SelectedFactSurface
+          model={model}
+          timeZone={timeZone}
+          addressed={addressed}
+          factInteraction={factInteraction}
+          contexts={contexts}
+          revising={revising}
+          reviseError={reviseError}
+          onDismissFact={onDismissFact}
+          onBeginFactEdit={onBeginFactEdit}
+          onCancelFactEdit={onCancelFactEdit}
+          onFactDraft={onFactDraft}
+          onSaveFact={onSaveFact}
+          onAskDelete={onAskDelete}
+          onConfirmDelete={onConfirmDelete}
+        />
       ) : !selection && model.axis === "local-clock" ? (
         <p id="day-selection-hint" className="mt-3 text-sm text-stone-500">
           {HINT}

@@ -6,7 +6,12 @@ import { useEffect, useState } from "react";
 import { BlocksSection } from "@/components/BlocksSection";
 import { CommitmentsSection } from "@/components/CommitmentsSection";
 import { DayCanvas } from "@/components/DayCanvas";
-import type { CanvasContextOption, CanvasEstablishment } from "@/components/canvasEstablishment";
+import type {
+  CanvasContextOption,
+  CanvasEstablishment,
+  CanvasFactRemoval,
+  CanvasFactUpdate,
+} from "@/components/canvasEstablishment";
 import { Icon } from "@/components/Icon";
 import { useBlockNavigation } from "@/components/navigationGuard";
 import { ProtectedTimeSection } from "@/components/ProtectedTimeSection";
@@ -28,10 +33,15 @@ import {
   workFiscalWeekStart,
 } from "@/domain/time/workFiscalWeek";
 import type { TemporalSettings, WorkScheduleEntry } from "@/domain/workSchedule";
-import { createBlock, loadBlocks } from "@/persistence/block";
-import { createCommitment, loadCommitments } from "@/persistence/commitment";
+import { createBlock, deleteBlock, loadBlocks, updateBlock } from "@/persistence/block";
+import { createCommitment, deleteCommitment, loadCommitments, updateCommitment } from "@/persistence/commitment";
 import { loadContexts } from "@/persistence/contextsAndTasks";
-import { createProtectedTime, loadProtectedTime } from "@/persistence/protectedTime";
+import {
+  createProtectedTime,
+  deleteProtectedTime,
+  loadProtectedTime,
+  updateProtectedTime,
+} from "@/persistence/protectedTime";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import {
   loadTemporalSettings,
@@ -368,6 +378,30 @@ export function WorkSchedule() {
     noteCanvasReload();
   }
 
+  async function updateSelection(change: CanvasFactUpdate) {
+    const client = getSupabaseBrowserClient();
+    if (change.meaning === "protected_time") {
+      await updateProtectedTime(client, change.id, change.input);
+    } else if (change.meaning === "block") {
+      await updateBlock(client, change.id, change.input);
+    } else {
+      await updateCommitment(client, change.id, change.input);
+    }
+    noteCanvasReload();
+  }
+
+  async function deleteSelection(target: CanvasFactRemoval) {
+    const client = getSupabaseBrowserClient();
+    if (target.meaning === "protected_time") {
+      await deleteProtectedTime(client, target.id);
+    } else if (target.meaning === "block") {
+      await deleteBlock(client, target.id);
+    } else {
+      await deleteCommitment(client, target.id);
+    }
+    noteCanvasReload();
+  }
+
   function shiftDay(delta: -1 | 1) {
     setSelectedDay((current) => (current ? adjacentCivilDay(current, delta) : current));
   }
@@ -419,6 +453,8 @@ export function WorkSchedule() {
           onNextDay={() => shiftDay(1)}
           onToday={showConfirmedToday}
           onEstablish={establishSelection}
+          onUpdateFact={updateSelection}
+          onDeleteFact={deleteSelection}
         />
       ) : (
         <p className="mt-2 text-sm leading-6 text-stone-400">

@@ -34,9 +34,39 @@ export type DayCanvasListedFact = {
   accessibleLabel: string;
 };
 
+/**
+ * Stored clock text for a user-created fact. Work has none here.
+ * This is the persisted fact the editor reads. It is not a new primitive.
+ */
+export type DayCanvasStoredFact =
+  | {
+      sourceKind: "protected_time";
+      startsOn: string;
+      startLocal: string;
+      endLocal: string;
+      label: string | null;
+    }
+  | {
+      sourceKind: "block";
+      startsOn: string;
+      startLocal: string;
+      endLocal: string;
+      purpose: string;
+      contextId: string | null;
+    }
+  | {
+      sourceKind: "commitment";
+      startsOn: string;
+      startLocal: string;
+      endLocal: string;
+      title: string;
+      origin: "user_created";
+    };
+
 export type DayCanvasTimedPlacement = {
   sourceKind: TimelineSourceKind;
   sourceId: string;
+  stored: DayCanvasStoredFact | null;
   /**
    * Provisional visual layer. Work and Protected Time are context.
    * Blocks and Commitments are foreground. This is not importance.
@@ -226,10 +256,42 @@ function placeTimedFact(
     clipped,
     kindLabel: kindWord(fact),
     primary,
+    stored: storedFact(fact),
     sourceInterval: source,
     shownInterval: clipped ? shown : null,
     contextName,
     accessibleLabel: `${accessibleKind(fact, primary)}${contextText} ${source}.${shownText}`.replace(/\s+/g, " ").trim(),
+  };
+}
+
+function storedFact(fact: Extract<TimelineFact, { allDay: false }>): DayCanvasStoredFact | null {
+  if (fact.sourceKind === "work_schedule") return null;
+  if (fact.sourceKind === "protected_time") {
+    return {
+      sourceKind: "protected_time",
+      startsOn: fact.startsOn,
+      startLocal: fact.startLocal,
+      endLocal: fact.endLocal,
+      label: fact.label,
+    };
+  }
+  if (fact.sourceKind === "block") {
+    return {
+      sourceKind: "block",
+      startsOn: fact.startsOn,
+      startLocal: fact.startLocal,
+      endLocal: fact.endLocal,
+      purpose: fact.purpose,
+      contextId: fact.contextId,
+    };
+  }
+  return {
+    sourceKind: "commitment",
+    startsOn: fact.startsOn,
+    startLocal: fact.startLocal,
+    endLocal: fact.endLocal,
+    title: fact.title,
+    origin: fact.origin,
   };
 }
 

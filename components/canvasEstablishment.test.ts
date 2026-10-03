@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { establishFromSelection, establishmentBlocked } from "@/components/canvasEstablishment";
+import { establishFromSelection, establishmentBlocked, updateFromStored } from "@/components/canvasEstablishment";
 
 const selection = { civilDate: "2026-10-03", startMinute: 18 * 60, endMinute: 21 * 60 };
 
@@ -47,5 +47,42 @@ describe("canvas establishment", () => {
         title: "Pickup",
       }),
     ).toThrow(/Save stays unavailable/);
+  });
+
+  it("updates the existing fact and keeps its identity, kind, and commitment origin", () => {
+    const shared = {
+      startsOn: "2026-10-03",
+      startMinute: 16 * 60 + 45,
+      endMinute: 17 * 60 + 15,
+      clock: "ordinary" as const,
+      label: "Family",
+      purpose: "Studio",
+      contextId: "ctx-1",
+      title: "School",
+    };
+    expect(updateFromStored({ ...shared, id: "protect", meaning: "protected_time" })).toEqual({
+      id: "protect",
+      meaning: "protected_time",
+      input: {
+        kind: "timed",
+        startsOn: "2026-10-03",
+        startLocal: "16:45",
+        endLocal: "17:15",
+        label: "Family",
+      },
+    });
+    expect(() => updateFromStored({ ...shared, id: "studio", meaning: "block", purpose: "  " })).toThrow(
+      /purpose/,
+    );
+    expect(updateFromStored({ ...shared, id: "studio", meaning: "block" })).toMatchObject({
+      id: "studio",
+      meaning: "block",
+      input: { kind: "timed", purpose: "Studio", contextId: "ctx-1", startLocal: "16:45", endLocal: "17:15" },
+    });
+    expect(updateFromStored({ ...shared, id: "school", meaning: "commitment" })).toMatchObject({
+      id: "school",
+      meaning: "commitment",
+      input: { kind: "timed", title: "School", origin: "user_created", startLocal: "16:45", endLocal: "17:15" },
+    });
   });
 });

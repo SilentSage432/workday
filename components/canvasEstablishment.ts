@@ -24,6 +24,13 @@ export type CanvasEstablishment =
   | { meaning: "block"; input: BlockInput }
   | { meaning: "commitment"; input: CommitmentInput };
 
+export type CanvasFactUpdate = { id: string } & CanvasEstablishment;
+
+export type CanvasFactRemoval = {
+  meaning: "protected_time" | "block" | "commitment";
+  id: string;
+};
+
 export const UNRESOLVED_ESTABLISHMENT = "Save stays unavailable for this local clock range.";
 
 export function establishmentBlocked(clock: SelectionClock): string | null {
@@ -67,6 +74,57 @@ export function establishFromSelection(input: {
     };
   }
   return {
+    meaning: "commitment",
+    input: defineCommitment({ ...bounds, title: input.title }),
+  };
+}
+
+/**
+ * Builds an update for one existing fact. The id, kind, and civil date stay.
+ * A Commitment input still carries user_created through defineCommitment.
+ */
+export function updateFromStored(input: {
+  id: string;
+  startsOn: string;
+  meaning: CanvasFactRemoval["meaning"];
+  startMinute: number;
+  endMinute: number;
+  clock: SelectionClock;
+  label: string;
+  purpose: string;
+  contextId: string;
+  title: string;
+}): CanvasFactUpdate {
+  const blocked = establishmentBlocked(input.clock);
+  if (blocked) {
+    throw new Error(blocked);
+  }
+  const bounds = {
+    kind: "timed" as const,
+    startsOn: input.startsOn,
+    startLocal: minuteToLocalText(input.startMinute),
+    endLocal: minuteToLocalText(input.endMinute),
+  };
+  if (input.meaning === "protected_time") {
+    return {
+      id: input.id,
+      meaning: "protected_time",
+      input: defineProtectedTime({ ...bounds, label: input.label }),
+    };
+  }
+  if (input.meaning === "block") {
+    return {
+      id: input.id,
+      meaning: "block",
+      input: defineBlock({
+        ...bounds,
+        purpose: input.purpose,
+        contextId: input.contextId.trim().length === 0 ? null : input.contextId,
+      }),
+    };
+  }
+  return {
+    id: input.id,
     meaning: "commitment",
     input: defineCommitment({ ...bounds, title: input.title }),
   };

@@ -92,6 +92,7 @@ describe("block persistence", () => {
     });
 
     let updatedId = "";
+    let ownedBy = "";
     const updated = client(() => ({
       update(row: unknown) {
         writes.push(row);
@@ -99,14 +100,17 @@ describe("block persistence", () => {
           eq(column: string, value: string) {
             if (column === "id") updatedId = value;
             return {
-              eq: () => ({
-                select: () => ({
-                  single: async () => ({
-                    data: { ...allDayRow, purpose: "Read" },
-                    error: null,
+              eq(nextColumn: string, nextValue: string) {
+                if (nextColumn === "user_id") ownedBy = nextValue;
+                return {
+                  select: () => ({
+                    single: async () => ({
+                      data: { ...allDayRow, purpose: "Read" },
+                      error: null,
+                    }),
                   }),
-                }),
-              }),
+                };
+              },
             };
           },
         };
@@ -118,21 +122,29 @@ describe("block persistence", () => {
       defineBlock({ kind: "all_day", startsOn: "2026-10-03", purpose: "Read" }),
     );
     expect(updatedId).toBe("block-1");
+    expect(ownedBy).toBe("user-1");
     expect(saved.purpose).toBe("Read");
 
     let deleted = "";
+    let deletedOwner = "";
     const removed = client(() => ({
       delete() {
         return {
           eq(_column: string, value: string) {
             deleted = value;
-            return { eq: async () => ({ error: null }) };
+            return {
+              eq(column: string, owner: string) {
+                if (column === "user_id") deletedOwner = owner;
+                return Promise.resolve({ error: null });
+              },
+            };
           },
         };
       },
     }));
     await deleteBlock(removed, "block-1");
     expect(deleted).toBe("block-1");
+    expect(deletedOwner).toBe("user-1");
   });
 
   it("does not report a failed write as saved", async () => {

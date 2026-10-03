@@ -120,6 +120,7 @@ describe("day canvas composition", () => {
       visibleStartMinute: 8 * 60,
       visibleEndMinute: 17 * 60,
       primary: "Opening",
+      stored: null,
     });
     const block = placed(model, "cycle");
     const meeting = placed(model, "meeting");
@@ -162,6 +163,13 @@ describe("day canvas composition", () => {
       sourceKind: "protected_time",
       visibleStartMinute: 8 * 60,
       visibleEndMinute: 14 * 60,
+      stored: {
+        sourceKind: "protected_time",
+        startsOn: day,
+        startLocal: "08:00",
+        endLocal: "14:00",
+        label: "Family",
+      },
     });
     expect(placed(model, "studio")).toMatchObject({
       layer: "foreground",

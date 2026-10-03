@@ -90,6 +90,7 @@ describe("protected time persistence", () => {
     ]);
 
     let updatedId = "";
+    let ownedBy = "";
     const updated = client(() => ({
       update(row: unknown) {
         writes.push(row);
@@ -97,11 +98,14 @@ describe("protected time persistence", () => {
           eq(column: string, value: string) {
             if (column === "id") updatedId = value;
             return {
-              eq: () => ({
-                select: () => ({
-                  single: async () => ({ data: { ...allDayRow, label: "Time off" }, error: null }),
-                }),
-              }),
+              eq(nextColumn: string, nextValue: string) {
+                if (nextColumn === "user_id") ownedBy = nextValue;
+                return {
+                  select: () => ({
+                    single: async () => ({ data: { ...allDayRow, label: "Time off" }, error: null }),
+                  }),
+                };
+              },
             };
           },
         };
@@ -113,21 +117,30 @@ describe("protected time persistence", () => {
       defineProtectedTime({ kind: "all_day", startsOn: "2026-10-04", label: "Time off" }),
     );
     expect(updatedId).toBe("pt-1");
+    expect(ownedBy).toBe("user-1");
     expect(saved.label).toBe("Time off");
+    expect(writes.some((row) => row && typeof row === "object" && "id" in row)).toBe(false);
 
     let deleted = "";
+    let deletedOwner = "";
     const removed = client(() => ({
       delete() {
         return {
           eq(_column: string, value: string) {
             deleted = value;
-            return { eq: async () => ({ error: null }) };
+            return {
+              eq(column: string, owner: string) {
+                if (column === "user_id") deletedOwner = owner;
+                return Promise.resolve({ error: null });
+              },
+            };
           },
         };
       },
     }));
     await deleteProtectedTime(removed, "pt-1");
     expect(deleted).toBe("pt-1");
+    expect(deletedOwner).toBe("user-1");
   });
 
   it("does not report a failed write as saved", async () => {

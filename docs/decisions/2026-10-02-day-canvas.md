@@ -77,4 +77,6 @@ V0-013 can create a Protected Time, a Block, or a Commitment from that selection
 
 V0-013A keeps those facts visible and makes the time underneath them selectable again. Overlap stays legal. See [../implementation/V0-013A.md](../implementation/V0-013A.md).
 
-V0-014 lets a short tap on a painted fact refer to that fact, while a hold still refers to the time underneath it. The reference is transient. It does not edit the fact. Fact operations beyond that reference stay unresolved. See [../implementation/V0-014.md](../implementation/V0-014.md).
+V0-014 lets a short tap on a painted fact refer to that fact, while a hold still refers to the time underneath it. The reference is transient. See [../implementation/V0-014.md](../implementation/V0-014.md).
+
+Phone use of that reference showed the painted Protected Time selected, with its existing bounds, and nothing further to do with it. V0-015 treats the reference as the way into an explicit edit or a confirmed delete for Protected Time, a Block, or a Commitment. Save is the write. Work stays without those actions. Overlap stays legal. Dragging or resizing a fact is not part of this. See [../implementation/V0-015.md](../implementation/V0-015.md).

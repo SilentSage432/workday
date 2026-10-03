@@ -5,7 +5,7 @@ import { act, useState, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DayCanvas } from "@/components/DayCanvas";
-import type { CanvasEstablishment } from "@/components/canvasEstablishment";
+import type { CanvasEstablishment, CanvasFactRemoval, CanvasFactUpdate } from "@/components/canvasEstablishment";
 import { SELECTION_HOLD_MS } from "@/components/daySelection";
 import { defineBlock } from "@/domain/block";
 import { defineCommitment } from "@/domain/commitment";
@@ -401,6 +401,16 @@ function clickLabel(container: HTMLElement, label: string) {
   if (!button) throw new Error(`Missing button: ${label}`);
   act(() => {
     button.click();
+  });
+}
+
+async function clickText(container: HTMLElement, label: string) {
+  const button = [...container.querySelectorAll("button")].find((item) => item.textContent === label);
+  if (!button) throw new Error(`Missing button: ${label}`);
+  await act(async () => {
+    button.click();
+    await Promise.resolve();
+    await Promise.resolve();
   });
 }
 
@@ -1203,9 +1213,16 @@ describe("temporal reachability through established truth", () => {
     expect(readout?.textContent).toContain(label);
     expect(readout?.textContent).toContain(primary);
     expect(readout?.textContent).toContain(range);
-    expect(readout?.querySelectorAll("button")).toHaveLength(1);
-    expect(readout?.querySelector("button")?.getAttribute("aria-label")).toBe("Close selected fact");
-    expect(readout?.textContent).not.toMatch(/edit|delete|move|resize|duplicate|convert/i);
+    expect(readout?.querySelector("button[aria-label='Close selected fact']")).not.toBeNull();
+    expect(readout?.textContent).not.toMatch(/\bmove\b|\bresize\b|duplicate|convert/i);
+    expect(readout?.querySelector("[data-resize-handle]")).toBeNull();
+    if (kind === "work_schedule") {
+      expect(readout?.textContent).not.toMatch(/\bEdit\b|\bDelete\b/);
+      expect(readout?.querySelectorAll("button")).toHaveLength(1);
+    } else {
+      expect(readout?.textContent).toContain("Edit");
+      expect(readout?.textContent).toContain("Delete");
+    }
     expect(paint(fact)).toEqual(before);
     expect(fact.querySelector("button, input, textarea, a")).toBeNull();
     expect(view.container.textContent).not.toMatch(/conflict|capacity|free\/busy|\bavailable\b|priority|winner/i);
@@ -1448,5 +1465,210 @@ describe("temporal reachability through established truth", () => {
     expect(selection(view.container)).toBeNull();
     expect(view.container.querySelector("[data-temporal-handoff]")).toBeNull();
     expect(view.container.querySelector("[data-selected-fact]")?.getAttribute("data-selected-fact")).toBe("block:studio");
+  });
+});
+
+function LifecycleHarness({
+  updates,
+  removals,
+  creates,
+  failUpdate,
+  failDelete,
+}: {
+  updates: CanvasFactUpdate[];
+  removals: CanvasFactRemoval[];
+  creates: CanvasEstablishment[];
+  failUpdate?: string;
+  failDelete?: string;
+}) {
+  const [token, setToken] = useState("America/Boise:0:0");
+  const [model, setModel] = useState(() => modelFor(day, zone, true));
+  return (
+    <DayCanvas
+      {...canvasProps({
+        model,
+        discardToken: token,
+        contexts: [{ id: "ctx", name: "Home" }],
+      })}
+      onEstablish={async (establishment) => {
+        creates.push(establishment);
+      }}
+      onUpdateFact={async (change) => {
+        updates.push(change);
+        if (failUpdate) throw new Error(failUpdate);
+        setToken((current) => `${current}:saved`);
+      }}
+      onDeleteFact={async (target) => {
+        removals.push(target);
+        if (failDelete) throw new Error(failDelete);
+        setModel((current) => ({
+          ...current,
+          context: current.context.filter((item) => item.sourceId !== target.id),
+          foreground: current.foreground.filter((item) => item.sourceId !== target.id),
+        }));
+        setToken((current) => `${current}:deleted`);
+      }}
+    />
+  );
+}
+
+describe("established fact lifecycle", () => {
+  function openFact(kind: string, minute: number) {
+    const updates: CanvasFactUpdate[] = [];
+    const removals: CanvasFactRemoval[] = [];
+    const creates: CanvasEstablishment[] = [];
+    const view = renderHarness(
+      <LifecycleHarness updates={updates} removals={removals} creates={creates} />,
+    );
+    placePaintedFacts(view.container);
+    const fact = article(view.container, kind);
+    const point = inside(fact, minute);
+    touchAt(view.surface, point.y, 41, "pointerdown", point.x);
+    touchAt(view.surface, point.y, 41, "pointerup", point.x);
+    return { view, fact, updates, removals, creates };
+  }
+
+  it("edits and deletes an existing Protected Time without inserting a replacement", async () => {
+    const { view, updates, removals, creates } = openFact("protected_time", 12 * 60 + 15);
+    expect(view.container.querySelector("[data-selected-fact]")?.textContent).toContain("Edit");
+    expect(view.container.querySelector("[data-selected-fact]")?.textContent).toContain("Delete");
+    clickLabel(view.container, "Edit");
+    const editor = view.container.querySelector("[data-fact-edit='protected_time']");
+    expect(editor?.textContent).toContain("12:00");
+    expect(editor?.textContent).toContain("1:00");
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-protected-label")?.value).toBe("Family");
+    expect(selection(view.container)).toBeNull();
+    step(view.container, "Later End minute", 15);
+    expect(updates).toHaveLength(0);
+    expect(creates).toHaveLength(0);
+    await clickSave(view.container);
+    expect(creates).toHaveLength(0);
+    expect(updates).toHaveLength(1);
+    expect(updates[0]).toMatchObject({
+      id: "protect",
+      meaning: "protected_time",
+      input: { kind: "timed", startsOn: day, startLocal: "12:00", endLocal: "13:15", label: "Family" },
+    });
+    expect(view.container.querySelector("[data-fact-edit]")).toBeNull();
+
+    const failed = renderHarness(
+      <LifecycleHarness updates={updates} removals={removals} creates={creates} failUpdate="Could not save." />,
+    );
+    placePaintedFacts(failed.container);
+    const again = article(failed.container, "protected_time");
+    const point = inside(again, 12 * 60 + 15);
+    touchAt(failed.surface, point.y, 42, "pointerdown", point.x);
+    touchAt(failed.surface, point.y, 42, "pointerup", point.x);
+    clickLabel(failed.container, "Edit");
+    step(failed.container, "Later End minute", 15);
+    await clickSave(failed.container);
+    expect(failed.container.querySelector("[data-fact-edit='protected_time']")).not.toBeNull();
+    expect(failed.container.querySelector("[data-fact-edit]")?.textContent).toContain("1:15");
+    expect(failed.container.querySelector("[role='alert']")?.textContent).toContain("Could not save.");
+    expect(article(failed.container, "protected_time").isConnected).toBe(true);
+
+    const removing = openFact("protected_time", 12 * 60 + 15);
+    clickLabel(removing.view.container, "Delete");
+    expect(removing.view.container.textContent).toContain("Delete this Protected Time?");
+    clickLabel(removing.view.container, "Cancel");
+    expect(removing.view.container.querySelector("[data-fact-delete-confirm]")).toBeNull();
+    expect(article(removing.view.container, "protected_time").isConnected).toBe(true);
+    expect(removing.removals).toHaveLength(0);
+    clickLabel(removing.view.container, "Delete");
+    await clickText(removing.view.container, "Delete");
+    expect(removing.removals).toEqual([{ meaning: "protected_time", id: "protect" }]);
+    expect(removing.creates).toHaveLength(0);
+    expect(removing.view.container.querySelector("article[data-source-kind='protected_time']")).toBeNull();
+    expect(removing.view.container.querySelector("[data-selected-fact]")).toBeNull();
+  });
+
+  it("keeps a failed Protected Time deletion", async () => {
+    const updates: CanvasFactUpdate[] = [];
+    const removals: CanvasFactRemoval[] = [];
+    const creates: CanvasEstablishment[] = [];
+    const view = renderHarness(
+      <LifecycleHarness updates={updates} removals={removals} creates={creates} failDelete="Could not delete." />,
+    );
+    placePaintedFacts(view.container);
+    const fact = article(view.container, "protected_time");
+    const point = inside(fact, 12 * 60 + 15);
+    touchAt(view.surface, point.y, 43, "pointerdown", point.x);
+    touchAt(view.surface, point.y, 43, "pointerup", point.x);
+    clickLabel(view.container, "Delete");
+    await clickText(view.container, "Delete");
+    expect(view.container.querySelector("[data-fact-delete-confirm='protected_time']")).not.toBeNull();
+    expect(view.container.querySelector("[role='alert']")?.textContent).toContain("Could not delete.");
+    expect(article(view.container, "protected_time").isConnected).toBe(true);
+    expect(view.container.textContent).not.toMatch(/conflict|capacity|\bavailable\b|priority|winner/i);
+  });
+
+  it("edits and deletes an existing Block, and still requires a purpose", async () => {
+    const { view, updates, removals, creates } = openFact("block", 18 * 60 + 15);
+    clickLabel(view.container, "Edit");
+    expect(view.container.querySelector("[data-fact-edit='block']")?.textContent).toContain("6:00");
+    expect(view.container.querySelector("[data-fact-edit='block']")?.textContent).toContain("7:00");
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-block-purpose")?.value).toBe("Studio");
+    expect(view.container.querySelector<HTMLSelectElement>("#canvas-block-context")?.value).toBe("");
+    typeInto(view.container, "canvas-block-purpose", " ");
+    expect(saveButton(view.container).hasAttribute("disabled")).toBe(true);
+    expect(updates).toHaveLength(0);
+    typeInto(view.container, "canvas-block-purpose", "Practice");
+    await clickSave(view.container);
+    expect(creates).toHaveLength(0);
+    expect(updates[0]).toMatchObject({
+      id: "studio",
+      meaning: "block",
+      input: { kind: "timed", purpose: "Practice", contextId: null, startLocal: "18:00", endLocal: "19:00" },
+    });
+    const again = openFact("block", 18 * 60 + 15);
+    clickLabel(again.view.container, "Delete");
+    expect(again.view.container.textContent).toContain("Delete this Block?");
+    await clickText(again.view.container, "Delete");
+    expect(again.removals).toEqual([{ meaning: "block", id: "studio" }]);
+    expect(again.view.container.querySelector("article[data-source-kind='block']")).toBeNull();
+    expect(removals).toHaveLength(0);
+  });
+
+  it("edits and deletes an existing Commitment and keeps user_created", async () => {
+    const { view, updates, creates } = openFact("commitment", 19 * 60 + 15);
+    clickLabel(view.container, "Edit");
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-commitment-title")?.value).toBe("School");
+    expect(view.container.querySelector("[data-fact-edit='commitment']")?.textContent).toContain("6:30");
+    expect(view.container.querySelector("[data-fact-edit='commitment']")?.textContent).toContain("7:30");
+    expect(selection(view.container)).toBeNull();
+    await clickSave(view.container);
+    expect(creates).toHaveLength(0);
+    expect(updates[0]).toMatchObject({
+      id: "school",
+      meaning: "commitment",
+      input: { kind: "timed", title: "School", origin: "user_created", startLocal: "18:30", endLocal: "19:30" },
+    });
+    const again = openFact("commitment", 19 * 60 + 15);
+    clickLabel(again.view.container, "Delete");
+    expect(again.view.container.textContent).toContain("Delete this Commitment?");
+    clickLabel(again.view.container, "Cancel");
+    expect(again.removals).toHaveLength(0);
+    clickLabel(again.view.container, "Delete");
+    await clickText(again.view.container, "Delete");
+    expect(again.removals).toEqual([{ meaning: "commitment", id: "school" }]);
+    expect(again.view.container.querySelector("article[data-source-kind='commitment']")).toBeNull();
+  });
+
+  it("keeps a hold through a fact as temporal selection while an edit is open", () => {
+    vi.useFakeTimers();
+    const { view } = openFact("protected_time", 12 * 60 + 15);
+    clickLabel(view.container, "Edit");
+    expect(view.container.querySelector("[data-fact-edit]")).not.toBeNull();
+    const work = article(view.container, "work_schedule");
+    const x = inside(work, 9 * 60).x;
+    touchAt(view.surface, 9 * 60, 44, "pointerdown", x);
+    act(() => {
+      vi.advanceTimersByTime(SELECTION_HOLD_MS);
+    });
+    touchAt(view.surface, 10 * 60, 44, "pointerup", x);
+    expect(selection(view.container)?.dataset.startMinute).toBe(String(9 * 60));
+    expect(view.container.querySelector("[data-fact-edit]")).toBeNull();
+    expect(view.container.querySelector("[data-selected-fact]")).toBeNull();
+    expect(view.container.textContent).not.toMatch(/conflict|capacity|\bavailable\b|priority|winner/i);
   });
 });
