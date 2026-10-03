@@ -244,6 +244,6 @@ Objective in this table is a temporal meaning, not an extra primitive. Timeline 
 | Pulse | orients; a reminder reports | one explicit fact |
 | Objective | may contextualize, and is not automatically | Task |
 
-V0-009 implements that composition for a scheduled Work shift, Protected Time, a Block, and a Commitment. Planned Tasks, reminders, occurrences, and Windows remain future sources. A shift is not projected as a Commitment. The decision is [docs/decisions/2026-10-02-timeline-composition.md](docs/decisions/2026-10-02-timeline-composition.md).
+V0-009 implements that composition for a scheduled Work shift, Protected Time, a Block, and a Commitment. V0-010 draws one civil day from it and does not resolve overlap. Planned Tasks, reminders, occurrences, and Windows remain future sources. A shift is not projected as a Commitment. The decisions are [docs/decisions/2026-10-02-timeline-composition.md](docs/decisions/2026-10-02-timeline-composition.md) and [docs/decisions/2026-10-02-day-canvas.md](docs/decisions/2026-10-02-day-canvas.md).
 
 **Unresolved:** NOW's selection order, Context switching, multi-Context membership, a suspended thread per Context beyond the one current thread V0 stores, occurrence-versus-Task, external write-back, and the lifecycle gaps marked above. They are listed in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md). Commitment has no subtype catalog.

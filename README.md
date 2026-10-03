@@ -14,9 +14,9 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**V0-009.** Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment across a requested civil range. It is a projection, not a screen.
+**V0-010.** Schedule shows one selected civil day from the Timeline projection. The day canvas is read-only. Month, week, and NOW are not built.
 
-The temporal canvas, NOW, and Pulse are still not built. Today, Resume, Work orientation, and Timeline are projections. They are not tables.
+Today, Resume, Work orientation, and Timeline are projections. They are not tables. The day canvas is a view of Timeline, not a table.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
@@ -44,6 +44,7 @@ The behavior of this slice is in [docs/implementation/V0-009.md](docs/implementa
 | [docs/implementation/V0-007.md](docs/implementation/V0-007.md) | Blocks |
 | [docs/implementation/V0-008.md](docs/implementation/V0-008.md) | Commitments |
 | [docs/implementation/V0-009.md](docs/implementation/V0-009.md) | Timeline composition |
+| [docs/implementation/V0-010.md](docs/implementation/V0-010.md) | Read-only day temporal canvas |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |

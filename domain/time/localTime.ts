@@ -1,4 +1,4 @@
-import { parseCivilDate, type CivilDate } from "@/domain/time/workFiscalWeek";
+import { formatCivilDate, parseCivilDate, type CivilDate } from "@/domain/time/workFiscalWeek";
 
 export type LocalTime = {
   hour: number;
@@ -82,6 +82,18 @@ function sameLocal(shown: ZonedParts, date: CivilDate, time: LocalTime): boolean
     shown.hour === time.hour &&
     shown.minute === time.minute
   );
+}
+
+export function zonedLocalClock(
+  instant: Date,
+  timeZone: string,
+): { civilDate: string; hour: number; minute: number } {
+  const parts = zonedParts(instant, timeZone);
+  return {
+    civilDate: formatCivilDate(parts),
+    hour: parts.hour,
+    minute: parts.minute,
+  };
 }
 
 export function instantFromZonedLocal(civilDate: string, localTime: string, timeZone: string): Date {

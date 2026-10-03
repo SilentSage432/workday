@@ -60,7 +60,7 @@ Nothing established is not the same as available.
 
 Timeline is a projection. It is not a stored primitive, a calendar event, or a generic event. The question it serves is: "What is the shape of this time?"
 
-V0-009 answers that for a requested half-open civil range, not for an implied today. It composes four established sources and keeps their meanings:
+V0-009 answers that for a requested half-open civil range, not for an implied today. V0-010 draws one selected civil day of that answer on Schedule. The drawing is read-only. Timeline composes four established sources and keeps their meanings:
 
 - a scheduled Work shift, including Opening, Mid, or Closing
 - Protected Time
@@ -71,7 +71,7 @@ Work Off is not occupied time. A missing Work row is unknown and is not occupied
 
 Planned Tasks, reminders, relevant recurring-obligation occurrences, and meaningful Windows remain intended composition sources. They are not part of the V0-009 projection. A planned Task and a Block meet time for different reasons. Today is not the Timeline.
 
-A later day surface can be the place where the user selects time and establishes what it means. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Those resolutions are not this projection, and they are not built.
+The day surface is where the user will eventually select time and establish what it means. V0-010 only shows the day. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Week, month, and NOW are not built.
 
 Experience before V0-009 suggests the user may drag a Task into time. The Task would remain a Task. The allocation would be a Block associated with that Task. That relationship is not stored.
 
@@ -207,7 +207,7 @@ A good notification might say "Resume: Cycle Counts." A poor strategy repeatedly
 V0 is the smallest system that can generate real use. It is specified here and not built. Text and in-app behavior are enough to start. Voice, push, and Google Calendar may follow after the core is coherent.
 
 1. **NOW.** A useful projection of the current day from facts the system knows. The full attention hierarchy stays open.
-2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. The day-shape screen is not built. Planned Tasks are not on that projection yet.
+2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. V0-010 shows one civil day of that projection. It does not yet select or edit time. Planned Tasks are not on that projection yet.
 3. **Capture.** Create a Task or a Note quickly. Text is sufficient. Voice does not block first use.
 4. **Tasks.** Create, edit, complete, an optional due boundary, a planned day, MUST DO, and a Context when the user assigns one. Not project management.
 5. **Notes.** Create, retain, and convert explicitly to a Task while keeping provenance.

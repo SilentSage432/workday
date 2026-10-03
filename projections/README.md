@@ -12,6 +12,8 @@
 
 `timeline.ts` composes a scheduled Work shift, Protected Time, Blocks, and Commitments across a requested half-open civil range. It keeps each fact's meaning, including overlaps. It does not read the clock, the network, or Supabase. It does not calculate capacity, availability, or a conflict. The decision is [docs/decisions/2026-10-02-timeline-composition.md](../docs/decisions/2026-10-02-timeline-composition.md).
 
+`dayCanvas.ts` asks that projection for one civil day and derives read-only visual geometry from the returned facts. It does not compose a second meaning, and it does not read the clock, the network, or Supabase. The decision is [docs/decisions/2026-10-02-day-canvas.md](../docs/decisions/2026-10-02-day-canvas.md).
+
 `workDay.ts` reports whether a Work date is unknown, Off, or a scheduled shift, and whether a supplied instant is before, during, or after that shift.
 
 `workOrientation.ts` composes that fact with Power Hour and the next established Work boundary. It does not read the clock, the network, or Supabase. It does not rank Tasks or select an Opening step.

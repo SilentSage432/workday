@@ -3,10 +3,11 @@
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Icon } from "@/components/Icon";
-import { useBlockNavigation } from "@/components/navigationGuard";
 import { BlocksSection } from "@/components/BlocksSection";
 import { CommitmentsSection } from "@/components/CommitmentsSection";
+import { DayCanvas } from "@/components/DayCanvas";
+import { Icon } from "@/components/Icon";
+import { useBlockNavigation } from "@/components/navigationGuard";
 import { ProtectedTimeSection } from "@/components/ProtectedTimeSection";
 import { TodayScheduleFact, WorkWeek } from "@/components/WorkWeek";
 import {
@@ -26,6 +27,10 @@ import {
   workFiscalWeekStart,
 } from "@/domain/time/workFiscalWeek";
 import type { TemporalSettings, WorkScheduleEntry } from "@/domain/workSchedule";
+import { loadBlocks } from "@/persistence/block";
+import { loadCommitments } from "@/persistence/commitment";
+import { loadContexts } from "@/persistence/contextsAndTasks";
+import { loadProtectedTime } from "@/persistence/protectedTime";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import {
   loadTemporalSettings,
@@ -33,6 +38,12 @@ import {
   saveTemporalSettings,
 } from "@/persistence/workSchedule";
 import { saveWorkWeek } from "@/persistence/saveWorkWeek";
+import {
+  adjacentCivilDay,
+  composeDayCanvas,
+  dayCanvasWorkQuery,
+  type DayCanvasModel,
+} from "@/projections/dayCanvas";
 
 const fieldClass =
   "mt-1 w-full min-h-12 rounded-md border border-stone-700 bg-stone-900 px-3 text-base text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300";
@@ -42,6 +53,7 @@ const secondaryButtonClass =
   "min-h-12 rounded-md border border-stone-600 bg-stone-900 px-4 text-center text-base text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300 disabled:opacity-60";
 
 type Phase = "loading" | "ready" | "error";
+type CanvasPhase = "loading" | "ready" | "error";
 type PendingLeave = null | { type: "week"; delta: number } | { type: "tasks" } | { type: "zone" };
 
 function browserTimeZone(): string {
@@ -77,9 +89,18 @@ export function WorkSchedule() {
   const [savingWeek, setSavingWeek] = useState(false);
   const [pending, setPending] = useState<PendingLeave>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [canvas, setCanvas] = useState<DayCanvasModel | null>(null);
+  const [canvasPhase, setCanvasPhase] = useState<CanvasPhase>("loading");
+  const [canvasError, setCanvasError] = useState<string | null>(null);
+  const [canvasReload, setCanvasReload] = useState(0);
+  const [managing, setManaging] = useState(false);
 
   const dirty = editing && draft !== null && weekDraftIsDirty(draft);
-  useBlockNavigation(dirty, () => setPending({ type: "tasks" }));
+  useBlockNavigation(dirty, () => {
+    setManaging(true);
+    setPending({ type: "tasks" });
+  });
 
   useEffect(() => {
     const client = getSupabaseBrowserClient();
@@ -95,6 +116,7 @@ export function WorkSchedule() {
         if (loaded) {
           const now = new Date();
           setInstant(now);
+          setSelectedDay((current) => current ?? formatCivilDate(civilDateInTimeZone(now, loaded.timeZone)));
           setWeekStart((current) => current ?? formatCivilDate(workFiscalWeekStart(now, loaded.timeZone)));
         } else {
           setZoneDraft(browserTimeZone());
@@ -145,6 +167,57 @@ export function WorkSchedule() {
   }, [settings, weekStart, editing]);
 
   useEffect(() => {
+    if (!settings || !selectedDay) return;
+    // Work rows are loaded from the previous civil date through the selected
+    // date. Protected time, blocks, and commitments are loaded whole, which
+    // includes that previous day. Timeline decides what meets the day.
+    const day = selectedDay;
+    const query = dayCanvasWorkQuery(day);
+    const timeZone = settings.timeZone;
+    const client = getSupabaseBrowserClient();
+    let ignore = false;
+
+    async function loadCanvas() {
+      setCanvasPhase("loading");
+      setCanvasError(null);
+      try {
+        const [workSchedule, protectedTime, blocks, commitments, contexts] = await Promise.all([
+          loadWorkSchedule(client, query.from, query.to),
+          loadProtectedTime(client),
+          loadBlocks(client),
+          loadCommitments(client),
+          loadContexts(client),
+        ]);
+        if (ignore) return;
+        const contextNames: Record<string, string> = {};
+        for (const context of contexts) contextNames[context.id] = context.name;
+        setCanvas(
+          composeDayCanvas({
+            selectedDay: day,
+            timeZone,
+            workSchedule,
+            protectedTime,
+            blocks,
+            commitments,
+            contextNames,
+          }),
+        );
+        setCanvasPhase("ready");
+      } catch (error: unknown) {
+        if (ignore) return;
+        setCanvas(null);
+        setCanvasError(failureMessage(error, "Could not load this day."));
+        setCanvasPhase("error");
+      }
+    }
+
+    void loadCanvas();
+    return () => {
+      ignore = true;
+    };
+  }, [settings, selectedDay, canvasReload]);
+
+  useEffect(() => {
     if (!openWorkOn) return;
     document.querySelector<HTMLElement>('[aria-label="Start hour"]')?.focus();
   }, [openWorkOn]);
@@ -182,6 +255,7 @@ export function WorkSchedule() {
       setEditing(false);
       setOpenWorkOn(null);
       setPending(null);
+      setCanvasReload((current) => current + 1);
       return true;
     } catch (error: unknown) {
       setWeekError(failureMessage(error, "This week was not saved."));
@@ -239,6 +313,7 @@ export function WorkSchedule() {
   function requestWeek(delta: number) {
     if (!weekStart) return;
     if (dirty) {
+      setManaging(true);
       setPending({ type: "week", delta });
       return;
     }
@@ -256,6 +331,7 @@ export function WorkSchedule() {
       const saved = await saveTemporalSettings(getSupabaseBrowserClient(), zoneDraft, now);
       setSettings(saved);
       setInstant(now);
+      setSelectedDay((current) => current ?? formatCivilDate(civilDateInTimeZone(now, saved.timeZone)));
       setWeekStart(formatCivilDate(workFiscalWeekStart(now, saved.timeZone)));
       setEditingZone(false);
       setEditing(false);
@@ -267,8 +343,17 @@ export function WorkSchedule() {
     }
   }
 
+  function shiftDay(delta: -1 | 1) {
+    setSelectedDay((current) => (current ? adjacentCivilDay(current, delta) : current));
+  }
+
+  function showConfirmedToday() {
+    if (!settings) return;
+    setSelectedDay(formatCivilDate(civilDateInTimeZone(instant, settings.timeZone)));
+  }
+
   if (phase === "loading") {
-    return <p className="mt-6">Loading the Work schedule.</p>;
+    return <p className="mt-6">Loading the schedule.</p>;
   }
 
   if (phase === "error") {
@@ -291,12 +376,28 @@ export function WorkSchedule() {
   const today = settings ? formatCivilDate(civilDateInTimeZone(instant, settings.timeZone)) : null;
   const todayVisible = today !== null && dates.includes(today);
 
+  const refreshCanvas = () => setCanvasReload((current) => current + 1);
+
   return (
     <div className="mt-6">
-      <h1 className="text-xl font-medium tracking-tight">Work schedule</h1>
-      <p className="mt-2 text-sm leading-6 text-stone-400">
-        Your scheduled Work days. This is not a store schedule.
-      </p>
+      <h1 className="text-xl font-medium tracking-tight">Schedule</h1>
+
+      {settings && selectedDay ? (
+        <DayCanvas
+          selectedDay={selectedDay}
+          today={today}
+          phase={canvasPhase}
+          error={canvasError}
+          model={canvas}
+          onPreviousDay={() => shiftDay(-1)}
+          onNextDay={() => shiftDay(1)}
+          onToday={showConfirmedToday}
+        />
+      ) : (
+        <p className="mt-2 text-sm leading-6 text-stone-400">
+          A confirmed time zone is required to place this day.
+        </p>
+      )}
 
       {settings && !editingZone ? (
         <div className="mt-4 flex items-center justify-between gap-3">
@@ -308,6 +409,7 @@ export function WorkSchedule() {
             type="button"
             onClick={() => {
               if (dirty) {
+                setManaging(true);
                 setPending({ type: "zone" });
                 return;
               }
@@ -361,74 +463,93 @@ export function WorkSchedule() {
         </form>
       )}
 
-      {settings && todayVisible ? (
-        <TodayScheduleFact entry={entries.find((item) => item.workOn === today) ?? null} />
-      ) : null}
+      <button
+        type="button"
+        aria-expanded={managing}
+        aria-controls="schedule-tools"
+        onClick={() => {
+          if (managing && dirty) return;
+          setManaging((current) => !current);
+        }}
+        className={`mt-8 ${secondaryButtonClass}`}
+      >
+        Manage schedule
+      </button>
 
-      {weekError ? (
-        <p role="alert" className="mt-4 text-sm text-stone-200">
-          {weekError}
+      <div id="schedule-tools" hidden={!managing}>
+        <h2 className="mt-6 text-lg font-medium">Work schedule</h2>
+        <p className="mt-2 text-sm leading-6 text-stone-400">
+          Your scheduled Work days. This is not a store schedule.
         </p>
-      ) : null}
 
-      {settings && shown ? (
-        <>
-          {entriesError ? (
-            <p role="alert" className="mt-3 text-sm text-stone-200">
-              {entriesError}
-            </p>
-          ) : null}
-          <WorkWeek
-            draft={editing && draft ? draft : shown}
-            today={today}
-            editing={editing}
-            openWorkOn={openWorkOn}
-            rowError={rowError}
-            saving={savingWeek}
-            prompt={
-              pending
-                ? "This week has unsaved changes."
-                : null
-            }
-            onBeginEdit={() => {
-              setDraft(weekDraftFromEntries(dates, entries));
-              setEditing(true);
-              setOpenWorkOn(null);
-              setPending(null);
-              setWeekError(null);
-            }}
-            onCancelEdit={discardDraft}
-            onSaveWeek={() => {
-              if (pending) {
-                void continueAfterSave();
-                return;
-              }
-              void persistWeek();
-            }}
-            onOpenDay={(workOn) => setOpenWorkOn(workOn.length > 0 ? workOn : null)}
-            onSetDay={(workOn, day: DayDraft) => {
-              setDraft((current) => (current ? replaceDay(current, workOn, day) : current));
-              setRowError(null);
-            }}
-            onShiftWeek={requestWeek}
-            onDiscardPrompt={continueAfterDiscard}
-            onStay={() => setPending(null)}
-          />
-        </>
-      ) : null}
+        {settings && todayVisible ? (
+          <TodayScheduleFact entry={entries.find((item) => item.workOn === today) ?? null} />
+        ) : null}
 
-      <ProtectedTimeSection
-        key={`protected-${settings?.timeZone ?? "none"}`}
-        timeZone={settings?.timeZone ?? null}
-      />
-      <BlocksSection
-        key={`block-${settings?.timeZone ?? "none"}`}
-        timeZone={settings?.timeZone ?? null}
-      />
-      <CommitmentsSection
-        key={`commitment-${settings?.timeZone ?? "none"}`}
-        timeZone={settings?.timeZone ?? null}
-      />
+        {weekError ? (
+          <p role="alert" className="mt-4 text-sm text-stone-200">
+            {weekError}
+          </p>
+        ) : null}
+
+        {settings && shown ? (
+          <>
+            {entriesError ? (
+              <p role="alert" className="mt-3 text-sm text-stone-200">
+                {entriesError}
+              </p>
+            ) : null}
+            <WorkWeek
+              draft={editing && draft ? draft : shown}
+              today={today}
+              editing={editing}
+              openWorkOn={openWorkOn}
+              rowError={rowError}
+              saving={savingWeek}
+              prompt={pending ? "This week has unsaved changes." : null}
+              onBeginEdit={() => {
+                setDraft(weekDraftFromEntries(dates, entries));
+                setEditing(true);
+                setOpenWorkOn(null);
+                setPending(null);
+                setWeekError(null);
+              }}
+              onCancelEdit={discardDraft}
+              onSaveWeek={() => {
+                if (pending) {
+                  void continueAfterSave();
+                  return;
+                }
+                void persistWeek();
+              }}
+              onOpenDay={(workOn) => setOpenWorkOn(workOn.length > 0 ? workOn : null)}
+              onSetDay={(workOn, day: DayDraft) => {
+                setDraft((current) => (current ? replaceDay(current, workOn, day) : current));
+                setRowError(null);
+              }}
+              onShiftWeek={requestWeek}
+              onDiscardPrompt={continueAfterDiscard}
+              onStay={() => setPending(null)}
+            />
+          </>
+        ) : null}
+
+        <ProtectedTimeSection
+          key={`protected-${settings?.timeZone ?? "none"}`}
+          timeZone={settings?.timeZone ?? null}
+          onStored={refreshCanvas}
+        />
+        <BlocksSection
+          key={`block-${settings?.timeZone ?? "none"}`}
+          timeZone={settings?.timeZone ?? null}
+          onStored={refreshCanvas}
+        />
+        <CommitmentsSection
+          key={`commitment-${settings?.timeZone ?? "none"}`}
+          timeZone={settings?.timeZone ?? null}
+          onStored={refreshCanvas}
+        />
+      </div>
     </div>
   );
 }

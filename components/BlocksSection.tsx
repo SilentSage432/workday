@@ -43,7 +43,13 @@ function orderedContexts(contexts: readonly Context[]): Context[] {
   });
 }
 
-export function BlocksSection({ timeZone }: { timeZone: string | null }) {
+export function BlocksSection({
+  timeZone,
+  onStored,
+}: {
+  timeZone: string | null;
+  onStored?: () => void;
+}) {
   const [instant, setInstant] = useState(() => new Date());
   const [entries, setEntries] = useState<Block[]>([]);
   const [contexts, setContexts] = useState<Context[]>([]);
@@ -104,6 +110,7 @@ export function BlocksSection({ timeZone }: { timeZone: string | null }) {
           : [...current, saved],
       );
       setEditor(null);
+      onStored?.();
     } catch (error: unknown) {
       setFormError(`${failureMessage(error, "Could not save this block.")} It was not saved.`);
     } finally {
@@ -119,6 +126,7 @@ export function BlocksSection({ timeZone }: { timeZone: string | null }) {
       setEntries((current) => current.filter((entry) => entry.id !== id));
       setConfirmingId(null);
       if (editor?.id === id) setEditor(null);
+      onStored?.();
     } catch (error: unknown) {
       setRemoveError(`${failureMessage(error, "Could not remove this block.")} It is still here.`);
     } finally {

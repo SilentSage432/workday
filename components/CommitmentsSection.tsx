@@ -32,7 +32,13 @@ function failureMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
 }
 
-export function CommitmentsSection({ timeZone }: { timeZone: string | null }) {
+export function CommitmentsSection({
+  timeZone,
+  onStored,
+}: {
+  timeZone: string | null;
+  onStored?: () => void;
+}) {
   const [instant, setInstant] = useState(() => new Date());
   const [entries, setEntries] = useState<Commitment[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -86,6 +92,7 @@ export function CommitmentsSection({ timeZone }: { timeZone: string | null }) {
           : [...current, saved],
       );
       setEditor(null);
+      onStored?.();
     } catch (error: unknown) {
       setFormError(
         `${failureMessage(error, "Could not save this commitment.")} It was not saved.`,
@@ -103,6 +110,7 @@ export function CommitmentsSection({ timeZone }: { timeZone: string | null }) {
       setEntries((current) => current.filter((entry) => entry.id !== id));
       setConfirmingId(null);
       if (editor?.id === id) setEditor(null);
+      onStored?.();
     } catch (error: unknown) {
       setRemoveError(
         `${failureMessage(error, "Could not remove this commitment.")} It is still here.`,
