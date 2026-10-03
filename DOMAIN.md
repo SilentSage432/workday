@@ -60,7 +60,7 @@ Off means no Work shift is scheduled. It is not Protected Time, and it does not 
 
 A shift type selects the Work cadence for that kind of shift. The work schedule and the cadence are different facts.
 
-Because a shift is fixed employment time, Timeline may show it as a Commitment and still show that it is a Shift. Do not drop Opening, Mid, or Closing in that presentation.
+Because a shift is fixed employment time, Timeline shows it beside a Commitment and still shows that it is a Shift. Do not drop Opening, Mid, or Closing in that presentation. V0-009 keeps the shift as Work Schedule truth. It does not copy the row into a Commitment.
 
 Shift does not contain the rest of the product. An Active Thread, a Task, a Note, a Block, and NOW can exist without a Shift. Completing a shift does not, by itself, end the day. What occupies the rest of a particular day is not prescribed.
 
@@ -78,7 +78,7 @@ An all-day Commitment is one civil date. A timed Commitment is a local start and
 
 `origin` records where the truth came from. A Commitment entered in this application is `user_created`. That word is provenance, not a kind of Commitment. Google Calendar may later supply an externally sourced Commitment. That source would keep authority over what this application may edit or delete. No external id, sync, or write-back is stored yet.
 
-**Unresolved:** which external events become Commitments, and whether a Shift is stored as a Commitment or only presented as one. V0-008 does not copy a Work shift into `commitments`.
+**Unresolved:** which external events become Commitments, and whether a Shift is stored as a Commitment or only presented beside one. V0-008 does not copy a Work shift into `commitments`. V0-009 presents the shift as Work Schedule truth beside Commitments. It does not store that presentation.
 
 ## Block
 
@@ -96,7 +96,7 @@ An all-day Block is one civil date. A timed Block is a local start and local end
 
 Chosen time is not less important because nobody else imposed it.
 
-**Unresolved:** what Start, Adjust, and Skip change when a Block and the lived day differ. Whether a later version associates Tasks with a Block remains open. The user remains authoritative. See [PRODUCT.md](PRODUCT.md).
+**Unresolved:** what Start, Adjust, and Skip change when a Block and the lived day differ. Whether a later version associates Tasks with a Block remains open. Experience before V0-009 suggests a person may drag a Task into time and establish a Block for that allocation. The Task would remain a Task. That relationship is not stored. The user remains authoritative. See [PRODUCT.md](PRODUCT.md).
 
 ## Protected Time
 
@@ -227,7 +227,7 @@ Objective in this table is a temporal meaning, not an extra primitive. Timeline 
 | Work, Family, TeamLab, Financial | are established, non-exhaustive | Contexts |
 | Task or Note | is not required to belong to | a Context |
 | Work schedule | states boundaries and type of | Shift |
-| Shift | is fixed employment time and may be represented as | Commitment |
+| Shift | is fixed employment time and may be presented beside | Commitment |
 | Shift type | selects | a Work cadence |
 | Block | is chosen purpose and may relate to | a Context |
 | Block | is not required to contain, and V0 does not store | a Task |
@@ -243,5 +243,7 @@ Objective in this table is a temporal meaning, not an extra primitive. Timeline 
 | Timeline | composes, without flattening | Commitment, Block, Shift, planned Task, reminder, occurrence, Window |
 | Pulse | orients; a reminder reports | one explicit fact |
 | Objective | may contextualize, and is not automatically | Task |
+
+V0-009 implements that composition for a scheduled Work shift, Protected Time, a Block, and a Commitment. Planned Tasks, reminders, occurrences, and Windows remain future sources. A shift is not projected as a Commitment. The decision is [docs/decisions/2026-10-02-timeline-composition.md](docs/decisions/2026-10-02-timeline-composition.md).
 
 **Unresolved:** NOW's selection order, Context switching, multi-Context membership, a suspended thread per Context beyond the one current thread V0 stores, occurrence-versus-Task, external write-back, and the lifecycle gaps marked above. They are listed in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md). Commitment has no subtype catalog.

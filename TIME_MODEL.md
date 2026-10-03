@@ -22,7 +22,7 @@ The product needs to be able to represent temporal facts such as:
 
 This list is not a finished model. It does not create a universal week, a universal day boundary, or routines for Family, TeamLab, or Financial.
 
-Commitments, Blocks, reminders, and external calendar facts are further temporal facts. They are defined in [DOMAIN.md](DOMAIN.md). Timeline composes a day's shape from them without erasing their differences. See [PRODUCT.md](PRODUCT.md).
+Commitments, Blocks, reminders, and external calendar facts are further temporal facts. They are defined in [DOMAIN.md](DOMAIN.md). Timeline composes established temporal facts without erasing their differences. See [PRODUCT.md](PRODUCT.md).
 
 The civil day used by Today is the calendar date of a supplied instant in the confirmed IANA time zone. It is not the UTC date and not the server's local date. A browser suggestion is not that confirmed zone.
 
@@ -32,11 +32,13 @@ The civil day used by Today is the calendar date of a supplied instant in the co
 
 Some time is externally constrained or obligated. Some time is deliberately chosen and protected.
 
-A Commitment means this time is constrained by something the user has committed to. A Block is the chosen case. A Work shift remains a Shift with a type and a cadence. Timeline may later present that shift beside a Commitment. It must not flatten those facts into one generic event, and V0-008 does not store a shift as a Commitment row.
+A Commitment means this time is constrained by something the user has committed to. A Block is the chosen case. A Work shift remains a Shift with a type and a cadence. Timeline presents that shift beside a Commitment as Work Schedule truth. It must not flatten those facts into one generic event, and it does not store a shift as a Commitment row.
 
 Obligated does not mean more important. Chosen does not mean optional. The user establishes what deserves protection. Protected time with the user's children is not a checklist and is not a lesser kind of time because nobody else imposed it.
 
 Availability is established, not assumed. Unscheduled time must not automatically be interpreted as allocatable time. Protected Time is time the user has deliberately made unavailable for allocation. It is not a statement that the rest of the day is free. A Block is a separate fact: time the user has chosen a purpose for. It does not make that time protected, and it does not calculate what remains.
+
+Timeline composes temporal truth. It does not resolve temporal truth. Time is the underlying space. Multiple established truths may describe the same time without one canceling the others. Nothing established is not the same as available. V0-009 projects a scheduled Work shift, Protected Time, a Block, and a Commitment across a requested civil range. The decision is [docs/decisions/2026-10-02-timeline-composition.md](docs/decisions/2026-10-02-timeline-composition.md).
 
 If a Block's clock time arrives and life is different, the user remains authoritative. The product favors Start, Resume, Adjust, and Skip over judgment. Exact effects of Start, Adjust, and Skip are not defined. Resume is defined in [PRODUCT.md](PRODUCT.md).
 

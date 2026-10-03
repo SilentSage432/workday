@@ -119,6 +119,8 @@ NOW is not a table. Timeline is not a table. Today is the set of tasks whose pla
 
 A Work shift is stored as a shift pattern. The projection may present that interval beside Commitments. It does not convert the shift row into a Commitment row. That storage question from FOUNDATION-003 stays open, and this choice avoids answering it by collapsing the tables.
 
+V0-009 adds `projections/timeline.ts`. It takes a requested half-open civil range, the confirmed IANA zone, and already loaded Work schedule entries, Protected Time, Blocks, and Commitments. It returns those facts together without merging them, ranking them, or storing a timeline row. It does not read the clock. Planned Tasks are not part of this projection. The decision is [../decisions/2026-10-02-timeline-composition.md](../decisions/2026-10-02-timeline-composition.md).
+
 ## Persistence
 
 Supabase Postgres is the durable store. This product gets its own Supabase project. That project must not be the one used by Wealth Engine, DeptSync, Carb Buddy, or any other TeamLab system.

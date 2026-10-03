@@ -14,13 +14,13 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**V0-008.** A signed-in person can record a Commitment, time constrained by something they have committed to. It appears on Schedule beside the Work week, Protected Time, and Blocks. Tasks and Schedule remain the bottom bar.
+**V0-009.** Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment across a requested civil range. It is a projection, not a screen.
 
-NOW, Timeline, and Pulse are still not built. Today, Resume, and Work orientation are projections. They are not tables.
+The temporal canvas, NOW, and Pulse are still not built. Today, Resume, Work orientation, and Timeline are projections. They are not tables.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The behavior of this slice is in [docs/implementation/V0-008.md](docs/implementation/V0-008.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-007.md](docs/implementation/V0-007.md).
+The behavior of this slice is in [docs/implementation/V0-009.md](docs/implementation/V0-009.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-008.md](docs/implementation/V0-008.md).
 
 ## Canonical documents
 
@@ -43,6 +43,7 @@ The behavior of this slice is in [docs/implementation/V0-008.md](docs/implementa
 | [docs/implementation/V0-006.md](docs/implementation/V0-006.md) | Protected Time |
 | [docs/implementation/V0-007.md](docs/implementation/V0-007.md) | Blocks |
 | [docs/implementation/V0-008.md](docs/implementation/V0-008.md) | Commitments |
+| [docs/implementation/V0-009.md](docs/implementation/V0-009.md) | Timeline composition |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |
