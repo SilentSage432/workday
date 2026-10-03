@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { useBlockNavigation } from "@/components/navigationGuard";
+import { ProtectedTimeSection } from "@/components/ProtectedTimeSection";
 import { TodayScheduleFact, WorkWeek } from "@/components/WorkWeek";
 import {
   planWeekSave,
@@ -331,7 +332,7 @@ export function WorkSchedule() {
           </label>
           <p id="time-zone-hint" className="mt-1 text-sm text-stone-400">
             {settings
-              ? "This zone interprets Work start and end times."
+              ? "This zone interprets Work times and protected time."
               : "The phone can suggest one. It is saved only when you confirm it."}
           </p>
           <input
@@ -413,6 +414,11 @@ export function WorkSchedule() {
           />
         </>
       ) : null}
+
+      <ProtectedTimeSection
+        key={settings?.timeZone ?? "no-zone"}
+        timeZone={settings?.timeZone ?? null}
+      />
     </div>
   );
 }

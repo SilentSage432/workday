@@ -56,6 +56,8 @@ A shift has temporal boundaries, for example 6:00 AM → 3:00 PM. The user's act
 
 V0 stores that personal schedule as one state per civil date: no row yet, Off, or one scheduled shift with an explicit Opening, Mid, or Closing type. Local times use the IANA time zone the user confirmed. If the end is earlier than or equal to the start, the shift continues into the next civil date. The decision is [docs/decisions/2026-10-02-work-schedule.md](docs/decisions/2026-10-02-work-schedule.md).
 
+Off means no Work shift is scheduled. It is not Protected Time, and it does not mean the civil day is available.
+
 A shift type selects the Work cadence for that kind of shift. The work schedule and the cadence are different facts.
 
 Because a shift is fixed employment time, Timeline may show it as a Commitment and still show that it is a Shift. Do not drop Opening, Mid, or Closing in that presentation.
@@ -85,6 +87,16 @@ A Block may have a start and end, may span an entire day, may relate to a Contex
 Protected time with the user's children is not a checklist. Chosen time is not less important because it was not externally imposed.
 
 **Unresolved:** what Start, Adjust, and Skip change when a Block and the lived day differ. The user remains authoritative. See [PRODUCT.md](PRODUCT.md).
+
+## Protected Time
+
+Protected Time is time the user has deliberately made unavailable for allocation.
+
+Protected does not mean occupied. Protected means unavailable for allocation. The interval may contain no activity. That is valid.
+
+It is not a Block, a Commitment, a Work shift, or a Task. Work Off does not create it. A Task planned for Today does not consume it. It does not require a Context. A short label, when present, is the user's words, not a category.
+
+An all-day entry is one civil date. A timed entry is a local start and local end on a civil date, interpreted in the confirmed IANA time zone. If the end is earlier than or equal to the start, the interval continues into the next civil date. Overlaps are kept. Recurrence is not stored. The decision is [docs/decisions/2026-10-02-protected-time.md](docs/decisions/2026-10-02-protected-time.md).
 
 ## Cadence
 

@@ -14,13 +14,13 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**V0-005.** A signed-in person can see which open Tasks are planned for the confirmed civil day, and can plan, move, or remove that relationship. Tasks and Schedule remain the bottom bar.
+**V0-006.** A signed-in person can record Protected Time, the hours or civil days they have made unavailable for allocation. It appears on Schedule beside the Work week. Tasks and Schedule remain the bottom bar.
 
 NOW, Timeline, and Pulse are still not built. Today, Resume, and Work orientation are projections. They are not tables.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The behavior of this slice is in [docs/implementation/V0-005.md](docs/implementation/V0-005.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-004B.md](docs/implementation/V0-004B.md).
+The behavior of this slice is in [docs/implementation/V0-006.md](docs/implementation/V0-006.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-005.md](docs/implementation/V0-005.md).
 
 ## Canonical documents
 
@@ -40,6 +40,7 @@ The behavior of this slice is in [docs/implementation/V0-005.md](docs/implementa
 | [docs/implementation/V0-004A.md](docs/implementation/V0-004A.md) | Compact Work schedule reading and editing |
 | [docs/implementation/V0-004B.md](docs/implementation/V0-004B.md) | Mobile navigation, Capture, and week saving |
 | [docs/implementation/V0-005.md](docs/implementation/V0-005.md) | Intentional Today planning |
+| [docs/implementation/V0-006.md](docs/implementation/V0-006.md) | Protected Time |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |
