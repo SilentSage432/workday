@@ -38,7 +38,7 @@ Capture time is when the experience was retained. It is not when something shoul
 
 Establishing a later fact does not destroy or replace the Note. The earlier word "conversion" remains the name of an explicit user act in older records. It does not mean the Note is consumed. [FOUNDATION-002.md](FOUNDATION-002.md) item 3 stays historical. Its Note sentence is refined here.
 
-No Note schema is defined.
+No Note schema is defined in this discovery. [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) later decides the minimum representation and where the provenance reference sits. This file is not rewritten into that decision. A Note is still not stored.
 
 ## From experience to action
 
@@ -147,9 +147,9 @@ Destination and Priority are established conceptual meanings. Their production i
 - relationship of Priority to Context
 - whether and how Tasks explicitly relate to Priority
 - whether and how Cadence explicitly relates to Priority
-- Note schema and storage
+- Note schema and storage, as left open here; the minimum representation is the later note-representation decision, and storage is still not implemented
 - Note editing and lifecycle
-- representation of Note to established-fact provenance
+- representation of Note to established-fact provenance, as left open here; the later note-representation decision places an optional reference on the derived fact
 - interpretation result contract
 - typed interpretation experience
 - voice transcription and provider

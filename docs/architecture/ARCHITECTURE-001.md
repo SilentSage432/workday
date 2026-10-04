@@ -232,21 +232,20 @@ No provider SDK is added. A delivery interface is not added until a provider is 
 
 The write path accepts captured text and an explicit choice of Task or Note. A later transcript parser may fill that same input, including an unresolved transcript when the kind is not confident. The domain does not depend on a microphone or a vendor. No grammar and no provider are chosen.
 
-What a Note means, and that a Task is not inferred from a Note, is established in [../../DOMAIN.md](../../DOMAIN.md). Voice still blocks operational adoption. It is not authorized until the capture result contract, provenance representation, and confidence handling are safe. Candidate interpretation is not establishment. See [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md).
+What a Note means, and that a Task is not inferred from a Note, is established in [../../DOMAIN.md](../../DOMAIN.md). The minimum representation is [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md). Voice still blocks operational adoption. It is not authorized until the capture result contract and confidence handling are safe. Candidate interpretation is not establishment. See [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md).
 
 ## Provenance
 
-Minimum fields on facts that have a source, not an event log:
+Minimum fields on facts that have an external or derived authority, not an event log:
 
-- origin: user-created, derived from a recurring definition, external calendar, converted from a note, or a future external system
+- origin, where a fact may come from more than one authority: user-created today; a recurring definition or an external source only when that authority exists
 - source name, when external
 - external id, when external
 - internal id
-- source note id, when converted
 
-External origin stays externally owned. Derived occurrences point at their definition. Conversion keeps the note reference. This is enough to inspect authority without a history pipeline.
+External origin stays externally owned. Derived occurrences point at their definition. This is enough to inspect authority without a history pipeline.
 
-[../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md) refines that reference. An originating Note stays intact. One Note may support zero, one, or many later facts. Provenance is an inspectable relationship to user-originating evidence, not retained model reasoning. The field list above is not a schema, and it does not authorize Note storage.
+A Note is not an origin value. [2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) decides the minimum Note and the optional reference on a later fact. A user-established Task remains `user_created`. "Converted from a note" is not a second authority. The Note stays intact. One Note may support zero, one, or many later facts. Provenance is an inspectable relationship to user-originating evidence, not retained model reasoning. That decision does not store a Note and does not authorize voice.
 
 ## Time
 

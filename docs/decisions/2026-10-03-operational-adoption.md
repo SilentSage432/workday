@@ -73,9 +73,7 @@ Voice capture is part of the intended production system. It blocks operational a
 
 The reason is low-friction capture while the user is moving through real life, including Work. Typed quick capture remains required. It is not a substitute that makes voice optional for adoption.
 
-Voice must not be implemented before its deterministic semantic boundary is safe. What a Note means is established in [../../DOMAIN.md](../../DOMAIN.md) and [../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md). The remaining dependency is:
-
-voice → the capture result contract → provenance representation → confidence handling where a reading is not confident
+Voice must not be implemented before its deterministic semantic boundary is safe. What a Note means is established in [../../DOMAIN.md](../../DOMAIN.md) and [../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md). The minimum Note representation, and the optional reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The remaining dependency is the capture-result contract, including confidence handling where a reading is not confident.
 
 Future voice input converges on the same deterministic creation boundaries as typed capture. If the product cannot tell actionable from informational, it keeps the transcript and the user chooses. Unrecognized speech stays verbatim. Interpretation may propose candidate structure. It does not establish domain truth. No AI, ML, LLM, or agentic system is temporal authority.
 
@@ -181,7 +179,7 @@ These are already specified, already present, or both. This list does not reopen
 These block operational adoption. They are not authorized for implementation until the open meaning is decided. Deciding them is a later human act, not a side effect of this contract.
 
 - The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Remove is a named operation and is not implemented. Reopen is not a named operation.
-- How a Note is stored, edited, and retained, and how a later established fact keeps provenance to that Note. What a Note means is established. The Note remains when a fact is established from it. Voice still waits on the capture dependency above.
+- How a Note is edited, deleted, and otherwise retained. What a Note means is established. The minimum representation and the provenance reference are decided. A Note is not stored yet. The Note remains when a fact is established from it. Voice still waits on the capture dependency above.
 - Voice, only after the capture dependency above is safe.
 - NOW as a coherent orientation experience, including which composition it uses. `rankNow` is not assumed.
 - Week as shape, including which interactions are required beyond reading that shape.
@@ -223,7 +221,7 @@ Their production implementation classification is unresolved. They are not added
 
 Not answered here.
 
-1. How is a Note represented, edited, and retained, and how does a later fact keep an inspectable provenance relationship to it? What a Note means is established. The Note is not consumed when a fact is established from it.
+1. How is a Note edited, deleted, and otherwise retained? What a Note means is established. Representation, and the reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The Note is not consumed when a fact is established from it. Storage is not implemented.
 2. Is a recurring-obligation occurrence itself a Task, related to a Task, capable of producing a Task, or a distinct completed occurrence?
 3. What exactly do reschedule and carry-forward mean, including their relationship to Must Do?
 4. Can Task completion be undone or reopened?
