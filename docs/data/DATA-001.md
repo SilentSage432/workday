@@ -122,5 +122,5 @@ After that insert, the trigger creates the four Contexts.
 - Whether a Task may eventually belong to more than one Context.
 - Whether a Task due boundary later needs a clock time in addition to `due_on`.
 - What reschedule and carry-forward write, and whether either clears MUST DO.
-- The user's IANA time zone is still an input to projections. It is not a profile row yet.
+- The confirmed IANA time zone is stored in `temporal_settings`. That table is not a profile catalog. Projections receive the stored zone as an input.
 - Whether the owner should be prevented from deleting a canonical Context.

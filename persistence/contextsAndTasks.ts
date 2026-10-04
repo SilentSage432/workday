@@ -8,6 +8,7 @@ import {
   toTaskInsert,
   toTaskUpdate,
 } from "@/persistence/contextTaskMapping";
+import { readCompleteCollection, TEMPORAL_PAGE_SIZE } from "@/persistence/completeRead";
 import type { ContextRow, TaskRow } from "@/persistence/contextTaskRows";
 
 const CONTEXT_COLUMNS = "id, name, created_at";
@@ -56,14 +57,31 @@ export async function createTask(client: SupabaseClient, input: NewTask): Promis
   return rowToTask(unwrap(data, error) as TaskRow);
 }
 
+/**
+ * Open tasks, in creation order.
+ * `id` is a pagination tie-break when two open tasks share `created_at`.
+ * It does not change the order of tasks created at different instants,
+ * and it is not importance.
+ * The returned array is the reported complete collection. A short page throws.
+ */
 export async function loadOpenTasks(client: SupabaseClient): Promise<Task[]> {
-  const { data, error } = await client
-    .from("tasks")
-    .select(TASK_COLUMNS)
-    .is("completed_at", null)
-    .order("created_at", { ascending: true });
+  const rows = await readCompleteCollection({
+    pageSize: TEMPORAL_PAGE_SIZE,
+    readPage: async (offset, pageSize) => {
+      const { data, error, count } = await client
+        .from("tasks")
+        .select(TASK_COLUMNS, { count: "exact" })
+        .is("completed_at", null)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(offset, offset + pageSize - 1);
+      if (error) {
+        throw new Error(error.message);
+      }
+      return { rows: (data ?? []) as TaskRow[], total: count };
+    },
+  });
 
-  const rows = unwrap(data, error) as TaskRow[];
   return rows.map(rowToTask);
 }
 

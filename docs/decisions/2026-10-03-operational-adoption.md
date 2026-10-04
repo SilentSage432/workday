@@ -151,7 +151,9 @@ B. Current temporal orientation, shown as "This time," can look complete when th
 
 This contract does not fix them. They are the first implementation candidate after this record is canonical. That candidate must not invent product semantics while closing the holes.
 
-P0-INTEGRITY-001 later closed both defects. The sentences above stay as the record of what was open when this decision was written. A surface may claim that no established truth matches only after every required read reports a complete collection. A partial page is a failed read, not partial truth. `projectCurrentTemporalOrientation` still does not model transport failure. The Tasks surface withholds This time unless Work, Protected Time, Blocks, and Commitments all loaded completely. The day canvas stays unpainted when one of those reads fails. The record is [../implementation/P0-INTEGRITY-001.md](../implementation/P0-INTEGRITY-001.md).
+P0-INTEGRITY-001 later closed both defects for the temporal collections named there. The sentences above stay as the record of what was open when this decision was written. A surface may claim that no established truth matches only after every required read reports a complete collection. A partial page is a failed read, not partial truth. `projectCurrentTemporalOrientation` still does not model transport failure. The Tasks surface withholds This time unless Work, Protected Time, Blocks, and Commitments all loaded completely. The day canvas stays unpainted when one of those reads fails. The record is [../implementation/P0-INTEGRITY-001.md](../implementation/P0-INTEGRITY-001.md).
+
+TASK-INTEGRITY-001 applies that same rule to open Tasks. Today and the open-task list are rendered only after that read succeeds. A failed open-task read uses the existing task load error. It does not present a short page as the open set. The record is [../implementation/TASK-INTEGRITY-001.md](../implementation/TASK-INTEGRITY-001.md).
 
 ## Classification
 
