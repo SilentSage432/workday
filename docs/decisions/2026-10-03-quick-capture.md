@@ -16,6 +16,8 @@ The title field is the resting state on Tasks and on Schedule. One capture sessi
 
 Notes, and the choice between a Note and a Task, stay unresolved. Every save in this tranche is a Task because the user is using Task capture.
 
+[../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md) later established what a Note means. This decision still records that every save here creates a Task. Note storage, and a capture choice between Note and Task, are not implemented.
+
 ## Context
 
 The existing capture already created a normal Task, but the title was behind a closed control, and Schedule had no way to save a thought without leaving the day.

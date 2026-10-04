@@ -232,7 +232,7 @@ No provider SDK is added. A delivery interface is not added until a provider is 
 
 The write path accepts captured text and an explicit choice of Task or Note. A later transcript parser may fill that same input, including an unresolved transcript when the kind is not confident. The domain does not depend on a microphone or a vendor. No grammar and no provider are chosen.
 
-Voice blocks operational adoption. It is not authorized until Task-versus-Note semantics and confidence handling are safe. See [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md).
+What a Note means, and that a Task is not inferred from a Note, is established in [../../DOMAIN.md](../../DOMAIN.md). Voice still blocks operational adoption. It is not authorized until the capture result contract, provenance representation, and confidence handling are safe. Candidate interpretation is not establishment. See [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md).
 
 ## Provenance
 
@@ -245,6 +245,8 @@ Minimum fields on facts that have a source, not an event log:
 - source note id, when converted
 
 External origin stays externally owned. Derived occurrences point at their definition. Conversion keeps the note reference. This is enough to inspect authority without a history pipeline.
+
+[../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md) refines that reference. An originating Note stays intact. One Note may support zero, one, or many later facts. Provenance is an inspectable relationship to user-originating evidence, not retained model reasoning. The field list above is not a schema, and it does not authorize Note storage.
 
 ## Time
 

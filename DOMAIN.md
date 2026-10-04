@@ -19,7 +19,7 @@ Shift remains a valid primitive. It is known through Work. It is not the univers
 
 Capture is an interaction, not a state. NOW, Timeline, and Pulse are experience concepts, not stored primitives. Direct time selection on the day canvas is also an interaction. It is the local clock span the user is pointing at. An intended meaning on that span is the same kind of interaction: the user has named whether they mean to protect the time, choose a purpose, or add a commitment. Refining the start or end updates that same span. Neither the span nor the intention is a stored primitive. An explicit establishment action can create a Protected Time, a Block, or a Commitment from that span. Those remain the stored primitives. The action is not itself a primitive, and it does not create a generic event. An external temporal source is a provenance relationship, not a life-area primitive.
 
-FOUNDATION-001 used Observation as a candidate primitive. That is historical. Capture produces a Task or a Note. The word "observation" may appear in speech that creates a Note.
+FOUNDATION-001 used Observation as a candidate primitive. That is historical. Capture produces a Task or a Note. The word "observation" may appear in speech that creates a Note. Interpretation of captured language may propose structure. It does not establish a Task, a temporal fact, a Destination, or a Priority. The user establishes meaning. Destination and Priority, defined below, are conceptual meanings. They are not in the primitive list above, and they are not stored.
 
 Earlier writing used "working context" for the Active Thread. That phrase is not the Context primitive.
 
@@ -43,6 +43,8 @@ Established Contexts, from evidence, not an exhaustive list:
 There is no generic Personal Context. Home, health routines, and other areas are not Contexts until evidence says so.
 
 A Task or a Note is not required to belong to a Context.
+
+A Destination and a Priority are not Contexts. A Context may relate to more than one Destination and more than one Priority. That relationship is not authorized.
 
 Work is the first deeply discovered Context. Many temporal semantics were learned there. Work is not the ontology of the system. The intended product is a multi-context temporal foundation. Production adoption requires temporal orientation that can relate honestly to Family, TeamLab, and Financial. That does not mean those Contexts receive Work's cadence or Work's projections. The contract is [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md).
 
@@ -112,9 +114,9 @@ An all-day entry is one civil date. A timed entry is a local start and local end
 
 ## Cadence
 
-A cadence is how the user intends to move through a meaningful period or Context. It is not a rigid schedule. Interruptions are expected. The product helps the user resume rather than judging the deviation.
+A cadence is how the user intends to move through a meaningful period or Context. It is not a rigid schedule. It is also the recurring attention and execution through which the user maintains or advances conditions that matter to a Destination. Those are two descriptions of one primitive. Movement through a period stays valid when no Destination has been established. Recurring attention stays valid when a particular scheduled execution is disrupted. A cadence is not a list of recurring Tasks and not a set of time blocks. Interruptions are expected. The product helps the user resume rather than judging the deviation.
 
-The discovered cadences are Opening, Mid, and Closing. They are Work-specific. Their contents are in [CADENCE.md](CADENCE.md). No cadence is established for Family, TeamLab, or Financial. A Block is not a cadence.
+The discovered cadences are Opening, Mid, and Closing. They are Work-specific. Their contents are in [CADENCE.md](CADENCE.md). No cadence is established for Family, TeamLab, or Financial. A Block is not a cadence. Opening, Mid, and Closing do not require a Destination.
 
 A cadence may use absolute time, relative position, or both. See [TIME_MODEL.md](TIME_MODEL.md).
 
@@ -159,7 +161,7 @@ These facts stay independent. Planned is not due. A Task may be due Thursday and
 
 Today is not a Task type. It means this open Task is deliberately planned for the user's current civil day: `plannedOn` equals that date. It is not every unresolved Task, and it is not the Timeline. Due, Must Do, and Active Thread stay independent of it. See [PRODUCT.md](PRODUCT.md).
 
-MUST DO is `mustDo` true or false. The user sets it. It is not a priority score, a task state, or a separate bucket. While set, the Task stays prominent until the user completes, reschedules, or removes it. DATA-001 stores that flag, a civil due date, a separate civil planned day, and a completion instant. A time-of-day due instant is not stored. See [docs/data/DATA-001.md](docs/data/DATA-001.md).
+MUST DO is `mustDo` true or false. The user sets it. It is not Priority, not a priority score, not a task state, and not a separate bucket. While set, the Task stays prominent until the user completes, reschedules, or removes it. DATA-001 stores that flag, a civil due date, a separate civil planned day, and a completion instant. A time-of-day due instant is not stored. See [docs/data/DATA-001.md](docs/data/DATA-001.md).
 
 Known operations include add, edit, complete, remove, reschedule, and carry forward.
 
@@ -171,11 +173,15 @@ No controlled vocabulary of work kinds is established. A Task is not a medical o
 
 ## Note
 
-A Note means information worth retaining when action has not been established.
+A Note is a retained fragment of experience: something the user observed, learned, thought, or was told, captured so its meaning can be revisited later.
 
-A Note does not burden the Task list and is not required to belong to a Context. The user may explicitly convert a Note into a Task. The resulting Task must not lose the originating information. DATA-001 can record that a Task was created directly by the user. It does not yet store conversion from a Note, because Notes are not stored.
+A Note carries no inherent obligation to act. It may remain informational indefinitely. Incomplete understanding is legitimate information. A Note is not a Task, not an unfinished Task, and not a low-priority Task. Capturing a Note does not create an obligation and does not establish temporal allocation. Language inside a Note that suggests action does not establish that action. Capture time is when the experience was retained. It is not when something should occur.
 
-**Unresolved:** which parts of the Note must be kept.
+A Note does not burden the Task list and is not required to belong to a Context. The user may later establish a Task or another supported fact from a Note by explicit intent. The Note stays independently intact. One Note may support zero, one, or many later facts. A derived fact must be able to retain an inspectable relationship to the originating Note when that relationship exists. Provenance here is user-originating evidence. It is not hidden model reasoning. Older records call that explicit act conversion. Conversion does not consume the Note.
+
+DATA-001 can record that a Task was created directly by the user. It does not store Notes, and it does not store provenance from a Note.
+
+**Unresolved:** Note representation, editing, and lifecycle; how a derived fact retains the originating Note. The reasoning is [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md).
 
 ## Active Thread
 
@@ -210,6 +216,34 @@ Pod-change reminders, Dexcom-related reminders, and doctor appointments are exam
 
 They do not authorize the product to interpret medical data, calculate treatment, alter care timing, infer urgency, or prescribe action.
 
+## Destination
+
+A Destination describes where the user is deliberately trying to take some part of their life or reality. It may be a desired condition, a direction of development, or something continuously approached rather than a binary finish line. It may evolve as the user learns.
+
+A Destination is the reference against which sustained importance can be understood. The user must have some sense of where they are going before Priority can have directional meaning.
+
+A Destination is not a Target and not an Objective. Those remain temporal meanings in [TIME_MODEL.md](TIME_MODEL.md). A Target is a preferred completion point. An Objective is a desired operating condition and may contextualize Tasks. This discovery does not collapse the three, and it does not reclassify Thursday department readiness or the Full Shelf Replenishment morning language.
+
+A Destination is not a Context. It is not yet a stored primitive. No lifecycle, completion rule, metric, hierarchy, or schema is defined. Work illustrations of where the user is trying to go are evidence of the relationship, not a taxonomy. They are kept in [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md).
+
+**Unresolved:** exact representation, and the boundary with Objective and Target beyond the refusal to collapse them.
+
+## Priority
+
+Priority is a condition or area of sustained attention whose continued health materially advances an established Destination and therefore deserves repeated execution over time.
+
+Priority describes what repeatedly matters to movement toward a Destination. It is downstream of Destination. Concrete execution underneath a Priority may change as reality changes. A Priority is not itself necessarily a Task. Concrete actions can establish, restore, or maintain the condition it names.
+
+Priority is not high, medium, or low. It is not a numeric score, an inferred ranking, urgency, recency, frequency, a due date, or algorithmic importance. Priority is not Must Do, not Due, not Planned, not a Block, and not the Active Thread. Attention is not evidence of importance. An interruption that gains attention does not gain Priority. Something may need to happen without being the best use of the user's personal execution.
+
+Something may need doing without needing this user. Something may need this user without needing this user now. The user may determine that another person should execute something while the user retains responsibility for follow-up or outcome. Delegation and follow-up are an unresolved semantic relationship. They do not authorize another user, an employee account, workforce management, or a delegation workflow.
+
+No automatic prioritization is authorized. Priority is not yet a stored primitive.
+
+The conceptual relationship is Destination, then Priority, then cadence or repeated execution, then observable reality. That relationship is not a persisted hierarchy. Not every Task requires a Priority. Not every Note requires a Destination. Not every Priority requires a metric. Not every Destination requires completion criteria.
+
+**Unresolved:** representation, lifecycle, relationship to Context, whether a Task explicitly relates to a Priority, and whether cadence explicitly relates to a Priority.
+
 ## External temporal source
 
 An external temporal source supplies time-related facts and retains provenance.
@@ -236,7 +270,12 @@ Objective in this table is a temporal meaning, not an extra primitive. Timeline 
 | External temporal source | may supply, with provenance | Commitment |
 | Google Calendar | is the first identified | external temporal source |
 | Capture | may produce | Task or Note |
-| Note | may be explicitly converted into, keeping originating information | Task |
+| Interpretation | may propose, and does not establish | structure |
+| Note | may, by explicit user establishment, support while remaining intact | a later Task or other established fact |
+| Destination | is not | a Target, an Objective, or a Context |
+| Priority | is sustained attention downstream of | a Destination |
+| Priority | is not | Must Do, Due, Planned, a Block, or the Active Thread |
+| Cadence | may also be recurring attention toward conditions that matter to | a Destination |
 | Task | may be planned independently of | its due boundary |
 | Task | may carry a user-set flag | MUST DO |
 | Active Thread | is the thread offered by | Resume |
@@ -248,4 +287,4 @@ Objective in this table is a temporal meaning, not an extra primitive. Timeline 
 
 V0-009 implements that composition for a scheduled Work shift, Protected Time, a Block, and a Commitment. V0-010 draws one civil day from it and does not resolve overlap. Planned Tasks, reminders, occurrences, and Windows remain future sources. A shift is not projected as a Commitment. The decisions are [docs/decisions/2026-10-02-timeline-composition.md](docs/decisions/2026-10-02-timeline-composition.md) and [docs/decisions/2026-10-02-day-canvas.md](docs/decisions/2026-10-02-day-canvas.md).
 
-**Unresolved:** NOW's selection order, Context switching, multi-Context membership, a suspended thread per Context beyond the one current thread V0 stores, occurrence-versus-Task, external write-back, and the lifecycle gaps marked above. They are listed in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md). Commitment has no subtype catalog.
+**Unresolved:** NOW's selection order, Context switching, multi-Context membership, a suspended thread per Context beyond the one current thread V0 stores, occurrence-versus-Task, external write-back, and the lifecycle gaps marked above. They are listed in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md). Commitment has no subtype catalog. Destination representation, Priority representation, Note storage, and provenance from a Note to a later fact are unresolved in [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md). That discovery does not define Capacity, NOW composition, or a ranking.

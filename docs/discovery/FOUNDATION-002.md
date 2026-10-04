@@ -2,7 +2,7 @@
 
 Date: 2026-10-02.
 
-Historical record of behavioral semantics at the end of FOUNDATION-002, when the product was still described as a workday navigator. FOUNDATION-002A generalized that scope. The behavioral distinctions in this file remain valid. Statements that make a shift, the three Work clocks, or retail the boundary of the whole product were superseded. This file is not rewritten as if the broader scope was already known.
+Historical record of behavioral semantics at the end of FOUNDATION-002, when the product was still described as a workday navigator. FOUNDATION-002A generalized that scope. The behavioral distinctions in this file remain valid, except item 3's Note sentence, which [DISCOVERY-CANON-001.md](DISCOVERY-CANON-001.md) refines: a Note remains a retained fragment of experience after a later fact is established from it. Statements that make a shift, the three Work clocks, or retail the boundary of the whole product were superseded. This file is not rewritten as if the broader scope was already known.
 
 This tranche resolves core behavioral semantics. It does not choose persistence, authentication, hosting, deployment, a speech provider, a notification provider, a grammar, a schema, or an application stack.
 

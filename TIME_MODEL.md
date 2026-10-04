@@ -125,6 +125,8 @@ Availability is a further timing fact for the known Work obligations: Bay Audits
 
 Do not harden "approximately," "early," or "well before" into exact clock rules. Do not silently convert a target or an objective into a hard deadline.
 
+Destination, defined in [DOMAIN.md](DOMAIN.md), is not another row in this table. A Destination is where the user is deliberately trying to take some part of life or reality. It is not a Deadline, not a Target, and not an Objective. Thursday readiness remains an Objective. Full Shelf Replenishment's morning language remains a Target. Neither is reclassified as a Destination. The boundary among Destination, Objective, and Target, beyond that refusal to collapse them, is unresolved.
+
 **Unresolved:** how the product shows the distinction. FSR's two morning points are both part of its absolute target language. They are not reclassified here as a deadline plus a target, and they are not given a fourth temporal kind. Thursday readiness is a Work objective, not a Task.
 
 ## Absolute time and relative position

@@ -1,6 +1,6 @@
 # Cadence
 
-A cadence is how the user intends to move through a meaningful period or Context. It is not a rigid schedule. Interruptions are expected. The product helps the user resume rather than judging the deviation. The primitive is defined in [DOMAIN.md](DOMAIN.md).
+A cadence is how the user intends to move through a meaningful period or Context. It is not a rigid schedule. It is also the recurring attention and execution through which the user maintains or advances conditions that matter to a Destination. Those are two descriptions of one primitive. A cadence does not require a Destination. It is not a list of recurring Tasks and not a set of time blocks. A scheduled execution may be disrupted while the cadence remains valid. Interruptions are expected. The product helps the user resume rather than judging the deviation. The primitive is defined in [DOMAIN.md](DOMAIN.md).
 
 No cadence outside Work has been discovered. Family, TeamLab, and Financial are Contexts. They are not cadences, and this file does not invent sequences for them. A Block or a Commitment in those Contexts is not a cadence.
 
@@ -127,4 +127,5 @@ Each definition activates an occurrence for a fiscal period. Completing that occ
 | Closing concerns, including items that apply only when assigned | An ordered personal closing cadence and an assignment model |
 | Weekly Work strategy; Thursday readiness as a Work objective; obligation definition versus a completable period occurrence | Product mechanics that would turn the strategy or the objective into a checkbox or into catch-up enforcement |
 | These cadences belong to Work | Any cadence outside Work. Family, TeamLab, and Financial do not yet have one |
+| Cadence is intended movement through a period or Context, and may also be recurring attention toward a Destination | Reducing cadence to recurring Tasks or rigid blocks, or requiring every cadence to name a Destination |
 | V0 may use this discovered Work cadence for orientation | A cadence editor, or any requirement to re-author these sequences before real use |

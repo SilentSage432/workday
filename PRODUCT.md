@@ -14,6 +14,16 @@ The system should know relatively few concepts and understand their relationship
 
 Explicit facts that projection may use include current time, current date, Commitment boundaries, Block boundaries, Work shift boundaries, operational Windows, explicit reminders, due boundaries, planned work, MUST DO, the Active Thread, recurring-obligation occurrences, and Context. These are candidate inputs, not an approved order.
 
+## Sustained importance
+
+Importance derives from relationship to where the user has established they are going, not merely from what currently demands attention. Attention is not evidence of importance.
+
+Destination and Priority name that relationship. They are defined in [DOMAIN.md](DOMAIN.md). They do not replace time as the canvas. They are not Contexts. Their representation is unresolved. Their production implementation classification is unresolved in [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md). Discovering them does not make them adoption blockers.
+
+A strong operating foundation makes deviation easier for the human to perceive. Ordinary life contains friction. The aim is not zero disturbance. Stable foundations and explicit relationships make a departure from intended operation more legible. The human determines meaning and cause. The product does not add a Friction object, detect anomalies, or infer a cause.
+
+The system should preserve why an established action exists when that provenance is known. Provenance is an inspectable relationship to evidence the user originated.
+
 ## Life loop
 
 The emerging loop is descriptive. It is not a workflow the user must step through.
@@ -122,38 +132,44 @@ When useful, the product makes elapsed time, current position, the next Commitme
 
 Capture is an interaction. It is not a Task state. Capture must take seconds.
 
-V0-017 makes typed capture a title and Save. Context, a planned day, a due day, and Must Do stay optional and explicit. Saving creates an ordinary Task. It does not start that Task, and it does not place it in the current Block, Commitment, Protected Time, or Today. The same capture is on Tasks and Schedule, and an unsaved draft stays with the signed-in session while the user moves between those two. Reload still drops an unsaved draft. A later deterministic voice parser must converge on the same creation boundaries as typed capture. Typed capture in this slice can only create a Task, because Note semantics are unresolved. Voice itself is not designed here and must not be implemented before that boundary is safe.
+V0-017 makes typed capture a title and Save. Context, a planned day, a due day, and Must Do stay optional and explicit. Saving creates an ordinary Task. It does not start that Task, and it does not place it in the current Block, Commitment, Protected Time, or Today. The same capture is on Tasks and Schedule, and an unsaved draft stays with the signed-in session while the user moves between those two. Reload still drops an unsaved draft. Typed capture in this slice can only create a Task. What a Note means is established. A capture path that retains a Note is not. Voice itself is not designed here and must not be implemented before the capture result contract is safe.
 
 Capture produces either a Task or a Note. The product preserves that distinction. Neither result is required to belong to a Context.
 
-Text capture was enough for the earliest usable system. "Voice does not block first use" is that historical gate. Voice capture is part of the intended production system and blocks operational adoption. It follows the same distinction:
+A captured experience may not yet contain enough for the user to know what should happen. Further observation, questioning, learning, or reflection may produce sufficient understanding. Action is not established because imperative language appears, because software classifies text as actionable, because a parser detects a verb, or because an interpretation believes something sounds like a Task.
 
-- An explicitly actionable utterance becomes a Task immediately. It does not have to be done at the moment of capture. Work illustrations: "Call the customer tomorrow." "Finish the manager verification today." "Remind me at two to check with receiving."
+Interpretation may propose structure. The user establishes meaning. A useful conceptual sequence is experience, capture, interpretation, human establishment, and execution. It is not a required workflow. Not every capture passes through every stage.
+
+Future typed or spoken capture may be interpreted into candidate structure where the user's expression supports it: observations, retained information, candidate actions, temporal references, possible durations, unresolved information, or other explicitly supported structure. Those are proposals. They are not a canonical Task, Block, Commitment, Priority, Destination, or other domain truth until the user establishes them. No language model, speech provider, parser, or confidence algorithm is chosen. If an external language model eventually participates, it is an interpretation interface, not temporal or domain authority. It must not silently establish importance, Priority, availability, current Context, Tasks, temporal meaning, what should be sacrificed, or what the user should do. The deterministic runtime remains the authority.
+
+Text capture was enough for the earliest usable system. "Voice does not block first use" is that historical gate. Voice capture is part of the intended production system and blocks operational adoption. It follows the same distinction once the user has established which result they mean:
+
+- An action the user explicitly establishes becomes a Task immediately. It does not have to be done at the moment of capture. Work illustrations: "Call the customer tomorrow." "Finish the manager verification today." "Remind me at two to check with receiving."
 - Speech the user explicitly marks as information becomes a Note. Work illustrations: "Note: manager wants us to revisit this display." "Observation: this area may need a different approach." The word "observation" here is speech, not a domain primitive.
 
-A deterministic grammar may eventually recognize actionable language, "note," "observation," due dates, relative dates, explicit times, reminders, and MUST DO. The grammar is not defined. No speech provider is chosen. No AI, ML, LLM, or agentic interpretation is part of the system.
+A deterministic grammar may eventually recognize actionable language, "note," "observation," due dates, relative dates, explicit times, reminders, and MUST DO. The grammar is not defined. No speech provider is chosen. No AI, ML, LLM, or agentic system is temporal or domain authority. Candidate interpretation does not establish meaning.
 
-If the product cannot confidently tell actionable from informational, it preserves the transcript and the user chooses Task or Note. Unrecognized speech stays verbatim.
+If the product cannot confidently tell actionable from informational, it preserves the transcript and the user chooses Task or Note. Unrecognized speech stays verbatim. Incomplete understanding is legitimate information.
 
-**Unresolved:** Notes, the grammar, and a clear action whose date, time, reminder, or MUST DO mark cannot be confidently read. Typed capture does not guess those.
+**Unresolved:** Note storage and lifecycle; the interpretation result contract; typed interpretation; voice transcription and provider; confidence and ambiguity handling; when confirmation is required and what it looks like; and a clear action whose date, time, reminder, or MUST DO mark cannot be confidently read. Typed capture does not guess those.
 
 ## Task, Note, Today, and MUST DO
 
 A Task means action is required. Explicitly recorded action becomes a Task immediately. It does not have to be done now. It is not a retail type, a project, or a medical instruction. It is not required to belong to a Context.
 
-A Note means information worth retaining when action has not been established. A Note does not burden the Task list. The product must not infer action. A Note is not required to belong to a Context.
+A Note is a retained fragment of experience, defined in [DOMAIN.md](DOMAIN.md). It carries no inherent obligation. It does not burden the Task list. The product must not infer action from it. It is not required to belong to a Context. It may remain informational indefinitely, and it remains intact if the user later establishes a fact from it.
 
-The user may later convert a Note into a Task only by explicit intent. The Task keeps the originating information. "Context" in that sentence means provenance, not necessarily the Context primitive. No schema for that provenance is defined.
+The user may later establish a Task from a Note only by explicit intent. The Note is not replaced. The established fact keeps an inspectable relationship to the originating experience when that relationship exists. "Context" in older sentences about originating information means provenance, not necessarily the Context primitive. No schema for that provenance is defined.
 
-**Unresolved:** which originating information must be kept; whether a Task or Note can belong to one Context, to more than one, or span Contexts. Absence of a Context remains representable.
+**Unresolved:** Note representation and which originating information a derived fact retains; whether a Task or Note can belong to one Context, to more than one, or span Contexts. Absence of a Context remains representable.
 
-Today means this Task is deliberately planned for the user's current civil day. That relationship is `planned_on` equal to the civil date of a supplied instant in the confirmed IANA time zone. It is not stored separately. Due, Must Do, Active Thread, and the day the Task was created do not establish it. It is not priority, and it does not reserve time. In the Work discovery, that commitment was described as the workday or shift. Today is not identical to a Shift. How Today meets a Context cadence remains unresolved. See [docs/implementation/V0-005.md](docs/implementation/V0-005.md).
+Today means this Task is deliberately planned for the user's current civil day. That relationship is `planned_on` equal to the civil date of a supplied instant in the confirmed IANA time zone. It is not stored separately. Due, Must Do, Active Thread, and the day the Task was created do not establish it. It is not Priority, and it is not a rank. It does not reserve time. In the Work discovery, that commitment was described as the workday or shift. Today is not identical to a Shift. How Today meets a Context cadence remains unresolved. See [docs/implementation/V0-005.md](docs/implementation/V0-005.md).
 
 Planned and due stay independent. A Task may be due Thursday and planned for Monday. Changing the plan must not silently change the due boundary.
 
-MUST DO is a persistent attention flag the user sets. It is not a bucket, a score, or inferred urgency. It stays prominent until the user completes, reschedules, or removes the Task.
+MUST DO is a persistent attention flag the user sets. It is not Priority, not a bucket, not a score, and not inferred urgency. It stays prominent until the user completes, reschedules, or removes the Task.
 
-Completing something should generally require one simple interaction. Avoid priority matrices. V0 does not add a stack of priority levels.
+Completing something should generally require one simple interaction. Avoid priority matrices. V0 does not add a stack of priority levels. Priority, as defined in [DOMAIN.md](DOMAIN.md), is not that stack.
 
 **Unresolved:** what reschedule writes, whether it clears MUST DO, and what carry-forward means.
 
@@ -174,7 +190,7 @@ This example is partial. It does not make Monday the user's universal week. Insi
 
 Opening, Mid, and Closing remain meaningful. The user chooses the type. It is not inferred from the clock. V0-004 can name the operative shift and, during an Opening shift, whether the FSR intended-before boundary is still ahead. It does not turn cadence steps into Tasks, and it does not sequence Mid or Closing. See [CADENCE.md](CADENCE.md) and [docs/implementation/V0-004.md](docs/implementation/V0-004.md).
 
-The entry surface is one Work fiscal week at a time. Each civil date is either not entered, Off, or one scheduled shift. Off is not the same fact as a date with nothing entered. Viewing that week and editing it are distinct modes. Saving a week is one action. Tasks and Schedule are the current primary destinations. A confirmed IANA time zone interprets the local times. The storage decision is [docs/decisions/2026-10-02-work-schedule.md](docs/decisions/2026-10-02-work-schedule.md). The compact reading surface is [docs/implementation/V0-004A.md](docs/implementation/V0-004A.md).
+The entry surface is one Work fiscal week at a time. Each civil date is either not entered, Off, or one scheduled shift. Off is not the same fact as a date with nothing entered. Viewing that week and editing it are distinct modes. Saving a week is one action. Tasks and Schedule are the current primary navigation surfaces. A confirmed IANA time zone interprets the local times. The storage decision is [docs/decisions/2026-10-02-work-schedule.md](docs/decisions/2026-10-02-work-schedule.md). The compact reading surface is [docs/implementation/V0-004A.md](docs/implementation/V0-004A.md).
 
 From the schedule, while the user is in Work, the product should eventually understand shift start, shift end, shift type, remaining shift time, which Work cadence applies, and which Work windows intersect the shift. V0-004 says the operative position, the Power Hour state, and the next established boundary. Remaining shift time, and any cadence step beyond the FSR boundary, are still not projected.
 
@@ -220,9 +236,9 @@ V0 is the historical name for the smallest system that could generate real use. 
 
 1. **NOW.** A useful projection of the current day from facts the system knows. The full attention hierarchy stays open.
 2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. V0-010 shows one civil day of that projection. V0-011 can select a transient local-clock span on that day. V0-012 can name a transient intended meaning for that span. V0-012A can refine that span on the canvas before the meaning is chosen, and can still refine it afterward. V0-013 can establish the span as Protected Time, a Block, or a Commitment after an explicit Save. It does not edit an existing fact. Planned Tasks are not on that projection yet.
-3. **Capture.** Create a Task or a Note quickly. Text was sufficient for first use. Voice does not block that historical first use. Voice does block operational adoption, and it waits on Note semantics.
+3. **Capture.** Create a Task or a Note quickly. Text was sufficient for first use. Voice does not block that historical first use. Voice does block operational adoption. What a Note means is established. Voice still waits on a safe capture result contract.
 4. **Tasks.** Create, edit, complete, an optional due boundary, a planned day, MUST DO, and a Context when the user assigns one. Not project management.
-5. **Notes.** Create, retain, and convert explicitly to a Task while keeping provenance.
+5. **Notes.** Create and retain a Note, and explicitly establish a later Task from it while the Note remains and provenance can be kept. Representation is unresolved.
 6. **Blocks.** Reserve a time range, or potentially a whole day. A Block may relate to a Context. It does not require Tasks or an outcome.
 7. **Commitments.** Time constrained by something the user has committed to. User-created rows exist. External calendar sourcing may follow.
 8. **Active Thread / Resume.** The user explicitly sets the thread. The system can offer Resume on return. No automatic interruption detection.
@@ -255,7 +271,7 @@ Browser or PWA capabilities were not authorized by the original V0 text. ARCHITE
 
 The user opens the system. NOW says where they are in the day. The Timeline can show a fixed Commitment, a protected Block, planned Tasks, and a Work shift when one exists. The user captures a Task in seconds and marks it MUST DO. They establish an Active Thread. They are interrupted. They return. NOW can offer Resume. A Block ends. The next Commitment is visible. The system helps the transition without judging them.
 
-That day is the target. It is not implemented here.
+That day is the experience this section describes. It is not implemented here.
 
 ### Acceptance
 
@@ -281,4 +297,6 @@ External authorities may remain. Google Calendar may remain authoritative for ex
 - Reducing protected family time to a checklist
 - Treating chosen time as less important because it was not imposed
 - Inferring action from informational capture
+- Inferring Priority from attention, urgency, recency, or frequency
+- A Friction object, anomaly detection, or an inferred cause of deviation
 - Turning targets, objectives, or interrupted cadence into punitive status language
