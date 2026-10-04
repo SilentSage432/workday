@@ -179,7 +179,7 @@ These are already specified, already present, or both. This list does not reopen
 These block operational adoption. They are not authorized for implementation until the open meaning is decided. Deciding them is a later human act, not a side effect of this contract.
 
 - The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Remove is a named operation and is not implemented. Reopen is not a named operation.
-- How a Note is edited, deleted, and otherwise retained. What a Note means is established. The minimum representation and the provenance reference are decided. A Note is not stored yet. The Note remains when a fact is established from it. Voice still waits on the capture dependency above.
+- How a Note is edited, deleted, and otherwise retained. What a Note means is established. The minimum representation and the provenance reference are decided. A Note can be stored and read. There is no establishment surface, and no fact yet cites a Note. The Note remains when a fact is established from it. Voice still waits on the capture dependency above.
 - Voice, only after the capture dependency above is safe.
 - NOW as a coherent orientation experience, including which composition it uses. `rankNow` is not assumed.
 - Week as shape, including which interactions are required beyond reading that shape.
@@ -221,7 +221,7 @@ Their production implementation classification is unresolved. They are not added
 
 Not answered here.
 
-1. How is a Note edited, deleted, and otherwise retained? What a Note means is established. Representation, and the reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The Note is not consumed when a fact is established from it. Storage is not implemented.
+1. How is a Note edited, deleted, and otherwise retained? What a Note means is established. Representation, and the reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The Note is not consumed when a fact is established from it. Storage and a complete read exist. Editing, the capture path, and a fact reference do not.
 2. Is a recurring-obligation occurrence itself a Task, related to a Task, capable of producing a Task, or a distinct completed occurrence?
 3. What exactly do reschedule and carry-forward mean, including their relationship to Must Do?
 4. Can Task completion be undone or reopened?

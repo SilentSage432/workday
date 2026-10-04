@@ -151,7 +151,7 @@ A deterministic grammar may eventually recognize actionable language, "note," "o
 
 If the product cannot confidently tell actionable from informational, it preserves the transcript and the user chooses Task or Note. Unrecognized speech stays verbatim. Incomplete understanding is legitimate information.
 
-**Unresolved:** Note editing and the rest of its lifecycle; the interpretation result contract; typed interpretation; voice transcription and provider; confidence and ambiguity handling; when confirmation is required and what it looks like; and a clear action whose date, time, reminder, or MUST DO mark cannot be confidently read. Typed capture does not guess those. The minimum Note representation is [docs/decisions/2026-10-04-note-representation.md](docs/decisions/2026-10-04-note-representation.md). A Note is not stored yet.
+**Unresolved:** Note editing and the rest of its lifecycle; the interpretation result contract; typed interpretation; voice transcription and provider; confidence and ambiguity handling; when confirmation is required and what it looks like; and a clear action whose date, time, reminder, or MUST DO mark cannot be confidently read. Typed capture does not guess those. The minimum Note representation is [docs/decisions/2026-10-04-note-representation.md](docs/decisions/2026-10-04-note-representation.md). That Note can be stored and read. There is no Note surface.
 
 ## Task, Note, Today, and MUST DO
 
@@ -240,7 +240,7 @@ V0 is the historical name for the smallest system that could generate real use. 
 2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. V0-010 shows one civil day of that projection. V0-011 can select a transient local-clock span on that day. V0-012 can name a transient intended meaning for that span. V0-012A can refine that span on the canvas before the meaning is chosen, and can still refine it afterward. V0-013 can establish the span as Protected Time, a Block, or a Commitment after an explicit Save. It does not edit an existing fact. Planned Tasks are not on that projection yet.
 3. **Capture.** Create a Task or a Note quickly. Text was sufficient for first use. Voice does not block that historical first use. Voice does block operational adoption. What a Note means is established. Voice still waits on a safe capture result contract.
 4. **Tasks.** Create, edit, complete, an optional due boundary, a planned day, MUST DO, and a Context when the user assigns one. Not project management.
-5. **Notes.** Create and retain a Note, and explicitly establish a later fact from it while the Note remains and provenance can be kept. The minimum representation is decided. Storage, editing, and the capture path are not.
+5. **Notes.** Create and retain a Note, and explicitly establish a later fact from it while the Note remains and provenance can be kept. The minimum representation is decided, and that Note can be stored and read. Editing, the capture path, and a fact reference are not.
 6. **Blocks.** Reserve a time range, or potentially a whole day. A Block may relate to a Context. It does not require Tasks or an outcome.
 7. **Commitments.** Time constrained by something the user has committed to. User-created rows exist. External calendar sourcing may follow.
 8. **Active Thread / Resume.** The user explicitly sets the thread. The system can offer Resume on return. No automatic interruption detection.

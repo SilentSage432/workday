@@ -245,7 +245,7 @@ Minimum fields on facts that have an external or derived authority, not an event
 
 External origin stays externally owned. Derived occurrences point at their definition. This is enough to inspect authority without a history pipeline.
 
-A Note is not an origin value. [2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) decides the minimum Note and the optional reference on a later fact. A user-established Task remains `user_created`. "Converted from a note" is not a second authority. The Note stays intact. One Note may support zero, one, or many later facts. Provenance is an inspectable relationship to user-originating evidence, not retained model reasoning. That decision does not store a Note and does not authorize voice.
+A Note is not an origin value. [2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) decides the minimum Note and the optional reference on a later fact. A user-established Task remains `user_created`. "Converted from a note" is not a second authority. The Note stays intact. One Note may support zero, one, or many later facts. Provenance is an inspectable relationship to user-originating evidence, not retained model reasoning. That decision does not authorize voice. Storage of the Note, without a surface and without a fact reference, is [../implementation/NOTE-STORAGE-001.md](../implementation/NOTE-STORAGE-001.md).
 
 ## Time
 

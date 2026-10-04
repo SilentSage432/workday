@@ -38,7 +38,7 @@ Capture time is when the experience was retained. It is not when something shoul
 
 Establishing a later fact does not destroy or replace the Note. The earlier word "conversion" remains the name of an explicit user act in older records. It does not mean the Note is consumed. [FOUNDATION-002.md](FOUNDATION-002.md) item 3 stays historical. Its Note sentence is refined here.
 
-No Note schema is defined in this discovery. [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) later decides the minimum representation and where the provenance reference sits. This file is not rewritten into that decision. A Note is still not stored.
+No Note schema is defined in this discovery. [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) later decides the minimum representation and where the provenance reference sits. [../implementation/NOTE-STORAGE-001.md](../implementation/NOTE-STORAGE-001.md) stores that Note. This file is not rewritten into that decision.
 
 ## From experience to action
 
