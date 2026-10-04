@@ -8,9 +8,13 @@ This tranche decides where spoken words may become expression text. It does not 
 
 ## Conclusion
 
-**DEVICE PROBE REQUIRED.**
+**Primary-device dictation satisfies the established need.**
 
-Repository evidence and current platform documentation are enough to rank the mechanisms and to refuse several of them. They are not enough to say that production voice can remain a web application, that it needs a server transcription adapter, or that a native bridge has earned a place. The missing evidence is behavior on the Samsung Galaxy S26 Ultra, in the browser surface this product is actually used from.
+[../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) passed on the user's Samsung Galaxy S26 Ultra. The phone keyboard's existing dictation placed spoken words in the Expression field as ordinary editable text. The user then kept a Note through the existing establishment act. No application speech stack was required.
+
+That evidence is this phone and the need already stated: deliberate short speech, then inspectable expression text, then an explicit Note, Task, or nothing. It does not say every device behaves the same way. `getUserMedia`, `MediaRecorder`, Web SpeechRecognition, a transcription provider, stored audio, VoiceNote, VoiceTask, speech provenance, Android SpeechRecognizer, ML Kit, a native bridge, continuous listening, a wake word, and ambient listening stay out. They earn a place only if a later gap shows that ordinary dictation cannot meet an established need.
+
+Before the probe, the conclusion of this discovery was **DEVICE PROBE REQUIRED.** The evaluation below is that record. The probe closes the open choice for this device.
 
 The preference order used here is:
 
@@ -26,7 +30,7 @@ Keyboard dictation is the first candidate. Browser speech recognition and browse
 
 The user deliberately invokes capture, speaks a short natural expression while moving through real life, sees that expression as text, and may edit it. The existing establishment act then keeps one Note, creates one Task, or keeps nothing.
 
-That need is already product law. [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md) says voice blocks operational adoption because typed capture is not a substitute for low-friction capture while moving, including through Work. Capture must take seconds. [../../PROJECT_CONTEXT.md](../../PROJECT_CONTEXT.md) records that, inside Work, the user notices needed work while walking a department and currently holds it in memory.
+That need is already product law. [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md) requires low-friction capture while the user is moving, including through Work. Typed capture is not a substitute for it. Capture must take seconds. [../../PROJECT_CONTEXT.md](../../PROJECT_CONTEXT.md) records that, inside Work, the user notices needed work while walking a department and currently holds it in memory. The probe later showed that keyboard dictation meets this need on the primary phone.
 
 The need is one deliberate, short, foreground utterance. It is not continuous listening, a wake word, ambient monitoring, an assistant conversation, automatic Task creation, automatic Note creation, automatic scheduling, or background capture.
 
@@ -282,6 +286,10 @@ No production conclusion of "PWA sufficient," "PWA sufficient with server transc
 ## Exact next tranche
 
 VOICE-PROBE-001A, as specified above. No implementation in this repository until that observation exists. VOICE-PROBE-001B stays conditional.
+
+## Later
+
+[../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) records the pass. Keyboard dictation is the production acquisition path for the established need on the primary phone. VOICE-PROBE-001B is not authorized. Operational adoption remains open because the rest of the production contract, including the production experience, is still open.
 
 ## Contradictions
 

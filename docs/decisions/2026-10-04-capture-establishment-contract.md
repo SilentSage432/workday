@@ -175,4 +175,4 @@ Notes can be stored and read. Quick Capture establishes a Task directly. The day
 
 ## Later
 
-[../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md) proves this contract with typed input. The surface is provisional, on Tasks, below Quick Capture. It establishes one Note, one Task, or nothing. It does not classify text, add storage, or implement voice. Final placement and final wording remain open. Note lifecycle remains unresolved.
+[../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md) proves this contract with typed input. The surface is provisional, on Tasks, below Quick Capture. It establishes one Note, one Task, or nothing. It does not classify text, add storage, or implement voice. Final placement and final wording remain open. Note lifecycle remains unresolved. [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) shows that, on the primary phone, keyboard dictation supplies the same expression. Speech still establishes nothing by itself. No provider and no origin field were added.

@@ -69,17 +69,15 @@ Day remains the exact temporal canvas already under construction. NOW is not the
 
 ## Voice
 
-Voice capture is part of the intended production system. It blocks operational adoption.
+Voice capture is part of the intended production system. On the user's Samsung Galaxy S26 Ultra it is the phone keyboard's existing dictation into the Expression field. [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) passed. Spoken words became ordinary editable text, and an explicit act kept a Note. Typed quick capture remains required. Dictation does not replace it. Both meet at expression text.
 
-The reason is low-friction capture while the user is moving through real life, including Work. Typed quick capture remains required. It is not a substitute that makes voice optional for adoption.
+Speech acquisition is no longer an unresolved semantic or architectural blocker. The application does not own a microphone, a recognizer, a transcription provider, or an audio store. No provider, parser, microphone API, grammar, or model is chosen, because this need does not require one on this phone. A later gap that dictation cannot meet would be required before another mechanism earned a place. The evidence is this phone, not every device.
 
-A typed interaction has proved the capture establishment contract. Voice itself is still not implemented. What a Note means is established in [../../DOMAIN.md](../../DOMAIN.md) and [../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md). The minimum Note representation, and the optional reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The establishment contract, including unresolved meaning where a reading is not yet a canonical fact, is [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md). That unresolved result is not a confidence score.
+This pass is not operational adoption. Capture ergonomics remain inside the production experience below. What a Note means is established in [../../DOMAIN.md](../../DOMAIN.md) and [../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md). The minimum Note representation, and the optional reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The establishment contract, including unresolved meaning where a reading is not yet a canonical fact, is [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md). That unresolved result is not a confidence score.
 
-Future voice input converges on the same establishment boundary as typed expression. When the expression does not yet have enough established meaning, it stays available for the interaction and the user chooses a Note, a Task, or nothing. The expression is not a stored transcript. Unrecognized speech stays verbatim as that expression. Interpretation may propose candidate structure. It does not establish domain truth. No AI, ML, LLM, or agentic system is temporal authority.
+When the expression does not yet have enough established meaning, it stays available for the interaction and the user chooses a Note, a Task, or nothing. The expression is not a stored transcript. Unrecognized speech stays verbatim as that expression. Interpretation may propose candidate structure. It does not establish domain truth. No AI, ML, LLM, or agentic system is temporal authority. The discovery that compared mechanisms is [../discovery/VOICE-CAPABILITY-001.md](../discovery/VOICE-CAPABILITY-001.md).
 
-This contract does not choose a provider, a parser, a microphone API, a grammar, or a model. It does not authorize voice. [../discovery/VOICE-CAPABILITY-001.md](../discovery/VOICE-CAPABILITY-001.md) compares how speech could become expression text and still chooses none. A phone probe comes before any mechanism.
-
-The earlier sentence "voice does not block first use" remains true of the historical first-use gate. It is superseded for operational adoption.
+The earlier sentence "voice does not block first use" remains true of the historical first-use gate. The later sentence that an unbuilt speech system blocked operational adoption is closed for acquisition by the probe. The production experience still blocks adoption.
 
 ## Capacity and planning
 
@@ -103,6 +101,8 @@ The current interface is functional scaffolding for investigation. That is inten
 The order is fixed. First the underlying machine is truthful. Then that machine gets an interaction and visual experience that matches it. Production adoption requires that experience. It is not optional polish after the user has already adopted the system.
 
 Experience work stays downstream of semantic completeness. This contract does not start a visual redesign.
+
+[../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) adds two observations and authorizes no layout work. After a successful Note establishment the user asked where the Note went. The write had succeeded, and there is still no Notes surface. A retained experience needs an earned way to be revisited. That need does not decide folders, notebooks, tags, an inbox, a Notes tab, search, or archive. Opening and expanding the current scaffold often moves surrounding controls. Interaction should preserve spatial continuity. Incidental reflow should not repeatedly force the user to find the same object again. Something may still move when the surface's meaning requires it. Neither observation is a repair of the scaffold.
 
 Direction that already holds, and is not a new visual system:
 
@@ -173,14 +173,14 @@ These are already specified, already present, or both. This list does not reopen
 - The two integrity defects above are closed without presenting a partial read as the whole truth.
 - An open Task can be edited. Save writes its title, optional Context, planned day, due day, and Must Do. Cancel does not write. Remove, reschedule, carry-forward, and reopen remain unresolved. The record is [../implementation/TASK-EDIT-001.md](../implementation/TASK-EDIT-001.md).
 - The interoperability boundary can tell an external fact from a user-created Commitment. Connecting every outside system is not this item.
+- Speech acquisition on the primary phone is device dictation into the existing expression field. [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) passed on the Samsung Galaxy S26 Ultra. No application speech stack is required. This item does not close operational adoption.
 
 ### Required but unresolved
 
 These block operational adoption. They are not authorized for implementation until the open meaning is decided. Deciding them is a later human act, not a side effect of this contract.
 
 - The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Remove is a named operation and is not implemented. Reopen is not a named operation.
-- How a Note is edited, deleted, and otherwise retained. What a Note means is established. The minimum representation and the provenance reference are decided. A Note can be stored and read. The capture establishment contract is decided. A provisional typed surface can establish one Note or one Task from an expression, or nothing. It is not a Notes management surface, and no fact yet cites a Note. The Note remains when a fact is established from it. The proof is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md).
-- Voice. The typed establishment proof exists. Transcription, the speech interaction, and a provider remain unresolved. Voice is not implemented.
+- How a Note is edited, deleted, and otherwise retained. What a Note means is established. The minimum representation and the provenance reference are decided. A Note can be stored and read. The capture establishment contract is decided. A provisional typed surface can establish one Note or one Task from an expression, or nothing. It is not a Notes management surface, and no fact yet cites a Note. The Note remains when a fact is established from it. The proof is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md). The probe showed that a successful Note can leave the user's view with no earned way back. Revisitability stays unresolved. It does not decide a Notes application.
 - NOW as a coherent orientation experience, including which composition it uses. `rankNow` is not assumed.
 - Week as shape, including which interactions are required beyond reading that shape.
 - Month as landscape, including which interactions are required beyond orientation.
@@ -190,7 +190,7 @@ These block operational adoption. They are not authorized for implementation unt
 - When a Pulse occurs, and the Pulse that follows from that decision. In-app is the established delivery scope. A push provider is not chosen.
 - What Capacity means, and what Task-to-time relationship planning uses, without treating unestablished time as available.
 - Which external calendar facts may participate, and with what authority.
-- The production interaction and visual experience, after the semantics it must express are sufficiently complete.
+- The production interaction and visual experience, after the semantics it must express are sufficiently complete. Capture ergonomics remain here, including Note revisitability and spatial continuity from [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md). Speech acquisition does not.
 
 ### Future, and not a condition of operational adoption
 
@@ -221,7 +221,7 @@ Their production implementation classification is unresolved. They are not added
 
 Not answered here.
 
-1. How is a Note edited, deleted, and otherwise retained? What a Note means is established. Representation, and the reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The capture establishment contract is [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md). A provisional typed path can establish a Note or a Task from an expression. The Note is not consumed when a fact is established from it. Storage and a complete read exist. Editing, a Notes management surface, and a fact reference do not. The proof is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md).
+1. How is a Note edited, deleted, and otherwise retained? What a Note means is established. Representation, and the reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The capture establishment contract is [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md). A provisional typed path can establish a Note or a Task from an expression. The Note is not consumed when a fact is established from it. Storage and a complete read exist. Editing, a Notes management surface, and a fact reference do not. The proof is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md). [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) showed that a kept Note can leave the user's view. How it is revisited is still unanswered.
 2. Is a recurring-obligation occurrence itself a Task, related to a Task, capable of producing a Task, or a distinct completed occurrence?
 3. What exactly do reschedule and carry-forward mean, including their relationship to Must Do?
 4. Can Task completion be undone or reopened?

@@ -136,7 +136,7 @@ Context stays a meaningful area or operating mode. Destination and Priority are 
 
 Notes remain required for operational adoption. Their meaning is now established. Storage, editing, lifecycle, and provenance representation remain required and unresolved. Voice remains required and remains downstream of a safe capture result contract. This discovery does not authorize voice.
 
-Later, [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) decided the minimum Note and the provenance reference, [../implementation/NOTE-STORAGE-001.md](../implementation/NOTE-STORAGE-001.md) stored the Note, and [../decisions/2026-10-04-capture-establishment-contract.md](../decisions/2026-10-04-capture-establishment-contract.md) decided the capture-result contract. Editing and lifecycle remain unresolved. Voice remains unauthorized. [VOICE-CAPABILITY-001.md](VOICE-CAPABILITY-001.md) examines acquisition and requires a device probe before any mechanism is chosen.
+Later, [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) decided the minimum Note and the provenance reference, [../implementation/NOTE-STORAGE-001.md](../implementation/NOTE-STORAGE-001.md) stored the Note, and [../decisions/2026-10-04-capture-establishment-contract.md](../decisions/2026-10-04-capture-establishment-contract.md) decided the capture-result contract. Editing and lifecycle remain unresolved. [VOICE-CAPABILITY-001.md](VOICE-CAPABILITY-001.md) compared acquisition mechanisms. [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) passed: on the primary phone, keyboard dictation supplies expression text, and no speech provider was authorized.
 
 Destination and Priority are established conceptual meanings. Their production implementation classification is unresolved. They are not added to the adoption contract as required, as merely enabling, or as future. The current product identity is temporal orientation inside a life the user has chosen. These concepts explain sustained importance and why temporal decisions matter. They do not replace that identity. Evidence does not show that adoption must wait for their representation, and it does not show that the product may treat them as disposable. The contract records that refusal to classify.
 
@@ -154,7 +154,7 @@ Destination and Priority are established conceptual meanings. Their production i
 - representation of Note to established-fact provenance, as left open here; the later note-representation decision places an optional reference on the derived fact
 - interpretation result contract, as left open here; the later capture-establishment decision is the contract
 - typed interpretation experience; the semantic contract is the later capture-establishment decision, and the interaction is not built
-- voice transcription and provider
+- voice transcription and provider, as left open here; VOICE-PROBE-001A later shows that keyboard dictation supplies expression text on the primary phone, and no provider is chosen
 - language interpretation technology
 - confidence and ambiguity handling, as left open here; the later capture-establishment decision treats unresolved meaning as legitimate and stores no score
 - when confirmation is required, and what confirmation looks like; the later capture-establishment decision requires an explicit establishment act, and the visible form of that act remains open
