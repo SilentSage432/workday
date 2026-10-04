@@ -44,7 +44,9 @@ There is no generic Personal Context. Home, health routines, and other areas are
 
 A Task or a Note is not required to belong to a Context.
 
-**Unresolved:** whether either can belong to more than one Context or span Contexts; how the user enters or switches Context; and how a transition between Contexts behaves. Those identity questions about folders and workspaces also remain open.
+Work is the first deeply discovered Context. Many temporal semantics were learned there. Work is not the ontology of the system. The intended product is a multi-context temporal foundation. Production adoption requires temporal orientation that can relate honestly to Family, TeamLab, and Financial. That does not mean those Contexts receive Work's cadence or Work's projections. The contract is [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md).
+
+**Unresolved:** whether either can belong to more than one Context or span Contexts; how the user enters or switches Context; whether Context can be inferred from established temporal facts; and how a transition between Contexts behaves. Those identity questions about folders and workspaces also remain open. Context-aware NOW is unresolved with them.
 
 ## Shift
 

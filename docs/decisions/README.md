@@ -27,8 +27,11 @@ ARCHITECTURE-001 recorded the runtime, persistence, projection, and delivery dec
 - [2026-10-03-explicit-temporal-establishment.md](2026-10-03-explicit-temporal-establishment.md)
 - [2026-10-03-current-temporal-orientation.md](2026-10-03-current-temporal-orientation.md)
 - [2026-10-03-quick-capture.md](2026-10-03-quick-capture.md)
+- [2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md)
 
 The architecture those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Unresolved implementation details do not get speculative ADRs.
+
+[2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md) is the current operational-adoption boundary. It records questions it does not answer. [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md) stays the historical product ledger.
 
 ## What belongs here
 
@@ -43,7 +46,7 @@ Add a record when a choice would otherwise live only in conversation history: a 
 
 ## What does not belong here
 
-- Open questions. Product questions remain in [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md). Architecture questions that were left open are listed in [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Earlier discovery files stay historical.
+- Open questions answered by speculation. Product questions remain visible in [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md) and, for the adoption boundary, in [2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md). Architecture questions that were left open are listed in [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Earlier discovery files stay historical.
 - Preferences that have not been adopted. Next.js, React, TypeScript, Tailwind, Supabase, and Vercel are decisions as of ARCHITECTURE-001, within the limits those records state. A speech vendor, a push vendor, and a shared database are not preferences to revive.
 - Options, vendor comparisons, and proposed architectures written in advance of a choice.
 

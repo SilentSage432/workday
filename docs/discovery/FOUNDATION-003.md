@@ -4,6 +4,8 @@ Date: 2026-10-02.
 
 Historical product record for the close of pure foundation. ARCHITECTURE-001 later chose the implementation architecture in [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). This file is not rewritten as if that stack had already been chosen.
 
+Sentences below that say voice does not block first use, or that Google Calendar does not block the first run, describe the V0 first-use gate as of this ledger. They are not the operational-adoption boundary. That boundary is [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md). This file is not rewritten to match it.
+
 This tranche canonizes life evidence gathered after FOUNDATION-002A and defines V0, the smallest system worth using for a real day. It does not build that system. It does not choose a framework, database, host, authentication, notification provider, speech provider, or calendar API.
 
 [FOUNDATION-001.md](FOUNDATION-001.md), [FOUNDATION-002.md](FOUNDATION-002.md), and [FOUNDATION-002A.md](FOUNDATION-002A.md) stay historical.

@@ -1,0 +1,234 @@
+# PRODUCTION-CONTRACT-001 — Operational adoption
+
+Date: 2026-10-03.
+
+## Decision
+
+The system is ready for operational adoption only when the intended temporal system is functionally complete, trustworthy, coherent across its required Contexts and temporal resolutions, integrated to the extent required for its intended role, and presented through a production-quality interaction and visual experience.
+
+Operational adoption means the user can depend on the system at work and as their personal temporal system, without a knowingly incomplete parallel workflow.
+
+That is not "first use." It is not an MVP, a beta, a partial workday tool, or a system that is good enough for now.
+
+Phone acceptance of an individual interaction tranche remains valid engineering evidence. It is not operational adoption.
+
+Complete does not mean every imaginable future feature, every TeamLab product, every external provider, a native or watch application, AI inside the runtime, or a speculative semantic that has not been established.
+
+This contract does not implement any of the items below. It does not authorize an implementation tranche. Where a meaning is unresolved, it stays unresolved.
+
+## Context
+
+Earlier product text defined V0 as the smallest system that could generate real use, and said that text capture was enough to start. Voice, push, and Google Calendar were allowed to follow. Those sentences live in [../../PRODUCT.md](../../PRODUCT.md), [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md), and [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). They described a first-use gate. They are historical. They are not the adoption boundary.
+
+The user will not operationally adopt the system while that gate is all it meets.
+
+Work was the first deeply discovered Context, and the environment from which many temporal semantics were learned. Work is not the ontology of the system. The intended product is a multi-context temporal foundation: a system for how the user operates in time. The established Contexts remain Work, Family, TeamLab, and Financial. This contract does not decide how a Context becomes current, and it does not decide multi-Context membership.
+
+## What this contract refuses to weaken
+
+These are already established. This record does not reinterpret them.
+
+- Time is context, not judgment.
+- Interruptions are expected, not failures.
+- The product preserves the user's thread of intention.
+- Human authority remains with the user.
+- Deterministic behavior is preferred over inferred behavior.
+- Unscheduled or unestablished time is not automatically available.
+- Protected Time is unavailable for allocation. Protected does not mean occupied.
+- Timeline composes temporal truth. It does not resolve temporal truth. It does not calculate Capacity.
+- Established temporal truths may overlap. Overlap is not a conflict and not a sacrifice the software chooses.
+- Save is an authority boundary.
+- Tasks do not silently become temporal facts.
+- The Active Thread changes only through explicit user action.
+- Current temporal orientation preserves simultaneous truths. It is not NOW.
+- An empty temporal reading does not mean free, available, or open.
+- The UI must not claim authority the domain has not earned.
+
+## Product identity
+
+Work remains a deeply modeled Context: schedule, shift type, the discovered cadence, and the Saturday-first fiscal week inside Work only.
+
+Family, TeamLab, and Financial are not labels that can stand in for a temporal foundation. Production adoption requires the architecture and the experience to relate temporal orientation to Context honestly. It does not require those Contexts to copy Work's cadence or Work's projections.
+
+Still unresolved, and not decided here: how a Context becomes current; whether Context can be inferred from established temporal facts; multi-Context membership; Context transitions; context-aware NOW.
+
+## Temporal resolutions
+
+The production system includes four resolutions:
+
+| Resolution | Role |
+| --- | --- |
+| NOW | Orientation inside the lived moment |
+| Day | Manipulation. The exact temporal canvas |
+| Week | Shape |
+| Month | Orientation. Landscape |
+
+Week and Month block operational adoption. They are not built. This contract does not authorize building them. Reading and interaction beyond the roles already stated are unresolved. Do not invent those interactions here.
+
+Day remains the exact temporal canvas already under construction. NOW is not the V0-016 list of facts that contain the current instant. That list may feed a later NOW. It is not one.
+
+## Voice
+
+Voice capture is part of the intended production system. It blocks operational adoption.
+
+The reason is low-friction capture while the user is moving through real life, including Work. Typed quick capture remains required. It is not a substitute that makes voice optional for adoption.
+
+Voice must not be implemented before its deterministic semantic boundary is safe. The dependency is:
+
+voice → the capture result contract → Task-versus-Note semantics → provenance and confidence handling where a reading is not confident
+
+Future voice input converges on the same deterministic creation boundaries as typed capture. If the product cannot tell actionable from informational, it keeps the transcript and the user chooses. Unrecognized speech stays verbatim. No AI, ML, LLM, or agentic interpretation is part of that boundary.
+
+This contract does not choose a provider, a parser, a microphone API, or a grammar.
+
+The earlier sentence "voice does not block first use" remains true of the historical first-use gate. It is superseded for operational adoption.
+
+## Capacity and planning
+
+Planning against temporal reality belongs in the intended production system. The sequence already established is:
+
+1. Protect time.
+2. Acknowledge existing Commitments.
+3. Choose what remaining time is for.
+4. Plan Tasks against actual temporal reality.
+
+Capacity therefore blocks operational adoption until its semantics are resolved. It is not an optional idea for after adoption.
+
+Unresolved, and not defined here: what Capacity means without treating unestablished time as available; what relationship between a Task and a temporal fact supports planning or allocation. This contract does not define an allocator, infer availability, rank time, or schedule the user.
+
+Timeline continues not to calculate Capacity.
+
+## Experience
+
+The current interface is functional scaffolding for investigation. That is intentional.
+
+The order is fixed. First the underlying machine is truthful. Then that machine gets an interaction and visual experience that matches it. Production adoption requires that experience. It is not optional polish after the user has already adopted the system.
+
+Experience work stays downstream of semantic completeness. This contract does not start a visual redesign.
+
+Direction that already holds, and is not a new visual system:
+
+- Time is the primary material.
+- The interface expresses temporal relationships rather than obscuring them.
+- Overlapping truths stay perceptible.
+- Visual language has to emerge from proven semantics.
+- Color may become semantic rather than decorative.
+- Visual polish must not invent product behavior.
+
+## Interoperability
+
+This temporal system is intended to become foundational infrastructure in a larger ecosystem. Other systems may eventually participate in temporal truth, including Google Calendar and the Google ecosystem, Wealth Engine, Carb Buddy, and future TeamLab systems.
+
+Those systems keep authority over their own domains. This system keeps authority over temporal semantics.
+
+Production readiness does not require every external system to be connected.
+
+Production architecture does require a real interoperability boundary that can later accept that participation without erasing source identity, converting an external fact into a user-created fact, surrendering human authority, coupling another domain system to this database, or letting an external system become the temporal authority.
+
+An external fact is not a user-created Commitment. Provenance stays visible.
+
+Google Calendar may become the first practical proof of that boundary. This contract does not decide which events participate, whether the first proof is read-only or write-back, which provider calls are used, how sync works, or how conflicts are handled. Bidirectional sync is not required by this contract.
+
+DeptSync is not made a dependency by this contract. Integrating every TeamLab product is not required.
+
+## Deterministic authority
+
+Runtime temporal intelligence remains deterministic.
+
+No AI, LLM, ML, or agentic inference is the authority that decides what matters, what the user should do, what time means, whether time is available, what Context is current, what should be sacrificed, or how temporal conflicts are resolved.
+
+An external AI system might someday participate through a bounded interface, for interaction, interpretation, explanation, or another role that a later decision explicitly authorizes. It would not own temporal truth. No such interface, and no AI runtime architecture, is added here.
+
+The constraint in [2026-10-02-deterministic-intelligence.md](2026-10-02-deterministic-intelligence.md) is not relaxed.
+
+## Integrity defects already identified
+
+A production audit at `93c434f8d000b585c6d96ac1714864b8295eb258` identified two defects. They block operational adoption because absence of data is not the same thing as failure to retrieve data. The system must not present a partial reading as complete temporal truth.
+
+A. Collection reads that can stop at a result limit may silently omit established truth. The returned rows are then treated as the whole set.
+
+B. Current temporal orientation, shown as "This time," can look complete when the Work window failed to load and other temporal facts succeeded.
+
+This contract does not fix them. They are the first implementation candidate after this record is canonical. That candidate must not invent product semantics while closing the holes.
+
+## Classification
+
+Unresolved is not the same as future. An item is required but unresolved when the intended system needs it and the meaning is not settled. It is not classified as future merely because it cannot be built honestly yet.
+
+### Required for operational adoption
+
+These are already specified, already present, or both. This list does not reopen them.
+
+- Existing Task, Today, Active Thread, and Resume semantics stay intact.
+- Typed quick capture stays. It creates an ordinary Task and does not establish the Active Thread or a temporal fact.
+- Protected Time, Blocks, and Commitments stay first-class temporal truths. Overlap stays overlap.
+- Day stays the exact temporal manipulation surface.
+- Work stays a deeply modeled Context, not the ontology of the product.
+- The confirmed IANA zone, DST gaps that are not given a fake instant, and overnight intervals stay truthful.
+- Authentication stays one provisioned user. Row level security stays the ownership boundary.
+- Phone acceptance remains the evidence for interaction tranches. It still does not equal adoption.
+- Installability remains required where the architecture already required a manifest and home-screen metadata. Missing icons are an installability gap, not a new product idea.
+- The two integrity defects above are closed without presenting a partial read as the whole truth.
+- The interoperability boundary can tell an external fact from a user-created Commitment. Connecting every outside system is not this item.
+
+### Required but unresolved
+
+These block operational adoption. They are not authorized for implementation until the open meaning is decided. Deciding them is a later human act, not a side effect of this contract.
+
+- The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Edit and remove are named operations and are not implemented. Reopen is not a named operation.
+- What a Note is, and what originating information survives an explicit conversion to a Task.
+- Voice, only after the capture dependency above is safe.
+- NOW as a coherent orientation experience, including which composition it uses. `rankNow` is not assumed.
+- Week as shape, including which interactions are required beyond reading that shape.
+- Month as landscape, including which interactions are required beyond orientation.
+- Multi-context temporal behavior that is honest for Family, TeamLab, and Financial, without a decision yet on how Context becomes current.
+- Recurring obligations the everyday system needs, including whether an occurrence is a Task.
+- Explicit reminders.
+- When a Pulse occurs, and the Pulse that follows from that decision. In-app is the established delivery scope. A push provider is not chosen.
+- What Capacity means, and what Task-to-time relationship planning uses, without treating unestablished time as available.
+- Which external calendar facts may participate, and with what authority.
+- The production interaction and visual experience, after the semantics it must express are sufficiently complete.
+
+### Future, and not a condition of operational adoption
+
+- AI, LLM, ML, or agentic inference as temporal authority.
+- Automatic interruption detection.
+- Scoring, streaks, gamification, and productivity punishment.
+- Project-management hierarchy, complex tagging, and team collaboration.
+- Workforce management and employee scheduling.
+- Medical interpretation or care decisions.
+- DeptSync as a dependency.
+- A requirement to integrate every TeamLab product.
+- Bidirectional calendar sync, unless a later decision explicitly requires it.
+- Multi-user roles or workspace administration, unless a later decision explicitly requires them.
+- A watch application or a native application.
+- A service worker and offline mutation queues.
+- A cadence editor.
+- Speculative capabilities that have no established evidence.
+
+Push delivery is in this group. Reminders and an in-app Pulse are not. The historical sentence that bundled voice, push, and Google Calendar as followers of first use is superseded only for voice, and for the claim that operational adoption can happen before the interoperability boundary is real. It is not superseded into a requirement to ship push or to connect every calendar.
+
+## Questions that remain human authority
+
+Not answered here.
+
+1. What exactly is a Note, and what originating information survives Note-to-Task conversion?
+2. Is a recurring-obligation occurrence itself a Task, related to a Task, capable of producing a Task, or a distinct completed occurrence?
+3. What exactly do reschedule and carry-forward mean, including their relationship to Must Do?
+4. Can Task completion be undone or reopened?
+5. When does Pulse occur?
+6. How does a Context become current?
+7. What does Capacity mean without treating unestablished time as available?
+8. What Task and temporal-fact relationship supports planning or allocation?
+9. What composition should NOW use without the UI inventing importance? Do not assume `rankNow` is required.
+10. Which external calendar facts may participate, and with what authority?
+11. What Week interactions are required beyond reading temporal shape?
+12. What Month interactions are required beyond landscape and orientation?
+
+Earlier open questions that this list does not repeat stay open where the canonical documents already mark them, including Start, Adjust, and Skip, the life-day boundary, and the product name. [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md) stays the historical ledger. It is not rewritten.
+
+## Consequences
+
+- Canonical documents that still say "does not block first use" as a current adoption rule point here instead of being silently rewritten.
+- No application behavior, schema, migration, dependency, or visual redesign follows from this file.
+- The next implementation candidate is the two integrity defects. It is not V0-018, not Week, not Month, not voice, and not Capacity.

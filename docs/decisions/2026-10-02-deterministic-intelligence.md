@@ -23,4 +23,6 @@ Work orientation has to answer where the user is in an established Work day. Tha
 - The product does not recommend, rank, or complete work because time passed.
 - This repository stays separate from any other system's model or ranking engine.
 
+[2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md) does not admit AI into the runtime. A later bounded interface, if a separate decision ever authorizes one, still cannot decide what matters, what the user should do, what time means, whether time is available, what Context is current, what should be sacrificed, or how temporal conflicts are resolved. No such interface is authorized here.
+
 The constraint is also stated in [../../PROJECT_CONTEXT.md](../../PROJECT_CONTEXT.md) and [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md).

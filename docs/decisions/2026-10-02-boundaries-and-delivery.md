@@ -29,4 +29,8 @@ The product already separates source authority from this system's memory. Calend
 - Environment templates name variables only. Secrets stay out of Git and out of `NEXT_PUBLIC_` values.
 - Bootstrap may prepare this deployment path. It may not perform the production connection as part of architecture.
 
+## Superseded for operational adoption
+
+This record's "first day of use" scope is historical. Voice as "a future producer" described the first-use gate. [2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md) supersedes that gate. Voice blocks operational adoption and still waits on capture semantics. Push delivery stays unchosen and is not, by that contract, a condition of adoption. The interoperability boundary is required before adoption. Connecting every external system is not. Bidirectional sync stays unauthorized.
+
 Full boundary: [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md).

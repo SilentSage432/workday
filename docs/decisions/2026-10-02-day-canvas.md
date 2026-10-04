@@ -8,7 +8,9 @@ Time is the canvas.
 
 V0-010 renders one selected civil day on `/schedule` from `projectTimeline`. The day is the first visual resolution because that is where begin, end, duration, overlap, all-day truth, and an overnight tail become concrete.
 
-The canvas is read-only. It does not select time, drag, resize, or write. Month, week, and NOW are not built. There is no current-time line.
+The canvas is read-only in this tranche. It does not select time, drag, resize, or write. Month, week, and NOW are not built here. There is no current-time line.
+
+Later slices select, establish, and edit time on the day. Week, Month, and NOW remain unbuilt and block operational adoption. See [2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md).
 
 Timeline composes temporal truth. It does not resolve temporal truth.
 

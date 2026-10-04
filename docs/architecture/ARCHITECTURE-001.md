@@ -4,6 +4,8 @@ Date: 2026-10-02.
 
 This is the architecture for V0. It does not scaffold the app, choose a NOW ranking, or change product semantics. Product authority remains the canonical documents. [FOUNDATION-003.md](../discovery/FOUNDATION-003.md) defines what V0 is.
 
+Operational adoption is not this document's first deploy or first day of use. That boundary is [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md). Deferred items below are what ARCHITECTURE-001 refused to build. They do not waive voice, Week, Month, Capacity, a truthful read path, or a later production experience where the contract says those block adoption. Push delivery, a service worker, and connecting every external system remain outside that requirement.
+
 Decisions made here are recorded in [../decisions/](../decisions/README.md).
 
 ## What this architecture is for
@@ -47,6 +49,8 @@ V0's hot path does not use that server. The browser talks to Supabase under row-
 - A `develop` or staging branch as a required flow
 
 ### Deferred
+
+These are deferred from the V0 architecture tranche. [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md) is the later adoption classification. Voice, the NOW composition, Capacity, and a production visual experience block operational adoption even though this list refused to build them here. Push, offline queues, a cadence editor, and watch surfaces stay non-blocking unless a later decision says otherwise.
 
 - Google Calendar implementation, OAuth, and write-back
 - Push delivery and watch surfaces
@@ -228,6 +232,8 @@ No provider SDK is added. A delivery interface is not added until a provider is 
 
 The write path accepts captured text and an explicit choice of Task or Note. A later transcript parser may fill that same input, including an unresolved transcript when the kind is not confident. The domain does not depend on a microphone or a vendor. No grammar and no provider are chosen.
 
+Voice blocks operational adoption. It is not authorized until Task-versus-Note semantics and confidence handling are safe. See [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md).
+
 ## Provenance
 
 Minimum fields on facts that have a source, not an event log:
@@ -314,6 +320,8 @@ integrations/    External adapters. Empty of Google calls until that work is aut
 Bootstrap also adds the manifest, environment template, and Vitest. It does not add a schema, a Supabase project, or a Vercel link unless the later bootstrap tranche says so.
 
 ## What remains open
+
+Adoption classification of these items is in [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md). An open item is not thereby optional for operational adoption.
 
 - The NOW ranking function
 - The product definition of a day

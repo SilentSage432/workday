@@ -2,7 +2,7 @@
 
 The product helps one person remain temporally oriented inside the life they have chosen. It does not manage that life. The repository is named `workday`. The product name is unresolved. See [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
 
-Behavior below is the intended product. Work examples are evidence from one Context. Interaction details that have not been decided are marked unresolved. Current questions are in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md).
+Behavior below is the intended product. Work was the first deeply discovered Context. Examples from Work are evidence from that Context. They are not the ontology of the system. The intended product is a multi-context temporal foundation for how the user operates in time. Interaction details that have not been decided are marked unresolved. Historical product questions are in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md). The operational-adoption boundary, and the questions it refuses to answer, are in [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md).
 
 ## Direction
 
@@ -71,7 +71,7 @@ Work Off is not occupied time. A missing Work row is unknown and is not occupied
 
 Planned Tasks, reminders, relevant recurring-obligation occurrences, and meaningful Windows remain intended composition sources. They are not part of the V0-009 projection. A planned Task and a Block meet time for different reasons. Today is not the Timeline.
 
-The day surface is where the user selects time, refines it, says what that time means, and then explicitly establishes that fact. V0-013 does that for Protected Time, a Block, and a Commitment. It does not edit an existing fact. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Week, month, and NOW are not built. V0-016 lists, on Tasks, the established facts that contain the current instant. That list is not NOW. It does not rank the facts, and it does not read the Active Thread.
+The day surface is where the user selects time, refines it, says what that time means, and then explicitly establishes that fact. V0-013 does that for Protected Time, a Block, and a Commitment. That slice does not edit an existing fact. V0-015 later edits and deletes those three kinds. Work on the canvas stays without those actions. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Week, Month, and NOW are not built. They are part of the intended production system and block operational adoption. Further Week and Month interactions are unresolved, and naming those roles does not authorize building them. V0-016 lists, on Tasks, the established facts that contain the current instant. That list is not NOW. It does not rank the facts, and it does not read the Active Thread.
 
 Experience before V0-009 suggests the user may drag a Task into time. The Task would remain a Task. The allocation would be a Block associated with that Task. That relationship is not stored.
 
@@ -122,11 +122,11 @@ When useful, the product makes elapsed time, current position, the next Commitme
 
 Capture is an interaction. It is not a Task state. Capture must take seconds.
 
-V0-017 makes typed capture a title and Save. Context, a planned day, a due day, and Must Do stay optional and explicit. Saving creates an ordinary Task. It does not start that Task, and it does not place it in the current Block, Commitment, Protected Time, or Today. The same capture is on Tasks and Schedule, and an unsaved draft stays with the signed-in session while the user moves between those two. Reload still drops an unsaved draft. A later deterministic voice parser, if one is chosen, should submit this same Task intent. Voice itself is not designed here.
+V0-017 makes typed capture a title and Save. Context, a planned day, a due day, and Must Do stay optional and explicit. Saving creates an ordinary Task. It does not start that Task, and it does not place it in the current Block, Commitment, Protected Time, or Today. The same capture is on Tasks and Schedule, and an unsaved draft stays with the signed-in session while the user moves between those two. Reload still drops an unsaved draft. A later deterministic voice parser must converge on the same creation boundaries as typed capture. Typed capture in this slice can only create a Task, because Note semantics are unresolved. Voice itself is not designed here and must not be implemented before that boundary is safe.
 
 Capture produces either a Task or a Note. The product preserves that distinction. Neither result is required to belong to a Context.
 
-Text capture is enough for the earliest usable system. Voice remains a major desired capability and does not block first use. Voice follows the same distinction:
+Text capture was enough for the earliest usable system. "Voice does not block first use" is that historical gate. Voice capture is part of the intended production system and blocks operational adoption. It follows the same distinction:
 
 - An explicitly actionable utterance becomes a Task immediately. It does not have to be done at the moment of capture. Work illustrations: "Call the customer tomorrow." "Finish the manager verification today." "Remind me at two to check with receiving."
 - Speech the user explicitly marks as information becomes a Note. Work illustrations: "Note: manager wants us to revisit this display." "Observation: this area may need a different approach." The word "observation" here is speech, not a domain primitive.
@@ -204,13 +204,23 @@ A good notification might say "Resume: Cycle Counts." A poor strategy repeatedly
 
 **Unresolved:** which candidates are in scope, and any timing, frequency, or dismissal behavior.
 
+## Operational adoption
+
+The user will not operationally adopt this system at work, or as their personal temporal system, while it is an MVP, a partial workflow, or good enough for first use. The contract is [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md).
+
+Phone acceptance of a tranche is engineering evidence. It is not that adoption.
+
+Planning against temporal reality is part of the intended system: protect time, acknowledge existing Commitments, choose what remaining time is for, then plan Tasks against actual temporal reality. Capacity semantics are unresolved. Timeline does not calculate Capacity. Unestablished time is not available. Protected does not mean occupied.
+
+Production interaction and visual experience are required after the underlying semantics are sufficiently complete. The current scaffolding is investigative. This statement does not start a redesign.
+
 ## Minimum usable system
 
-V0 is the smallest system that can generate real use. It is specified here and not built. Text and in-app behavior are enough to start. Voice, push, and Google Calendar may follow after the core is coherent.
+V0 is the historical name for the smallest system that could generate real use. Text and in-app behavior were described as enough to start. Voice, push, and Google Calendar were allowed to follow that first usable core. That first-use gate is superseded for operational adoption by the contract above. The numbered list remains the record of what V0 named. It is not permission to adopt an unfinished system, and it is not permission to implement an item whose meaning is still unresolved.
 
 1. **NOW.** A useful projection of the current day from facts the system knows. The full attention hierarchy stays open.
 2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. V0-010 shows one civil day of that projection. V0-011 can select a transient local-clock span on that day. V0-012 can name a transient intended meaning for that span. V0-012A can refine that span on the canvas before the meaning is chosen, and can still refine it afterward. V0-013 can establish the span as Protected Time, a Block, or a Commitment after an explicit Save. It does not edit an existing fact. Planned Tasks are not on that projection yet.
-3. **Capture.** Create a Task or a Note quickly. Text is sufficient. Voice does not block first use.
+3. **Capture.** Create a Task or a Note quickly. Text was sufficient for first use. Voice does not block that historical first use. Voice does block operational adoption, and it waits on Note semantics.
 4. **Tasks.** Create, edit, complete, an optional due boundary, a planned day, MUST DO, and a Context when the user assigns one. Not project management.
 5. **Notes.** Create, retain, and convert explicitly to a Task while keeping provenance.
 6. **Blocks.** Reserve a time range, or potentially a whole day. A Block may relate to a Context. It does not require Tasks or an outcome.
@@ -221,13 +231,15 @@ V0 is the smallest system that can generate real use. It is specified here and n
 11. **Work cadence.** The discovered cadence can participate in orientation. Do not build a cadence editor first.
 12. **Recurring obligations and reminders.** The system can represent repeating responsibilities and explicit reminders. The first cut may be minimal.
 13. **Pulse.** Architecturally capable of orientation moments. The earliest behavior may be in-app only.
-14. **External calendar readiness.** Leave a clean boundary for Google Calendar. Do not require that integration before the app can run. Do not decide the API.
+14. **External calendar readiness.** Leave a clean boundary for Google Calendar. The historical V0 gate did not require that integration before the app could run, and it did not decide the API. Operational adoption still does not require Google to be connected. It does require the interoperability boundary in the contract. Do not decide the API here.
 
 ### Not in V0
 
+The list below is the historical V0 exclusion. "Unless later evidence changes priority" does not waive deterministic temporal authority. AI, LLM, ML, and agentic inference still do not decide what time means. See [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md).
+
 Excluded unless later evidence changes priority:
 
-- AI assistant, LLM inference, ML, and agentic behavior
+- AI assistant, LLM inference, ML, and agentic behavior as the product's authority. That item is not a deferral.
 - productivity scoring, streaks, gamification, and complex analytics
 - project-management hierarchy, complex tagging, and team collaboration
 - workforce management
@@ -237,7 +249,7 @@ Excluded unless later evidence changes priority:
 - broad integrations, including DeptSync, Wealth Engine, and bidirectional Google Calendar sync
 - a watch application or a native mobile application
 
-Browser or PWA capabilities may eventually fit. They are not authorized by this tranche.
+Browser or PWA capabilities were not authorized by the original V0 text. ARCHITECTURE-001 later required a mobile viewport, a web app manifest, and home-screen metadata. That installability requirement stands. A service worker stays deferred.
 
 ### Experience the model must be able to describe
 

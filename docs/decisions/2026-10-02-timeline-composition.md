@@ -81,13 +81,13 @@ It does not implement NOW. The input has no instant.
 
 ## Future evidence, not implemented
 
-The temporal surface this projection is for is an editor, not a form-entry page. A later day resolution can offer a vertical time axis, select one or more spans, and establish Protected Time, a Block, or a Commitment. A week resolution is for the shape of the week: where time is already spoken for, where the user has chosen a purpose, and where nothing is established yet. A month resolution is broad orientation. NOW remains moment-level orientation inside established truth. None of those screens are built here.
+The temporal surface this projection is for is an editor, not a form-entry page. A later day resolution can offer a vertical time axis, select one or more spans, and establish Protected Time, a Block, or a Commitment. A week resolution is for the shape of the week: where time is already spoken for, where the user has chosen a purpose, and where nothing is established yet. A month resolution is broad orientation. NOW remains moment-level orientation inside established truth. None of those screens are built here. Week, Month, and NOW later block operational adoption. This section still does not implement them or decide their remaining interactions. See [2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md).
 
 Experience before this tranche also suggests a person may drag a Task into time. The Task would remain a Task, and the deliberate allocation would be a Block associated with that Task. That relationship is evidence only. It is not a schema and not a projection input.
 
 Planned Tasks, reminders, occurrences, and Windows remain later composition sources. They are not part of this contract.
 
-Google Calendar, Gemini, OAuth, and external sync remain deferred.
+Google Calendar, Gemini, OAuth, and external sync remain deferred in this tranche. Operational adoption later requires a real interoperability boundary and does not require those connections. Gemini is not made part of the runtime.
 
 ## Context
 

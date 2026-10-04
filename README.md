@@ -14,13 +14,15 @@ Established Contexts, not an exhaustive list and not silos: **Work**, **Family**
 
 ## Current phase
 
-**V0-013.** Schedule shows one selected civil day. A transient selection can be refined, given a meaning, and established as Protected Time, a Block, or a Commitment only after an explicit Save. That Save uses the existing rows. Month, week, and NOW are not built.
+**V0-017, not operationally adopted.** Typed quick capture is the resting state on Tasks and Schedule. Schedule can establish, edit, and delete Protected Time, a Block, or a Commitment on one selected civil day. Tasks can show Resume and the established facts that contain the current instant. That list is not NOW.
 
-Today, Resume, Work orientation, and Timeline are projections. They are not tables. The day canvas is a view of Timeline, not a table.
+NOW, Week, and Month are not built. They block operational adoption. Week and Month interactions beyond their roles are unresolved. The adoption boundary is [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md). "Does not block first use" is the historical V0 gate, not this boundary. Phone acceptance of a tranche is not operational adoption.
+
+Today, Resume, Work orientation, Timeline, and current temporal orientation are projections. They are not tables. The day canvas is a view of Timeline, not a table.
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The behavior of this slice is in [docs/implementation/V0-013.md](docs/implementation/V0-013.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-012A.md](docs/implementation/V0-012A.md).
+The latest behavior record is [docs/implementation/V0-017.md](docs/implementation/V0-017.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-016.md](docs/implementation/V0-016.md).
 
 ## Canonical documents
 
@@ -28,6 +30,7 @@ The behavior of this slice is in [docs/implementation/V0-013.md](docs/implementa
 | --- | --- |
 | [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) | Durable context, boundaries, principles, and current state |
 | [PRODUCT.md](PRODUCT.md) | Intended experience, the life loop, V0, and non-goals |
+| [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md) | Operational adoption boundary. Not the historical first-use gate |
 | [DOMAIN.md](DOMAIN.md) | Domain primitives and known relationships |
 | [TIME_MODEL.md](TIME_MODEL.md) | System-level time, chosen and obligated time, and the Work clocks |
 | [CADENCE.md](CADENCE.md) | The cadence primitive, and the Work cadences discovered so far |
@@ -49,6 +52,10 @@ The behavior of this slice is in [docs/implementation/V0-013.md](docs/implementa
 | [docs/implementation/V0-012.md](docs/implementation/V0-012.md) | Temporal meaning choice on a selected span |
 | [docs/implementation/V0-012A.md](docs/implementation/V0-012A.md) | Contextual handoff and precise selection refinement |
 | [docs/implementation/V0-013.md](docs/implementation/V0-013.md) | Explicit establishment of a selected range |
+| [docs/implementation/V0-014.md](docs/implementation/V0-014.md) | Addressing an established fact |
+| [docs/implementation/V0-015.md](docs/implementation/V0-015.md) | Edit and delete of an established fact |
+| [docs/implementation/V0-016.md](docs/implementation/V0-016.md) | Current temporal orientation. Not NOW |
+| [docs/implementation/V0-017.md](docs/implementation/V0-017.md) | Typed quick capture |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |
