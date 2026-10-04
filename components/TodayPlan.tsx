@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { TaskFacts } from "@/components/TaskFacts";
 import type { Task } from "@/domain/task";
@@ -24,6 +25,9 @@ export function TodayPlan({
   onPlan,
   onStart,
   onComplete,
+  editingTaskId,
+  editFormFor,
+  onBeginEdit,
 }: {
   zoneStatus: TodayZoneStatus;
   civilDate: string | null;
@@ -39,6 +43,9 @@ export function TodayPlan({
   onPlan: (taskId: string, plannedOn: string | null) => void;
   onStart: (taskId: string) => void;
   onComplete: (taskId: string) => void;
+  editingTaskId: string | null;
+  editFormFor: (taskId: string) => ReactNode;
+  onBeginEdit: (taskId: string) => void;
 }) {
   return (
     <section className="mt-8" aria-labelledby="today-heading">
@@ -60,6 +67,9 @@ export function TodayPlan({
           onPlan={onPlan}
           onStart={onStart}
           onComplete={onComplete}
+          editingTaskId={editingTaskId}
+          editFormFor={editFormFor}
+          onBeginEdit={onBeginEdit}
         />
       ) : null}
       {zoneStatus === "unconfirmed" ? (
@@ -93,6 +103,9 @@ function ConfirmedToday({
   onPlan,
   onStart,
   onComplete,
+  editingTaskId,
+  editFormFor,
+  onBeginEdit,
 }: {
   civilDate: string;
   tasks: readonly Task[];
@@ -107,6 +120,9 @@ function ConfirmedToday({
   onPlan: (taskId: string, plannedOn: string | null) => void;
   onStart: (taskId: string) => void;
   onComplete: (taskId: string) => void;
+  editingTaskId: string | null;
+  editFormFor: (taskId: string) => ReactNode;
+  onBeginEdit: (taskId: string) => void;
 }) {
   return (
     <>
@@ -118,14 +134,20 @@ function ConfirmedToday({
         {tasks.map((task) => {
           const current = task.id === activeTaskId;
           const planning = planningId === task.id;
+          const editingThis = editingTaskId === task.id;
+          const editForm = editFormFor(task.id);
           return (
             <li key={task.id} className="border-t border-stone-800 py-4">
-              <p className="min-w-0 break-words text-base">{task.title}</p>
-              <TaskFacts
-                task={task}
-                contextName={contextName(task.contextId)}
-                showPlanned={false}
-              />
+              {editForm ?? (
+                <>
+                  <p className="min-w-0 break-words text-base">{task.title}</p>
+                  <TaskFacts
+                    task={task}
+                    contextName={contextName(task.contextId)}
+                    showPlanned={false}
+                  />
+                </>
+              )}
               {current ? <p className="mt-2 text-sm text-stone-300">Current thread</p> : null}
               {current ? null : (
                 <div className="mt-3 flex gap-3">
@@ -140,7 +162,7 @@ function ConfirmedToday({
                   <button
                     type="button"
                     onClick={() => onComplete(task.id)}
-                    disabled={completingId === task.id}
+                    disabled={completingId === task.id || editingThis}
                     className={`flex-1 ${secondaryButtonClass}`}
                   >
                     {completingId === task.id ? "Saving" : "Complete"}
@@ -150,12 +172,23 @@ function ConfirmedToday({
               <button
                 type="button"
                 onClick={() => onPlan(task.id, null)}
-                disabled={planningId !== null}
+                disabled={planningId !== null || editingThis}
                 aria-label={`Remove ${task.title} from Today`}
                 className={`mt-3 w-full ${secondaryButtonClass}`}
               >
                 {planning ? "Saving" : "Remove from Today"}
               </button>
+              {editForm ? null : (
+                <button
+                  type="button"
+                  onClick={() => onBeginEdit(task.id)}
+                  disabled={editingTaskId !== null}
+                  aria-label={`Edit ${task.title}`}
+                  className={`mt-3 w-full ${secondaryButtonClass}`}
+                >
+                  Edit
+                </button>
+              )}
               {!current && startError?.id === task.id ? (
                 <p role="alert" className="mt-2 text-sm">
                   {startError.message}

@@ -167,6 +167,8 @@ Today means this Task is deliberately planned for the user's current civil day. 
 
 Planned and due stay independent. A Task may be due Thursday and planned for Monday. Changing the plan must not silently change the due boundary.
 
+An open Task's title, optional Context, planned day, due day, and Must Do can be edited. Save is the write. Cancel writes nothing. That edit does not complete the Task, remove it, or replace the Active Thread. Reschedule and carry-forward stay unresolved. The record is [docs/implementation/TASK-EDIT-001.md](docs/implementation/TASK-EDIT-001.md).
+
 MUST DO is a persistent attention flag the user sets. It is not Priority, not a bucket, not a score, and not inferred urgency. It stays prominent until the user completes, reschedules, or removes the Task.
 
 Completing something should generally require one simple interaction. Avoid priority matrices. V0 does not add a stack of priority levels. Priority, as defined in [DOMAIN.md](DOMAIN.md), is not that stack.

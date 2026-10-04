@@ -173,13 +173,14 @@ These are already specified, already present, or both. This list does not reopen
 - Phone acceptance remains the evidence for interaction tranches. It still does not equal adoption.
 - Installability remains required where the architecture already required a manifest and home-screen metadata. Missing icons are an installability gap, not a new product idea.
 - The two integrity defects above are closed without presenting a partial read as the whole truth.
+- An open Task can be edited. Save writes its title, optional Context, planned day, due day, and Must Do. Cancel does not write. Remove, reschedule, carry-forward, and reopen remain unresolved. The record is [../implementation/TASK-EDIT-001.md](../implementation/TASK-EDIT-001.md).
 - The interoperability boundary can tell an external fact from a user-created Commitment. Connecting every outside system is not this item.
 
 ### Required but unresolved
 
 These block operational adoption. They are not authorized for implementation until the open meaning is decided. Deciding them is a later human act, not a side effect of this contract.
 
-- The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Edit and remove are named operations and are not implemented. Reopen is not a named operation.
+- The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Remove is a named operation and is not implemented. Reopen is not a named operation.
 - How a Note is stored, edited, and retained, and how a later established fact keeps provenance to that Note. What a Note means is established. The Note remains when a fact is established from it. Voice still waits on the capture dependency above.
 - Voice, only after the capture dependency above is safe.
 - NOW as a coherent orientation experience, including which composition it uses. `rankNow` is not assumed.

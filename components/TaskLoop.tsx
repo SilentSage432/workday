@@ -5,6 +5,7 @@ import { CurrentTime } from "@/components/CurrentTime";
 import { composeCurrentTemporalReading, type SourceRead } from "@/components/currentTemporalReading";
 import { QuickCapture } from "@/components/QuickCapture";
 import { millisecondsUntilNextMinute } from "@/components/minuteClock";
+import { TaskEditForm } from "@/components/TaskEditForm";
 import { TaskFacts } from "@/components/TaskFacts";
 import { OpenTaskPlanButton, TodayPlan, type TodayZoneStatus } from "@/components/TodayPlan";
 import { WorkOrientationView } from "@/components/WorkOrientation";
@@ -15,6 +16,7 @@ import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import type { Task } from "@/domain/task";
+import { taskEditDraftFromTask, taskPatchFromEditDraft, type TaskEditDraft } from "@/domain/taskEdit";
 import {
   addCivilDays,
   civilDateInTimeZone,
@@ -39,6 +41,13 @@ import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import { loadTemporalSettings, loadWorkSchedule } from "@/persistence/workSchedule";
 
 type DataPhase = "loading" | "ready" | "error";
+type TaskEditPlace = "resume" | "today" | "open";
+
+type OpenTaskEdit = {
+  taskId: string;
+  place: TaskEditPlace;
+  draft: TaskEditDraft;
+};
 
 const CONTEXT_ORDER: readonly string[] = CANONICAL_CONTEXT_NAMES;
 
@@ -114,6 +123,9 @@ export function TaskLoop() {
   const [planError, setPlanError] = useState<{ id: string; message: string } | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
+  const [edit, setEdit] = useState<OpenTaskEdit | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
     const client = getSupabaseBrowserClient();
@@ -330,6 +342,66 @@ export function TaskLoop() {
     }
   }
 
+  function beginEdit(taskId: string, place: TaskEditPlace) {
+    if (edit) return;
+    const task = tasks.find((candidate) => candidate.id === taskId);
+    if (!task) return;
+    setEditError(null);
+    setEdit({ taskId, place, draft: taskEditDraftFromTask(task) });
+  }
+
+  function cancelEdit() {
+    if (editSaving) return;
+    setEdit(null);
+    setEditError(null);
+  }
+
+  async function saveEdit() {
+    if (!edit || editSaving) return;
+    const taskId = edit.taskId;
+    let patch;
+    try {
+      patch = taskPatchFromEditDraft(edit.draft);
+    } catch (error: unknown) {
+      setEditError(
+        `${failureMessage(error, "A task title is required.")} This task is unchanged. The draft is still here.`,
+      );
+      return;
+    }
+
+    setEditSaving(true);
+    setEditError(null);
+    try {
+      const updated = await updateTask(getSupabaseBrowserClient(), taskId, patch);
+      if (updated.id !== taskId) {
+        throw new Error("Could not save these changes.");
+      }
+      setTasks((current) => current.map((task) => (task.id === taskId ? updated : task)));
+      setEdit(null);
+    } catch (error: unknown) {
+      setEditError(
+        `${failureMessage(error, "Could not save these changes.")} This task is unchanged. The draft is still here.`,
+      );
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  function taskEditForm(taskId: string, place: TaskEditPlace) {
+    if (!edit || edit.taskId !== taskId || edit.place !== place) return null;
+    return (
+      <TaskEditForm
+        draft={edit.draft}
+        contexts={orderedContexts(contexts)}
+        saving={editSaving}
+        saveError={editError}
+        onChange={(draft) => setEdit({ taskId, place, draft })}
+        onSave={() => void saveEdit()}
+        onCancel={cancelEdit}
+      />
+    );
+  }
+
   const contextNameById = new Map(contexts.map((context) => [context.id, context.name]));
   const contextName = (contextId: string | null) =>
     contextId ? (contextNameById.get(contextId) ?? null) : null;
@@ -398,9 +470,13 @@ export function TaskLoop() {
               <h2 id="resume-heading" className="text-sm font-medium text-stone-400">
                 Resume
               </h2>
-              <p className="mt-2 break-words text-xl font-medium">{resume.task.title}</p>
+              {taskEditForm(resume.task.id, "resume") ?? (
+                <p className="mt-2 break-words text-xl font-medium">{resume.task.title}</p>
+              )}
               <p className="mt-1 text-sm text-stone-300">This is what you’re doing.</p>
-              <TaskFacts task={resume.task} contextName={contextName(resume.task.contextId)} />
+              {edit?.taskId === resume.task.id && edit.place === "resume" ? null : (
+                <TaskFacts task={resume.task} contextName={contextName(resume.task.contextId)} />
+              )}
               {completeError?.id === resume.task.id ? (
                 <p role="alert" className="mt-3 text-sm text-stone-200">
                   {completeError.message}
@@ -415,7 +491,7 @@ export function TaskLoop() {
                 <button
                   type="button"
                   onClick={() => void onComplete(resume.task.id)}
-                  disabled={completingId === resume.task.id}
+                  disabled={completingId === resume.task.id || edit?.taskId === resume.task.id}
                   className={primaryButtonClass}
                 >
                   {completingId === resume.task.id ? "Saving" : "Complete"}
@@ -428,6 +504,17 @@ export function TaskLoop() {
                 >
                   {leaving ? "Saving" : "Leave thread"}
                 </button>
+                {edit?.taskId === resume.task.id && edit.place === "resume" ? null : (
+                  <button
+                    type="button"
+                    onClick={() => beginEdit(resume.task.id, "resume")}
+                    disabled={edit !== null}
+                    aria-label={`Edit ${resume.task.title}`}
+                    className={secondaryButtonClass}
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
             </section>
           ) : null}
@@ -460,6 +547,9 @@ export function TaskLoop() {
             onPlan={(taskId, plannedOn) => void onSetPlanned(taskId, plannedOn)}
             onStart={(taskId) => void onStart(taskId)}
             onComplete={(taskId) => void onComplete(taskId)}
+            editingTaskId={edit?.taskId ?? null}
+            editFormFor={(taskId) => taskEditForm(taskId, "today")}
+            onBeginEdit={(taskId) => beginEdit(taskId, "today")}
           />
 
           <section className="mt-12" aria-labelledby="open-tasks-heading">
@@ -476,10 +566,16 @@ export function TaskLoop() {
                 const isCurrent = resume?.task.id === task.id;
                 const completionFailed = completeError?.id === task.id;
                 const startFailed = startError?.id === task.id;
+                const editForm = taskEditForm(task.id, "open");
+                const editingThis = edit?.taskId === task.id;
                 return (
                   <li key={task.id} className="border-t border-stone-800 py-4">
-                    <p className="min-w-0 break-words text-base">{task.title}</p>
-                    <TaskFacts task={task} contextName={contextName(task.contextId)} />
+                    {editForm ?? (
+                      <>
+                        <p className="min-w-0 break-words text-base">{task.title}</p>
+                        <TaskFacts task={task} contextName={contextName(task.contextId)} />
+                      </>
+                    )}
                     <div className="mt-3 flex gap-3">
                       {isCurrent ? (
                         <p className="flex min-h-11 flex-1 items-center text-sm text-stone-300">
@@ -499,7 +595,7 @@ export function TaskLoop() {
                       <button
                         type="button"
                         onClick={() => void onComplete(task.id)}
-                        disabled={completingId === task.id}
+                        disabled={completingId === task.id || editingThis}
                         aria-describedby={
                           completionFailed ? `complete-error-${task.id}` : undefined
                         }
@@ -512,9 +608,20 @@ export function TaskLoop() {
                       task={task}
                       civilDate={civilDate}
                       pending={planningId === task.id}
-                      disabled={planningId !== null}
+                      disabled={planningId !== null || editingThis}
                       onPlan={(taskId, plannedOn) => void onSetPlanned(taskId, plannedOn)}
                     />
+                    {editForm ? null : (
+                      <button
+                        type="button"
+                        onClick={() => beginEdit(task.id, "open")}
+                        disabled={edit !== null}
+                        aria-label={`Edit ${task.title}`}
+                        className={`mt-3 w-full ${secondaryButtonClass}`}
+                      >
+                        Edit
+                      </button>
+                    )}
                     {planError?.id === task.id ? (
                       <p role="alert" className="mt-2 text-sm">
                         {planError.message}

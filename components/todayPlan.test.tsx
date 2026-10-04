@@ -32,6 +32,9 @@ const shared = {
   onPlan: noop,
   onStart: noop,
   onComplete: noop,
+  editingTaskId: null,
+  editFormFor: () => null,
+  onBeginEdit: noop,
 };
 
 describe("today surface", () => {
@@ -62,6 +65,8 @@ describe("today surface", () => {
     expect(markup).toContain("Call the school");
     expect(markup).toContain("Family");
     expect(markup).toContain("Remove from Today");
+    expect(markup).toContain('aria-label="Edit Cycle counts"');
+    expect(markup).toContain('aria-label="Edit Call the school"');
     expect(markup).not.toContain("Leave thread");
     expect(markup).not.toContain("priority");
     expect(markup).not.toContain("rank");
