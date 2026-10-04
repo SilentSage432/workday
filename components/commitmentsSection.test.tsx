@@ -168,7 +168,7 @@ describe("commitments surface", () => {
     expect(schedule).toContain("CommitmentsSection");
     expect(schedule).not.toContain('type="time"');
     expect(tasks).not.toContain("CommitmentsSection");
-    expect(tasks).not.toContain("commitments");
+    expect(tasks).not.toMatch(/createCommitment|updateCommitment|deleteCommitment|Add commitment/);
     expect(section).toContain("LocalTimeField");
     expect(section).not.toMatch(/type="time"|[\u{1F300}-\u{1FAFF}]/u);
   });

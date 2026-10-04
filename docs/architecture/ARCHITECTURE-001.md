@@ -131,6 +131,8 @@ V0-012A draws that handoff over the day canvas and lets the same selection be re
 
 V0-013 turns that selection into an existing Protected Time, Block, or Commitment only when the user saves it. The canvas does not insert a row itself. Schedule calls the existing create functions and reloads the day. The decision is [../decisions/2026-10-03-explicit-temporal-establishment.md](../decisions/2026-10-03-explicit-temporal-establishment.md).
 
+V0-016 adds `projections/currentTemporalOrientation.ts`. It takes a supplied instant, the confirmed IANA zone, and already loaded Work schedule entries, Protected Time, Blocks, and Commitments. It returns every one of those facts that contains the instant, still as separate facts. It does not rank them, store a row, or read Tasks or the Active Thread. It is not `NowProjection`. The decision is [../decisions/2026-10-03-current-temporal-orientation.md](../decisions/2026-10-03-current-temporal-orientation.md).
+
 ## Persistence
 
 Supabase Postgres is the durable store. This product gets its own Supabase project. That project must not be the one used by Wealth Engine, DeptSync, Carb Buddy, or any other TeamLab system.

@@ -25,6 +25,7 @@ ARCHITECTURE-001 recorded the runtime, persistence, projection, and delivery dec
 - [2026-10-03-temporal-meaning-choice.md](2026-10-03-temporal-meaning-choice.md)
 - [2026-10-03-contextual-temporal-handoff.md](2026-10-03-contextual-temporal-handoff.md)
 - [2026-10-03-explicit-temporal-establishment.md](2026-10-03-explicit-temporal-establishment.md)
+- [2026-10-03-current-temporal-orientation.md](2026-10-03-current-temporal-orientation.md)
 
 The architecture those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Unresolved implementation details do not get speculative ADRs.
 

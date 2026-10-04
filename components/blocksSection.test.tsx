@@ -153,6 +153,6 @@ describe("blocks surface", () => {
     expect(schedule).toContain("BlocksSection");
     expect(schedule).not.toContain('type="time"');
     expect(tasks).not.toContain("BlocksSection");
-    expect(tasks).not.toContain("blocks");
+    expect(tasks).not.toMatch(/createBlock|updateBlock|deleteBlock|Add block/);
   });
 });

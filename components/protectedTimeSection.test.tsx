@@ -136,7 +136,7 @@ describe("protected time surface", () => {
     expect(schedule).toContain("Work schedule");
     expect(schedule).toContain("ProtectedTimeSection");
     expect(schedule).not.toContain('type="time"');
-    expect(tasks).not.toContain("ProtectedTime");
-    expect(tasks).not.toContain("protected_time");
+    expect(tasks).not.toContain("ProtectedTimeSection");
+    expect(tasks).not.toMatch(/createProtectedTime|updateProtectedTime|deleteProtectedTime|Add protected time/);
   });
 });

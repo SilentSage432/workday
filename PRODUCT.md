@@ -71,7 +71,7 @@ Work Off is not occupied time. A missing Work row is unknown and is not occupied
 
 Planned Tasks, reminders, relevant recurring-obligation occurrences, and meaningful Windows remain intended composition sources. They are not part of the V0-009 projection. A planned Task and a Block meet time for different reasons. Today is not the Timeline.
 
-The day surface is where the user selects time, refines it, says what that time means, and then explicitly establishes that fact. V0-013 does that for Protected Time, a Block, and a Commitment. It does not edit an existing fact. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Week, month, and NOW are not built.
+The day surface is where the user selects time, refines it, says what that time means, and then explicitly establishes that fact. V0-013 does that for Protected Time, a Block, and a Commitment. It does not edit an existing fact. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Week, month, and NOW are not built. V0-016 lists, on Tasks, the established facts that contain the current instant. That list is not NOW. It does not rank the facts, and it does not read the Active Thread.
 
 Experience before V0-009 suggests the user may drag a Task into time. The Task would remain a Task. The allocation would be a Block associated with that Task. That relationship is not stored.
 

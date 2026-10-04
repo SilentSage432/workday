@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useCapture } from "@/components/AppFrame";
 import { CapturePanel } from "@/components/CapturePanel";
+import { CurrentTime } from "@/components/CurrentTime";
+import { millisecondsUntilNextMinute } from "@/components/minuteClock";
 import { TaskFacts } from "@/components/TaskFacts";
 import { OpenTaskPlanButton, TodayPlan, type TodayZoneStatus } from "@/components/TodayPlan";
 import { WorkOrientationView } from "@/components/WorkOrientation";
@@ -15,6 +17,9 @@ import {
   newTaskFromCapture,
   openTasksAfterCompletion,
 } from "@/domain/capture";
+import type { Block } from "@/domain/block";
+import type { Commitment } from "@/domain/commitment";
+import type { ProtectedTime } from "@/domain/protectedTime";
 import type { Task } from "@/domain/task";
 import {
   addCivilDays,
@@ -23,10 +28,13 @@ import {
   parseCivilDate,
 } from "@/domain/time/workFiscalWeek";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
+import { projectCurrentTemporalOrientation } from "@/projections/currentTemporalOrientation";
 import { projectResume } from "@/projections/resume";
 import { projectTodayTasks } from "@/projections/today";
 import { projectWorkOrientation } from "@/projections/workOrientation";
 import { clearActiveThread, establishActiveThread, loadActiveThread } from "@/persistence/activeThread";
+import { loadBlocks } from "@/persistence/block";
+import { loadCommitments } from "@/persistence/commitment";
 import {
   completeTask,
   createTask,
@@ -34,6 +42,7 @@ import {
   loadOpenTasks,
   updateTask,
 } from "@/persistence/contextsAndTasks";
+import { loadProtectedTime } from "@/persistence/protectedTime";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import { loadTemporalSettings, loadWorkSchedule } from "@/persistence/workSchedule";
 
@@ -86,6 +95,13 @@ export function TaskLoop() {
   const [timeZone, setTimeZone] = useState<string | null>(null);
   const [workEntries, setWorkEntries] = useState<WorkScheduleEntry[]>([]);
   const [workNotice, setWorkNotice] = useState<string | null>(null);
+  const [protectedTime, setProtectedTime] = useState<ProtectedTime[]>([]);
+  const [blocks, setBlocks] = useState<Block[]>([]);
+  const [commitments, setCommitments] = useState<Commitment[]>([]);
+  const [temporalNotice, setTemporalNotice] = useState<string | null>(null);
+  const [instant, setInstant] = useState(() => new Date());
+  const timeZoneRef = useRef<string | null>(null);
+  const loadedCivilDateRef = useRef<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
@@ -129,9 +145,17 @@ export function TaskLoop() {
             setTimeZone(null);
             setWorkEntries([]);
             setWorkNotice(null);
+            setProtectedTime([]);
+            setBlocks([]);
+            setCommitments([]);
+            setTemporalNotice(null);
+            loadedCivilDateRef.current = null;
           } else {
             setZoneStatus("confirmed");
             setTimeZone(settings.timeZone);
+            loadedCivilDateRef.current = formatCivilDate(
+              civilDateInTimeZone(new Date(), settings.timeZone),
+            );
             try {
               const entries = await readWorkWindow(client, settings.timeZone);
               if (ignore) return;
@@ -142,6 +166,24 @@ export function TaskLoop() {
               setWorkEntries([]);
               setWorkNotice(failureMessage(error, "Could not load today's Work schedule."));
             }
+            try {
+              const [loadedProtected, loadedBlocks, loadedCommitments] = await Promise.all([
+                loadProtectedTime(client),
+                loadBlocks(client),
+                loadCommitments(client),
+              ]);
+              if (ignore) return;
+              setProtectedTime(loadedProtected);
+              setBlocks(loadedBlocks);
+              setCommitments(loadedCommitments);
+              setTemporalNotice(null);
+            } catch (error: unknown) {
+              if (ignore) return;
+              setProtectedTime([]);
+              setBlocks([]);
+              setCommitments([]);
+              setTemporalNotice(failureMessage(error, "Could not load established time."));
+            }
           }
         } catch {
           if (ignore) return;
@@ -149,6 +191,11 @@ export function TaskLoop() {
           setTimeZone(null);
           setWorkEntries([]);
           setWorkNotice(null);
+          setProtectedTime([]);
+          setBlocks([]);
+          setCommitments([]);
+          setTemporalNotice(null);
+          loadedCivilDateRef.current = null;
         }
         if (ignore) return;
         setDataPhase("ready");
@@ -170,6 +217,48 @@ export function TaskLoop() {
       titleRef.current?.focus();
     }
   }, [capture.open]);
+
+  useEffect(() => {
+    timeZoneRef.current = timeZone;
+  }, [timeZone]);
+
+  useEffect(() => {
+    let timer = 0;
+
+    function noteDay(now: Date) {
+      const zone = timeZoneRef.current;
+      if (!zone || !loadedCivilDateRef.current) return;
+      const day = formatCivilDate(civilDateInTimeZone(now, zone));
+      if (loadedCivilDateRef.current === day) return;
+      loadedCivilDateRef.current = day;
+      setReloadKey((current) => current + 1);
+    }
+
+    function arm(from: Date) {
+      timer = window.setTimeout(() => {
+        const now = new Date();
+        setInstant(now);
+        noteDay(now);
+        arm(now);
+      }, millisecondsUntilNextMinute(from));
+    }
+
+    function onVisible() {
+      if (document.visibilityState !== "visible") return;
+      window.clearTimeout(timer);
+      const now = new Date();
+      setInstant(now);
+      noteDay(now);
+      arm(now);
+    }
+
+    arm(new Date());
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
 
   async function onCapture(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -268,10 +357,9 @@ export function TaskLoop() {
   const contextName = (contextId: string | null) =>
     contextId ? (contextNameById.get(contextId) ?? null) : null;
   const resume = projectResume({ activeThread, openTasks: tasks });
-  const observedAt = new Date();
   const civilDate =
     zoneStatus === "confirmed" && timeZone
-      ? formatCivilDate(civilDateInTimeZone(observedAt, timeZone))
+      ? formatCivilDate(civilDateInTimeZone(instant, timeZone))
       : null;
   const todayTasks = civilDate ? projectTodayTasks({ openTasks: tasks, civilDate }) : [];
   const otherOpenTasks = civilDate
@@ -280,18 +368,28 @@ export function TaskLoop() {
   const workOrientation =
     timeZone && !workNotice
       ? projectWorkOrientation({
-          instant: observedAt,
+          instant,
           timeZone,
-          todayEntry: entryOn(
-            workEntries,
-            formatCivilDate(civilDateInTimeZone(observedAt, timeZone)),
-          ),
+          todayEntry: entryOn(workEntries, formatCivilDate(civilDateInTimeZone(instant, timeZone))),
           previousEntry: entryOn(
             workEntries,
-            formatCivilDate(addCivilDays(civilDateInTimeZone(observedAt, timeZone), -1)),
+            formatCivilDate(addCivilDays(civilDateInTimeZone(instant, timeZone), -1)),
           ),
         })
       : null;
+  const temporalFacts =
+    zoneStatus === "confirmed" && timeZone && temporalNotice === null
+      ? projectCurrentTemporalOrientation({
+          instant,
+          timeZone,
+          workSchedule: workNotice ? [] : workEntries,
+          protectedTime,
+          blocks,
+          commitments,
+        }).facts
+      : null;
+  const temporalNoticeText =
+    temporalNotice ?? (workNotice && temporalFacts?.length === 0 ? workNotice : null);
 
   return (
     <main>
@@ -353,6 +451,12 @@ export function TaskLoop() {
               </div>
             </section>
           ) : null}
+
+          <CurrentTime
+            zoneStatus={zoneStatus}
+            facts={temporalNoticeText ? null : temporalFacts}
+            notice={temporalNoticeText}
+          />
 
           {workOrientation ? <WorkOrientationView orientation={workOrientation} /> : null}
           {workNotice ? (
