@@ -77,7 +77,7 @@ A typed interaction has proved the capture establishment contract. Voice itself 
 
 Future voice input converges on the same establishment boundary as typed expression. When the expression does not yet have enough established meaning, it stays available for the interaction and the user chooses a Note, a Task, or nothing. The expression is not a stored transcript. Unrecognized speech stays verbatim as that expression. Interpretation may propose candidate structure. It does not establish domain truth. No AI, ML, LLM, or agentic system is temporal authority.
 
-This contract does not choose a provider, a parser, a microphone API, a grammar, or a model. It does not authorize voice.
+This contract does not choose a provider, a parser, a microphone API, a grammar, or a model. It does not authorize voice. [../discovery/VOICE-CAPABILITY-001.md](../discovery/VOICE-CAPABILITY-001.md) compares how speech could become expression text and still chooses none. A phone probe comes before any mechanism.
 
 The earlier sentence "voice does not block first use" remains true of the historical first-use gate. It is superseded for operational adoption.
 
