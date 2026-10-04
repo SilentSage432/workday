@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { defineBlock, type Block, type BlockInput } from "@/domain/block";
 import { formatLocalTime, parseLocalTime } from "@/domain/time/localTime";
+import { readCompleteDateRows, requireCivilWindow, type CivilDateWindow } from "@/persistence/completeRead";
 
 export const BLOCK_COLUMNS =
   "id, starts_on, kind, start_local, end_local, context_id, purpose, created_at";
@@ -100,18 +101,18 @@ function unwrap<T>(data: T | null, error: { message: string } | null): T {
   return data;
 }
 
-export async function loadBlocks(client: SupabaseClient): Promise<Block[]> {
-  const { data, error } = await client
-    .from("blocks")
-    .select(BLOCK_COLUMNS)
-    .order("starts_on", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return ((data ?? []) as BlockRow[]).map(rowToBlock);
+export async function loadBlocks(client: SupabaseClient, window?: CivilDateWindow): Promise<Block[]> {
+  const range = requireCivilWindow(window);
+  const rows = await readCompleteDateRows({
+    client,
+    table: "blocks",
+    columns: BLOCK_COLUMNS,
+    dateColumn: "starts_on",
+    tieBreakColumns: ["created_at", "id"],
+    from: range.from,
+    to: range.to,
+  });
+  return (rows as BlockRow[]).map(rowToBlock);
 }
 
 export async function createBlock(client: SupabaseClient, input: BlockInput): Promise<Block> {

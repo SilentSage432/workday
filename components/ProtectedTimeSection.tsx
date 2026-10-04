@@ -11,7 +11,13 @@ import {
 } from "@/components/protectedTimeDraft";
 import { formatLocalTimeLabel } from "@/domain/time/localTime";
 import { timedProtectedTimeEndsNextCivilDate, type ProtectedTime } from "@/domain/protectedTime";
-import { civilDateInTimeZone, formatCivilDate, formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
+import {
+  addCivilDays,
+  civilDateInTimeZone,
+  formatCivilDate,
+  formatCivilDateLabel,
+  parseCivilDate,
+} from "@/domain/time/workFiscalWeek";
 import { classifyProtectedTime, projectProtectedTime } from "@/projections/protectedTime";
 import {
   createProtectedTime,
@@ -52,12 +58,14 @@ export function ProtectedTimeSection({
 
   useEffect(() => {
     if (!timeZone) return;
+    const today = formatCivilDate(civilDateInTimeZone(new Date(), timeZone));
+    const from = formatCivilDate(addCivilDays(parseCivilDate(today), -1));
     const client = getSupabaseBrowserClient();
     let ignore = false;
 
     async function load() {
       try {
-        const loaded = await loadProtectedTime(client);
+        const loaded = await loadProtectedTime(client, { from });
         if (ignore) return;
         setEntries(loaded);
         setInstant(new Date());
@@ -226,7 +234,7 @@ export function ProtectedTimePanel({
       {timeZone !== null && !entriesReady ? (
         <p className="mt-4 text-sm text-stone-300">Loading protected time.</p>
       ) : null}
-      {timeZone !== null && entriesReady && shown.length === 0 ? (
+      {timeZone !== null && entriesReady && loadError === null && shown.length === 0 ? (
         <p className="mt-4 text-sm text-stone-300">No current or upcoming protected time.</p>
       ) : null}
 

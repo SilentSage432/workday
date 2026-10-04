@@ -12,7 +12,13 @@ import {
 import { timedBlockEndsNextCivilDate, type Block } from "@/domain/block";
 import { CANONICAL_CONTEXT_NAMES, type Context } from "@/domain/context";
 import { formatLocalTimeLabel } from "@/domain/time/localTime";
-import { civilDateInTimeZone, formatCivilDate, formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
+import {
+  addCivilDays,
+  civilDateInTimeZone,
+  formatCivilDate,
+  formatCivilDateLabel,
+  parseCivilDate,
+} from "@/domain/time/workFiscalWeek";
 import { classifyBlock, projectBlocks } from "@/projections/block";
 import { createBlock, deleteBlock, loadBlocks, updateBlock } from "@/persistence/block";
 import { loadContexts } from "@/persistence/contextsAndTasks";
@@ -65,13 +71,15 @@ export function BlocksSection({
 
   useEffect(() => {
     if (!timeZone) return;
+    const today = formatCivilDate(civilDateInTimeZone(new Date(), timeZone));
+    const from = formatCivilDate(addCivilDays(parseCivilDate(today), -1));
     const client = getSupabaseBrowserClient();
     let ignore = false;
 
     async function load() {
       try {
         const [loadedBlocks, loadedContexts] = await Promise.all([
-          loadBlocks(client),
+          loadBlocks(client, { from }),
           loadContexts(client),
         ]);
         if (ignore) return;
@@ -246,7 +254,7 @@ export function BlocksPanel({
       {timeZone !== null && !entriesReady ? (
         <p className="mt-4 text-sm text-stone-300">Loading blocks.</p>
       ) : null}
-      {timeZone !== null && entriesReady && shown.length === 0 ? (
+      {timeZone !== null && entriesReady && loadError === null && shown.length === 0 ? (
         <p className="mt-4 text-sm text-stone-300">No current or upcoming blocks.</p>
       ) : null}
 

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { formatLocalTime, parseLocalTime } from "@/domain/time/localTime";
+import { readCompleteDateRows, requireCivilWindow, type CivilDateWindow } from "@/persistence/completeRead";
 import {
   defineProtectedTime,
   type ProtectedTime,
@@ -102,18 +103,21 @@ function unwrap<T>(data: T | null, error: { message: string } | null): T {
   return data;
 }
 
-export async function loadProtectedTime(client: SupabaseClient): Promise<ProtectedTime[]> {
-  const { data, error } = await client
-    .from("protected_time")
-    .select(PROTECTED_TIME_COLUMNS)
-    .order("starts_on", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return ((data ?? []) as ProtectedTimeRow[]).map(rowToProtectedTime);
+export async function loadProtectedTime(
+  client: SupabaseClient,
+  window?: CivilDateWindow,
+): Promise<ProtectedTime[]> {
+  const range = requireCivilWindow(window);
+  const rows = await readCompleteDateRows({
+    client,
+    table: "protected_time",
+    columns: PROTECTED_TIME_COLUMNS,
+    dateColumn: "starts_on",
+    tieBreakColumns: ["created_at", "id"],
+    from: range.from,
+    to: range.to,
+  });
+  return (rows as ProtectedTimeRow[]).map(rowToProtectedTime);
 }
 
 export async function createProtectedTime(

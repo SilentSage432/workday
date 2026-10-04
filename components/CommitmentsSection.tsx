@@ -11,7 +11,13 @@ import {
 } from "@/components/commitmentDraft";
 import { timedCommitmentEndsNextCivilDate, type Commitment } from "@/domain/commitment";
 import { formatLocalTimeLabel } from "@/domain/time/localTime";
-import { civilDateInTimeZone, formatCivilDate, formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
+import {
+  addCivilDays,
+  civilDateInTimeZone,
+  formatCivilDate,
+  formatCivilDateLabel,
+  parseCivilDate,
+} from "@/domain/time/workFiscalWeek";
 import { classifyCommitment, projectCommitments } from "@/projections/commitment";
 import {
   createCommitment,
@@ -52,12 +58,14 @@ export function CommitmentsSection({
 
   useEffect(() => {
     if (!timeZone) return;
+    const today = formatCivilDate(civilDateInTimeZone(new Date(), timeZone));
+    const from = formatCivilDate(addCivilDays(parseCivilDate(today), -1));
     const client = getSupabaseBrowserClient();
     let ignore = false;
 
     async function load() {
       try {
-        const loaded = await loadCommitments(client);
+        const loaded = await loadCommitments(client, { from });
         if (ignore) return;
         setEntries(loaded);
         setInstant(new Date());
@@ -225,7 +233,7 @@ export function CommitmentsPanel({
       {timeZone !== null && !entriesReady ? (
         <p className="mt-4 text-sm text-stone-300">Loading commitments.</p>
       ) : null}
-      {timeZone !== null && entriesReady && shown.length === 0 ? (
+      {timeZone !== null && entriesReady && loadError === null && shown.length === 0 ? (
         <p className="mt-4 text-sm text-stone-300">No current or upcoming commitments.</p>
       ) : null}
 

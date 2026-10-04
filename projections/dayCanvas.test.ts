@@ -403,9 +403,9 @@ describe("day canvas authority", () => {
     expect(schedule).not.toContain("projectTimeline");
     expect(schedule).toContain("composeDayCanvas");
     expect(schedule).toContain("dayCanvasWorkQuery");
-    expect(schedule).toContain("loadProtectedTime(client)");
-    expect(schedule).toContain("loadBlocks(client)");
-    expect(schedule).toContain("loadCommitments(client)");
+    expect(schedule).toContain("loadProtectedTime(client, query)");
+    expect(schedule).toContain("loadBlocks(client, query)");
+    expect(schedule).toContain("loadCommitments(client, query)");
     expect(schedule).not.toMatch(/protectedTime\.filter|blocks\.filter|commitments\.filter|workSchedule\.filter/);
     expect(projection).not.toContain("Date.now");
     expect(component).not.toContain("Date.now");

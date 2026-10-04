@@ -138,6 +138,11 @@ describe("current time surface", () => {
     expect(tasks.indexOf("resume-heading")).toBeLessThan(tasks.indexOf("<CurrentTime"));
     expect(tasks.indexOf("<CurrentTime")).toBeLessThan(tasks.indexOf("<WorkOrientationView"));
     expect(tasks.indexOf("<WorkOrientationView")).toBeLessThan(tasks.indexOf("<TodayPlan"));
+    expect(tasks).toContain("composeCurrentTemporalReading");
+    expect(tasks).toContain("loadProtectedTime(client, window)");
+    expect(tasks).toContain("loadBlocks(client, window)");
+    expect(tasks).toContain("loadCommitments(client, window)");
+    expect(tasks).not.toContain("workSchedule: workNotice");
     expect(tasks).toContain("millisecondsUntilNextMinute");
     expect(tasks).toContain("visibilitychange");
     expect(tasks).not.toMatch(/setInterval/);

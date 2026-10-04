@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireIanaTimeZone } from "@/domain/time/localTime";
 import { parseCivilDate, formatCivilDate } from "@/domain/time/workFiscalWeek";
+import { readCompleteDateRows, requireCivilWindow } from "@/persistence/completeRead";
 import {
   isShiftType,
   offWorkDay,
@@ -169,20 +170,20 @@ export async function loadWorkSchedule(
   from: string,
   to: string,
 ): Promise<WorkScheduleEntry[]> {
-  formatCivilDate(parseCivilDate(from));
-  formatCivilDate(parseCivilDate(to));
-  const { data, error } = await client
-    .from("work_schedule_days")
-    .select(WORK_SCHEDULE_COLUMNS)
-    .gte("work_on", from)
-    .lte("work_on", to)
-    .order("work_on", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
+  const range = requireCivilWindow({ from, to });
+  if (range.from === undefined || range.to === undefined) {
+    throw new Error("A temporal read needs a real date range.");
   }
-
-  return ((data ?? []) as WorkScheduleRow[]).map(rowToWorkScheduleEntry);
+  const rows = await readCompleteDateRows({
+    client,
+    table: "work_schedule_days",
+    columns: WORK_SCHEDULE_COLUMNS,
+    dateColumn: "work_on",
+    tieBreakColumns: [],
+    from: range.from,
+    to: range.to,
+  });
+  return (rows as WorkScheduleRow[]).map(rowToWorkScheduleEntry);
 }
 
 export async function saveWorkScheduleEntry(

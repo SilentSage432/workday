@@ -182,9 +182,9 @@ export function WorkSchedule() {
 
   useEffect(() => {
     if (!settings || !selectedDay) return;
-    // Work rows are loaded from the previous civil date through the selected
-    // date. Protected time, blocks, and commitments are loaded whole, which
-    // includes that previous day. Timeline decides what meets the day.
+    // Work, Protected Time, Blocks, and Commitments are loaded for the previous
+    // civil date through the selected date. Timeline decides what meets the day.
+    // A failed or incomplete read leaves this day unpainted.
     const day = selectedDay;
     const query = dayCanvasWorkQuery(day);
     const timeZone = settings.timeZone;
@@ -197,9 +197,9 @@ export function WorkSchedule() {
       try {
         const [workSchedule, protectedTime, blocks, commitments, contexts] = await Promise.all([
           loadWorkSchedule(client, query.from, query.to),
-          loadProtectedTime(client),
-          loadBlocks(client),
-          loadCommitments(client),
+          loadProtectedTime(client, query),
+          loadBlocks(client, query),
+          loadCommitments(client, query),
           loadContexts(client),
         ]);
         if (ignore) return;

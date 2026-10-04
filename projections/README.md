@@ -18,7 +18,7 @@
 
 `workOrientation.ts` composes that fact with Power Hour and the next established Work boundary. It does not read the clock, the network, or Supabase. It does not rank Tasks or select an Opening step.
 
-`currentTemporalOrientation.ts` returns the established Work schedule, Protected Time, Blocks, and Commitments that contain a supplied instant. It calls the existing classifiers and the existing Work orientation. It keeps every matching fact. It does not rank them, and it does not read Tasks or the Active Thread. It is not NOW. The decision is [docs/decisions/2026-10-03-current-temporal-orientation.md](../docs/decisions/2026-10-03-current-temporal-orientation.md).
+`currentTemporalOrientation.ts` returns the established Work schedule, Protected Time, Blocks, and Commitments that contain a supplied instant. It calls the existing classifiers and the existing Work orientation. It keeps every matching fact. It does not rank them, and it does not read Tasks or the Active Thread. It does not know whether a read failed. `components/currentTemporalReading.ts` withholds the reading unless every required source loaded completely. An empty successful source is not a failed source. It is not NOW. The decision is [docs/decisions/2026-10-03-current-temporal-orientation.md](../docs/decisions/2026-10-03-current-temporal-orientation.md). The read rule is [docs/implementation/P0-INTEGRITY-001.md](../docs/implementation/P0-INTEGRITY-001.md).
 
 `rankNow` is intentionally absent. NOW is not implemented.
 

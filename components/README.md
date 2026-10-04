@@ -2,7 +2,7 @@
 
 Presentation lives here. Components render domain types and projections, and they call the persistence boundary. They do not own Supabase row shapes or product ranking.
 
-`TaskLoop` renders Resume and, beside it, `CurrentTime`. `CurrentTime` shows the current temporal orientation. It does not establish a thread, and it does not edit temporal facts. `WorkOrientation` remains the shift, Power Hour, and next-boundary reading.
+`TaskLoop` renders Resume and, beside it, `CurrentTime`. `CurrentTime` shows the current temporal orientation. It does not establish a thread, and it does not edit temporal facts. The orientation is shown only when Work, Protected Time, Blocks, and Commitments all loaded completely. A failed source is not rendered as an empty one. `WorkOrientation` remains the shift, Power Hour, and next-boundary reading.
 
 `QuickCapture` is the typed Task capture on Tasks and on Schedule. It uses the capture session held above those routes. A title is enough. Save calls the existing Task insert. It does not start a thread or establish time.
 

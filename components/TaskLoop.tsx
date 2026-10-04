@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { CurrentTime } from "@/components/CurrentTime";
+import { composeCurrentTemporalReading, type SourceRead } from "@/components/currentTemporalReading";
 import { QuickCapture } from "@/components/QuickCapture";
 import { millisecondsUntilNextMinute } from "@/components/minuteClock";
 import { TaskFacts } from "@/components/TaskFacts";
@@ -22,7 +22,6 @@ import {
   parseCivilDate,
 } from "@/domain/time/workFiscalWeek";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
-import { projectCurrentTemporalOrientation } from "@/projections/currentTemporalOrientation";
 import { projectResume } from "@/projections/resume";
 import { projectTodayTasks } from "@/projections/today";
 import { projectWorkOrientation } from "@/projections/workOrientation";
@@ -66,14 +65,25 @@ function entryOn(entries: WorkScheduleEntry[], workOn: string): WorkScheduleEntr
   return entries.find((entry) => entry.workOn === workOn) ?? null;
 }
 
-async function readWorkWindow(
-  client: SupabaseClient,
-  timeZone: string,
-): Promise<WorkScheduleEntry[]> {
-  const now = new Date();
+function establishedWindow(timeZone: string, now: Date): { from: string; to: string } {
   const today = formatCivilDate(civilDateInTimeZone(now, timeZone));
   const yesterday = formatCivilDate(addCivilDays(parseCivilDate(today), -1));
-  return loadWorkSchedule(client, yesterday, today);
+  return { from: yesterday, to: today };
+}
+
+async function readSource<T>(
+  load: () => Promise<readonly T[]>,
+  fallback: string,
+): Promise<{ rows: T[]; notice: string | null }> {
+  try {
+    return { rows: [...(await load())], notice: null };
+  } catch (error: unknown) {
+    return { rows: [], notice: failureMessage(error, fallback) };
+  }
+}
+
+function sourceRead<T>(rows: readonly T[], notice: string | null): SourceRead<T> {
+  return notice === null ? { status: "ready", rows } : { status: "failed", message: notice };
 }
 
 export function TaskLoop() {
@@ -90,7 +100,9 @@ export function TaskLoop() {
   const [protectedTime, setProtectedTime] = useState<ProtectedTime[]>([]);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [commitments, setCommitments] = useState<Commitment[]>([]);
-  const [temporalNotice, setTemporalNotice] = useState<string | null>(null);
+  const [protectedNotice, setProtectedNotice] = useState<string | null>(null);
+  const [blockNotice, setBlockNotice] = useState<string | null>(null);
+  const [commitmentNotice, setCommitmentNotice] = useState<string | null>(null);
   const [instant, setInstant] = useState(() => new Date());
   const timeZoneRef = useRef<string | null>(null);
   const loadedCivilDateRef = useRef<string | null>(null);
@@ -137,42 +149,41 @@ export function TaskLoop() {
             setProtectedTime([]);
             setBlocks([]);
             setCommitments([]);
-            setTemporalNotice(null);
+            setProtectedNotice(null);
+            setBlockNotice(null);
+            setCommitmentNotice(null);
             loadedCivilDateRef.current = null;
           } else {
             setZoneStatus("confirmed");
             setTimeZone(settings.timeZone);
-            loadedCivilDateRef.current = formatCivilDate(
-              civilDateInTimeZone(new Date(), settings.timeZone),
+            const now = new Date();
+            const window = establishedWindow(settings.timeZone, now);
+            loadedCivilDateRef.current = window.to;
+            const workRead = await readSource(
+              () => loadWorkSchedule(client, window.from, window.to),
+              "Could not load today's Work schedule.",
             );
-            try {
-              const entries = await readWorkWindow(client, settings.timeZone);
-              if (ignore) return;
-              setWorkEntries(entries);
-              setWorkNotice(null);
-            } catch (error: unknown) {
-              if (ignore) return;
-              setWorkEntries([]);
-              setWorkNotice(failureMessage(error, "Could not load today's Work schedule."));
-            }
-            try {
-              const [loadedProtected, loadedBlocks, loadedCommitments] = await Promise.all([
-                loadProtectedTime(client),
-                loadBlocks(client),
-                loadCommitments(client),
-              ]);
-              if (ignore) return;
-              setProtectedTime(loadedProtected);
-              setBlocks(loadedBlocks);
-              setCommitments(loadedCommitments);
-              setTemporalNotice(null);
-            } catch (error: unknown) {
-              if (ignore) return;
-              setProtectedTime([]);
-              setBlocks([]);
-              setCommitments([]);
-              setTemporalNotice(failureMessage(error, "Could not load established time."));
-            }
+            if (ignore) return;
+            setWorkEntries(workRead.rows);
+            setWorkNotice(workRead.notice);
+            const [protectedRead, blockRead, commitmentRead] = await Promise.all([
+              readSource(
+                () => loadProtectedTime(client, window),
+                "Could not load protected time.",
+              ),
+              readSource(() => loadBlocks(client, window), "Could not load blocks."),
+              readSource(
+                () => loadCommitments(client, window),
+                "Could not load commitments.",
+              ),
+            ]);
+            if (ignore) return;
+            setProtectedTime(protectedRead.rows);
+            setProtectedNotice(protectedRead.notice);
+            setBlocks(blockRead.rows);
+            setBlockNotice(blockRead.notice);
+            setCommitments(commitmentRead.rows);
+            setCommitmentNotice(commitmentRead.notice);
           }
         } catch {
           if (ignore) return;
@@ -183,7 +194,9 @@ export function TaskLoop() {
           setProtectedTime([]);
           setBlocks([]);
           setCommitments([]);
-          setTemporalNotice(null);
+          setProtectedNotice(null);
+          setBlockNotice(null);
+          setCommitmentNotice(null);
           loadedCivilDateRef.current = null;
         }
         if (ignore) return;
@@ -341,19 +354,17 @@ export function TaskLoop() {
           ),
         })
       : null;
-  const temporalFacts =
-    zoneStatus === "confirmed" && timeZone && temporalNotice === null
-      ? projectCurrentTemporalOrientation({
+  const temporalReading =
+    zoneStatus === "confirmed" && timeZone
+      ? composeCurrentTemporalReading({
           instant,
           timeZone,
-          workSchedule: workNotice ? [] : workEntries,
-          protectedTime,
-          blocks,
-          commitments,
-        }).facts
+          work: sourceRead(workEntries, workNotice),
+          protectedTime: sourceRead(protectedTime, protectedNotice),
+          blocks: sourceRead(blocks, blockNotice),
+          commitments: sourceRead(commitments, commitmentNotice),
+        })
       : null;
-  const temporalNoticeText =
-    temporalNotice ?? (workNotice && temporalFacts?.length === 0 ? workNotice : null);
 
   return (
     <main>
@@ -423,8 +434,8 @@ export function TaskLoop() {
 
           <CurrentTime
             zoneStatus={zoneStatus}
-            facts={temporalNoticeText ? null : temporalFacts}
-            notice={temporalNoticeText}
+            facts={temporalReading?.status === "complete" ? temporalReading.facts : null}
+            notice={temporalReading?.status === "incomplete" ? temporalReading.message : null}
           />
 
           {workOrientation ? <WorkOrientationView orientation={workOrientation} /> : null}

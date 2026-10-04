@@ -56,6 +56,7 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/implementation/V0-015.md](docs/implementation/V0-015.md) | Edit and delete of an established fact |
 | [docs/implementation/V0-016.md](docs/implementation/V0-016.md) | Current temporal orientation. Not NOW |
 | [docs/implementation/V0-017.md](docs/implementation/V0-017.md) | Typed quick capture |
+| [docs/implementation/P0-INTEGRITY-001.md](docs/implementation/P0-INTEGRITY-001.md) | Complete temporal reads and honest partial failure |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |
 | [docs/discovery/FOUNDATION-002.md](docs/discovery/FOUNDATION-002.md) | Historical behavioral semantics |

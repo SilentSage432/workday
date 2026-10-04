@@ -6,6 +6,7 @@ import {
   type CommitmentInput,
 } from "@/domain/commitment";
 import { formatLocalTime, parseLocalTime } from "@/domain/time/localTime";
+import { readCompleteDateRows, requireCivilWindow, type CivilDateWindow } from "@/persistence/completeRead";
 
 export const COMMITMENT_COLUMNS =
   "id, starts_on, kind, start_local, end_local, title, origin, created_at";
@@ -105,18 +106,21 @@ function unwrap<T>(data: T | null, error: { message: string } | null): T {
   return data;
 }
 
-export async function loadCommitments(client: SupabaseClient): Promise<Commitment[]> {
-  const { data, error } = await client
-    .from("commitments")
-    .select(COMMITMENT_COLUMNS)
-    .order("starts_on", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return ((data ?? []) as CommitmentRow[]).map(rowToCommitment);
+export async function loadCommitments(
+  client: SupabaseClient,
+  window?: CivilDateWindow,
+): Promise<Commitment[]> {
+  const range = requireCivilWindow(window);
+  const rows = await readCompleteDateRows({
+    client,
+    table: "commitments",
+    columns: COMMITMENT_COLUMNS,
+    dateColumn: "starts_on",
+    tieBreakColumns: ["created_at", "id"],
+    from: range.from,
+    to: range.to,
+  });
+  return (rows as CommitmentRow[]).map(rowToCommitment);
 }
 
 export async function createCommitment(

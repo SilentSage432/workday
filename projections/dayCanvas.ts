@@ -126,9 +126,9 @@ export function dayCanvasWorkQuery(selectedDay: string): { from: string; to: str
 
 /**
  * Composes one civil day by calling `projectTimeline`, then derives visual geometry.
- * It does not decide which facts exist. The caller supplies rows, including the
- * previous civil day's timed rows. Protected Time, Blocks, and Commitments may be
- * the full stored sets. This function does not prefilter them to `selectedDay`.
+ * It does not decide which facts exist. The caller supplies rows covering the
+ * previous civil day through the selected day. This function does not prefilter
+ * them. Timeline decides which facts meet the day.
  */
 export function composeDayCanvas(input: {
   selectedDay: string;
