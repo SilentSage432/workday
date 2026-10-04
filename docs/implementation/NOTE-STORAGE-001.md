@@ -61,3 +61,7 @@ Invalid content throws before the insert.
 ## Exclusions
 
 No Note surface. No edit, delete, archive, or revision. No Quick Capture change. No interpretation, voice, transcript, or provider. No Context. No provenance column on a later fact. No Task lifecycle change.
+
+## Later
+
+[NOTE-STORAGE-001A.md](NOTE-STORAGE-001A.md) corrects the constraint comment in this same migration file. Production rejected a schema-qualified constraint name, and `public.notes` was absent afterward. The storage decision is unchanged.

@@ -60,6 +60,7 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/implementation/TASK-INTEGRITY-001.md](docs/implementation/TASK-INTEGRITY-001.md) | Complete open-task reads. Today uses that collection |
 | [docs/implementation/TASK-EDIT-001.md](docs/implementation/TASK-EDIT-001.md) | Edit the established fields of an open Task |
 | [docs/implementation/NOTE-STORAGE-001.md](docs/implementation/NOTE-STORAGE-001.md) | Store and completely read a canonical Note |
+| [docs/implementation/NOTE-STORAGE-001A.md](docs/implementation/NOTE-STORAGE-001A.md) | Correct the Notes migration comment syntax. No schema change |
 | [docs/decisions/2026-10-04-capture-establishment-contract.md](docs/decisions/2026-10-04-capture-establishment-contract.md) | Capture establishment boundary |
 | [docs/implementation/TYPED-GENERAL-CAPTURE-001.md](docs/implementation/TYPED-GENERAL-CAPTURE-001.md) | Provisional typed proof of Note, Task, or nothing |
 | [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md) | Note, Destination, Priority, and the Cadence refinement. Not an implementation |

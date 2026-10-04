@@ -22,7 +22,7 @@ comment on column public.notes.content is
   'The retained experience. Required. Non-blank after trim. Not rewritten to remove the user''s wording.';
 comment on column public.notes.captured_at is
   'Instant the experience was retained. Supplied at establishment. Not row-insert time.';
-comment on constraint public.notes_id_user_key on public.notes is
+comment on constraint notes_id_user_key on public.notes is
   'Same-owner identity a later fact can reference. This migration does not add that reference.';
 
 create index notes_user_captured_at_idx on public.notes (user_id, captured_at, id);
