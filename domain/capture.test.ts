@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { activeThreadFromEstablishment } from "@/domain/activeThread";
 import {
   captureAfterFailedSave,
   captureAfterSuccessfulSave,
   captureDraftHasMeaning,
+  closedCaptureSession,
   collapseCapture,
   draftAfterFailedSave,
   emptyCaptureDraft,
@@ -10,7 +12,11 @@ import {
   newTaskFromCapture,
   openCapture,
   openTasksAfterCompletion,
+  readyCaptureSession,
 } from "@/domain/capture";
+import { projectResume } from "@/projections/resume";
+import { projectTodayTasks } from "@/projections/today";
+import { projectCurrentTemporalOrientation } from "@/projections/currentTemporalOrientation";
 import type { Task } from "@/domain/task";
 import { toCompletionUpdate, toTaskInsert } from "@/persistence/contextTaskMapping";
 
@@ -27,8 +33,20 @@ const openTask: Task = {
 };
 
 describe("capture draft", () => {
-  it("requires a nonblank title", () => {
+  it("requires a nonblank title and trims a real one", () => {
+    expect(() => newTaskFromCapture({ ...emptyCaptureDraft(), title: "" })).toThrow(/title/);
     expect(() => newTaskFromCapture({ ...emptyCaptureDraft(), title: "   " })).toThrow(/title/);
+    const task = newTaskFromCapture({ ...emptyCaptureDraft(), title: "  Call vendor  " });
+    expect(task.title).toBe("Call vendor");
+    expect(toTaskInsert("user-1", task)).toMatchObject({
+      title: "Call vendor",
+      context_id: null,
+      planned_on: null,
+      due_on: null,
+      must_do: false,
+      origin: "user_created",
+    });
+    expect(toTaskInsert("user-1", task)).not.toHaveProperty("completed_at");
   });
 
   it("leaves Context optional", () => {
@@ -89,9 +107,10 @@ describe("capture draft", () => {
     expect(openTasksAfterCompletion([openTask, other], openTask.id)).toEqual([other]);
   });
 
-  it("starts collapsed, with no draft", () => {
+  it("starts ready for a title, with the extra fields closed", () => {
     const session = initialCaptureSession();
-    expect(session.open).toBe(false);
+    expect(session).toEqual(readyCaptureSession());
+    expect(session.open).toBe(true);
     expect(session.detailsOpen).toBe(false);
     expect(captureDraftHasMeaning(session.draft)).toBe(false);
   });
@@ -123,17 +142,52 @@ describe("capture draft", () => {
   });
 
   it("discards an empty draft when Capture is closed", () => {
-    const collapsed = collapseCapture(openCapture(initialCaptureSession()));
-    expect(collapsed).toEqual(initialCaptureSession());
+    const collapsed = collapseCapture(initialCaptureSession());
+    expect(collapsed).toEqual(closedCaptureSession());
+    expect(collapsed.open).toBe(false);
   });
 
-  it("clears the draft after a successful save and keeps it after a failed save", () => {
-    const open = openCapture({
-      ...initialCaptureSession(),
-      draft: { ...emptyCaptureDraft(), title: "Call the school" },
-    });
-    expect(captureAfterSuccessfulSave()).toEqual(initialCaptureSession());
+  it("clears the draft after a successful save and stays ready for another", () => {
+    const open = {
+      ...readyCaptureSession(),
+      detailsOpen: true,
+      draft: { ...emptyCaptureDraft(), title: "Call the school", mustDo: true },
+    };
+    expect(captureAfterSuccessfulSave()).toEqual(readyCaptureSession());
     expect(captureAfterFailedSave(open)).toEqual(open);
+  });
+
+  it("leaves the active thread, Today, and current time untouched", () => {
+    const existing = openTask;
+    const drafted = newTaskFromCapture({ ...emptyCaptureDraft(), title: "Call vendor" });
+    const captured: Task = {
+      ...existing,
+      id: "task-2",
+      title: drafted.title,
+      contextId: drafted.contextId ?? null,
+      plannedOn: drafted.plannedOn ?? null,
+      dueOn: drafted.dueOn ?? null,
+      mustDo: drafted.mustDo ?? false,
+    };
+    const thread = activeThreadFromEstablishment(existing.id, "2026-10-03T15:00:00.000Z");
+    const openTasks = [existing, captured];
+    const temporal = {
+      instant: new Date("2026-10-03T16:00:00.000Z"),
+      timeZone: "America/Boise",
+      workSchedule: [],
+      protectedTime: [],
+      blocks: [],
+      commitments: [],
+    };
+
+    expect(projectResume({ activeThread: thread, openTasks })?.task.id).toBe(existing.id);
+    expect(projectResume({ activeThread: null, openTasks: [captured] })).toBeNull();
+    expect(existing.completedAt).toBeNull();
+    expect(projectTodayTasks({ openTasks: [captured], civilDate: "2026-10-03" })).toEqual([]);
+    expect(projectCurrentTemporalOrientation(temporal)).toEqual(
+      projectCurrentTemporalOrientation(temporal),
+    );
+    expect(drafted).not.toHaveProperty("sourceKind");
   });
 
   it("sends completion as the supplied instant", () => {

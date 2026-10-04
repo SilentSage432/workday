@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { BlocksSection } from "@/components/BlocksSection";
 import { CommitmentsSection } from "@/components/CommitmentsSection";
 import { DayCanvas } from "@/components/DayCanvas";
+import { QuickCapture } from "@/components/QuickCapture";
 import type {
   CanvasContextOption,
   CanvasEstablishment,
@@ -412,13 +413,19 @@ export function WorkSchedule() {
   }
 
   if (phase === "loading") {
-    return <p className="mt-6">Loading the schedule.</p>;
+    return (
+      <div className="mt-6">
+        <QuickCapture contexts={blockContexts} />
+        <p className="mt-6">Loading the schedule.</p>
+      </div>
+    );
   }
 
   if (phase === "error") {
     return (
       <div className="mt-6">
-        <p role="alert">{loadError}</p>
+        <QuickCapture contexts={blockContexts} />
+        <p className="mt-6" role="alert">{loadError}</p>
         <button
           type="button"
           onClick={() => setReloadKey((current) => current + 1)}
@@ -438,6 +445,9 @@ export function WorkSchedule() {
   return (
     <div className="mt-6">
       <h1 className="text-xl font-medium tracking-tight">Schedule</h1>
+      <div className="mt-4">
+        <QuickCapture contexts={blockContexts} />
+      </div>
 
       {settings && selectedDay ? (
         <DayCanvas

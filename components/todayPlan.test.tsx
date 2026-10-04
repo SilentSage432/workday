@@ -106,7 +106,7 @@ describe("today surface", () => {
     expect(hidden).toBe("");
   });
 
-  it("keeps Today off the bottom bar and Capture closed until opened", () => {
+  it("keeps Today off the bottom bar and the title field ahead of Resume", () => {
     const nav = readFileSync(new URL("./BottomNav.tsx", import.meta.url), "utf8");
     const tasks = readFileSync(new URL("./TaskLoop.tsx", import.meta.url), "utf8");
 
@@ -114,9 +114,9 @@ describe("today surface", () => {
     expect(nav).toContain("Schedule");
     expect(nav).not.toContain("Today");
     expect(nav).not.toContain("/now");
+    expect(tasks.indexOf("<QuickCapture")).toBeLessThan(tasks.indexOf("resume-heading"));
     expect(tasks.indexOf("resume-heading")).toBeLessThan(tasks.indexOf("<TodayPlan"));
-    expect(tasks.indexOf("<TodayPlan")).toBeLessThan(tasks.indexOf("<CapturePanel"));
-    expect(tasks.indexOf("<CapturePanel")).toBeLessThan(tasks.indexOf("open-tasks-heading"));
+    expect(tasks.indexOf("<TodayPlan")).toBeLessThan(tasks.indexOf("open-tasks-heading"));
     expect(readFileSync(new URL("./TodayPlan.tsx", import.meta.url), "utf8")).toContain(
       'id="today-heading"',
     );

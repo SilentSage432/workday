@@ -7,7 +7,12 @@ import { LocalTimeField } from "@/components/LocalTimeField";
 import { WorkWeek } from "@/components/WorkWeek";
 import { localTimeToTwelveHour } from "@/components/twelveHourTime";
 import { weekDraftFromEntries } from "@/components/weekDraft";
-import { captureAfterSuccessfulSave, initialCaptureSession, openCapture } from "@/domain/capture";
+import {
+  captureAfterSuccessfulSave,
+  closedCaptureSession,
+  initialCaptureSession,
+  openCapture,
+} from "@/domain/capture";
 import { offWorkDay, scheduledWorkDay } from "@/domain/workSchedule";
 
 const dates = [
@@ -53,8 +58,8 @@ function weekMarkup(editing = false) {
 }
 
 describe("mobile interaction", () => {
-  it("keeps Capture closed until it is opened, including a preserved draft", () => {
-    const closed = renderToStaticMarkup(
+  it("shows the title immediately and keeps a closed draft collapsed", () => {
+    const ready = renderToStaticMarkup(
       <CapturePanel
         session={initialCaptureSession()}
         contexts={[]}
@@ -64,11 +69,13 @@ describe("mobile interaction", () => {
         onSubmit={noop}
       />,
     );
-    expect(closed).toContain("Capture");
-    expect(closed).not.toContain("What needs doing?");
-    expect(closed).not.toContain("+ Capture");
+    expect(ready).toContain("What needs doing?");
+    expect(ready).toContain('id="task-title"');
+    expect(ready).toContain("More options");
+    expect(ready).not.toContain(">Context<");
+    expect(ready).not.toContain("+ Capture");
 
-    const preserved = initialCaptureSession();
+    const preserved = closedCaptureSession();
     preserved.draft.title = "Count the aisle";
     const held = renderToStaticMarkup(
       <CapturePanel
@@ -94,25 +101,36 @@ describe("mobile interaction", () => {
       />,
     );
     expect(opened).toContain("What needs doing?");
-    expect(renderToStaticMarkup(
-      <CapturePanel
-        session={captureAfterSuccessfulSave()}
-        contexts={[]}
-        saving={false}
-        saveError={null}
-        onChange={noop}
-        onSubmit={noop}
-      />,
-    )).not.toContain("What needs doing?");
+    expect(opened).toContain("Count the aisle");
+    expect(
+      renderToStaticMarkup(
+        <CapturePanel
+          session={captureAfterSuccessfulSave()}
+          contexts={[]}
+          saving={false}
+          saveError={null}
+          onChange={noop}
+          onSubmit={noop}
+        />,
+      ),
+    ).toContain('id="task-title"');
   });
 
-  it("does not let the schedule surface open Capture", () => {
+  it("uses the same capture on Schedule without leaving that day", () => {
     const schedule = readFileSync(new URL("./WorkSchedule.tsx", import.meta.url), "utf8");
     const page = readFileSync(new URL("../app/schedule/page.tsx", import.meta.url), "utf8");
     const frame = readFileSync(new URL("./AppFrame.tsx", import.meta.url), "utf8");
-    expect(`${schedule}\n${page}`).not.toMatch(/openCapture|setCapture/);
-    expect(frame).not.toMatch(/openCapture/);
+    const quick = readFileSync(new URL("./QuickCapture.tsx", import.meta.url), "utf8");
+    expect(page).toContain("WorkSchedule");
+    expect(schedule).toMatch(/<QuickCapture\s+contexts=\{blockContexts\}\s*\/>/);
+    expect(schedule).not.toMatch(/<QuickCapture[\s\S]*?onCreated/);
+    expect(quick).not.toMatch(
+      /useRouter|setSelectedDay|establishActiveThread|createBlock|createCommitment|createProtectedTime|projectCurrentTemporalOrientation/,
+    );
     expect(frame).toContain("initialCaptureSession");
+    expect(frame).toContain("newTaskFromCapture");
+    expect(frame).toContain("if (savingRef.current) return null");
+    expect(frame).not.toMatch(/establishActiveThread|createBlock|createCommitment|createProtectedTime|localStorage/);
   });
 
   it("uses direct time fields instead of a clock-face input", () => {

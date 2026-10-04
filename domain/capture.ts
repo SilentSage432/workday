@@ -43,12 +43,24 @@ export type CaptureSession = {
   draft: CaptureDraft;
 };
 
-export function initialCaptureSession(): CaptureSession {
+export function closedCaptureSession(): CaptureSession {
   return {
     open: false,
     detailsOpen: false,
     draft: emptyCaptureDraft(),
   };
+}
+
+export function readyCaptureSession(): CaptureSession {
+  return {
+    open: true,
+    detailsOpen: false,
+    draft: emptyCaptureDraft(),
+  };
+}
+
+export function initialCaptureSession(): CaptureSession {
+  return readyCaptureSession();
 }
 
 export function captureDraftHasMeaning(draft: CaptureDraft): boolean {
@@ -76,13 +88,13 @@ export function openCapture(session: CaptureSession): CaptureSession {
 
 export function collapseCapture(session: CaptureSession): CaptureSession {
   if (!captureDraftHasMeaning(session.draft)) {
-    return initialCaptureSession();
+    return closedCaptureSession();
   }
   return { ...session, open: false };
 }
 
 export function captureAfterSuccessfulSave(): CaptureSession {
-  return initialCaptureSession();
+  return readyCaptureSession();
 }
 
 export function captureAfterFailedSave(session: CaptureSession): CaptureSession {

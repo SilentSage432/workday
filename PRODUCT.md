@@ -122,6 +122,8 @@ When useful, the product makes elapsed time, current position, the next Commitme
 
 Capture is an interaction. It is not a Task state. Capture must take seconds.
 
+V0-017 makes typed capture a title and Save. Context, a planned day, a due day, and Must Do stay optional and explicit. Saving creates an ordinary Task. It does not start that Task, and it does not place it in the current Block, Commitment, Protected Time, or Today. The same capture is on Tasks and Schedule, and an unsaved draft stays with the signed-in session while the user moves between those two. Reload still drops an unsaved draft. A later deterministic voice parser, if one is chosen, should submit this same Task intent. Voice itself is not designed here.
+
 Capture produces either a Task or a Note. The product preserves that distinction. Neither result is required to belong to a Context.
 
 Text capture is enough for the earliest usable system. Voice remains a major desired capability and does not block first use. Voice follows the same distinction:
@@ -133,7 +135,7 @@ A deterministic grammar may eventually recognize actionable language, "note," "o
 
 If the product cannot confidently tell actionable from informational, it preserves the transcript and the user chooses Task or Note. Unrecognized speech stays verbatim.
 
-**Unresolved:** the capture mechanics, the grammar, and a clear action whose date, time, reminder, or MUST DO mark cannot be confidently read.
+**Unresolved:** Notes, the grammar, and a clear action whose date, time, reminder, or MUST DO mark cannot be confidently read. Typed capture does not guess those.
 
 ## Task, Note, Today, and MUST DO
 

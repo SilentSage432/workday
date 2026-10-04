@@ -68,7 +68,7 @@ V0's hot path does not use that server. The browser talks to Supabase under row-
 
 Passing time is not a reason to refetch. A local tick may re-run the projection. A refetch happens when the user writes, when the app regains focus, or when a future adapter finishes a sync.
 
-Capture may update the local snapshot immediately and then persist. If the persist fails, the failure stays visible. V0 does not queue that write for later.
+Capture may update the local snapshot immediately and then persist. If the persist fails, the failure stays visible. V0 does not queue that write for later. V0-017's typed capture builds that write with `newTaskFromCapture` and persists it with `createTask`. It does not write the Active Thread or a temporal fact. The decision is [../decisions/2026-10-03-quick-capture.md](../decisions/2026-10-03-quick-capture.md).
 
 ## Deterministic temporal engine
 

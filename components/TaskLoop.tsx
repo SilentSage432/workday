@@ -1,22 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useCapture } from "@/components/AppFrame";
-import { CapturePanel } from "@/components/CapturePanel";
 import { CurrentTime } from "@/components/CurrentTime";
+import { QuickCapture } from "@/components/QuickCapture";
 import { millisecondsUntilNextMinute } from "@/components/minuteClock";
 import { TaskFacts } from "@/components/TaskFacts";
 import { OpenTaskPlanButton, TodayPlan, type TodayZoneStatus } from "@/components/TodayPlan";
 import { WorkOrientationView } from "@/components/WorkOrientation";
 import { activeThreadAfterCompletion, type ActiveThread } from "@/domain/activeThread";
 import { CANONICAL_CONTEXT_NAMES, type Context } from "@/domain/context";
-import {
-  captureAfterFailedSave,
-  captureAfterSuccessfulSave,
-  newTaskFromCapture,
-  openTasksAfterCompletion,
-} from "@/domain/capture";
+import { openTasksAfterCompletion } from "@/domain/capture";
 import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
 import type { ProtectedTime } from "@/domain/protectedTime";
@@ -37,7 +31,6 @@ import { loadBlocks } from "@/persistence/block";
 import { loadCommitments } from "@/persistence/commitment";
 import {
   completeTask,
-  createTask,
   loadContexts,
   loadOpenTasks,
   updateTask,
@@ -90,7 +83,6 @@ export function TaskLoop() {
   const [dataPhase, setDataPhase] = useState<DataPhase>("loading");
   const [dataError, setDataError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const { session: capture, update: setCapture } = useCapture();
   const [zoneStatus, setZoneStatus] = useState<TodayZoneStatus>("unconfirmed");
   const [timeZone, setTimeZone] = useState<string | null>(null);
   const [workEntries, setWorkEntries] = useState<WorkScheduleEntry[]>([]);
@@ -102,8 +94,6 @@ export function TaskLoop() {
   const [instant, setInstant] = useState(() => new Date());
   const timeZoneRef = useRef<string | null>(null);
   const loadedCivilDateRef = useRef<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [completeError, setCompleteError] = useState<{ id: string; message: string } | null>(null);
   const [startingId, setStartingId] = useState<string | null>(null);
@@ -112,7 +102,6 @@ export function TaskLoop() {
   const [planError, setPlanError] = useState<{ id: string; message: string } | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
-  const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const client = getSupabaseBrowserClient();
@@ -213,12 +202,6 @@ export function TaskLoop() {
   }, [reloadKey]);
 
   useEffect(() => {
-    if (capture.open) {
-      titleRef.current?.focus();
-    }
-  }, [capture.open]);
-
-  useEffect(() => {
     timeZoneRef.current = timeZone;
   }, [timeZone]);
 
@@ -259,25 +242,6 @@ export function TaskLoop() {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
-
-  async function onCapture(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setSaveError(null);
-    try {
-      const created = await createTask(
-        getSupabaseBrowserClient(),
-        newTaskFromCapture(capture.draft),
-      );
-      setTasks((current) => [...current, created]);
-      setCapture(captureAfterSuccessfulSave());
-    } catch (error: unknown) {
-      setCapture(captureAfterFailedSave(capture));
-      setSaveError(failureMessage(error, "Could not save this task."));
-    } finally {
-      setSaving(false);
-    }
-  }
 
   async function onStart(taskId: string) {
     setStartingId(taskId);
@@ -410,6 +374,11 @@ export function TaskLoop() {
 
       {dataPhase === "ready" ? (
         <>
+          <QuickCapture
+            contexts={orderedContexts(contexts)}
+            onCreated={(created) => setTasks((current) => [...current, created])}
+          />
+
           {resume ? (
             <section
               className="mt-2 rounded-md border border-stone-700 bg-stone-900 p-4"
@@ -481,18 +450,6 @@ export function TaskLoop() {
             onStart={(taskId) => void onStart(taskId)}
             onComplete={(taskId) => void onComplete(taskId)}
           />
-
-          <div className="mt-8">
-            <CapturePanel
-              session={capture}
-              contexts={orderedContexts(contexts)}
-              saving={saving}
-              saveError={saveError}
-              titleRef={titleRef}
-              onChange={setCapture}
-              onSubmit={(event) => void onCapture(event)}
-            />
-          </div>
 
           <section className="mt-12" aria-labelledby="open-tasks-heading">
             <h1 id="open-tasks-heading" className="text-lg font-medium">

@@ -9,6 +9,8 @@ import {
 } from "@/domain/capture";
 import type { Context } from "@/domain/context";
 
+export type CaptureContextOption = Pick<Context, "id" | "name">;
+
 const fieldClass =
   "mt-1 w-full min-h-12 rounded-md border border-stone-700 bg-stone-900 px-3 text-base text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300";
 const primaryButtonClass =
@@ -26,7 +28,7 @@ export function CapturePanel({
   onSubmit,
 }: {
   session: CaptureSession;
-  contexts: Context[];
+  contexts: readonly CaptureContextOption[];
   saving: boolean;
   saveError: string | null;
   titleRef?: Ref<HTMLInputElement>;
@@ -61,7 +63,9 @@ export function CapturePanel({
         name="title"
         type="text"
         required
+        enterKeyHint="done"
         autoComplete="off"
+        disabled={saving}
         ref={titleRef}
         value={session.draft.title}
         onChange={(event) =>
@@ -79,6 +83,7 @@ export function CapturePanel({
             <select
               id="task-context"
               name="context"
+              disabled={saving}
               value={session.draft.contextId}
               onChange={(event) =>
                 onChange({
@@ -107,6 +112,7 @@ export function CapturePanel({
               id="task-planned"
               name="planned"
               type="date"
+              disabled={saving}
               aria-describedby="task-planned-hint"
               value={session.draft.plannedOn}
               onChange={(event) =>
@@ -129,6 +135,7 @@ export function CapturePanel({
               id="task-due"
               name="due"
               type="date"
+              disabled={saving}
               aria-describedby="task-due-hint"
               value={session.draft.dueOn}
               onChange={(event) =>
@@ -142,6 +149,7 @@ export function CapturePanel({
               id="task-must-do"
               name="must-do"
               type="checkbox"
+              disabled={saving}
               checked={session.draft.mustDo}
               onChange={(event) =>
                 onChange({
@@ -166,6 +174,7 @@ export function CapturePanel({
       <button
         type="button"
         onClick={() => onChange({ ...session, detailsOpen: !session.detailsOpen })}
+        disabled={saving}
         aria-expanded={session.detailsOpen}
         className={`mt-3 w-full ${secondaryButtonClass}`}
       >
@@ -174,6 +183,7 @@ export function CapturePanel({
       <button
         type="button"
         onClick={() => onChange(collapseCapture(session))}
+        disabled={saving}
         className="mt-2 min-h-11 w-full text-sm text-stone-400"
       >
         Close
