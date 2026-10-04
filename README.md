@@ -22,7 +22,7 @@ Today, Resume, Work orientation, Timeline, and current temporal orientation are 
 
 The web app manifest has no icons. Designed install assets do not exist yet, so home-screen installability is incomplete on platforms that require an icon.
 
-The latest behavior record is [docs/implementation/V0-017.md](docs/implementation/V0-017.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-016.md](docs/implementation/V0-016.md). Open Tasks and Today are shown only after the open-task collection is complete. That read is [docs/implementation/TASK-INTEGRITY-001.md](docs/implementation/TASK-INTEGRITY-001.md). An open Task's title, Context, planned day, due day, and Must Do can be edited. That write is [docs/implementation/TASK-EDIT-001.md](docs/implementation/TASK-EDIT-001.md). A Note can be stored and read completely. There is no Note surface. That storage is [docs/implementation/NOTE-STORAGE-001.md](docs/implementation/NOTE-STORAGE-001.md).
+The latest behavior record is [docs/implementation/V0-017.md](docs/implementation/V0-017.md). Earlier slices are in [docs/implementation/V0-001.md](docs/implementation/V0-001.md) through [docs/implementation/V0-016.md](docs/implementation/V0-016.md). Open Tasks and Today are shown only after the open-task collection is complete. That read is [docs/implementation/TASK-INTEGRITY-001.md](docs/implementation/TASK-INTEGRITY-001.md). An open Task's title, Context, planned day, due day, and Must Do can be edited. That write is [docs/implementation/TASK-EDIT-001.md](docs/implementation/TASK-EDIT-001.md). A Note can be stored and read completely. There is no Note surface. That storage is [docs/implementation/NOTE-STORAGE-001.md](docs/implementation/NOTE-STORAGE-001.md). The capture establishment contract is decided and not implemented. That decision is [docs/decisions/2026-10-04-capture-establishment-contract.md](docs/decisions/2026-10-04-capture-establishment-contract.md).
 
 ## Canonical documents
 
@@ -60,6 +60,7 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/implementation/TASK-INTEGRITY-001.md](docs/implementation/TASK-INTEGRITY-001.md) | Complete open-task reads. Today uses that collection |
 | [docs/implementation/TASK-EDIT-001.md](docs/implementation/TASK-EDIT-001.md) | Edit the established fields of an open Task |
 | [docs/implementation/NOTE-STORAGE-001.md](docs/implementation/NOTE-STORAGE-001.md) | Store and completely read a canonical Note |
+| [docs/decisions/2026-10-04-capture-establishment-contract.md](docs/decisions/2026-10-04-capture-establishment-contract.md) | Capture establishment boundary. Not an implementation |
 | [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md) | Note, Destination, Priority, and the Cadence refinement. Not an implementation |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |
 | [docs/discovery/FOUNDATION-002A.md](docs/discovery/FOUNDATION-002A.md) | Historical scope correction, when Work was the only Context |

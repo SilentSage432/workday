@@ -136,6 +136,8 @@ Context stays a meaningful area or operating mode. Destination and Priority are 
 
 Notes remain required for operational adoption. Their meaning is now established. Storage, editing, lifecycle, and provenance representation remain required and unresolved. Voice remains required and remains downstream of a safe capture result contract. This discovery does not authorize voice.
 
+Later, [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) decided the minimum Note and the provenance reference, [../implementation/NOTE-STORAGE-001.md](../implementation/NOTE-STORAGE-001.md) stored the Note, and [../decisions/2026-10-04-capture-establishment-contract.md](../decisions/2026-10-04-capture-establishment-contract.md) decided the capture-result contract. Editing and lifecycle remain unresolved. Voice remains unauthorized.
+
 Destination and Priority are established conceptual meanings. Their production implementation classification is unresolved. They are not added to the adoption contract as required, as merely enabling, or as future. The current product identity is temporal orientation inside a life the user has chosen. These concepts explain sustained importance and why temporal decisions matter. They do not replace that identity. Evidence does not show that adoption must wait for their representation, and it does not show that the product may treat them as disposable. The contract records that refusal to classify.
 
 ## Unresolved
@@ -147,15 +149,15 @@ Destination and Priority are established conceptual meanings. Their production i
 - relationship of Priority to Context
 - whether and how Tasks explicitly relate to Priority
 - whether and how Cadence explicitly relates to Priority
-- Note schema and storage, as left open here; the minimum representation is the later note-representation decision, and storage is still not implemented
+- Note schema and storage, as left open here; the minimum representation is the later note-representation decision, and storage is NOTE-STORAGE-001
 - Note editing and lifecycle
 - representation of Note to established-fact provenance, as left open here; the later note-representation decision places an optional reference on the derived fact
-- interpretation result contract
-- typed interpretation experience
+- interpretation result contract, as left open here; the later capture-establishment decision is the contract
+- typed interpretation experience; the semantic contract is the later capture-establishment decision, and the interaction is not built
 - voice transcription and provider
 - language interpretation technology
-- confidence and ambiguity handling
-- when confirmation is required, and what confirmation looks like
+- confidence and ambiguity handling, as left open here; the later capture-establishment decision treats unresolved meaning as legitimate and stores no score
+- when confirmation is required, and what confirmation looks like; the later capture-establishment decision requires an explicit establishment act, and the visible form of that act remains open
 - delegation and follow-up semantics
 - whether accumulated Notes should expose repeated observations
 - Capacity

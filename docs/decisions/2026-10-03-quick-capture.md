@@ -31,3 +31,7 @@ Current temporal orientation can say what contains the present instant. That rea
 - happy-dom does not prove the phone keyboard. The phone procedure is the check for that.
 
 The implementation record is [../implementation/V0-017.md](../implementation/V0-017.md).
+
+## Later
+
+[2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md) keeps this surface as direct Task establishment. A general capture interaction, where the text has not already been given a kind, is a different case and is not implemented here.

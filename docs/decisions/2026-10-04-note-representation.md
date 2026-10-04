@@ -93,7 +93,7 @@ No update path and no delete path are authorized. Immutability is not decided ei
 
 ## Context
 
-Operational adoption requires Notes. Their meaning is settled. Voice still waits on a capture-result contract. That contract needs a Note to exist as a determinate thing, and it needs to know where a later fact records the Note it came from. Those two questions are the ones this record answers.
+Operational adoption requires Notes. Their meaning is settled. Voice was still waiting on a capture-result contract. That contract needed a Note to exist as a determinate thing, and it needed to know where a later fact records the Note it came from. Those two questions are the ones this record answers. [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md) is the later contract.
 
 [DATA-001](../data/DATA-001.md) stores no Note. [2026-10-03-quick-capture.md](2026-10-03-quick-capture.md) still creates only a Task.
 
@@ -102,8 +102,12 @@ Operational adoption requires Notes. Their meaning is settled. Voice still waits
 - The next implementation tranche, NOTE-STORAGE-001, can create and read a Note without guessing edit, delete, Context, capture choice, or voice.
 - That tranche is storage only: the domain type, the `notes` row above, create, and read. It does not change Quick Capture, does not add Note interface, and does not add `note_id` to fact tables. Nothing can yet establish a fact from a Note, and zero later facts is already valid.
 - The tranche that first lets the user establish a Task, Protected Time, Block, or Commitment from a Note adds the optional reference on that fact. It does not add a list to the Note, and it does not widen `origin`.
-- The capture-result contract remains the next decision before voice. It decides candidates, confirmation, and what happens to an unconfident transcript. Those are not Note columns.
+- Candidates, confirmation, and an unestablished expression are not Note columns. [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md) decides them and adds no Note field.
 - A spoken Note, once the user establishes it, uses this same representation.
+
+## Later
+
+[2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md) applies this representation to general capture. `capturedAt` is the instant the user establishes the Note. An expression and a candidate remain outside the Note. Neither is a column.
 
 ## Rejected
 

@@ -54,7 +54,7 @@ These are deferred from the V0 architecture tranche. [../decisions/2026-10-03-op
 
 - Google Calendar implementation, OAuth, and write-back
 - Push delivery and watch surfaces
-- Voice capture and its grammar
+- Voice capture. No grammar is established. The establishment contract is [../decisions/2026-10-04-capture-establishment-contract.md](../decisions/2026-10-04-capture-establishment-contract.md).
 - Offline mutation queues
 - A cadence editor, window editor, and workspace administration
 - NOW ranking policy
@@ -230,9 +230,9 @@ No provider SDK is added. A delivery interface is not added until a provider is 
 
 ## Voice
 
-The write path accepts captured text and an explicit choice of Task or Note. A later transcript parser may fill that same input, including an unresolved transcript when the kind is not confident. The domain does not depend on a microphone or a vendor. No grammar and no provider are chosen.
+The write path accepts an expression and an explicit establishment of one Task, one Note, or nothing. Typed text and text from a future speech adapter are the same expression. Unresolved meaning is legitimate and is not a stored transcript. The domain does not depend on a microphone or a vendor. No grammar and no provider are chosen.
 
-What a Note means, and that a Task is not inferred from a Note, is established in [../../DOMAIN.md](../../DOMAIN.md). The minimum representation is [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md). Voice still blocks operational adoption. It is not authorized until the capture result contract and confidence handling are safe. Candidate interpretation is not establishment. See [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md).
+What a Note means, and that a Task is not inferred from a Note, is established in [../../DOMAIN.md](../../DOMAIN.md). The minimum representation is [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md). The establishment boundary is [../decisions/2026-10-04-capture-establishment-contract.md](../decisions/2026-10-04-capture-establishment-contract.md). Voice still blocks operational adoption. It is not authorized until a typed interaction has proved that contract. Candidate interpretation is not establishment. See [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md).
 
 ## Provenance
 
