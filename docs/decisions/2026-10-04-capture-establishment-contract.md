@@ -172,3 +172,7 @@ Note editing, deletion, and the rest of Note lifecycle. The visible form of the 
 ## Context
 
 Notes can be stored and read. Quick Capture establishes a Task directly. The day canvas establishes a temporal fact only on Save. [DISCOVERY-CANON-001](../discovery/DISCOVERY-CANON-001.md) left the interpretation-result contract open and said candidates are proposals. Older ledgers said that uncertain speech keeps a transcript and that the product chooses when it is confident. Those sentences described a fallback. They did not establish a transcript store, a score, or a grammar. This record is the contract they were waiting on.
+
+## Later
+
+[../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md) proves this contract with typed input. The surface is provisional, on Tasks, below Quick Capture. It establishes one Note, one Task, or nothing. It does not classify text, add storage, or implement voice. Final placement and final wording remain open. Note lifecycle remains unresolved.

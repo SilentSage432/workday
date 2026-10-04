@@ -107,7 +107,7 @@ Operational adoption requires Notes. Their meaning is settled. Voice was still w
 
 ## Later
 
-[2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md) applies this representation to general capture. `capturedAt` is the instant the user establishes the Note. An expression and a candidate remain outside the Note. Neither is a column.
+[2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md) applies this representation to general capture. `capturedAt` is the instant the user establishes the Note. An expression and a candidate remain outside the Note. Neither is a column. [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md) establishes that Note from typed expression and supplies the existing `id` on insert. It does not add a field, a lifecycle, or a Notes management surface.
 
 ## Rejected
 

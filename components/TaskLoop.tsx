@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CurrentTime } from "@/components/CurrentTime";
 import { composeCurrentTemporalReading, type SourceRead } from "@/components/currentTemporalReading";
+import { GeneralCapture } from "@/components/GeneralCapture";
 import { QuickCapture } from "@/components/QuickCapture";
 import { millisecondsUntilNextMinute } from "@/components/minuteClock";
 import { TaskEditForm } from "@/components/TaskEditForm";
@@ -461,6 +462,7 @@ export function TaskLoop() {
             contexts={orderedContexts(contexts)}
             onCreated={(created) => setTasks((current) => [...current, created])}
           />
+          <GeneralCapture onTaskCreated={(created) => setTasks((current) => [...current, created])} />
 
           {resume ? (
             <section

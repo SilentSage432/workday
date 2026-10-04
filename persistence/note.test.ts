@@ -127,7 +127,8 @@ describe("note persistence", () => {
 
   it("stores the supplied capture instant and the retained text", () => {
     const capturedAt = new Date("2026-01-15T08:00:00.000Z");
-    expect(toNoteInsert(USER_ID, { content: "  aisle 12  ", capturedAt })).toEqual({
+    expect(toNoteInsert(USER_ID, { id: noteId(1), content: "  aisle 12  ", capturedAt })).toEqual({
+      id: noteId(1),
       user_id: USER_ID,
       content: "  aisle 12  ",
       captured_at: "2026-01-15T08:00:00.000Z",
@@ -140,15 +141,15 @@ describe("note persistence", () => {
     const client = signedInClient(((table: string) => {
       if (table !== "notes") throw new Error(`Unexpected table ${table}.`);
       return {
-        insert(row: unknown) {
+        insert(row: { id: string; content: string; captured_at: string }) {
           inserted = row;
           return {
             select: () => ({
               single: async () => ({
                 data: {
-                  id: noteId(1),
-                  content: "  aisle 12  ",
-                  captured_at: "2026-01-15T08:00:00.000Z",
+                  id: row.id,
+                  content: row.content,
+                  captured_at: row.captured_at,
                 },
                 error: null,
               }),
@@ -158,12 +159,14 @@ describe("note persistence", () => {
       };
     }) as unknown as SupabaseClient["from"]);
 
-    const created = await createNote(client, { content: "  aisle 12  ", capturedAt });
+    const created = await createNote(client, { id: noteId(1), content: "  aisle 12  ", capturedAt });
     expect(inserted).toEqual({
+      id: noteId(1),
       user_id: USER_ID,
       content: "  aisle 12  ",
       captured_at: "2026-01-15T08:00:00.000Z",
     });
+    expect(created.id).toBe(noteId(1));
     expect(created.capturedAt).toBe("2026-01-15T08:00:00.000Z");
     expect(created.content).toBe("  aisle 12  ");
   });
@@ -173,7 +176,11 @@ describe("note persistence", () => {
       throw new Error("The note write should not start.");
     }) as unknown as SupabaseClient["from"]);
     await expect(
-      createNote(client, { content: " \n\t ", capturedAt: new Date("2026-01-15T08:00:00.000Z") }),
+      createNote(client, {
+        id: noteId(1),
+        content: " \n\t ",
+        capturedAt: new Date("2026-01-15T08:00:00.000Z"),
+      }),
     ).rejects.toThrow(/retained experience/);
   });
 

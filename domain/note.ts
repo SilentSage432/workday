@@ -7,6 +7,7 @@ export type Note = {
 };
 
 export type NewNote = {
+  id: string;
   content: string;
   capturedAt: Date;
 };

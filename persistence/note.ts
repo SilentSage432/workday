@@ -18,6 +18,7 @@ export type NoteRow = {
 };
 
 export type NoteInsertRow = {
+  id: string;
   user_id: string;
   content: string;
   captured_at: string;
@@ -32,9 +33,12 @@ export function rowToNote(row: NoteRow): Note {
 }
 
 export function toNoteInsert(userId: string, input: NewNote): NoteInsertRow {
+  const content = requireNoteContent(input.content);
+  const id = requireNoteId(input.id);
   return {
+    id,
     user_id: userId,
-    content: requireNoteContent(input.content),
+    content,
     captured_at: capturedAtFromEstablishment(input.capturedAt),
   };
 }
