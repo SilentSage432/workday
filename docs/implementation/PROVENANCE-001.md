@@ -20,7 +20,7 @@ The column is not unique. Several Tasks may cite the same Note. The Note table i
 
 `origin` stays `user_created`. The column is not an origin value.
 
-The migration is `supabase/migrations/20261005020600_task_originating_note.sql`. It was authored in the repository. It was not applied to the hosted Supabase project `ksmhgaamyheyhefbyglb`.
+The migration is `supabase/migrations/20261005020600_task_originating_note.sql`. Hosted application and device acceptance are recorded in PROVENANCE-001A below.
 
 ## Note deletion
 
@@ -49,3 +49,45 @@ No provenance on Protected Time, Block, Commitment, Active Thread, Today, Curren
 ## Tests
 
 `persistence/taskProvenance.test.ts`, `persistence/contextTaskMapping.test.ts`, `domain/generalCapture.test.ts`, and `components/generalCapture.test.tsx` cover the ordinary Task, the sourced Task, shared citation, the unchanged Note, `user_created`, reference, cancel, failure, the single insert, and the foreign key.
+
+## PROVENANCE-001A
+
+Date: 2026-10-04.
+
+Baseline: `0dcb44e1bd94f96591d777507da102045fe03404`.
+
+This section records hosted schema evidence and primary-device acceptance. It does not change the scaffold.
+
+### Hosted schema
+
+At the implementation commit the migration was authored and not yet applied. It was then applied manually, exactly as committed, to the canonical Orient Supabase project `ksmhgaamyheyhefbyglb`.
+
+Direct inspection of that database showed:
+
+| Observation | Value |
+| --- | --- |
+| `column_name` | `originating_note_id` |
+| `data_type` | `uuid` |
+| `is_nullable` | `YES` |
+| `constraint_name` | `tasks_originating_note_same_owner` |
+| `constraint_definition` | `FOREIGN KEY (originating_note_id, user_id) REFERENCES notes(id, user_id) DEFERRABLE INITIALLY DEFERRED` |
+
+The displayed constraint definition did not repeat `MATCH SIMPLE` or `ON DELETE NO ACTION`. Those clauses are in the committed migration that was applied. Hosted persistence now supports Task to zero or one originating Note, with same-owner enforcement. Note deletion semantics remain unresolved.
+
+### Samsung Galaxy S26 Ultra
+
+The deployed scaffold was exercised on the Samsung Galaxy S26 Ultra. The user confirmed the end-to-end probe is good.
+
+The path was: retained Note, refer to the retained experience, "Establish a task from this", independently author the Task title, "Establish this task", a canonical Task is established, return to retained experiences, and the originating Note remains intact and revisitable.
+
+That is acceptance of the semantic and runtime scaffold proof. It is not acceptance of the final production Capture experience.
+
+The probe confirms: retained experience, human understanding, explicit establishment of a new Task, the Task preserves originating Note provenance, and the Note survives as a Note. The Task is not the Note. The Note was not converted, consumed, resolved, or mutated. The human established the Task independently.
+
+Reference alone establishes nothing. Entering sourced Task establishment establishes nothing. The human authors the Task title. Note content does not become the title. The Note does not authorize the Task. The Task remains `user_created`. Provenance is informational source. It is not establishment authority.
+
+Sourced establishment does not establish Must Do, Priority, urgency, a planned date, a due date, Context, the Active Thread, a reminder, or temporal placement.
+
+Successful sourced establishment is one Task insert that includes `originating_note_id`. There is no second provenance write. The hosted schema enforces that a non-null originating Note belongs to the same user as the Task.
+
+The scaffold controls are not the final production interaction. The canonical capture instant remains truthful and is not a final human presentation. Opening retained experiences can still displace surrounding temporal content. Neither observation chooses a presentation or a layout.

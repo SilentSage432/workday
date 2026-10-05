@@ -184,4 +184,4 @@ The physical interaction. Whether any later experience offers text before the hu
 
 ## Later
 
-[../implementation/PROVENANCE-001.md](../implementation/PROVENANCE-001.md) stores the relationship as nullable `tasks.originating_note_id`, one insert with the Task, and a same-owner foreign key that does not cascade or clear. The scaffold control is "Establish a task from this", with an empty title. The migration is authored and was not applied to the hosted database. The physical interaction remains unresolved. Note deletion remains unresolved.
+[../implementation/PROVENANCE-001.md](../implementation/PROVENANCE-001.md) stores the relationship as nullable `tasks.originating_note_id`, one insert with the Task, and a same-owner foreign key that does not cascade or clear. The scaffold control is "Establish a task from this", with an empty title. PROVENANCE-001A records that the committed migration was applied to `ksmhgaamyheyhefbyglb` and that the Samsung Galaxy S26 Ultra accepted the scaffold. The physical interaction remains unresolved. Note deletion remains unresolved.
