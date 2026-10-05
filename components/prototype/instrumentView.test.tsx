@@ -143,6 +143,17 @@ describe("instrument prototype", () => {
     const scroller = view.querySelector("[data-field-scroll]") as HTMLElement;
     const blockMark = view.querySelector('[data-source-id="block-1"]') as HTMLElement;
     const before = blockMark.getAttribute("data-top");
+    expect(blockMark.textContent).toContain("Block");
+    expect(blockMark.textContent).not.toContain("Write");
+    expect(blockMark.getAttribute("aria-label")).toContain("Write");
+    expect(view.querySelector("[data-question-control]")?.querySelectorAll("button")).toHaveLength(1);
+    expect(view.querySelector("[data-reach-resting]")?.getAttribute("data-reach-resting")).toBe("compact");
+    expect(view.querySelector("[data-thread-weight]")?.getAttribute("data-thread-weight")).toBe("quiet");
+    expect([...view.querySelectorAll("button")].some((item) => item.textContent?.trim() === "Sign out")).toBe(false);
+    const remainderBands = view.querySelectorAll("[data-silence='allocatable']");
+    expect(remainderBands.length).toBeGreaterThan(0);
+    for (const band of remainderBands) expect(band.textContent?.trim()).toBe("");
+    expect(view.querySelector("[data-silence-note='allocatable']")?.textContent).toContain("allocatable remainder");
     scroller.scrollTop = 120;
 
     await act(async () => {
@@ -158,10 +169,12 @@ describe("instrument prototype", () => {
     expect(view.querySelector("[data-reach-strip]")?.getAttribute("data-reach-job")).toBe("resting");
     expect(scroller.scrollTop).toBe(120);
 
-    const focus = view.querySelector('[aria-label="Context focus"]') as HTMLSelectElement;
     await act(async () => {
-      focus.value = LAB_ID;
-      focus.dispatchEvent(new Event("change", { bubbles: true }));
+      buttonNamed(view, "Focus: Everything").click();
+    });
+    expect(scroller.scrollTop).toBe(120);
+    await act(async () => {
+      buttonNamed(view, "TeamLab").click();
     });
     const blockAfter = view.querySelector('[data-source-id="block-1"]') as HTMLElement;
     const workAfter = view.querySelector('[data-source-kind="work_schedule"]') as HTMLElement;
@@ -175,15 +188,23 @@ describe("instrument prototype", () => {
     expect(scroller.scrollTop).toBe(120);
 
     await act(async () => {
+      buttonNamed(view, "Day").click();
+    });
+    expect(scroller.scrollTop).toBe(120);
+    expect(view.querySelector("[data-field]")).not.toBeNull();
+    await act(async () => {
       buttonNamed(view, "Week").click();
     });
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("week");
     expect(view.querySelector("[data-compressed-field]")).not.toBeNull();
     expect(view.querySelector("[data-direction-plane]")).toBeNull();
-    expect(view.textContent).not.toContain("Allocatable remainder");
+    expect(view.querySelector("[data-silence-note='allocatable']")).toBeNull();
     expect(view.textContent).not.toContain("Protect this time");
     expect(view.querySelector("[data-compressed-field] input")).toBeNull();
 
+    await act(async () => {
+      buttonNamed(view, "Week").click();
+    });
     await act(async () => {
       buttonNamed(view, "Month").click();
     });
@@ -196,6 +217,9 @@ describe("instrument prototype", () => {
     scroller.scrollTop = 120;
     expect(direction.scrollTop).toBe(30);
 
+    await act(async () => {
+      buttonNamed(view, "Month").click();
+    });
     await act(async () => {
       buttonNamed(view, "Day").click();
     });
@@ -235,6 +259,45 @@ describe("instrument prototype", () => {
     });
     expect(calls).toHaveLength(1);
     expect(calls[0]?.meaning).toBe("protected_time");
+  });
+
+  it("keeps verbal detail in inspection while shared minutes stay referable", async () => {
+    const view = await renderView();
+    const scroller = view.querySelector("[data-field-scroll]") as HTMLElement;
+    scroller.scrollTop = 80;
+    const surface = view.querySelector("[data-time-surface]") as HTMLElement;
+    for (const id of ["block-1", "commitment-1"]) {
+      const article = view.querySelector(`[data-source-id="${id}"]`) as HTMLElement;
+      article.getBoundingClientRect = () =>
+        ({
+          x: 0,
+          y: 0,
+          left: 0,
+          top: 0,
+          right: 40,
+          bottom: 40,
+          width: 40,
+          height: 40,
+          toJSON() {
+            return {};
+          },
+        }) as DOMRect;
+    }
+    await act(async () => {
+      surface.dispatchEvent(pointer("pointerdown", 3));
+      surface.dispatchEvent(pointer("pointerup", 3));
+    });
+    expect(scroller.scrollTop).toBe(80);
+    expect(view.textContent).toContain("These facts share this point.");
+    expect(view.querySelector('[data-source-id="block-1"]')?.textContent).not.toContain("Write");
+    await act(async () => {
+      buttonNamed(view, "Block · Write").click();
+    });
+    const inspection = view.querySelector("[data-fact-inspection]");
+    expect(inspection?.textContent).toContain("Write");
+    expect(inspection?.textContent).toMatch(/10:00|AM/);
+    expect(view.querySelector('[data-source-id="block-1"]')?.textContent).not.toContain("Write");
+    expect(scroller.scrollTop).toBe(80);
   });
 
   it("withholds a failed temporal read instead of painting a bare clock", async () => {

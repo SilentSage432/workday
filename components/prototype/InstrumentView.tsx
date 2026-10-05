@@ -38,6 +38,7 @@ import {
   compressedPlacement,
   explicitCivilSpan,
   factsContainingPoint,
+  labelStackIndex,
   markEmphasis,
   minuteFraction,
   PROTOTYPE_MONTH_LENGTH,
@@ -49,6 +50,7 @@ import {
   reachStripJob,
   shiftedAnchor,
   threadLine,
+  threadRestingWeight,
   type ContextFocus,
   type PrototypeQuestion,
 } from "@/components/prototype/instrumentModel";
@@ -68,6 +70,7 @@ import { composeDayCanvas, type DayCanvasModel, type DayCanvasTimedPlacement } f
 import type { TimelineFact, TimelineSourceKind } from "@/projections/timeline";
 
 const buttonClass = "min-h-11 border border-stone-500 bg-stone-900 px-3 text-left text-base text-stone-100";
+const edgeClass = "min-h-11 border border-stone-500 bg-stone-900 px-2 text-base text-stone-100";
 const fieldClass = "mt-1 w-full border border-stone-600 bg-stone-950 px-2 py-2 text-base text-stone-100";
 
 export type ThreadReading =
@@ -289,6 +292,15 @@ export function InstrumentView({
     factReferenced: factReference !== null,
     directionInspection: directionId !== null,
   });
+  const threadText = threadLine({
+    status: thread.status === "ready" ? "ready" : thread.status,
+    active: thread.status === "ready" ? thread.active : false,
+    resumeTitle: thread.status === "ready" ? thread.resumeTitle : null,
+  });
+  const threadWeight = threadRestingWeight({
+    status: thread.status === "ready" ? "ready" : thread.status,
+    active: thread.status === "ready" ? thread.active : false,
+  });
   const step = prototypeSpanStep(question);
   const dateLabel = formatCivilDateLabel(anchor);
 
@@ -400,35 +412,31 @@ export function InstrumentView({
       <aside
         data-reach-strip="true"
         data-reach-job={job}
-        className="max-h-[28vh] min-h-0 overflow-y-auto border-t border-stone-600 md:max-h-none md:w-80 md:border-t-0 md:border-l"
+        data-reach-resting={job === "resting" ? "compact" : "expanded"}
+        className={
+          job === "resting"
+            ? "shrink-0 overflow-y-auto border-t border-stone-600 md:w-80 md:border-t-0 md:border-l"
+            : "max-h-[42vh] shrink-0 overflow-y-auto border-t border-stone-600 md:max-h-none md:w-80 md:border-t-0 md:border-l"
+        }
       >
-        <div className="flex flex-col gap-3 p-3">
-          <p data-active-thread="true">
-            {threadLine({
-              status: thread.status === "ready" ? "ready" : thread.status,
-              active: thread.status === "ready" ? thread.active : false,
-              resumeTitle: thread.status === "ready" ? thread.resumeTitle : null,
-            })}
+        <div className="px-3 py-2">
+          <p
+            data-active-thread="true"
+            data-thread-weight={threadWeight}
+            className={threadWeight === "quiet" ? "text-xs text-stone-500" : "text-base"}
+          >
+            {threadText}
           </p>
-          <div className="flex flex-wrap gap-2" data-question-control="true">
-            {(Object.keys(QUESTION_LABEL) as PrototypeQuestion[]).map((item) => (
-              <button
-                key={item}
-                type="button"
-                className={buttonClass}
-                aria-pressed={question === item}
-                onClick={() => chooseQuestion(item)}
-              >
-                {QUESTION_LABEL[item]}
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <QuestionControl question={question} onChoose={chooseQuestion} />
+            <FocusControl contexts={contexts} focus={focus} onFocus={setFocus} />
+            {job === "resting" ? (
+              <button type="button" className={edgeClass} onClick={() => setCaptureOpen(true)}>
+                Capture
               </button>
-            ))}
+            ) : null}
+            <AccountDisclosure onSignOut={onSignOut} />
           </div>
-          <FocusControl contexts={contexts} focus={focus} onFocus={setFocus} />
-          {job === "resting" ? (
-            <button type="button" className={buttonClass} onClick={() => setCaptureOpen(true)}>
-              Capture
-            </button>
-          ) : null}
           {job === "capture" ? (
             <div>
               {capture}
@@ -470,11 +478,49 @@ export function InstrumentView({
               onClose={() => setDirectionId(null)}
             />
           ) : null}
-          <button type="button" className={buttonClass} onClick={onSignOut}>
-            Sign out
-          </button>
         </div>
       </aside>
+    </div>
+  );
+}
+
+function QuestionControl({
+  question,
+  onChoose,
+}: {
+  question: PrototypeQuestion;
+  onChoose: (question: PrototypeQuestion) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div data-question-control="true">
+      <button
+        type="button"
+        className={edgeClass}
+        aria-expanded={open}
+        aria-label={`Question, ${QUESTION_LABEL[question]}`}
+        onClick={() => setOpen((current) => !current)}
+      >
+        {QUESTION_LABEL[question]}
+      </button>
+      {open ? (
+        <div role="group" aria-label="Questions of this time" className="mt-1 flex flex-wrap gap-2">
+          {(Object.keys(QUESTION_LABEL) as PrototypeQuestion[]).map((item) => (
+            <button
+              key={item}
+              type="button"
+              className={edgeClass}
+              aria-pressed={question === item}
+              onClick={() => {
+                onChoose(item);
+                setOpen(false);
+              }}
+            >
+              {QUESTION_LABEL[item]}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -488,35 +534,73 @@ function FocusControl({
   focus: ContextFocus;
   onFocus: (focus: ContextFocus) => void;
 }) {
+  const [open, setOpen] = useState(false);
   if (contexts.status === "failed") {
     return <p>Context focus could not be read.</p>;
   }
+  const name = focus.kind === "everything" ? "Everything" : focus.name;
   return (
-    <label className="block text-sm">
-      Context focus
-      <select
+    <div data-focus-control="true">
+      <button
+        type="button"
+        className={edgeClass}
+        aria-expanded={open}
         aria-label="Context focus"
-        className={fieldClass}
-        value={focus.kind === "context" ? focus.id : ""}
-        onChange={(event) => {
-          const id = event.target.value;
-          if (id.length === 0) {
-            onFocus({ kind: "everything" });
-            return;
-          }
-          const match = contexts.rows.find((context) => context.id === id);
-          if (!match) return;
-          onFocus({ kind: "context", id: match.id, name: match.name });
-        }}
+        onClick={() => setOpen((current) => !current)}
       >
-        <option value="">Everything</option>
-        {contexts.rows.map((context) => (
-          <option key={context.id} value={context.id}>
-            {context.name}
-          </option>
-        ))}
-      </select>
-    </label>
+        Focus: {name}
+      </button>
+      {open ? (
+        <div role="group" aria-label="Context focus choices" className="mt-1 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={edgeClass}
+            aria-pressed={focus.kind === "everything"}
+            onClick={() => {
+              onFocus({ kind: "everything" });
+              setOpen(false);
+            }}
+          >
+            Everything
+          </button>
+          {contexts.rows.map((context) => (
+            <button
+              key={context.id}
+              type="button"
+              className={edgeClass}
+              aria-pressed={focus.kind === "context" && focus.id === context.id}
+              onClick={() => {
+                onFocus({ kind: "context", id: context.id, name: context.name });
+                setOpen(false);
+              }}
+            >
+              {context.name}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function AccountDisclosure({ onSignOut }: { onSignOut: () => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div data-account="true">
+      <button
+        type="button"
+        className="min-h-11 px-1 text-xs text-stone-500"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        Account
+      </button>
+      {open ? (
+        <button type="button" className={`${buttonClass} mt-1`} onClick={onSignOut}>
+          Sign out
+        </button>
+      ) : null}
+    </div>
   );
 }
 
@@ -566,10 +650,10 @@ function AllDayRow({
             data-source-kind={fact.sourceKind}
             data-source-id={fact.sourceId}
             data-emphasis={emphasis}
+            aria-label={fact.accessibleLabel}
             onClick={() => onRefer([{ sourceKind: fact.sourceKind, sourceId: fact.sourceId }])}
           >
             All day · {fact.kindLabel}
-            {fact.primary ? ` · ${fact.primary}` : ""}
             {emphasis === "quiet" ? " · quiet" : ""}
           </button>
         );
@@ -618,6 +702,11 @@ function DayField({
   return (
     <div>
       {model.clockLabelNote ? <p className="px-3 py-2 text-sm">{model.clockLabelNote}</p> : null}
+      {remainder.length > 0 ? (
+        <p data-silence-note="allocatable" className="px-3 py-1 text-xs text-stone-500">
+          Dotted regions inside the shift are {ALLOCATABLE_REMAINDER_LABEL.toLowerCase()}.
+        </p>
+      ) : null}
       <DayClock
         model={model}
         manipulate={questionAllowsEstablishment(question)}
@@ -840,14 +929,12 @@ function DayClock({
         <div
           key={`${band.startMinute}-${band.endMinute}`}
           data-silence="allocatable"
-          className="pointer-events-none absolute right-0 left-0 border border-dotted border-stone-500 px-1 text-xs text-stone-400"
+          className="pointer-events-none absolute right-0 left-0 border border-dotted border-stone-500"
           style={{
             top: `${minuteFraction(band.startMinute) * 100}%`,
             height: `${minuteFraction(band.endMinute - band.startMinute) * 100}%`,
           }}
-        >
-          {ALLOCATABLE_REMAINDER_LABEL}
-        </div>
+        />
       ))}
       {placements.map((placement) => {
         const contextId =
@@ -856,6 +943,9 @@ function DayClock({
             : contextIdFor(placement.sourceKind, placement.sourceId, blocks);
         const emphasis = markEmphasis({ sourceKind: placement.sourceKind, contextId, focus });
         const box = coextensiveFrame(placement);
+        const stack = labelStackIndex(placement, placements);
+        const accessible =
+          emphasis === "quiet" ? `${placement.accessibleLabel} Outside the current focus.` : placement.accessibleLabel;
         return (
           <article
             key={`${placement.sourceKind}:${placement.sourceId}`}
@@ -864,15 +954,15 @@ function DayClock({
             data-emphasis={emphasis}
             data-top={box.top}
             data-height={box.height}
-            className={`pointer-events-none absolute overflow-hidden px-1 text-xs ${emphasisClass(emphasis, placement.sourceKind)}`}
+            data-label-index={stack}
+            aria-label={accessible}
+            className={`pointer-events-none absolute px-1 text-xs ${emphasisClass(emphasis, placement.sourceKind)}`}
             style={box}
           >
-            <p>
+            <p className="absolute left-1" style={{ top: `${stack}rem` }}>
               {placement.kindLabel}
-              {placement.primary ? ` · ${placement.primary}` : ""}
-              {emphasis === "quiet" ? " · quiet" : ""}
+              {emphasis === "quiet" ? " quiet" : ""}
             </p>
-            <p>{placement.shownInterval ?? placement.sourceInterval}</p>
           </article>
         );
       })}
@@ -886,10 +976,10 @@ function DayClock({
       {presentMinute !== null ? (
         <div
           data-present-mark="true"
-          className="pointer-events-none absolute right-0 left-0 border-t-2 border-stone-100 text-xs"
+          className="pointer-events-none absolute right-0 left-0 border-t border-stone-400"
           style={{ top: `${minuteFraction(presentMinute) * 100}%` }}
         >
-          Now
+          <span className="sr-only">Now</span>
         </div>
       ) : null}
     </div>
@@ -942,39 +1032,57 @@ function CompressedField({
             })}
           </div>
           <div className={`relative border-l border-stone-700 ${dense ? "h-8" : "h-14"}`}>
-            {facts.map((fact) => {
-              const placed = compressedPlacement(fact, date, timeZone);
-              if (!placed || placed.placement !== "timed") return null;
-              const emphasis = markEmphasis({
-                sourceKind: fact.sourceKind,
-                contextId: fact.sourceKind === "block" ? fact.contextId : null,
-                focus,
+            {(() => {
+              const timed = facts.flatMap((fact) => {
+                const placed = compressedPlacement(fact, date, timeZone);
+                if (!placed || placed.placement !== "timed") return [];
+                return [
+                  {
+                    fact,
+                    placed,
+                    sourceKind: fact.sourceKind,
+                    sourceId: fact.sourceId,
+                    visibleStartMinute: placed.startMinute,
+                    visibleEndMinute: placed.endMinute,
+                  },
+                ];
               });
-              return (
-                <div
-                  key={`${fact.sourceKind}:${fact.sourceId}`}
-                  data-source-kind={fact.sourceKind}
-                  data-emphasis={emphasis}
-                  className={`absolute top-0 overflow-hidden text-xs ${emphasisClass(emphasis, fact.sourceKind)}`}
-                  style={{
-                    left: `${minuteFraction(placed.startMinute) * 100}%`,
-                    width: `${minuteFraction(placed.endMinute - placed.startMinute) * 100}%`,
-                    height: "100%",
-                  }}
-                  title={fact.sourceKind === "protected_time" ? "Unavailable for allocation." : undefined}
-                >
-                  {compressedKindLabel(fact.sourceKind)}
-                  {emphasis === "quiet" ? " quiet" : ""}
-                </div>
-              );
-            })}
+              return timed.map((item) => {
+                const emphasis = markEmphasis({
+                  sourceKind: item.fact.sourceKind,
+                  contextId: item.fact.sourceKind === "block" ? item.fact.contextId : null,
+                  focus,
+                });
+                const stack = labelStackIndex(item, timed);
+                return (
+                  <div
+                    key={`${item.fact.sourceKind}:${item.fact.sourceId}`}
+                    data-source-kind={item.fact.sourceKind}
+                    data-emphasis={emphasis}
+                    data-label-index={stack}
+                    className={`absolute top-0 text-xs ${emphasisClass(emphasis, item.fact.sourceKind)}`}
+                    style={{
+                      left: `${minuteFraction(item.placed.startMinute) * 100}%`,
+                      width: `${minuteFraction(item.placed.endMinute - item.placed.startMinute) * 100}%`,
+                      height: "100%",
+                    }}
+                    title={item.fact.sourceKind === "protected_time" ? "Unavailable for allocation." : undefined}
+                  >
+                    <span className="absolute top-0" style={{ left: `${stack * 3.25}rem` }}>
+                      {compressedKindLabel(item.fact.sourceKind)}
+                      {emphasis === "quiet" ? " quiet" : ""}
+                    </span>
+                  </div>
+                );
+              });
+            })()}
             {today === date && presentMinute !== null ? (
               <div
                 data-present-mark="true"
-                className="pointer-events-none absolute top-0 bottom-0 border-l-2 border-stone-100 text-xs"
+                className="pointer-events-none absolute top-0 bottom-0 border-l border-stone-400"
                 style={{ left: `${minuteFraction(presentMinute) * 100}%` }}
               >
-                Now
+                <span className="sr-only">Now</span>
               </div>
             ) : null}
           </div>

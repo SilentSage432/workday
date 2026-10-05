@@ -118,6 +118,33 @@ export function threadLine(input: {
   return "A thread is recorded, and its task is not open.";
 }
 
+/** Absence stays legible, with less resting weight than a retained thread. */
+export function threadRestingWeight(input: {
+  status: "loading" | "failed" | "ready";
+  active: boolean;
+}): "quiet" | "ordinary" {
+  if (input.status === "ready" && !input.active) return "quiet";
+  return "ordinary";
+}
+
+/**
+ * Stack index for a word, among marks that share minutes.
+ * The occupancy rectangle stays coextensive. Only the word moves.
+ */
+export function labelStackIndex(
+  placement: { sourceKind: string; sourceId: string; visibleStartMinute: number; visibleEndMinute: number },
+  placements: readonly { sourceKind: string; sourceId: string; visibleStartMinute: number; visibleEndMinute: number }[],
+): number {
+  const cluster = placements.filter(
+    (other) =>
+      other.visibleStartMinute < placement.visibleEndMinute && placement.visibleStartMinute < other.visibleEndMinute,
+  );
+  const index = cluster.findIndex(
+    (other) => other.sourceKind === placement.sourceKind && other.sourceId === placement.sourceId,
+  );
+  return index < 0 ? 0 : index;
+}
+
 /** Full width of the temporal column. Lane is ignored. */
 export function coextensiveFrame(placement: { top: number; height: number; lane?: number }): {
   top: string;

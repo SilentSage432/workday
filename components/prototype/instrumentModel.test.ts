@@ -23,7 +23,9 @@ import {
   questionAllowsEstablishment,
   questionShowsDirection,
   reachStripJob,
+  labelStackIndex,
   threadLine,
+  threadRestingWeight,
 } from "@/components/prototype/instrumentModel";
 
 const directory = fileURLToPath(new URL(".", import.meta.url));
@@ -143,6 +145,20 @@ describe("prototype spatial model", () => {
     expect(threadLine({ status: "ready", active: true, resumeTitle: null })).toBe(
       "A thread is recorded, and its task is not open.",
     );
+    expect(threadRestingWeight({ status: "ready", active: false })).toBe("quiet");
+    expect(threadRestingWeight({ status: "ready", active: true })).toBe("ordinary");
+    expect(threadRestingWeight({ status: "failed", active: false })).toBe("ordinary");
+  });
+
+  it("offsets words among coextensive marks without splitting their minutes", () => {
+    const placements = [
+      { sourceKind: "work_schedule", sourceId: "shift", visibleStartMinute: 9 * 60, visibleEndMinute: 17 * 60 },
+      { sourceKind: "block", sourceId: "write", visibleStartMinute: 10 * 60, visibleEndMinute: 11 * 60 },
+      { sourceKind: "commitment", sourceId: "meet", visibleStartMinute: 10 * 60, visibleEndMinute: 11 * 60 },
+    ];
+    expect(labelStackIndex(placements[1], placements)).toBe(1);
+    expect(labelStackIndex(placements[2], placements)).toBe(2);
+    expect(placements[1].visibleStartMinute).toBe(placements[2].visibleStartMinute);
   });
 
   it("paints coextensive marks without using lanes", () => {
