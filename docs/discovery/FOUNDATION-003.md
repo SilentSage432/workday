@@ -76,6 +76,8 @@ Shift remains a Work primitive. A shift can be represented as a Commitment and s
 
 ## Experience concepts
 
+This ledger is historical. The encounter model is [../decisions/2026-10-05-experience-architecture.md](../decisions/2026-10-05-experience-architecture.md). The sentences below stay as what this ledger recorded.
+
 **Timeline** composes the shape of a day from Commitments, Blocks, Work shifts, planned Tasks, reminders, relevant recurring-obligation occurrences, and meaningful Windows. It is not established as a stored primitive. Today remains intentional planned commitment. Today is not the Timeline.
 
 **Pulse** is a moment of orientation. A reminder is one explicit fact. No Pulse cadence, nagging, or productivity pressure is established. In-app Pulse is enough for the earliest V0.

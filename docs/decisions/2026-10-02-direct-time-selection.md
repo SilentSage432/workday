@@ -91,3 +91,5 @@ The tranche record is [../implementation/V0-011.md](../implementation/V0-011.md)
 V0-012 asks "What does this time mean?" after a settled selection. The answer is a transient intended kind: protect the time, choose a purpose, or add a commitment. It is not stored, and it does not create a fact. See [2026-10-03-temporal-meaning-choice.md](2026-10-03-temporal-meaning-choice.md).
 
 V0-012A keeps that gesture and adds minute refinement of the same range. See [2026-10-03-contextual-temporal-handoff.md](2026-10-03-contextual-temporal-handoff.md).
+
+[2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md) keeps the durable gesture: a short tap refers to an established truth, a hold then drag refers to time, and early movement scrolls. The 220ms hold and the 10px slop stay implementation thresholds. They are not ontology.

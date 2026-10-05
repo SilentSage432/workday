@@ -144,8 +144,8 @@ No UI, route, schema, migration, dependency, change to Destination or Priority s
 - Whether one Priority may serve more than one Destination.
 - How a Month span is selected.
 - Any Month interaction beyond perception, including navigation.
-- Month visual expression.
+- Month visual treatment. Direction beside structure is [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). The exact composition of that adjacency remains open.
 - Context binding of Destination and Priority.
 - Whether Cadence ever becomes a Month input.
 - Recurrence's later participation.
-- The final phone experience and the final desktop experience.
+- Exact phone and desktop spatial composition. The device roles are [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md).

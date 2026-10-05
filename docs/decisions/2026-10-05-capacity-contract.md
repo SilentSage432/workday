@@ -163,8 +163,8 @@ A Task-associated Block may be one explicit input to this reading because it is 
 - What an external temporal fact does to a Capacity reading.
 - Whether any Commitment ever leaves part of its covered territory in remaining discretionary Capacity.
 - The interaction that shows Capacity.
-- Week expression, Month expression, and present-moment expression.
-- Final visual grammar.
+- Week expression, Month expression, and present-moment expression. Typed silence is [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). The visual treatment remains open.
+- Final visual treatment. The grammar of identity, weight, and typed silence is [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). No palette follows from either record.
 - What Task removal does to Blocks that cite the Task.
 - Start, Adjust, and Skip.
 - Whether Capacity participates in Pulse.

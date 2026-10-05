@@ -41,8 +41,9 @@ ARCHITECTURE-001 recorded the runtime, persistence, projection, and delivery dec
 - [2026-10-05-month-contract.md](2026-10-05-month-contract.md)
 - [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md)
 - [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md)
+- [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md)
 
-The architecture those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Unresolved implementation details do not get speculative ADRs.
+The runtime those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md) is how the human encounters Orient. It does not replace that runtime architecture, and it does not build a surface. Unresolved implementation details do not get speculative ADRs.
 
 [2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md) is the current operational-adoption boundary. It records questions it does not answer. [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md) stays the historical product ledger. [../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md) records later semantic discovery. It is not an implementation decision.
 

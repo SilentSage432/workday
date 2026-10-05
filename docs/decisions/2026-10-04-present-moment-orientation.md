@@ -135,7 +135,7 @@ Superseded as naming authority by [2026-10-04-product-name.md](2026-10-04-produc
 
 ### Experience
 
-The experience is not designed. The composition does not require the eventual experience to be named NOW. No card, panel, navigation, visual hierarchy, color, layout, or animation is specified. Earlier visual explorations are not repository authority.
+The composition does not require the eventual experience to be named NOW. How the human encounters that composition is [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). This contract still specifies no card, panel, navigation control, color, layout, or animation. Earlier visual explorations are not repository authority. The surface is not built here.
 
 ## Context
 
@@ -151,7 +151,7 @@ The Active Thread remains the explicit thread from [2026-10-02-active-thread.md]
 - `rankNow` is not authorized. UI code must not invent a cross-group order.
 - No schema, table, migration, route, dependency, or runtime behavior follows from this file.
 - Week, Month, Pulse, Capacity, reminders, and recommendations stay outside this composition. There is no current Context to add later. That decision is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md).
-- The production experience of this orientation remains unresolved and is not designed here. Operational adoption still requires that experience. This file does not build it.
+- The encounter model for this orientation is [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). Operational adoption still requires the unbuilt surface. This file does not build it.
 - The product name remains unresolved in this contract. Later naming authority is [2026-10-04-product-name.md](2026-10-04-product-name.md). The name is Orient. This consequence does not apply that name to titles, routes, or copy.
 
 ## Superseded as composition authority

@@ -186,7 +186,7 @@ Deleting a Context currently sets a citing `context_id` to null and leaves the T
 
 ## Experience Architecture
 
-After this contract, no known remaining foundational semantic ambiguity blocks primary Orient Experience Architecture.
+After this contract, no known remaining foundational semantic ambiguity blocks primary Orient Experience Architecture. The encounter model is now [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). Context focus is a lens over one reality. The exact treatment of Context-neutral truths under that lens stays open there.
 
 Orient is not production-complete. Recurrence, reminders, Pulse, notification delivery, external temporal interoperability, voice ergonomics, production hardening, final production acceptance, and non-Work Capacity boundaries, where a later requirement demands them, stay later. They must respect this ontology.
 

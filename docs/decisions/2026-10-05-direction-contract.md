@@ -156,6 +156,6 @@ This contract does not create goal tracking, OKRs, habit tracking, productivity 
 - Context binding of Destination and Priority. Foundational multi-context meaning, including the refusal to bind Direction here, is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md).
 - the finer boundary among Destination, Objective, and Target
 - whether Cadence explicitly relates to a Priority
-- interaction and visual expression
+- interaction and visual treatment. Direction sits beside temporal structure in [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). Palette, material, and the exact adjacency remain open.
 - Month reading mechanics, Month boundary, and Month UI
 - progress semantics, if a later decision ever authorizes them

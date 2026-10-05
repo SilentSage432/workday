@@ -214,21 +214,21 @@ Week remains a production requirement. [../implementation/WEEK-001.md](../implem
 
 This record closes the semantic meaning of Week shape. WEEK-001 closes the deterministic reading.
 
-It does not close production Week interaction, production Week visual expression, generic or life-wide week-boundary selection, Week Capacity expression, recurrence, Month, experience focus by Context, the final phone experience, or the final desktop experience.
+It does not close production Week interaction, production Week visual treatment, generic or life-wide week-boundary selection, Week Capacity expression, or recurrence. The encounter model, including Week as shape and the phone and desktop roles, is [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). That contract does not build the Week surface.
 
 Operational adoption is not closed.
 
 ## Unresolved
 
 - Any Week interaction beyond perception. The deterministic reading is [../implementation/WEEK-001.md](../implementation/WEEK-001.md).
-- Production Week visual expression.
+- Production Week visual treatment. The encounter constraints are [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md).
 - How a life-wide or default Week boundary is selected.
 - Whether Week later exposes `planned_on`, Due, or Must Do in a non-territorial way.
 - Week expression of individual Capacity readings.
 - Recurrence's later participation in temporal composition.
 - Month interaction beyond perception. The question is [2026-10-05-month-contract.md](2026-10-05-month-contract.md).
-- Experience focus by Context. Week does not require a current Context. The meaning is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md).
-- The final phone experience and the final desktop experience.
+- Experience focus by Context. Week does not require a current Context. The lens is [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md). The meaning is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md).
+- Exact phone and desktop spatial composition. The device roles are [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md).
 
 ## Not authorized
 
