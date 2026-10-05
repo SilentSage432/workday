@@ -110,7 +110,7 @@ Unrelated production blockers stay where that contract already places them.
 
 ## Later
 
-[../implementation/NOTE-REVISIT-001.md](../implementation/NOTE-REVISIT-001.md) proves this relationship inside the existing General Capture surface. "Retained experiences" reads the complete `loadNotes` collection and shows each Note's content and capture instant. It does not add a selected Note, a field, a route, or a Notes application. It is not the production Capture experience. Edit, delete, archive, and the visible establishment-from-Note act remain unresolved.
+[../implementation/NOTE-REVISIT-001.md](../implementation/NOTE-REVISIT-001.md) proves this relationship inside the existing General Capture surface. "Retained experiences" reads the complete `loadNotes` collection and shows each Note's content and capture instant. It does not add a selected Note, a field, a route, or a Notes application. NOTE-REVISIT-001A accepts that scaffold on the Samsung Galaxy S26 Ultra. It is not the production Capture experience. The phone showed the canonical instant as the human-facing time, and opening the collection displaced the content below Capture. Neither observation decides a presentation or a layout. Edit, delete, archive, and the visible establishment-from-Note act remain unresolved. The next Note question is how the human explicitly establishes that a retained experience is the source of a new fact. The Note remains a Note. Reference alone establishes nothing. No `note_id` is authorized.
 
 ## Rejected
 

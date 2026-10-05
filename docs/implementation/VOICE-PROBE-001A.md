@@ -58,4 +58,4 @@ Opening, pressing, expanding, or interacting with the current scaffold controls 
 
 Interaction should preserve spatial continuity. Revealing a control, establishing a fact, or changing interaction state should not unnecessarily displace the temporal territory or the object the user is touching. Something may still move when the meaning of the surface requires it. Incidental reflow should not keep forcing the hand and the attention to find a new place.
 
-The final interaction structure stays unresolved. This sentence does not authorize a repair of the scaffold.
+The final interaction structure stays unresolved. This sentence does not authorize a repair of the scaffold. NOTE-REVISIT-001A later saw the same displacement on the Samsung Galaxy S26 Ultra: opening Retained experiences moved This time, Work, Today, and the task content below Capture. No drawer, sheet, modal, overlay, or navigation destination is chosen.

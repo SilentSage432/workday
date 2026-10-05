@@ -36,7 +36,23 @@ Expression, "Keep as a note," "This is a task," Leave, and Quick Capture keep th
 
 ## Experience evidence
 
-Revealing the list extends the open Capture section downward. What follows Capture on Tasks can move. That movement is not repaired here. It is evidence for the later experience, alongside the spatial-continuity observation in [VOICE-PROBE-001A.md](VOICE-PROBE-001A.md).
+These observations are for the later production experience. They are not failures of the revisit contract. This record does not choose a presentation or an interaction mechanism.
+
+### Human presentation of capturedAt
+
+The scaffold shows the canonical instant directly. On the phone that string was `2026-10-05T01:42:07.693Z`. That string is truthful canonical data. The same observation shows that the machine representation is not an appropriate final human-facing expression of when the experience was retained.
+
+Canonical temporal truth is not the final human presentation of that truth.
+
+`capturedAt` stays the instant the experience was retained. This record does not change that meaning. It does not decide the final presentation. It does not introduce relative time, a civil day, locale formatting, or timezone ownership.
+
+### Spatial continuity
+
+Opening Retained experiences expands General Capture downward. As the collection grows, content beneath Capture moves, including This time, Work, Today, and the task content below the Capture surface.
+
+That displacement reinforces the earlier observation in [VOICE-PROBE-001A.md](VOICE-PROBE-001A.md): interaction should preserve spatial continuity. Revealing retained experience should not unnecessarily force the human to relocate within the surrounding temporal experience.
+
+This record does not redesign Capture. It does not choose a drawer, a sheet, a modal, an overlay, or a navigation destination.
 
 ## Tests
 
@@ -48,6 +64,37 @@ Revealing the list extends the open Capture section downward. What follows Captu
 
 No Notes route, Notes navigation item, folders, notebooks, tags, search, filter, sort control, pin, status, title, Context, reminder, edit, delete, archive, provenance act, or `note_id`. No schema, migration, or dependency.
 
+## NOTE-REVISIT-001A — Primary-device acceptance
+
+Date: 2026-10-04.
+
+Baseline: `6844e1080234348f9e3e9f6292930c0cacee45ec`.
+
+The deployed scaffold was exercised on the Samsung Galaxy S26 Ultra. No application code was changed for this record.
+
+Observed:
+
+1. General Capture exposed Retained experiences.
+2. Opening it returned previously established Notes that had been stored and had no human route back.
+3. The recovered text included "Reminder to check the department", "Remember", and "Remember".
+4. The user recognized them as previously retained experiences.
+5. The path was retain an experience, leave, return later, and revisit the retained experience.
+6. No standalone Notes application was required.
+
+That is acceptance of the semantic and runtime proof: Capture has memory.
+
+It is not acceptance of the final production Capture experience. The two observations above remain open for that later experience.
+
+## Next Note dependency
+
+The next Note-related semantic question is how the human explicitly establishes that a retained experience is the source of a new fact.
+
+The question is not how to convert a Note into a Task.
+
+The Note remains a Note. The new fact is established independently. The human authorizes that fact. The new fact may cite the originating Note. Reference alone establishes nothing.
+
+This record does not specify that act, does not authorize storage, and does not add `note_id`.
+
 ## Acceptance
 
-Automated tests do not accept this on the primary phone. The smallest Samsung Galaxy S26 Ultra probe is: open Hold an experience, reveal retained experiences, confirm a previously retained Note shows its content and capture instant, keep one new Note, reveal again, and confirm that Note is present. Hand and layout notes from that probe are experience evidence. They are not approval of the production Capture experience.
+Automated validation of NOTE-REVISIT-001 was already complete before this record. NOTE-REVISIT-001A accepts the scaffold on the Samsung Galaxy S26 Ultra for the semantic and runtime proof only. Edit, delete, archive, the final Capture experience, and the establishment-from-Note act remain outside this acceptance.
