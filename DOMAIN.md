@@ -102,7 +102,9 @@ An all-day Block is one civil date. A timed Block is a local start and local end
 
 Chosen time is not less important because nobody else imposed it.
 
-**Unresolved:** what Start, Adjust, and Skip change when a Block and the lived day differ. Whether a later version associates Tasks with a Block remains open. Experience before V0-009 suggests a person may drag a Task into time and establish a Block for that allocation. The Task would remain a Task. That relationship is not stored. The user remains authoritative. See [PRODUCT.md](PRODUCT.md).
+A Block may refer to zero or one existing Task. That reference means the human chose this time for executing that action. The Task does not acquire a start, an end, or a duration. Many Blocks may refer to one Task. The Task does not list them. A Block without a Task remains valid. Purpose stays the user's words and is not the Task title. The reference is not provenance. It is not stored yet. The decision is [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md).
+
+**Unresolved:** what Start, Adjust, and Skip change when a Block and the lived day differ. What a future Task removal would do to Blocks that refer to that Task. Capacity remains unresolved.
 
 ## Protected Time
 
@@ -157,7 +159,7 @@ A Task may have:
 - an explicit reminder, independent of both
 - a MUST DO flag
 - completion state
-- an optional association with a Block
+- time the human later chooses for it, as one or more Blocks that refer to the Task, not as coordinates on the Task. The decision is [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md)
 
 These facts stay independent. Planned is not due. A Task may be due Thursday and planned for Monday. Changing the planned day or period must not silently change the due boundary.
 

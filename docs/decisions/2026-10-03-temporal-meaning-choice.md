@@ -20,7 +20,7 @@ The three answers are intentions, not facts:
 
 Work is not one of those answers. A Work shift has its own civil date, shift status or type, and local bounds, including Off and an unknown day. It is not an arbitrary meaning for a selected span. Its management path stays where it is.
 
-A Task is not one of those answers. A Task remains an action required. A later allocation might become a Block associated with a Task. That relationship is not designed here and is not stored.
+A Task is not one of those answers. A Task remains an action required. A later allocation might become a Block associated with a Task. That relationship is not designed here and is not stored. [2026-10-05-task-time-contract.md](2026-10-05-task-time-contract.md) later decides the meaning. It still does not store it, and it does not make a Task one of the three answers on this chooser.
 
 ## Interaction state
 
