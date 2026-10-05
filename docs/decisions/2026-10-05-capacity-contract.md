@@ -173,3 +173,7 @@ A Task-associated Block may be one explicit input to this reading because it is 
 ## Not authorized
 
 No schema, migration, runtime reading, allocator, scheduler, Week surface, Month surface, inferred Current Context, or visual design follows from this record.
+
+## Later
+
+[../implementation/CAPACITY-001.md](../implementation/CAPACITY-001.md) implements the deterministic Work Capacity reading. The question is an explicit civil date. It adds no production interaction, no persistence, and no allocator.

@@ -22,6 +22,8 @@
 
 `presentMomentOrientation.ts` places that reading beside Resume. The two members stay separate. It does not rank them, infer a thread, or infer current Context. It does not read the clock, the network, or Supabase. `components/presentMomentReading.ts` withholds the composition unless the temporal sources, the Active Thread read, and the open-Task read all completed. A failed read is not an empty orientation and not an absent thread. The experience is not built. The record is [docs/implementation/NOW-001.md](../docs/implementation/NOW-001.md).
 
+`capacity.ts` reads remaining territory inside one established Work boundary. The question is an explicit civil date. A scheduled shift for that date may be the boundary. Off and a missing row are no reading. Protected Time, Commitments, and Blocks cover territory inside the boundary once. Overlap is not a winner. The result is remaining intervals and their elapsed milliseconds. It is not Timeline, not Current Temporal Orientation, and not present-moment orientation. It does not know whether a read failed. `components/capacityReading.ts` withholds the reading unless Work, Protected Time, Commitments, and Blocks all loaded for every civil date the boundary touches. There is no production interaction. The records are [docs/decisions/2026-10-05-capacity-contract.md](../docs/decisions/2026-10-05-capacity-contract.md) and [docs/implementation/CAPACITY-001.md](../docs/implementation/CAPACITY-001.md).
+
 `rankNow` is intentionally absent. No ranking function is authorized.
 
 The Work fiscal-week function that proves injected time and an explicit time zone is in `domain/time`.

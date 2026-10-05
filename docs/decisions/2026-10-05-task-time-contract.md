@@ -160,7 +160,7 @@ Protected Time remains unavailable for allocation. A Commitment remains constrai
 
 No allocator, auto-scheduler, optimization, inferred availability, or recommendation follows from the reference.
 
-A Task-associated Block may later be one explicit input to deterministic Capacity reasoning. That reasoning is not defined here. [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md) later defines the bounded reading. The shift can bound it and is not itself Capacity. A Block still does not calculate what remains. The reading may treat covered territory as utilized. Capacity still blocks operational adoption until that reading exists in the product.
+A Task-associated Block may later be one explicit input to deterministic Capacity reasoning. That reasoning is not defined here. [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md) later defines the bounded reading. The shift can bound it and is not itself Capacity. A Block still does not calculate what remains. The reading may treat covered territory as utilized. [../implementation/CAPACITY-001.md](../implementation/CAPACITY-001.md) implements that reading and does not add a production interaction. The interaction still blocks operational adoption.
 
 ## Human authority
 
@@ -172,11 +172,11 @@ A future bounded external interface may request establishment. That interface is
 
 ## Unresolved
 
-- What Capacity means. Answered for the bounded reading by [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md). The reading is not built here.
+- What Capacity means. Answered for the bounded reading by [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md). [../implementation/CAPACITY-001.md](../implementation/CAPACITY-001.md) implements that reading. It is not built by this record.
 - What Task removal does to Blocks that refer to that Task.
 - Start, Adjust, and Skip.
 - The interaction that supplies the Block purpose when the human gives time to a Task.
 - Whether a later projection shows the Task reference on a Block.
 - Reschedule and carry-forward. They do not, by this contract, move Blocks.
 
-TASK-TIME-001 later stores the reference and proves the time-first scaffold. TASK-TIME-001A, in that same record, accepts the hosted schema on `ksmhgaamyheyhefbyglb` and the Samsung Galaxy S26 Ultra establishment path. The semantic contract is unchanged. The scaffold is not the final interaction. Task removal, Start, Adjust, Skip, Task-first placement, and the production experience remain unresolved. The bounded Capacity reading is [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md). It is not built by this record.
+TASK-TIME-001 later stores the reference and proves the time-first scaffold. TASK-TIME-001A, in that same record, accepts the hosted schema on `ksmhgaamyheyhefbyglb` and the Samsung Galaxy S26 Ultra establishment path. The semantic contract is unchanged. The scaffold is not the final interaction. Task removal, Start, Adjust, Skip, Task-first placement, and the production experience remain unresolved. The bounded Capacity reading is [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md). [../implementation/CAPACITY-001.md](../implementation/CAPACITY-001.md) implements it. It is not built by this record.

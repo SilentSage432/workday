@@ -60,7 +60,8 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/decisions/2026-10-04-note-revisit.md](docs/decisions/2026-10-04-note-revisit.md) | Return to a retained Note through Capture. Not a Notes application |
 | [docs/decisions/2026-10-04-provenance-contract.md](docs/decisions/2026-10-04-provenance-contract.md) | Establishment of a Task from a retained Note. Semantics only |
 | [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md) | A Block may refer to one Task. Not Capacity |
-| [docs/decisions/2026-10-05-capacity-contract.md](docs/decisions/2026-10-05-capacity-contract.md) | Bounded Capacity reading. Not built. Not an allocator |
+| [docs/decisions/2026-10-05-capacity-contract.md](docs/decisions/2026-10-05-capacity-contract.md) | Bounded Capacity reading. Not an allocator |
+| [docs/implementation/CAPACITY-001.md](docs/implementation/CAPACITY-001.md) | Deterministic Work Capacity reading. Not a production interaction |
 | [docs/implementation/TASK-TIME-001.md](docs/implementation/TASK-TIME-001.md) | Optional Task reference on a Block. Hosted schema verified. S26 Ultra scaffold accepted. Not drag and drop |
 | [docs/implementation/PROVENANCE-001.md](docs/implementation/PROVENANCE-001.md) | Task citation of one originating Note. Hosted schema verified. S26 Ultra scaffold accepted. Not the production experience |
 | [docs/implementation/NOTE-REVISIT-001.md](docs/implementation/NOTE-REVISIT-001.md) | Scaffold return to retained Notes. Accepted on the Samsung Galaxy S26 Ultra. Not the production experience |
