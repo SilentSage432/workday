@@ -64,4 +64,4 @@ No Note surface. No edit, delete, archive, or revision. No Quick Capture change.
 
 ## Later
 
-[NOTE-STORAGE-001A.md](NOTE-STORAGE-001A.md) corrects the constraint comment in this same migration file. Production rejected a schema-qualified constraint name, and `public.notes` was absent afterward. The storage decision is unchanged.
+[NOTE-STORAGE-001A.md](NOTE-STORAGE-001A.md) corrects the constraint comment in this same migration file. Production rejected a schema-qualified constraint name, and `public.notes` was absent afterward. The storage decision is unchanged. [../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) uses this complete read, and this retrieval order, as the return to retained experience. It adds no write.

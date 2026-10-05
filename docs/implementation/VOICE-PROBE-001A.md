@@ -50,7 +50,7 @@ Immediately after the Note was kept, the user's reaction was effectively: "Where
 
 The write succeeded. The current surface persists the Note and does not show a list of Notes. That matches the implemented contract. It also shows that a production experience cannot leave a retained experience with no earned way back to it.
 
-A way to revisit is not a decision for folders, notebooks, tags, an inbox, a Notes tab, search, or archive.
+A way to revisit is not a decision for folders, notebooks, tags, an inbox, a Notes tab, search, or archive. [../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) later decides that way back: Capture has memory. This observation is unchanged. The runtime is not built here.
 
 ### Spatial continuity
 

@@ -102,7 +102,7 @@ The order is fixed. First the underlying machine is truthful. Then that machine 
 
 Experience work stays downstream of semantic completeness. This contract does not start a visual redesign.
 
-[../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) adds two observations and authorizes no layout work. After a successful Note establishment the user asked where the Note went. The write had succeeded, and there is still no Notes surface. A retained experience needs an earned way to be revisited. That need does not decide folders, notebooks, tags, an inbox, a Notes tab, search, or archive. Opening and expanding the current scaffold often moves surrounding controls. Interaction should preserve spatial continuity. Incidental reflow should not repeatedly force the user to find the same object again. Something may still move when the surface's meaning requires it. Neither observation is a repair of the scaffold.
+[../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) adds two observations and authorizes no layout work. After a successful Note establishment the user asked where the Note went. The write had succeeded, and the scaffold did not show the retained Note. [2026-10-04-note-revisit.md](2026-10-04-note-revisit.md) later decides the way back: Capture has memory. That decision does not choose folders, notebooks, tags, an inbox, a Notes destination, search, or archive, and it does not repair the scaffold. Opening and expanding the current scaffold often moves surrounding controls. Interaction should preserve spatial continuity. Incidental reflow should not repeatedly force the user to find the same object again. Something may still move when the surface's meaning requires it. Neither observation is a repair of the scaffold.
 
 Direction that already holds, and is not a new visual system:
 
@@ -174,13 +174,14 @@ These are already specified, already present, or both. This list does not reopen
 - An open Task can be edited. Save writes its title, optional Context, planned day, due day, and Must Do. Cancel does not write. Remove, reschedule, carry-forward, and reopen remain unresolved. The record is [../implementation/TASK-EDIT-001.md](../implementation/TASK-EDIT-001.md).
 - The interoperability boundary can tell an external fact from a user-created Commitment. Connecting every outside system is not this item.
 - Speech acquisition on the primary phone is device dictation into the existing expression field. [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) passed on the Samsung Galaxy S26 Ultra. No application speech stack is required. This item does not close operational adoption.
+- Notes remain required retained experience. They are not a Notes application. An explicitly established Note remains directly revisitable through the conceptual Capture experience. The collection is the complete `loadNotes` read, in that function's existing order. The meaning is [2026-10-04-note-revisit.md](2026-10-04-note-revisit.md). The runtime is not built. This item does not design that return.
 
 ### Required but unresolved
 
 These block operational adoption. They are not authorized for implementation until the open meaning is decided. Deciding them is a later human act, not a side effect of this contract.
 
 - The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Remove is a named operation and is not implemented. Reopen is not a named operation.
-- How a Note is edited, deleted, and otherwise retained. What a Note means is established. The minimum representation and the provenance reference are decided. A Note can be stored and read. The capture establishment contract is decided. A provisional typed surface can establish one Note or one Task from an expression, or nothing. It is not a Notes management surface, and no fact yet cites a Note. The Note remains when a fact is established from it. The proof is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md). The probe showed that a successful Note can leave the user's view with no earned way back. Revisitability stays unresolved. It does not decide a Notes application.
+- The visible act that establishes a later fact from a retained Note. The optional reference on the derived fact is already the representation. The act is not specified. Storage of that reference is unimplemented. [2026-10-04-note-revisit.md](2026-10-04-note-revisit.md) does not authorize `note_id` and does not specify the act. Revisit semantics are resolved and are not this item. The proof that a Note can be established, and that no fact yet cites one, is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md).
 - The present-moment experience. The composition is decided: Current Temporal Orientation and the Active Thread, with no ranking and no `rankNow`. NOW-001 later implements that projection. The experience is not built, and its interaction is not designed. The experience does not have to be labeled NOW. The records are [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md) and [../implementation/NOW-001.md](../implementation/NOW-001.md).
 - Week as shape, including which interactions are required beyond reading that shape.
 - Month as landscape, including which interactions are required beyond orientation.
@@ -190,7 +191,7 @@ These block operational adoption. They are not authorized for implementation unt
 - When a Pulse occurs, and the Pulse that follows from that decision. In-app is the established delivery scope. A push provider is not chosen.
 - What Capacity means, and what Task-to-time relationship planning uses, without treating unestablished time as available.
 - Which external calendar facts may participate, and with what authority.
-- The production interaction and visual experience, after the semantics it must express are sufficiently complete. Capture ergonomics remain here, including Note revisitability and spatial continuity from [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md). Speech acquisition does not.
+- The production interaction and visual experience, after the semantics it must express are sufficiently complete. Spatial continuity from [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) remains unresolved. Note revisit semantics are resolved. Their runtime is not built, and that gap is not an open meaning. Speech acquisition does not belong in this item.
 
 ### Future, and not a condition of operational adoption
 
@@ -211,6 +212,23 @@ These block operational adoption. They are not authorized for implementation unt
 
 Push delivery is in this group. Reminders and an in-app Pulse are not. The historical sentence that bundled voice, push, and Google Calendar as followers of first use is superseded only for voice, and for the claim that operational adoption can happen before the interoperability boundary is real. It is not superseded into a requirement to ship push or to connect every calendar.
 
+### Note closure
+
+PRODUCTION-AUDIT-002 identified that a retained Note had no earned way back. [2026-10-04-note-revisit.md](2026-10-04-note-revisit.md) is the semantic answer. This table is that closure. It does not move any unrelated blocker.
+
+| Matter | Status |
+| --- | --- |
+| Note revisit semantics | Resolved. Capture has memory. |
+| Note revisit runtime | Unimplemented. |
+| Note edit | Not required for operational adoption. Semantics not decided. |
+| Note delete | Not required for operational adoption. Semantics not decided. |
+| Note archive | Not required for operational adoption. Semantics not decided. |
+| Provenance establishment act | Unresolved. |
+| Provenance storage and runtime | Unimplemented. No `note_id`. |
+| Notes as a product | Required retained experience. Not a Notes application. |
+
+Edit, delete, and archive are not in Required but unresolved, and they are not in Future. Leaving them out of both lists does not make a Note immutable or undeletable. Their semantics wait for an independent decision.
+
 ### Destination and Priority
 
 [../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md) establishes Destination and Priority as conceptual meanings. See [../../DOMAIN.md](../../DOMAIN.md).
@@ -221,7 +239,7 @@ Their production implementation classification is unresolved. They are not added
 
 Not answered in this contract. Item 9 was later answered. The experience of that composition was not.
 
-1. How is a Note edited, deleted, and otherwise retained? What a Note means is established. Representation, and the reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The capture establishment contract is [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md). A provisional typed path can establish a Note or a Task from an expression. The Note is not consumed when a fact is established from it. Storage and a complete read exist. Editing, a Notes management surface, and a fact reference do not. The proof is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md). [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) showed that a kept Note can leave the user's view. How it is revisited is still unanswered.
+1. How is a Note edited, deleted, and otherwise retained? What a Note means is established. Representation, and the reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The capture establishment contract is [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md). A provisional typed path can establish a Note or a Task from an expression. The Note is not consumed when a fact is established from it. Storage and a complete read exist. [2026-10-04-note-revisit.md](2026-10-04-note-revisit.md) answers the return: an established Note stays directly revisitable through the conceptual Capture experience. Selecting it means the human is referring to that retained experience. The runtime is not built. Edit, delete, and archive are not required for operational adoption. Their semantics remain undecided, and the Note is not thereby immutable or undeletable. The visible act that establishes a later fact from a Note remains unanswered. No fact reference is stored. The proof that establishment does not yet cite a Note is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md).
 2. Is a recurring-obligation occurrence itself a Task, related to a Task, capable of producing a Task, or a distinct completed occurrence?
 3. What exactly do reschedule and carry-forward mean, including their relationship to Must Do?
 4. Can Task completion be undone or reopened?

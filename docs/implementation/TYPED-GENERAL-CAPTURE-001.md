@@ -67,3 +67,7 @@ No interpretation, classification, candidate, confidence, runtime model, voice, 
 `components/generalCapture.test.tsx` covers typing and editing without a write, one Note, one Task, Leave, a failed Note retry, a new Note after an edit, and a failed Task with no Note.
 
 `persistence/note.test.ts` covers the caller-supplied Note id and `capturedAt` on insert.
+
+## Later
+
+[../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) decides the return to a retained Note through the conceptual Capture experience. This tranche still does not show that return, and it still does not add a Notes application.

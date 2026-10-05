@@ -167,7 +167,7 @@ A capture-result table, an inbox, a draft table, a transcript table, an unproces
 
 ## Unresolved
 
-Note editing, deletion, and the rest of Note lifecycle. The visible form of the establishment act. Where a typed general-capture interaction sits. Speech capture, transcription, and any provider. Whether a later decision authorizes a bounded proposer. Any future deterministic grammar. How, if ever, language lawfully supplies the fields a temporal fact already requires. The column that cites an originating Note, which is added only by the tranche that first establishes a fact from a Note.
+Note editing, deletion, and archive. [2026-10-04-note-revisit.md](2026-10-04-note-revisit.md) places those three outside operational adoption and does not decide them. It also decides the return to a retained Note through Capture, and it does not build that return. The visible form of the establishment act. Where a typed general-capture interaction sits. Speech capture, transcription, and any provider. Whether a later decision authorizes a bounded proposer. Any future deterministic grammar. How, if ever, language lawfully supplies the fields a temporal fact already requires. The column that cites an originating Note, which is added only by the tranche that first establishes a fact from a Note. The visible act of that later establishment is not specified by the revisit decision.
 
 ## Context
 
@@ -175,4 +175,4 @@ Notes can be stored and read. Quick Capture establishes a Task directly. The day
 
 ## Later
 
-[../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md) proves this contract with typed input. The surface is provisional, on Tasks, below Quick Capture. It establishes one Note, one Task, or nothing. It does not classify text, add storage, or implement voice. Final placement and final wording remain open. Note lifecycle remains unresolved. [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) shows that, on the primary phone, keyboard dictation supplies the same expression. Speech still establishes nothing by itself. No provider and no origin field were added.
+[../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md) proves this contract with typed input. The surface is provisional, on Tasks, below Quick Capture. It establishes one Note, one Task, or nothing. It does not classify text, add storage, or implement voice. Final placement and final wording remain open. [2026-10-04-note-revisit.md](2026-10-04-note-revisit.md) later decides the return to a retained Note. This proof still does not show that return. Edit, delete, and archive remain undecided. [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) shows that, on the primary phone, keyboard dictation supplies the same expression. Speech still establishes nothing by itself. No provider and no origin field were added.
