@@ -28,7 +28,7 @@ No architectural decision is made here. Decisions belong in [../decisions/README
 
 ### Experience
 
-- NOW is the conceptual center and should eventually answer: where am I in my shift; what was I doing; what needs my attention right now; what comes next.
+- NOW is the conceptual center and should eventually answer: where am I in my shift; what was I doing; what needs my attention right now; what comes next. Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). The sentence stays as the question this ledger asked.
 - Defining interaction: Resume → previous cadence/activity.
 - Capture and reorientation should take seconds. Completion should generally be one simple interaction.
 - Voice capture is a major desired capability. Preferred processing is deterministic: transcription may come from the device or browser; explicit rules may recognize aisle, bay, action, priority, and date/time; unrecognized speech stays verbatim.
@@ -81,7 +81,7 @@ These appeared as preferences, examples, or future possibilities. They are not p
 ## Unresolved product questions
 
 1. What are the semantics of MUST DO, TODAY, and CAPTURED? Are they states, flags, capture buckets, or a mix, and are they mutually exclusive? MUST DO is also described as a persistent mark.
-2. What selection and ordering rules let NOW answer its four questions?
+2. What selection and ordering rules let NOW answer its four questions? Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). This ledger does not contain that answer.
 3. What does Resume restore — a cadence step, a task, an observation, or a thread — and what is "previous" after stacked interruptions?
 4. When and how does an Observation become a Task, and what form does an observation keep when it is not this user's work?
 5. What do reschedule and carry-forward mean across a shift, a day, and the fiscal week?

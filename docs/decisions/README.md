@@ -30,6 +30,7 @@ ARCHITECTURE-001 recorded the runtime, persistence, projection, and delivery dec
 - [2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md)
 - [2026-10-04-note-representation.md](2026-10-04-note-representation.md)
 - [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md)
+- [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md)
 
 The architecture those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Unresolved implementation details do not get speculative ADRs.
 

@@ -2,6 +2,8 @@
 
 Date: 2026-10-02.
 
+NOW-CONTRACT-001 later decided the first present-moment composition. It is Current Temporal Orientation and the Active Thread. It is not a cross-group order and not an unfinished hierarchy. The sentences below that mention an unfinished NOW hierarchy, or a missing cross-group order, record this 2026-10-02 decision. They are not authority to invent `rankNow`. See [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md).
+
 ## Decision
 
 NOW, Timeline, Today, Pulse, and Resume presentation are pure projections. They are not tables.

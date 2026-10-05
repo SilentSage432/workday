@@ -40,7 +40,7 @@ These are already established. This record does not reinterpret them.
 - Save is an authority boundary.
 - Tasks do not silently become temporal facts.
 - The Active Thread changes only through explicit user action.
-- Current temporal orientation preserves simultaneous truths. It is not NOW.
+- Current temporal orientation preserves simultaneous truths. Alone, it is not the present-moment composition. That composition is Current Temporal Orientation and the Active Thread, in [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md). It is not built here.
 - An empty temporal reading does not mean free, available, or open.
 - The UI must not claim authority the domain has not earned.
 
@@ -50,7 +50,7 @@ Work remains a deeply modeled Context: schedule, shift type, the discovered cade
 
 Family, TeamLab, and Financial are not labels that can stand in for a temporal foundation. Production adoption requires the architecture and the experience to relate temporal orientation to Context honestly. It does not require those Contexts to copy Work's cadence or Work's projections.
 
-Still unresolved, and not decided here: how a Context becomes current; whether Context can be inferred from established temporal facts; multi-Context membership; Context transitions; context-aware NOW.
+Still unresolved, and not decided here: how a Context becomes current; whether Context can be inferred from established temporal facts; multi-Context membership; Context transitions. Present-moment orientation does not infer current Context. That refusal is [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md).
 
 ## Temporal resolutions
 
@@ -65,7 +65,7 @@ The production system includes four resolutions:
 
 Week and Month block operational adoption. They are not built. This contract does not authorize building them. Reading and interaction beyond the roles already stated are unresolved. Do not invent those interactions here.
 
-Day remains the exact temporal canvas already under construction. NOW is not the V0-016 list of facts that contain the current instant. That list may feed a later NOW. It is not one.
+Day remains the exact temporal canvas already under construction. The V0-016 list is Current Temporal Orientation. The present-moment composition is that reading together with the Active Thread. The experience is not the list, and it is not built. The decision is [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md).
 
 ## Voice
 
@@ -181,7 +181,7 @@ These block operational adoption. They are not authorized for implementation unt
 
 - The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Remove is a named operation and is not implemented. Reopen is not a named operation.
 - How a Note is edited, deleted, and otherwise retained. What a Note means is established. The minimum representation and the provenance reference are decided. A Note can be stored and read. The capture establishment contract is decided. A provisional typed surface can establish one Note or one Task from an expression, or nothing. It is not a Notes management surface, and no fact yet cites a Note. The Note remains when a fact is established from it. The proof is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md). The probe showed that a successful Note can leave the user's view with no earned way back. Revisitability stays unresolved. It does not decide a Notes application.
-- NOW as a coherent orientation experience, including which composition it uses. `rankNow` is not assumed.
+- The present-moment experience. The composition is decided: Current Temporal Orientation and the Active Thread, with no ranking and no `rankNow`. It is not built, and its interaction is not designed. The experience does not have to be labeled NOW. The record is [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md).
 - Week as shape, including which interactions are required beyond reading that shape.
 - Month as landscape, including which interactions are required beyond orientation.
 - Multi-context temporal behavior that is honest for Family, TeamLab, and Financial, without a decision yet on how Context becomes current.
@@ -219,7 +219,7 @@ Their production implementation classification is unresolved. They are not added
 
 ## Questions that remain human authority
 
-Not answered here.
+Not answered in this contract. Item 9 was later answered. The experience of that composition was not.
 
 1. How is a Note edited, deleted, and otherwise retained? What a Note means is established. Representation, and the reference from a later fact to its originating Note, are decided in [2026-10-04-note-representation.md](2026-10-04-note-representation.md). The capture establishment contract is [2026-10-04-capture-establishment-contract.md](2026-10-04-capture-establishment-contract.md). A provisional typed path can establish a Note or a Task from an expression. The Note is not consumed when a fact is established from it. Storage and a complete read exist. Editing, a Notes management surface, and a fact reference do not. The proof is [../implementation/TYPED-GENERAL-CAPTURE-001.md](../implementation/TYPED-GENERAL-CAPTURE-001.md). [../implementation/VOICE-PROBE-001A.md](../implementation/VOICE-PROBE-001A.md) showed that a kept Note can leave the user's view. How it is revisited is still unanswered.
 2. Is a recurring-obligation occurrence itself a Task, related to a Task, capable of producing a Task, or a distinct completed occurrence?
@@ -229,7 +229,7 @@ Not answered here.
 6. How does a Context become current?
 7. What does Capacity mean without treating unestablished time as available?
 8. What Task and temporal-fact relationship supports planning or allocation?
-9. What composition should NOW use without the UI inventing importance? Do not assume `rankNow` is required.
+9. What composition should NOW use without the UI inventing importance? Answered by [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md): Current Temporal Orientation and the Active Thread, as independent truths, with no ranking. The experience and any user-facing name remain open. No next behavior was authorized.
 10. Which external calendar facts may participate, and with what authority?
 11. What Week interactions are required beyond reading temporal shape?
 12. What Month interactions are required beyond landscape and orientation?

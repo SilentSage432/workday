@@ -2,7 +2,7 @@
 
 Date: 2026-10-02.
 
-This is the architecture for V0. It does not scaffold the app, choose a NOW ranking, or change product semantics. Product authority remains the canonical documents. [FOUNDATION-003.md](../discovery/FOUNDATION-003.md) defines what V0 is.
+This is the architecture for V0. It does not scaffold the app, choose a NOW ranking, or change product semantics. Product authority remains the canonical documents. [FOUNDATION-003.md](../discovery/FOUNDATION-003.md) defines what V0 is. NOW-CONTRACT-001 later refused a ranking for the first present-moment composition. That composition is Current Temporal Orientation and the Active Thread. It is not built here. The decision is [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md).
 
 Operational adoption is not this document's first deploy or first day of use. That boundary is [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md). Deferred items below are what ARCHITECTURE-001 refused to build. They do not waive voice, Week, Month, Capacity, a truthful read path, or a later production experience where the contract says those block adoption. Push delivery, a service worker, and connecting every external system remain outside that requirement.
 
@@ -50,14 +50,14 @@ V0's hot path does not use that server. The browser talks to Supabase under row-
 
 ### Deferred
 
-These are deferred from the V0 architecture tranche. [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md) is the later adoption classification. Speech acquisition on the primary phone is proven by device dictation and does not block as an unbuilt speech system. The NOW composition, Capacity, and a production visual experience still block operational adoption even though this list refused to build them here. Push, offline queues, a cadence editor, and watch surfaces stay non-blocking unless a later decision says otherwise.
+These are deferred from the V0 architecture tranche. [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md) is the later adoption classification. Speech acquisition on the primary phone is proven by device dictation and does not block as an unbuilt speech system. The present-moment experience, Capacity, and a production visual experience still block operational adoption even though this list refused to build them here. The composition itself is later decided and is not a ranking. Push, offline queues, a cadence editor, and watch surfaces stay non-blocking unless a later decision says otherwise.
 
 - Google Calendar implementation, OAuth, and write-back
 - Push delivery and watch surfaces
 - Voice capture. No grammar is established. The establishment contract is [../decisions/2026-10-04-capture-establishment-contract.md](../decisions/2026-10-04-capture-establishment-contract.md).
 - Offline mutation queues
 - A cadence editor, window editor, and workspace administration
-- NOW ranking policy
+- NOW ranking policy. Later refused for the first present-moment composition. No `rankNow` is authorized. The experience remains unbuilt.
 - A visual design system
 
 ## Client and server boundary
@@ -78,7 +78,7 @@ Capture may update the local snapshot immediately and then persist. If the persi
 
 The engine is a set of pure functions. It takes a domain snapshot and a clock. It returns projections. It does not read the network, the system clock, or the database itself. Tests pass the clock in.
 
-Conceptual boundary, not implementation:
+Conceptual boundary, not implementation. The `now` field below is the 2026-10-02 sketch. It is not the present-moment composition. That composition is Current Temporal Orientation and the Active Thread, and it is not this function.
 
 ```ts
 project({ snapshot, clock }): {
@@ -91,7 +91,7 @@ project({ snapshot, clock }): {
 
 `clock` carries an instant, the user's time zone, and an operational date. The operational date is an input so tests stay honest. It is not a product decision that a life-day is midnight to midnight. What a day means is still unresolved in the product.
 
-The snapshot may include current time only via the clock, plus Contexts, Commitments, Blocks, planned Tasks, due boundaries, MUST DO, reminders, the Active Thread, Work shifts, Work Windows, and recurring-obligation definitions with their completion records.
+The snapshot may include current time only via the clock, plus Contexts, Commitments, Blocks, planned Tasks, due boundaries, MUST DO, reminders, the Active Thread, Work shifts, Work Windows, and recurring-obligation definitions with their completion records. That list is what the engine may be given. It is not the input list of present-moment orientation.
 
 The engine must not:
 
@@ -107,9 +107,11 @@ A deadline and a target may each be reported as factually past. Those are differ
 
 ### Ranking seam
 
+Superseded for the first present-moment composition by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). That composition is Current Temporal Orientation and the Active Thread. It is not `NowProjection`, and it has no `rankNow`. The paragraphs below record the 2026-10-02 sketch. They are not authority to group Must Do, due facts, or reminders into the present moment, and they are not authority to add a ranking function.
+
 `NowProjection` returns labeled groups: active thread, overlapping blocks, overlapping commitments, must-do tasks, due facts, reminders, and other established groups as the product already names them. It does not return one ranked list.
 
-The only legal place for cross-group order is a future function, `rankNow`. That function does not exist yet. Components must not sort groups themselves. FOUNDATION-003 requires a useful NOW and also leaves the hierarchy undecided. The architecture keeps that tension visible instead of hiding an order in the UI.
+The only legal place for cross-group order is a future function, `rankNow`. That function does not exist yet. Components must not sort groups themselves. FOUNDATION-003 requires a useful NOW and also leaves the hierarchy undecided. The architecture keeps that tension visible instead of hiding an order in the UI. Those two sentences described an open hierarchy. The later contract closes it by refusing the hierarchy. Components still must not sort groups themselves.
 
 Work cadence steps and Work windows such as Power Hour are constants in the domain module, compiled from [CADENCE.md](../../CADENCE.md) and [TIME_MODEL.md](../../TIME_MODEL.md). They are not user-editable tables in V0.
 
@@ -135,7 +137,7 @@ V0-012A draws that handoff over the day canvas and lets the same selection be re
 
 V0-013 turns that selection into an existing Protected Time, Block, or Commitment only when the user saves it. The canvas does not insert a row itself. Schedule calls the existing create functions and reloads the day. The decision is [../decisions/2026-10-03-explicit-temporal-establishment.md](../decisions/2026-10-03-explicit-temporal-establishment.md).
 
-V0-016 adds `projections/currentTemporalOrientation.ts`. It takes a supplied instant, the confirmed IANA zone, and already loaded Work schedule entries, Protected Time, Blocks, and Commitments. It returns every one of those facts that contains the instant, still as separate facts. It does not rank them, store a row, or read Tasks or the Active Thread. It is not `NowProjection`. The decision is [../decisions/2026-10-03-current-temporal-orientation.md](../decisions/2026-10-03-current-temporal-orientation.md).
+V0-016 adds `projections/currentTemporalOrientation.ts`. It takes a supplied instant, the confirmed IANA zone, and already loaded Work schedule entries, Protected Time, Blocks, and Commitments. It returns every one of those facts that contains the instant, still as separate facts. It does not rank them, store a row, or read Tasks or the Active Thread. It is not `NowProjection`. Together with the Active Thread it is the later present-moment composition, which is not built in this architecture. The decisions are [../decisions/2026-10-03-current-temporal-orientation.md](../decisions/2026-10-03-current-temporal-orientation.md) and [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md).
 
 ## Persistence
 
@@ -313,7 +315,7 @@ Create these when scaffolding starts. Do not create them in this tranche.
 app/             Next.js routes and layouts. No projection policy.
 components/      Presentation. Renders projections it is given.
 domain/          Types, invariants, Work cadence and window constants, fiscal week. No React. No IO.
-projections/     Pure temporal engine and the future rankNow seam.
+projections/     Pure temporal engine. Present-moment orientation is not a rankNow seam.
 persistence/     Supabase mapping to domain objects.
 integrations/    External adapters. Empty of Google calls until that work is authorized.
 ```
@@ -324,7 +326,7 @@ Bootstrap also adds the manifest, environment template, and Vitest. It does not 
 
 Adoption classification of these items is in [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md). An open item is not thereby optional for operational adoption.
 
-- The NOW ranking function
+- The NOW ranking function. Superseded. The first present-moment composition does not rank, and `rankNow` is not authorized. The experience remains unbuilt.
 - The product definition of a day
 - Multi-context membership
 - Whether a shift row is ever also a commitment row
@@ -341,4 +343,4 @@ Adoption classification of these items is in [../decisions/2026-10-03-operationa
 
 If this architecture is accepted, BOOTSTRAP-001 may connect the Git remote, make the first implementation commit, push `main`, scaffold Next.js, install the accepted dependencies, create the folders above, add the environment template, connect a Supabase project only after the user creates that dedicated project, prepare Vercel, and run the type and test baseline.
 
-BOOTSTRAP-001 must not invent a schema, a NOW ranking, a calendar integration, or a service worker while doing that.
+BOOTSTRAP-001 must not invent a schema, a NOW ranking, a calendar integration, or a service worker while doing that. A later contract still refuses that ranking.

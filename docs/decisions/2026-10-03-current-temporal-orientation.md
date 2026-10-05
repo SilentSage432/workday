@@ -2,6 +2,8 @@
 
 Date: 2026-10-03.
 
+NOW-CONTRACT-001 later places this projection beside the Active Thread as the first present-moment composition. This projection remains one independent truth. It is still not the composition by itself, still not persisted, and still not `rankNow`. The sentence below that this projection is not NOW stays true of the projection alone. See [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md).
+
 ## Decision
 
 `projectCurrentTemporalOrientation` returns the established temporal facts that contain a supplied instant.
@@ -15,6 +17,8 @@ Work contributes at most the shift that existing Work orientation already treats
 The Active Thread is not an input. A current Block does not establish a thread. A thread does not create a temporal fact.
 
 This projection is a primitive a future NOW can use. It is not NOW. There is no `/now` route and no `rankNow`.
+
+The words "a future NOW" record this 2026-10-03 decision, when the composition was still open. They are not authority to treat the composition as undecided, or to add `rankNow`. The projection remains one input. The experience that might later be called NOW is still unbuilt and does not have to use that name.
 
 Timeline is unchanged. Its input is still a civil range, not an instant.
 

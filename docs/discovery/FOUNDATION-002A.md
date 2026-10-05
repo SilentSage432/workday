@@ -41,7 +41,7 @@ FOUNDATION-002's unresolved behavioral questions remain unresolved. Where they m
 These were treated as properties of the whole product. They are now Work discovery, or retired as universal claims.
 
 - The product is a workday navigator, or exists only for Lowe's, retail, or employment.
-- NOW begins at "where am I in my shift?"
+- NOW begins at "where am I in my shift?" The later present-moment composition also does not begin there, and it does not begin by choosing a Context. See [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md).
 - Shift is the top-level temporal container for everything.
 - Cadence means only how the user moves through a shift type.
 - The shift clock, store clock, and Lowe's week clock are the product's time model.
@@ -107,7 +107,7 @@ Unresolved. `workday` is the repository and folder name only. Do not rename it i
 3. Does every Note belong to a Context? Same position as the Task question.
 4. Can a Task relate to more than one Context?
 5. Can multiple Contexts preserve suspended Active Threads at the same time?
-6. How does NOW choose a Context?
+6. How does NOW choose a Context? Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). Present-moment orientation does not choose a Context. How a Context becomes current remains unresolved.
 7. Does the user explicitly enter or switch Context, can time provide it, or some combination?
 8. How do system-level Today and a Context-specific cadence interact?
 9. What constitutes a day for the broader product?
@@ -118,7 +118,7 @@ Unresolved. `workday` is the repository and folder name only. Do not rename it i
 14. What non-work cadences actually exist?
 15. What should the product be named?
 
-Also unresolved, and easy to confuse with the new primitive: provenance "context" on a Note converted to a Task is originating information. It is not a decision that the Task belongs to a Context. Whether NOW surfaces "what did I need to remember," or only Capture and Notes do, is not decided. NOW's five questions do not yet include that as a separate line.
+Also unresolved, and easy to confuse with the new primitive: provenance "context" on a Note converted to a Task is originating information. It is not a decision that the Task belongs to a Context. Whether NOW surfaces "what did I need to remember," or only Capture and Notes do, is not decided. NOW's five questions do not yet include that as a separate line. Those five questions are superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). A Note is not part of the first composition. Whether a later experience surfaces one remains open.
 
 ## Scenario check
 

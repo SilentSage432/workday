@@ -128,7 +128,7 @@ Destination, then Priority, then cadence or repeated execution, then observable 
 
 That is not a persisted hierarchy and not a project tree. Not every Task requires a Priority. Not every Note requires a Destination. Not every Priority requires a metric. Not every Destination requires completion criteria. The system should know relatively few things deeply through explicit relationships.
 
-These meanings do not replace the temporal architecture. Time remains the canvas. Protected Time, Commitment, Block, Task, Active Thread, Timeline, and current temporal orientation keep their existing semantics. Capacity stays unresolved and is not defined here. Timeline semantics are unchanged. NOW composition is not defined. No ranking is created.
+These meanings do not replace the temporal architecture. Time remains the canvas. Protected Time, Commitment, Block, Task, Active Thread, Timeline, and current temporal orientation keep their existing semantics. Capacity stays unresolved and is not defined here. Timeline semantics are unchanged. NOW composition is not defined in this discovery. No ranking is created. Present-moment orientation was later decided in [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). Destination and Priority are not inputs to that composition.
 
 Context stays a meaningful area or operating mode. Destination and Priority are not folded into it. A Context may relate to several Destinations and Priorities. That relationship is not authorized. How Context becomes current stays unresolved.
 
@@ -162,7 +162,7 @@ Destination and Priority are established conceptual meanings. Their production i
 - whether accumulated Notes should expose repeated observations
 - Capacity
 - Task-to-time planning
-- NOW composition
+- NOW composition, as left open here; the later present-moment decision is the composition, and the experience is not built
 - Week interactions
 - Month interactions
 - how a Context becomes current

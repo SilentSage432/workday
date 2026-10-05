@@ -20,14 +20,14 @@ Canonical behavior lives in the root documents. This file records the decisions,
 6. **MUST DO is a persistent flag** on a Task (`mustDo` true or false as conceptual semantics only). It is not a bucket, not a mutually exclusive state, not a score, and not inferred. It stays prominent until the user completes, reschedules, or removes the Task. Exact lifecycle effects of those acts may remain open.
 7. **Today is temporal commitment,** not a Task type. It is work the user intentionally committed to this workday or shift. A Task may be planned for Today and still due later.
 8. **Planned and due are independent.** Due answers when it needs to be completed by. Planned answers when the user currently intends to work on it. A Task may have either fact alone, both, or an explicit reminder independent of both. Changing the planned day does not silently change the due boundary.
-9. **Today stays intentional.** It does not automatically collect every unresolved Task. Future-due work may exist outside Today. Other explicit facts can still make a Task relevant to NOW: an approaching reminder, a due boundary, MUST DO, or an Active Thread.
+9. **Today stays intentional.** It does not automatically collect every unresolved Task. Future-due work may exist outside Today. Other explicit facts can still make a Task relevant to NOW: an approaching reminder, a due boundary, MUST DO, or an Active Thread. Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). Those facts are not inputs to the first present-moment composition merely because they exist. The Active Thread is one of the two truths. A reminder, a due boundary, and Must Do are not.
 10. **The Active Thread is the explicit working context Resume uses.** An interruption does not clear it. Workday does not detect interruptions or explain them. "Previous" is not an arbitrary earlier Task. Intentional change of context changes the Active Thread. Completion or explicit abandonment removes it from Resume.
 11. **Recurring Obligation is a first-class primitive.** The definition is separate from the occurrence for a fiscal period. Completing the occurrence satisfies that period, stops burdening later shifts in the period, and leaves the definition in place. Bay Audits and Cycle Counts are current requirements, not the whole primitive. No recurrence algorithm is defined.
 12. **Absolute operational time and shift-relative time both exist** and are not interchangeable. Power Hour (10:00 AM–2:00 PM) and the FSR morning target are absolute. FSR is not modeled solely as a offset from shift start. Start of shift, early shift, final hour, and closeout are shift-relative examples. Phase boundaries are not defined.
 13. **Deadline, target, and objective stay distinct.** A deadline is a required completion boundary. A target is a preferred completion point and must not be silently promoted to a deadline. An objective is a desired operating condition, not automatically a Task. Thursday department readiness is an objective. FSR's morning language is a target on the clock: intended before approximately 10:00 AM, outer expectation approximately 11:00 AM.
 14. **Time is context, not judgment.** Interrupted or later cadence is resumed, not shamed. Framing such as "OVERDUE BY 62 MINUTES," "YOU ARE BEHIND," or "FAILED" is rejected unless a future explicit requirement needs factual overdue status. Even then the presentation stays factual.
 
-NOW's deterministic attention hierarchy is required later and is not finalized. Candidate inputs are listed in [PRODUCT.md](../../PRODUCT.md). They are not an approved order.
+NOW's deterministic attention hierarchy is required later and is not finalized. Candidate inputs were listed in PRODUCT.md at the time: current time, current date, Commitment boundaries, Block boundaries, Work shift boundaries, operational Windows, explicit reminders, due boundaries, planned work, MUST DO, the Active Thread, recurring-obligation occurrences, and Context. They are not an approved order. Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). The hierarchy was refused. It is not an open ordering. Current PRODUCT.md no longer carries that list.
 
 ## FOUNDATION-001 items resolved
 
@@ -51,7 +51,7 @@ Partially resolved:
 
 ## Remaining unresolved product questions
 
-1. NOW's selection order. Candidates are recorded. They are not ranked.
+1. NOW's selection order. Candidates are recorded. They are not ranked. Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). There is no selection order to finish.
 2. Which user action sets the Active Thread, and what happens to the prior thread when the user switches context. Completion and explicit abandonment already remove a thread from Resume.
 3. How a Task's active/resumable relationship relates to the single Active Thread if those facts diverge.
 4. What reschedule changes on planned day, due boundary, and the MUST DO flag. What carry-forward means across a shift, a day, and the fiscal week.
@@ -100,7 +100,7 @@ The familiar Next.js, React, TypeScript, and Tailwind direction remains a prefer
 
 ## Candidate questions for the next tranche
 
-- Validate a NOW ordering against realistic workday scenarios. Do not treat the candidate list as that ordering.
+- Validate a NOW ordering against realistic workday scenarios. Do not treat the candidate list as that ordering. Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). No ordering was authorized.
 - Define how the user sets and replaces an Active Thread, including the prior thread.
 - Decide whether a period occurrence is a Task, and what the user sees after early completion.
 - Define reschedule and carry-forward without coupling planned and due.

@@ -8,11 +8,11 @@ Behavior below is the intended product. Work was the first deeply discovered Con
 
 A directional statement, not final copy:
 
-> The system helps the user understand where they are in their day, what currently matters, what they intended this time for, what they were doing before interruption, and what comes next.
+> The system helps the user regain orientation in the lived present: which established temporal truths contain this instant, and which Task the user has explicitly established as their current intention.
 
-The system should know relatively few concepts and understand their relationships deeply. NOW should eventually be a deterministic projection of what is true at the current moment. Its ranking is not finalized.
+The system should know relatively few concepts and understand their relationships deeply. Present-moment orientation is that deterministic composition. It is not a ranking, and it is not persisted. The decision is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 
-Explicit facts that projection may use include current time, current date, Commitment boundaries, Block boundaries, Work shift boundaries, operational Windows, explicit reminders, due boundaries, planned work, MUST DO, the Active Thread, recurring-obligation occurrences, and Context. These are candidate inputs, not an approved order.
+An earlier directional statement asked where the user is in the day, what currently matters, what the time was intended for, what they were doing before interruption, and what comes next. That wording is historical. It is not authority for this composition to decide what matters or what the user should do. The still earlier sentence, externalize intentions and return the user to an intended course after interruption, remains the human purpose of reorientation: restore evidence, without a recommendation.
 
 ## Sustained importance
 
@@ -34,7 +34,7 @@ The emerging loop is descriptive. It is not a workflow the user must step throug
 
 **Interrupt.** Reality changes the intended course. The product does not require every interruption to be recorded, and it does not detect interruptions.
 
-**Orient.** NOW and Pulse restore temporal orientation.
+**Orient.** Present-moment orientation restores two kinds of evidence: the established temporal truths that contain this instant, and the Active Thread. Pulse remains a separate orientation moment. Its behavior is unresolved. Neither decides what the user should do.
 
 **Resume.** The user may return to the Active Thread.
 
@@ -42,23 +42,31 @@ The emerging loop is descriptive. It is not a workflow the user must step throug
 
 When reality and a planned Block differ, favored interactions are Start, Resume, Adjust, and Skip. They are not judgments. Resume is specified below. What Start, Adjust, and Skip write is unresolved.
 
-## NOW
+## Present-moment orientation
 
-NOW is the conceptual orientation surface for the whole system, and the primary surface of V0.
+The smallest truthful present-moment composition is Current Temporal Orientation together with the Active Thread. The decision is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 
-NOW should eventually help answer:
+It is a deterministic projection. It is not persisted canonical truth. It is not a table, a route, or a ranking. The eventual experience does not have to be named NOW. That experience is not designed here, and it is not built.
 
-1. What context am I operating in?
-2. Where am I in the cadence I intended?
-3. What was I doing, and what is my Active Thread?
-4. What needs my attention now?
-5. What comes next?
+Current Temporal Orientation answers which established temporal truths contain the supplied current instant. The Active Thread answers what Task the user has explicitly established as their current intention. They are independent. Neither establishes, validates, ranks, or overrides the other. They may agree, disagree, overlap conceptually, or one may be absent. Keeping both preserves temporal reality and explicit human intention.
 
-This is not a finalized interface contract. Family, TeamLab, and Financial have no discovered cadence, so question 2 stays unanswered there rather than invented. A Block can still say what the user intended the time for. A Commitment can still say what is fixed.
+An empty Current Temporal Orientation means only that no established temporal fact contains this instant. It does not mean free, available, allocatable, unoccupied, nothing important, nothing planned, or nothing to do.
 
-The product should also help the user recover what they needed to remember. That job belongs to Capture and Notes. Whether NOW itself surfaces a Note is not decided.
+No Active Thread means only that no current Task intention has been explicitly established. The system does not infer one.
 
-**Unresolved:** the attention hierarchy, including how NOW chooses a Context, and whether the user enters or switches Context, time supplies it, or some combination.
+The first composition contains only those two truths. Today Tasks, all open Tasks, Must Do, Due, Planned, Notes, Destination, Priority, Cadence, reminders, Pulse, Capacity, inferred Context, current Context, upcoming temporal facts, the next Commitment, arbitrary nearby Tasks, and recommendations are not inputs merely because the data exists. A later orientation experience may include one of them only after its relationship to present orientation is independently established.
+
+The composition does not determine what matters right now, a highest priority, urgency, a best next action, or what the user should do next. A next temporal boundary, a next temporal fact, a next planned Task, a next due Task, and the next thing the user should do are not equivalent. No next behavior is authorized.
+
+Current Context is not inferred from the Active Thread, from Work, from a Block, a Commitment, or Protected Time, or from whichever fact contains the instant. Task Context and temporal-fact Context stay properties of those source truths. How a Context becomes current remains unresolved.
+
+After interruption, the composition can restore the two kinds of evidence above. That is reorientation, not a recommendation. The system does not infer an interruption and does not store interruption state.
+
+The product should also help the user recover what they needed to remember. That job belongs to Capture and Notes. Whether a later orientation experience surfaces a Note is not decided. A Note is not part of this composition.
+
+Earlier questions — which Context is operating, where the user is in a cadence, what needs attention now, and what comes next — and the unfinished attention hierarchy are superseded as the composition. Family, TeamLab, and Financial still have no discovered cadence. A Block can still say what the user intended a span for. A Commitment can still say what is fixed. Those facts participate here only when they contain the supplied instant. The historical wording remains in the foundation ledgers.
+
+V0-016 is the Current Temporal Orientation reading on Tasks. It is one input. It is not this composition, and this composition is not built.
 
 ## Timeline
 
@@ -81,7 +89,7 @@ Work Off is not occupied time. A missing Work row is unknown and is not occupied
 
 Planned Tasks, reminders, relevant recurring-obligation occurrences, and meaningful Windows remain intended composition sources. They are not part of the V0-009 projection. A planned Task and a Block meet time for different reasons. Today is not the Timeline.
 
-The day surface is where the user selects time, refines it, says what that time means, and then explicitly establishes that fact. V0-013 does that for Protected Time, a Block, and a Commitment. That slice does not edit an existing fact. V0-015 later edits and deletes those three kinds. Work on the canvas stays without those actions. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. NOW is where the user is inside that truth. Week, Month, and NOW are not built. They are part of the intended production system and block operational adoption. Further Week and Month interactions are unresolved, and naming those roles does not authorize building them. V0-016 lists, on Tasks, the established facts that contain the current instant. That list is not NOW. It does not rank the facts, and it does not read the Active Thread.
+The day surface is where the user selects time, refines it, says what that time means, and then explicitly establishes that fact. V0-013 does that for Protected Time, a Block, and a Commitment. That slice does not edit an existing fact. V0-015 later edits and deletes those three kinds. Work on the canvas stays without those actions. A week surface can show where the week is already spoken for, where a purpose was chosen, and where nothing is established. A month surface is broad orientation. Present-moment orientation is the lived instant inside established truth: Current Temporal Orientation and the Active Thread. Week, Month, and that experience are not built. They are part of the intended production system and block operational adoption. Further Week and Month interactions are unresolved, and naming those roles does not authorize building them. The present-moment decision does not design the experience. V0-016 lists, on Tasks, the established facts that contain the current instant. That list is Current Temporal Orientation. It does not rank the facts, and it does not read the Active Thread.
 
 Experience before V0-009 suggests the user may drag a Task into time. The Task would remain a Task. The allocation would be a Block associated with that Task. That relationship is not stored.
 
@@ -93,16 +101,9 @@ Today remains the user's intentional commitment of work to the current day. It i
 
 A Pulse is a moment of temporal orientation. A reminder tells the user about one explicit fact or attention point. A Pulse restores a sense of where the day is.
 
-Directional questions a Pulse may serve:
+Directional questions a Pulse may serve remain unresolved. They are not the present-moment composition, and they do not authorize that composition to decide importance or a next action. "What currently matters" and "what is next" are not answers present-moment orientation gives. A next temporal boundary, a next temporal fact, a next planned Task, a next due Task, and the next thing the user should do are not the same question.
 
-- Where am I in my day?
-- What is this time intended for?
-- What currently matters?
-- What was I doing?
-- What is next?
-- How much usable time exists before the next fixed Commitment?
-
-No notification cadence is defined. Repeated nagging is not a Pulse. Productivity pressure is not a Pulse. Opening the app, or a transition in the day, might later be Pulse moments. Exact behavior is to be discovered through use.
+No notification cadence is defined. Repeated nagging is not a Pulse. Productivity pressure is not a Pulse. Opening the app, or a transition in the day, might later be Pulse moments. Exact behavior is to be discovered through use. Pulse is not an input to the first present-moment composition.
 
 V0 should be capable of an in-app Pulse. It does not require push infrastructure.
 
@@ -118,15 +119,15 @@ If life interrupts the user, the thread does not disappear. The product does not
 
 "Previous" is not an arbitrary earlier Task. If the user intentionally changes thread, the Active Thread changes and the previous Task stays open. If that thread is completed or explicitly left, it is no longer offered for Resume. Ending a Work shift, changing Context, or reaching a Block's clock time does not by itself abandon the thread.
 
-V0 establishes the thread with Start on one open Task. Leave thread clears it without completing the Task. The thread is that one relationship. It is not a separate active flag on the Task, and it is not inferred from MUST DO, a planned day, or a due date. The storage decision is [docs/decisions/2026-10-02-active-thread.md](docs/decisions/2026-10-02-active-thread.md).
+V0 establishes the thread with Start on one open Task. Leave thread clears it without completing the Task. The thread is that one relationship. It is not a separate active flag on the Task, and it is not inferred from MUST DO, a planned day, or a due date. It does not establish, validate, rank, or override Current Temporal Orientation. That projection does not establish the thread. The storage decision is [docs/decisions/2026-10-02-active-thread.md](docs/decisions/2026-10-02-active-thread.md). The composition is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 
 **Unresolved:** whether more than one Context can retain a suspended thread at the same time. V0 keeps only the one current thread.
 
 ## Reorientation
 
-Reorientation should take seconds. A useful prompt points at the thread to resume, for example "Resume: Cycle Counts." It does not recite a backlog, and it does not treat a late step as failure. See [TIME_MODEL.md](TIME_MODEL.md).
+Reorientation should take seconds. After interruption, present-moment orientation restores which established temporal truths contain the instant, and which Task the user explicitly established as the Active Thread. A useful prompt may point at that thread, for example "Resume: Cycle Counts." It does not recite a backlog, choose a next action, or treat a late step as failure. The system does not infer the interruption. See [TIME_MODEL.md](TIME_MODEL.md) and [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 
-When useful, the product makes elapsed time, current position, the next Commitment, the intended Block, and the open time before the next fixed Commitment legible. Legibility is not control.
+When useful, the product makes elapsed time, current position, the next Commitment, the intended Block, and the open time before the next fixed Commitment legible. Legibility is not control. That sentence is not the present-moment composition. It does not put the next Commitment into that composition, and it does not authorize a next action. A next temporal boundary, a next temporal fact, a next planned Task, a next due Task, and what the user should do next are not equivalent.
 
 ## Capture
 
@@ -238,7 +239,7 @@ Production interaction and visual experience are required after the underlying s
 
 V0 is the historical name for the smallest system that could generate real use. Text and in-app behavior were described as enough to start. Voice, push, and Google Calendar were allowed to follow that first usable core. That first-use gate is superseded for operational adoption by the contract above. The numbered list remains the record of what V0 named. It is not permission to adopt an unfinished system, and it is not permission to implement an item whose meaning is still unresolved.
 
-1. **NOW.** A useful projection of the current day from facts the system knows. The full attention hierarchy stays open.
+1. **NOW.** Present-moment orientation. The first composition is Current Temporal Orientation and the Active Thread. It is not built. It does not rank, and it does not choose what the user should do. The earlier attention hierarchy is not that composition. The decision is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. V0-010 shows one civil day of that projection. V0-011 can select a transient local-clock span on that day. V0-012 can name a transient intended meaning for that span. V0-012A can refine that span on the canvas before the meaning is chosen, and can still refine it afterward. V0-013 can establish the span as Protected Time, a Block, or a Commitment after an explicit Save. It does not edit an existing fact. Planned Tasks are not on that projection yet.
 3. **Capture.** Create a Task or a Note quickly, or establish nothing. Text was sufficient for first use. Voice does not block that historical first use. On the primary phone, keyboard dictation supplies spoken expression text, and that acquisition does not block adoption as missing technology. What a Note means is established. The establishment contract is decided. A provisional typed proof exists. No application speech stack is implemented. Transcription is not chosen.
 4. **Tasks.** Create, edit, complete, an optional due boundary, a planned day, MUST DO, and a Context when the user assigns one. Not project management.
@@ -273,9 +274,9 @@ Browser or PWA capabilities were not authorized by the original V0 text. ARCHITE
 
 ### Experience the model must be able to describe
 
-The user opens the system. NOW says where they are in the day. The Timeline can show a fixed Commitment, a protected Block, planned Tasks, and a Work shift when one exists. The user captures a Task in seconds and marks it MUST DO. They establish an Active Thread. They are interrupted. They return. NOW can offer Resume. A Block ends. The next Commitment is visible. The system helps the transition without judging them.
+The user opens the system. Present-moment orientation can show which established temporal truths contain the instant, and the Active Thread when one has been explicitly established. The Timeline can show a fixed Commitment, a protected Block, planned Tasks, and a Work shift when one exists. The user captures a Task in seconds and marks it MUST DO. They establish an Active Thread. They are interrupted. They return. Resume can offer that same thread. A Block ends. The system helps the transition without judging them.
 
-That day is the experience this section describes. It is not implemented here.
+That day is the experience this section describes. It is not implemented here. The sentence that once made the next Commitment visible as part of this return is historical. It does not authorize next behavior, and it does not put the next Commitment, Must Do, or planned Tasks into the first present-moment composition.
 
 ### Acceptance
 

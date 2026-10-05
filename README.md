@@ -6,17 +6,17 @@ This repository holds the product truth for a personal, single-user, time-aware 
 
 A directional statement, not final copy:
 
-> The system helps the user understand where they are in their day, what currently matters, what they intended this time for, what they were doing before interruption, and what comes next.
+> The system helps the user regain orientation in the lived present: which established temporal truths contain this instant, and which Task the user has explicitly established as their current intention.
 
-The conceptual center is **NOW**. **Resume** returns the user to the Active Thread. **Timeline** shows the shape of the day. **Pulse** is a moment of orientation, distinct from a reminder about one fact.
+Present-moment orientation is that composition: Current Temporal Orientation and the Active Thread. It is not persisted, and it does not decide what the user should do. The experience does not have to be named NOW. **Resume** returns the user to the Active Thread. **Timeline** shows the shape of a requested range. **Pulse** is a separate orientation moment, distinct from a reminder about one fact. The decision is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md). An earlier statement that asked what currently matters and what comes next is historical. It is not this composition.
 
 Established Contexts, not an exhaustive list and not silos: **Work**, **Family**, **TeamLab**, and **Financial**.
 
 ## Current phase
 
-**V0-017, not operationally adopted.** Typed quick capture is the resting state on Tasks and Schedule. Schedule can establish, edit, and delete Protected Time, a Block, or a Commitment on one selected civil day. Tasks can show Resume and the established facts that contain the current instant. That list is not NOW.
+**V0-017, not operationally adopted.** Typed quick capture is the resting state on Tasks and Schedule. Schedule can establish, edit, and delete Protected Time, a Block, or a Commitment on one selected civil day. Tasks can show Resume and the established facts that contain the current instant. That list is Current Temporal Orientation. It is one input to present-moment orientation, not the composition, and the composition is not built.
 
-NOW, Week, and Month are not built. They block operational adoption. Week and Month interactions beyond their roles are unresolved. The adoption boundary is [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md). "Does not block first use" is the historical V0 gate, not this boundary. Phone acceptance of a tranche is not operational adoption.
+Present-moment orientation, Week, and Month are not built. They block operational adoption. The composition is decided and is not a ranking. Its experience and any user-facing name remain unresolved. Week and Month interactions beyond their roles are unresolved. The adoption boundary is [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md). The composition is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md). "Does not block first use" is the historical V0 gate, not this boundary. Phone acceptance of a tranche is not operational adoption. The product name remains unresolved.
 
 Today, Resume, Work orientation, Timeline, and current temporal orientation are projections. They are not tables. The day canvas is a view of Timeline, not a table.
 
@@ -54,7 +54,8 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/implementation/V0-013.md](docs/implementation/V0-013.md) | Explicit establishment of a selected range |
 | [docs/implementation/V0-014.md](docs/implementation/V0-014.md) | Addressing an established fact |
 | [docs/implementation/V0-015.md](docs/implementation/V0-015.md) | Edit and delete of an established fact |
-| [docs/implementation/V0-016.md](docs/implementation/V0-016.md) | Current temporal orientation. Not NOW |
+| [docs/implementation/V0-016.md](docs/implementation/V0-016.md) | Current temporal orientation. One input, not the composition |
+| [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md) | Present-moment orientation. Not an implementation |
 | [docs/implementation/V0-017.md](docs/implementation/V0-017.md) | Typed quick capture |
 | [docs/implementation/P0-INTEGRITY-001.md](docs/implementation/P0-INTEGRITY-001.md) | Complete temporal reads and honest partial failure |
 | [docs/implementation/TASK-INTEGRITY-001.md](docs/implementation/TASK-INTEGRITY-001.md) | Complete open-task reads. Today uses that collection |

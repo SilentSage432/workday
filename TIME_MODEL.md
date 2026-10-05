@@ -44,13 +44,13 @@ Timeline composes temporal truth. It does not resolve temporal truth. Time is th
 
 If a Block's clock time arrives and life is different, the user remains authoritative. The product favors Start, Resume, Adjust, and Skip over judgment. Exact effects of Start, Adjust, and Skip are not defined. Resume is defined in [PRODUCT.md](PRODUCT.md).
 
-The product should make elapsed time, current position, the next Commitment, the intended Block, and the open interval before the next fixed Commitment legible when that helps orientation. That requirement is not permission to nag. Notification overload is a failed design. No Pulse cadence is defined.
+The product should make elapsed time, current position, the next Commitment, the intended Block, and the open interval before the next fixed Commitment legible when that helps orientation. That requirement is not permission to nag. Notification overload is a failed design. No Pulse cadence is defined. That sentence is not the present-moment composition. It does not put the next Commitment into that composition, and it does not authorize a next action. A next temporal boundary, a next temporal fact, a next planned Task, a next due Task, and what the user should do next are not equivalent. The composition is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 
 ## External temporal sources
 
 An external temporal source supplies time-related facts and keeps provenance. The product must not silently claim ownership of those facts.
 
-Google Calendar is the first identified source. The user already uses it. A Google Calendar event may later be represented as a Commitment and participate in Timeline, NOW, and Pulse. Reading that truth and writing back to the calendar are separate authority decisions. Neither direction, nor any API or account model, is chosen.
+Google Calendar is the first identified source. The user already uses it. A Google Calendar event may later be represented as a Commitment and participate in Timeline, present-moment orientation, and Pulse. In present-moment orientation it would participate only as a Commitment that contains the supplied instant, beside whatever else contains that instant. That participation does not authorize a ranking or a next action. Reading that truth and writing back to the calendar are separate authority decisions. Neither direction, nor any API or account model, is chosen.
 
 A Commitment entered in this application is stored with origin `user_created`. Google Calendar is not connected. No event id, sync token, or write-back is stored. When an external source exists, that source keeps authority over edit and delete. That authority is not decided here.
 
@@ -73,7 +73,7 @@ Named positions:
 - final hour
 - closeout
 
-The Work schedule supplies today's start, end, and shift type. See [PRODUCT.md](PRODUCT.md). V0-003 stores those facts. V0-004 can say whether a supplied instant is before, during, or after the operative shift, including a shift that continues after midnight. It does not define the phase boundaries below. Remaining shift time is a Work fact NOW should eventually be able to reflect while that shift is underway.
+The Work schedule supplies today's start, end, and shift type. See [PRODUCT.md](PRODUCT.md). V0-003 stores those facts. V0-004 can say whether a supplied instant is before, during, or after the operative shift, including a shift that continues after midnight. It does not define the phase boundaries below. Remaining shift time is a Work orientation fact. It is not an additional input to the first present-moment composition. While the shift contains the instant, Current Temporal Orientation can already include that shift as one established fact. The composition is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 
 **Unresolved:** the boundaries of these positions. No durations or clock times are defined for them. "Lunch" has no established time. These labels are a Work form of relative position, not a required shape for every Context.
 
@@ -147,6 +147,6 @@ The product supports absolute clock time. It also supports relative cadence posi
 
 When the user is in Work, the three clocks locate the shift, the store day, and the fiscal week. They are one Context's time structure.
 
-They do not answer NOW for the whole product by themselves. NOW's first question is which Context is operating. They do not set a universal week. A clock phase does not replace the Active Thread.
+They do not answer present-moment orientation for the whole product by themselves. That composition is Current Temporal Orientation and the Active Thread. It does not infer which Context is operating. Current Context remains unresolved. They do not set a universal week. A clock phase does not replace the Active Thread. The decision is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 
 They do not, by themselves, decide notifications, shame the user for an interrupted plan, or assign store work to this user.

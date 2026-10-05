@@ -6,6 +6,8 @@ Historical product record for the close of pure foundation. ARCHITECTURE-001 lat
 
 Sentences below that say voice does not block first use, or that Google Calendar does not block the first run, describe the V0 first-use gate as of this ledger. They are not the operational-adoption boundary. That boundary is [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md). This file is not rewritten to match it.
 
+Sentences below that leave NOW's selection order open, or that describe an unfinished ranking of the lived moment, record this ledger. They are not current composition authority. That authority is [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). This file is not rewritten to match it.
+
 This tranche canonizes life evidence gathered after FOUNDATION-002A and defines V0, the smallest system worth using for a real day. It does not build that system. It does not choose a framework, database, host, authentication, notification provider, speech provider, or calendar API.
 
 [FOUNDATION-001.md](FOUNDATION-001.md), [FOUNDATION-002.md](FOUNDATION-002.md), and [FOUNDATION-002A.md](FOUNDATION-002A.md) stay historical.
@@ -19,6 +21,8 @@ FOUNDATION-002A generalized the product and refused to invent life outside Work.
 The directional purpose, not final copy:
 
 > The system helps the user understand where they are in their day, what currently matters, what they intended this time for, what they were doing before interruption, and what comes next.
+
+That directional wording is historical. Where it asks the system to determine what currently matters or what comes next, it is not composition authority. The current statement is in [../../PRODUCT.md](../../PRODUCT.md). The composition is [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md).
 
 The system does not manage the user's life. It helps the user remain temporally oriented inside the life they have chosen.
 
@@ -76,7 +80,7 @@ Shift remains a Work primitive. A shift can be represented as a Commitment and s
 
 **Pulse** is a moment of orientation. A reminder is one explicit fact. No Pulse cadence, nagging, or productivity pressure is established. In-app Pulse is enough for the earliest V0.
 
-**External temporal source.** Supplies facts and keeps provenance. Google Calendar is the first identified source. An event may be represented as a Commitment and may participate in Timeline, NOW, and Pulse. Read and write-back are separate authority decisions. Neither is chosen. The product must not claim ownership of external facts. Manual commitments can exist first. The first running app need not include Google Calendar.
+**External temporal source.** Supplies facts and keeps provenance. Google Calendar is the first identified source. An event may be represented as a Commitment and may participate in Timeline, NOW, and Pulse. Later composition authority limits present-moment participation to a Commitment that contains the supplied instant. See [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). Read and write-back are separate authority decisions. Neither is chosen. The product must not claim ownership of external facts. Manual commitments can exist first. The first running app need not include Google Calendar.
 
 Wealth Engine and DeptSync keep authority over their own truth. No integration and no API.
 
@@ -110,7 +114,7 @@ One complete real day as the user's primary orientation layer, without a second 
 
 | Step | Result |
 | --- | --- |
-| Open the system; NOW places the user in the day | Representable as a projection of known facts. The ranking of those facts is still open, so "where" is not a finished layout. |
+| Open the system; NOW places the user in the day | Representable as a projection of known facts. The ranking of those facts is still open, so "where" is not a finished layout. Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). The composition does not rank. |
 | Timeline shows a Commitment, a Block, planned Tasks, and a shift when one exists | Representable. They stay different kinds of facts. |
 | Capture a Task in seconds and mark MUST DO | Representable. Text capture and the flag are both in V0. |
 | Establish an Active Thread, leave, return, Resume | Representable. The user sets the thread. The product does not detect the interruption. |
@@ -134,7 +138,7 @@ Behavioral questions left open in FOUNDATION-002 remain open unless this file or
 
 ## Remaining product questions
 
-1. NOW's selection order, including Commitment and Block boundaries among the candidate facts.
+1. NOW's selection order, including Commitment and Block boundaries among the candidate facts. Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). There is no selection order. A Commitment or a Block participates only when it contains the supplied instant, as one Current Temporal Orientation fact among others.
 2. How a Context becomes current: explicit switch, time, or both.
 3. Whether a Task or Note can belong to more than one Context.
 4. Whether several Contexts can retain suspended Active Threads.
