@@ -43,8 +43,9 @@ ARCHITECTURE-001 recorded the runtime, persistence, projection, and delivery dec
 - [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md)
 - [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md)
 - [2026-10-05-production-experience-gate.md](2026-10-05-production-experience-gate.md)
+- [2026-10-05-production-experience-design.md](2026-10-05-production-experience-design.md)
 
-The runtime those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md) is how the human encounters Orient. It does not replace that runtime architecture, and it does not build a surface. [2026-10-05-production-experience-gate.md](2026-10-05-production-experience-gate.md) closes the later low-fidelity spatial prototypes and authorizes production experience design. It does not implement that experience. Unresolved implementation details do not get speculative ADRs.
+The runtime those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). [2026-10-05-experience-architecture.md](2026-10-05-experience-architecture.md) is how the human encounters Orient. It does not replace that runtime architecture, and it does not build a surface. [2026-10-05-production-experience-gate.md](2026-10-05-production-experience-gate.md) closes the later low-fidelity spatial prototypes. [2026-10-05-production-experience-design.md](2026-10-05-production-experience-design.md) specifies the production experience and does not implement it. Unresolved implementation details do not get speculative ADRs.
 
 [2026-10-03-operational-adoption.md](2026-10-03-operational-adoption.md) is the current operational-adoption boundary. It records questions it does not answer. [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md) stays the historical product ledger. [../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md) records later semantic discovery. It is not an implementation decision.
 

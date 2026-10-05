@@ -207,7 +207,7 @@ The prototype still places a question label, a civil date, Earlier, and Later ab
 
 Production design must resolve how the human moves through time and changes temporal resolution as part of the instrument itself.
 
-This record does not solve that question. It does not canonize swipe, pinch, a scrubber, buttons, arrows, tabs, a wheel, or any other mechanism. PRODUCTION-EXPERIENCE-DESIGN-001 carries the question.
+This record does not solve that question. It does not canonize swipe, pinch, a scrubber, buttons, arrows, tabs, a wheel, or any other mechanism. PRODUCTION-EXPERIENCE-DESIGN-001 carries the question. That design is [2026-10-05-production-experience-design.md](2026-10-05-production-experience-design.md). It chooses field movement and a question asked of the same field. It does not amend this gate.
 
 ## Production UI
 
