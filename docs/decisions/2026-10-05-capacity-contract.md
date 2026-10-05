@@ -119,7 +119,7 @@ Current Context is not required when the relevant boundary is already explicit. 
 
 Capacity is grounded in temporal territory, so a later projection may show the same reading across resolutions. This record does not define that expression.
 
-Month remains landscape. Week remains shape. [2026-10-05-week-contract.md](2026-10-05-week-contract.md) defines that shape as the spatial distribution of established temporal structure. Week shape does not depend on Capacity, and it is not a weekly aggregate of this reading. Day remains the exact temporal canvas. Present-moment orientation remains orientation inside the lived moment. How Capacity is shown at each resolution is later work.
+Month perceives explicit direction beside temporal structure and is not a Capacity aggregate. [2026-10-05-month-contract.md](2026-10-05-month-contract.md). Week remains shape. [2026-10-05-week-contract.md](2026-10-05-week-contract.md) defines that shape as the spatial distribution of established temporal structure. Week shape does not depend on Capacity, and it is not a weekly aggregate of this reading. Day remains the exact temporal canvas. Present-moment orientation remains orientation inside the lived moment. How Capacity is shown at each resolution is later work.
 
 ## Timeline and orientation
 

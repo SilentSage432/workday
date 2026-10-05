@@ -99,7 +99,7 @@ These are resolutions of temporal reality.
 
 | Resolution | Role |
 | --- | --- |
-| Month | Landscape. Broad orientation. |
+| Month | Direction beside structure. Established Destinations and Priorities, together with established temporal structure of a broader span. Not an inference that the structure expresses the direction. [2026-10-05-month-contract.md](2026-10-05-month-contract.md). |
 | Week | Shape. Perceive how established temporal structure is spatially distributed across the bounded week, and what kind of structure it is. |
 | Day | Exact temporal manipulation. Select, refine, establish, inspect, edit, and remove precise temporal meaning. |
 | Present moment | Orientation inside the lived instant. Perceive which established temporal truths contain the instant, beside the explicitly chosen Active Thread. |
@@ -226,7 +226,7 @@ Operational adoption is not closed.
 - Whether Week later exposes `planned_on`, Due, or Must Do in a non-territorial way.
 - Week expression of individual Capacity readings.
 - Recurrence's later participation in temporal composition.
-- Month, beyond landscape and broad orientation.
+- Month interaction beyond perception. The question is [2026-10-05-month-contract.md](2026-10-05-month-contract.md).
 - Multi-context behavior, and which Context is current.
 - The final phone experience and the final desktop experience.
 

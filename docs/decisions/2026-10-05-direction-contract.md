@@ -133,11 +133,9 @@ This record does not define Destination or Priority lifecycle, deletion, archiva
 
 ## Month
 
-This contract precedes a Month contract.
+[2026-10-05-month-contract.md](2026-10-05-month-contract.md) now decides Month's question. Week shape still cannot supply directional meaning. Temporal structure still does not imply a Destination or a Priority. Month may show explicitly established Destinations and Priorities beside established temporal structure. It must not infer that the structure expresses the direction. Expression is not progress, causality proven by activity, or success.
 
-Week shape cannot supply directional meaning. Temporal structure does not imply a Destination or a Priority. A future Month reading must not infer direction from activity. Once an explicit human-established directional truth is representable, a later Month contract may use that truth. Expression, if a Month contract uses the word, must not mean progress, causality proven by activity, or success.
-
-The candidate that Month is the resolution at which the human perceives how deliberately established directions are expressed in lived time is not canonized here. Month remains landscape. Its question, boundary, and reading are not decided.
+The relationship from direction into an execution fact remains unresolved. Month does not create it.
 
 ## Human authority
 

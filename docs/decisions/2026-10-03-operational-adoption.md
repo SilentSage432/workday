@@ -61,9 +61,9 @@ The production system includes four resolutions:
 | NOW | Present-moment orientation inside the lived instant: which established temporal truths contain it, beside the explicitly chosen Active Thread. |
 | Day | Exact temporal manipulation. Select, refine, establish, inspect, edit, and remove precise temporal meaning. |
 | Week | Shape. The spatial distribution of established temporal structure across a bounded week, and what kind of structure it is. Nothing established is not availability. |
-| Month | Orientation. Landscape |
+| Month | Established direction beside established temporal structure. Not an inferred expression. [2026-10-05-month-contract.md](2026-10-05-month-contract.md). |
 
-Week and Month block operational adoption. [../implementation/WEEK-001.md](../implementation/WEEK-001.md) implements the deterministic Week shape reading and does not add a production interaction. The Week surface and Month are not built. Week's semantic shape is decided in [2026-10-05-week-contract.md](2026-10-05-week-contract.md). This contract does not authorize a Week or Month experience. Week interactions beyond perception remain unresolved. Month interactions beyond landscape remain unresolved. Do not invent those interactions here.
+Week and Month block operational adoption. [../implementation/WEEK-001.md](../implementation/WEEK-001.md) implements the deterministic Week shape reading and does not add a production interaction. The Week surface and Month are not built. Week's semantic shape is decided in [2026-10-05-week-contract.md](2026-10-05-week-contract.md). This contract does not authorize a Week or Month experience. Week interactions beyond perception remain unresolved. Month's question is decided in [2026-10-05-month-contract.md](2026-10-05-month-contract.md). Month interactions beyond that perception remain unresolved. Do not invent those interactions here.
 
 Day remains the exact temporal canvas already under construction. The V0-016 list is Current Temporal Orientation. The present-moment composition is that reading together with the Active Thread. The experience is not the list, and it is not built. The decision is [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md).
 
@@ -184,7 +184,7 @@ These block operational adoption. They are not authorized for implementation unt
 - The rest of the Task lifecycle that is still unnamed or incomplete: what reschedule and carry-forward write, including Must Do, and whether completion can be undone. Remove is a named operation and is not implemented. Reopen is not a named operation.
 - The present-moment experience. The composition is decided: Current Temporal Orientation and the Active Thread, with no ranking and no `rankNow`. NOW-001 later implements that projection. The experience is not built, and its interaction is not designed. The experience does not have to be labeled NOW. The records are [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md) and [../implementation/NOW-001.md](../implementation/NOW-001.md).
 - The Week surface. Shape is decided in [2026-10-05-week-contract.md](2026-10-05-week-contract.md): perception of where established temporal structure exists, what kind it is, and where nothing has been established. Nothing established is not availability. [../implementation/WEEK-001.md](../implementation/WEEK-001.md) implements that reading for an explicit civil range and does not add a production interaction. The surface is not built. Interactions beyond that perception remain unresolved.
-- Month as landscape, including which interactions are required beyond orientation.
+- The Month surface. The question is decided in [2026-10-05-month-contract.md](2026-10-05-month-contract.md): explicitly established direction beside established temporal structure, without inferring that the structure expresses the direction. The surface is not built. Interactions beyond that perception remain unresolved.
 - Multi-context temporal behavior that is honest for Family, TeamLab, and Financial, without a decision yet on how Context becomes current.
 - Recurring obligations the everyday system needs, including whether an occurrence is a Task.
 - Explicit reminders.
@@ -254,7 +254,7 @@ Not answered in this contract. Item 9 was later answered. The experience of that
 9. What composition should NOW use without the UI inventing importance? Answered by [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md): Current Temporal Orientation and the Active Thread, as independent truths, with no ranking. The experience and its user-facing label remain open. The product name is Orient, in [2026-10-04-product-name.md](2026-10-04-product-name.md). No next behavior was authorized.
 10. Which external calendar facts may participate, and with what authority?
 11. What Week interactions are required beyond reading temporal shape? The meaning of that shape is decided in [2026-10-05-week-contract.md](2026-10-05-week-contract.md). [../implementation/WEEK-001.md](../implementation/WEEK-001.md) implements the deterministic reading. Perception is the decided role. Interactions beyond perception remain this question.
-12. What Month interactions are required beyond landscape and orientation?
+12. What Month interactions are required beyond the perception decided in [2026-10-05-month-contract.md](2026-10-05-month-contract.md)? The question is explicit direction beside established temporal structure. The surface is not built. Interactions beyond that perception remain this question.
 
 Earlier open questions that this list does not repeat stay open where the canonical documents already mark them, including Start, Adjust, and Skip, and the life-day boundary. The product name is Orient, in [2026-10-04-product-name.md](2026-10-04-product-name.md). [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md) stays the historical ledger. It is not rewritten.
 
