@@ -373,6 +373,8 @@ After this contract is accepted, the next phase may begin spatial design.
 
 The next artifact should be a low-fidelity spatial model of the instrument: Present, Day, Week, Month, Direction, the Active Thread, Capture, Context focus, phone, and desktop. That model derives from this contract. This record does not create it.
 
+That instruction is fulfilled. SPATIAL-PROTOTYPE-001 and SPATIAL-PROTOTYPE-002 were the disposable trials. [2026-10-05-production-experience-gate.md](2026-10-05-production-experience-gate.md) closes low-fidelity spatial prototyping and names production experience design as the next artifact. It does not amend this encounter model, and it does not authorize SPATIAL-PROTOTYPE-003.
+
 ## Not authorized
 
 No UI, CSS, component, route, animation, runtime, domain change, persistence change, schema, migration, test, dependency, palette, or visual prototype follows from this record. Operational adoption is not closed. The surfaces for Present, Week, and Month are not built here.
