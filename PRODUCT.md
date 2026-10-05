@@ -46,7 +46,7 @@ When reality and a planned Block differ, favored interactions are Start, Resume,
 
 The smallest truthful present-moment composition is Current Temporal Orientation together with the Active Thread. The decision is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
 
-It is a deterministic projection. It is not persisted canonical truth. It is not a table, a route, or a ranking. The eventual experience does not have to be named NOW. That experience is not designed here, and it is not built.
+It is a deterministic projection. It is not persisted canonical truth. It is not a table, a route, or a ranking. NOW-001 implements that projection. The eventual experience does not have to be named NOW. That experience is not designed here, and it is not built.
 
 Current Temporal Orientation answers which established temporal truths contain the supplied current instant. The Active Thread answers what Task the user has explicitly established as their current intention. They are independent. Neither establishes, validates, ranks, or overrides the other. They may agree, disagree, overlap conceptually, or one may be absent. Keeping both preserves temporal reality and explicit human intention.
 
@@ -66,7 +66,7 @@ The product should also help the user recover what they needed to remember. That
 
 Earlier questions — which Context is operating, where the user is in a cadence, what needs attention now, and what comes next — and the unfinished attention hierarchy are superseded as the composition. Family, TeamLab, and Financial still have no discovered cadence. A Block can still say what the user intended a span for. A Commitment can still say what is fixed. Those facts participate here only when they contain the supplied instant. The historical wording remains in the foundation ledgers.
 
-V0-016 is the Current Temporal Orientation reading on Tasks. It is one input. It is not this composition, and this composition is not built.
+V0-016 is the Current Temporal Orientation reading on Tasks. It is one input. NOW-001 composes it with Resume and does not change the Tasks screen. The record is [docs/implementation/NOW-001.md](docs/implementation/NOW-001.md).
 
 ## Timeline
 
@@ -239,7 +239,7 @@ Production interaction and visual experience are required after the underlying s
 
 V0 is the historical name for the smallest system that could generate real use. Text and in-app behavior were described as enough to start. Voice, push, and Google Calendar were allowed to follow that first usable core. That first-use gate is superseded for operational adoption by the contract above. The numbered list remains the record of what V0 named. It is not permission to adopt an unfinished system, and it is not permission to implement an item whose meaning is still unresolved.
 
-1. **NOW.** Present-moment orientation. The first composition is Current Temporal Orientation and the Active Thread. It is not built. It does not rank, and it does not choose what the user should do. The earlier attention hierarchy is not that composition. The decision is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md).
+1. **NOW.** Present-moment orientation. The first composition is Current Temporal Orientation and the Active Thread. NOW-001 implements that projection. The experience is not built. It does not rank, and it does not choose what the user should do. The earlier attention hierarchy is not that composition. The decision is [docs/decisions/2026-10-04-present-moment-orientation.md](docs/decisions/2026-10-04-present-moment-orientation.md). The record is [docs/implementation/NOW-001.md](docs/implementation/NOW-001.md).
 2. **Today / Timeline.** Today is the open Tasks planned for the confirmed civil day. Timeline composes a scheduled Work shift, Protected Time, a Block, and a Commitment for a requested civil range, with those meanings intact. V0-010 shows one civil day of that projection. V0-011 can select a transient local-clock span on that day. V0-012 can name a transient intended meaning for that span. V0-012A can refine that span on the canvas before the meaning is chosen, and can still refine it afterward. V0-013 can establish the span as Protected Time, a Block, or a Commitment after an explicit Save. It does not edit an existing fact. Planned Tasks are not on that projection yet.
 3. **Capture.** Create a Task or a Note quickly, or establish nothing. Text was sufficient for first use. Voice does not block that historical first use. On the primary phone, keyboard dictation supplies spoken expression text, and that acquisition does not block adoption as missing technology. What a Note means is established. The establishment contract is decided. A provisional typed proof exists. No application speech stack is implemented. Transcription is not chosen.
 4. **Tasks.** Create, edit, complete, an optional due boundary, a planned day, MUST DO, and a Context when the user assigns one. Not project management.
