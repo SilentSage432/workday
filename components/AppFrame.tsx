@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { NavigationGuardProvider } from "@/components/navigationGuard";
@@ -101,21 +102,34 @@ export function AppFrame({ children }: { children: ReactNode }) {
   return (
     <CaptureContext.Provider value={{ session: capture, update: setCapture, saving, saveError, submit }}>
       <NavigationGuardProvider>
-        <div className={shellClass}>
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => void getSupabaseBrowserClient().auth.signOut()}
-              className="min-h-11 px-2 text-sm text-stone-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
-            >
-              Sign out
-            </button>
-          </div>
-          {children}
-        </div>
-        <BottomNav />
+        <SignedInShell>{children}</SignedInShell>
       </NavigationGuardProvider>
     </CaptureContext.Provider>
+  );
+}
+
+function SignedInShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const prototype = pathname === "/instrument";
+  if (prototype) {
+    return <div className="h-dvh overflow-hidden bg-stone-950 text-stone-100">{children}</div>;
+  }
+  return (
+    <>
+      <div className={shellClass}>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => void getSupabaseBrowserClient().auth.signOut()}
+            className="min-h-11 px-2 text-sm text-stone-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
+          >
+            Sign out
+          </button>
+        </div>
+        {children}
+      </div>
+      <BottomNav />
+    </>
   );
 }
 
