@@ -14,7 +14,7 @@ A directional relationship records that the human explicitly established that on
 
 The relationship is explicit, inspectable, and deterministic. Orient does not infer it, score it, or rank it. Both related truths stay what they are.
 
-This record does not implement the relationship.
+This record does not implement the relationship. [../implementation/DIRECTION-REP-001.md](../implementation/DIRECTION-REP-001.md) later stores a Destination and a Priority downstream of one Destination. It does not store a directional relationship into execution. It does not add a production interaction. The migration is not applied by that record.
 
 ## Destination
 

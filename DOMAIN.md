@@ -21,7 +21,7 @@ Capture is an interaction, not a state. Present-moment orientation, Timeline, We
 
 FOUNDATION-001 used Observation as a candidate primitive. That is historical. The word "observation" may appear in speech. It is not a domain primitive.
 
-An expression is the text a human supplied. It is transient evidence, not a stored primitive. A candidate understanding may propose one canonical kind. Unresolved meaning is a legitimate result: the expression is not yet a canonical fact. The user establishes meaning by an explicit act that names one kind and authorizes one fact of that kind to be written. That act may produce one Task or one Note. It may produce nothing. A phrase does not establish a temporal fact, a Destination, or a Priority. The decision is [docs/decisions/2026-10-04-capture-establishment-contract.md](docs/decisions/2026-10-04-capture-establishment-contract.md). Destination, Priority, and a directional relationship, defined below, are canonical semantic meanings. They are not in the primitive list above, and they are not stored. The decision is [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md).
+An expression is the text a human supplied. It is transient evidence, not a stored primitive. A candidate understanding may propose one canonical kind. Unresolved meaning is a legitimate result: the expression is not yet a canonical fact. The user establishes meaning by an explicit act that names one kind and authorizes one fact of that kind to be written. That act may produce one Task or one Note. It may produce nothing. A phrase does not establish a temporal fact, a Destination, or a Priority. The decision is [docs/decisions/2026-10-04-capture-establishment-contract.md](docs/decisions/2026-10-04-capture-establishment-contract.md). Destination, Priority, and a directional relationship, defined below, are canonical semantic meanings. They are not in the primitive list above. [docs/implementation/DIRECTION-REP-001.md](docs/implementation/DIRECTION-REP-001.md) stores a Destination and a Priority downstream of one Destination. It does not store a directional relationship into an execution fact, and it does not add a production interaction. The decision is [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md).
 
 Earlier writing used "working context" for the Active Thread. That phrase is not the Context primitive.
 
@@ -230,7 +230,7 @@ A Destination is the reference against which sustained importance can be underst
 
 A Destination is not a Task, a Block, a Priority, a Context, or a Deadline. It is not automatically a Target and not automatically an Objective. Target and Objective remain temporal meanings in [TIME_MODEL.md](TIME_MODEL.md). A Target is a preferred completion point. An Objective is a desired operating condition and may contextualize Tasks. Thursday department readiness and the Full Shelf Replenishment morning language are not reclassified.
 
-A Destination is not yet a stored primitive. Work illustrations of where the user is trying to go are evidence, not a taxonomy. They are kept in [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md). The decision is [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md).
+[docs/implementation/DIRECTION-REP-001.md](docs/implementation/DIRECTION-REP-001.md) stores a Destination as its identity, the human's words, and the instant that act established it. That instant is not a deadline or a temporal interval. The storage adds no production interaction. Work illustrations of where the user is trying to go are evidence, not a taxonomy. They are kept in [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md). The decision is [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md).
 
 ## Priority
 
@@ -242,7 +242,7 @@ Priority is not high, medium, or low. It is not a numeric score, an inferred ran
 
 Something may need doing without needing this user. Something may need this user without needing this user now. The user may determine that another person should execute something while the user retains responsibility for follow-up or outcome. Delegation and follow-up are an unresolved semantic relationship. They do not authorize another user, an employee account, workforce management, or a delegation workflow.
 
-No automatic prioritization is authorized. Priority is not yet a stored primitive. Whether one Priority may serve more than one Destination is not decided.
+No automatic prioritization is authorized. [docs/implementation/DIRECTION-REP-001.md](docs/implementation/DIRECTION-REP-001.md) stores a Priority as its identity, the human's words, the one Destination it was established downstream of, and the instant of that act. Whether one Priority may serve more than one Destination is not decided and is not represented. The storage adds no production interaction.
 
 ## Directional relationship
 
@@ -256,7 +256,7 @@ A later change in direction must not rewrite independently established historica
 
 The decision is [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md).
 
-**Unresolved:** representation, schema, cardinality beyond what is already proved, Destination and Priority lifecycle, editing and removal, Context binding, which facts may receive a directional relationship, which layer that relationship attaches to, and any finer boundary among Destination, Objective, and Target. Those remain open in the direction contract. This section does not close them.
+**Unresolved:** cardinality beyond the one downstream Destination a Priority row records, Destination and Priority lifecycle, editing and removal, Context binding, which execution facts may receive a directional relationship, which layer that relationship attaches to, and any finer boundary among Destination, Objective, and Target. The minimum storage does not close them.
 
 ## External temporal source
 

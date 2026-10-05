@@ -62,7 +62,8 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md) | A Block may refer to one Task. Not Capacity |
 | [docs/decisions/2026-10-05-capacity-contract.md](docs/decisions/2026-10-05-capacity-contract.md) | Bounded Capacity reading. Not an allocator |
 | [docs/decisions/2026-10-05-week-contract.md](docs/decisions/2026-10-05-week-contract.md) | Week perceives temporal shape. Not an implementation |
-| [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md) | Human-established direction. Semantics only. Not stored |
+| [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md) | Human-established direction. Semantics. Not a surface |
+| [docs/implementation/DIRECTION-REP-001.md](docs/implementation/DIRECTION-REP-001.md) | Stored Destination and Priority. Not a production interaction. Execution link not stored |
 | [docs/implementation/WEEK-001.md](docs/implementation/WEEK-001.md) | Deterministic Week shape reading. Not a production interaction |
 | [docs/implementation/CAPACITY-001.md](docs/implementation/CAPACITY-001.md) | Deterministic Work Capacity reading. Not a production interaction |
 | [docs/implementation/TASK-TIME-001.md](docs/implementation/TASK-TIME-001.md) | Optional Task reference on a Block. Hosted schema verified. S26 Ultra scaffold accepted. Not drag and drop |
