@@ -95,7 +95,7 @@ The employer uses a fiscal week that begins on Saturday:
 
 Inside Work, this must not be silently normalized to a Monday-first week.
 
-This week does not redefine the user's universal calendar. Google Calendar does not either. No universal week shape is established, and the Lowe's week must not be copied onto Family, TeamLab, or Financial.
+This week does not redefine the user's universal calendar. Google Calendar does not either. No universal life-wide Week boundary is established, and the Lowe's week must not be copied onto Family, TeamLab, or Financial. Product Week is a different claim: the spatial distribution of established temporal structure across an explicit bounded civil-date range. That shape does not select this fiscal week as its boundary. The decision is [docs/decisions/2026-10-05-week-contract.md](docs/decisions/2026-10-05-week-contract.md).
 
 The user's current Work operating strategy, which the product should be able to tell apart from deadlines:
 

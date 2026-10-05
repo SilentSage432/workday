@@ -83,7 +83,7 @@ Some closing responsibilities belong to the closing management team. They are no
 
 ## Weekly rhythm
 
-This is the user's current operating strategy inside the Lowe's fiscal week. That week begins on Saturday and is a Work fact. It does not define a universal calendar. See [TIME_MODEL.md](TIME_MODEL.md) for the deadline / target / objective distinction.
+This is the user's current operating strategy inside the Lowe's fiscal week. That week begins on Saturday and is a Work fact. It does not define a universal calendar. Week shape may later make established temporal structure legible. It does not grade this strategy, infer adherence, or make the strategy a life-wide Week rule. The decision is [docs/decisions/2026-10-05-week-contract.md](docs/decisions/2026-10-05-week-contract.md). See [TIME_MODEL.md](TIME_MODEL.md) for the deadline / target / objective distinction.
 
 **Saturday.** The fiscal week begins. Emphasis is weekend, customer, and sales focus.
 
