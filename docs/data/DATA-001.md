@@ -81,7 +81,7 @@ Deleting a Context or a Task is allowed for the owner. Deleting a Context unassi
 
 A recurring definition and an external source remain possible future origins. Those objects do not exist, so this tranche does not add foreign keys to them. Widening the check for one of those authorities would be a later migration.
 
-A Task established from a Note stays `user_created`. [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) does not record that relationship by widening `origin`. It is an optional reference on the derived fact. That reference is not a column yet. `notes` is stored by [../implementation/NOTE-STORAGE-001.md](../implementation/NOTE-STORAGE-001.md). [../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) does not add a column. The return to a Note uses the existing complete read.
+A Task established from a Note stays `user_created`. [../decisions/2026-10-04-note-representation.md](../decisions/2026-10-04-note-representation.md) does not record that relationship by widening `origin`. It is an optional reference on the Task. [../decisions/2026-10-04-provenance-contract.md](../decisions/2026-10-04-provenance-contract.md) decides when that reference becomes true: only as part of explicit Task establishment from the retained Note. The reference is not a column yet. `notes` is stored by [../implementation/NOTE-STORAGE-001.md](../implementation/NOTE-STORAGE-001.md). [../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) does not add a column. The return to a Note uses the existing complete read.
 
 Contexts have no origin column. They are the user's own rows, created by the seed.
 

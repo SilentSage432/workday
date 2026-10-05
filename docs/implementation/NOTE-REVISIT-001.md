@@ -95,6 +95,8 @@ The Note remains a Note. The new fact is established independently. The human au
 
 This record does not specify that act, does not authorize storage, and does not add `note_id`.
 
+[../decisions/2026-10-04-provenance-contract.md](../decisions/2026-10-04-provenance-contract.md) later answers the semantic question. The eligible fact is a Task. This scaffold is unchanged.
+
 ## Acceptance
 
 Automated validation of NOTE-REVISIT-001 was already complete before this record. NOTE-REVISIT-001A accepts the scaffold on the Samsung Galaxy S26 Ultra for the semantic and runtime proof only. Edit, delete, archive, the final Capture experience, and the establishment-from-Note act remain outside this acceptance.
