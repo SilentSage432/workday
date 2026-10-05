@@ -395,6 +395,7 @@ describe("current temporal orientation", () => {
       plannedOn: "2026-10-03",
       mustDo: true,
       origin: "user_created",
+      originatingNoteId: null,
     };
     const result = orient({
       instant: "2026-10-03T16:00:00.000Z",
@@ -425,6 +426,7 @@ describe("current temporal orientation", () => {
       plannedOn: "2026-10-03",
       mustDo: true,
       origin: "user_created",
+      originatingNoteId: null,
     };
     const thread = activeThreadFromEstablishment(task.id, "2026-10-03T15:05:00.000Z");
     const result = orient({ instant: "2026-10-03T16:00:00.000Z" });
@@ -446,6 +448,7 @@ describe("current temporal orientation", () => {
       plannedOn: "2026-10-03",
       mustDo: true,
       origin: "user_created",
+      originatingNoteId: null,
     };
     const thread = activeThreadFromEstablishment(task.id, "2026-10-03T15:00:00.000Z");
     const beforeResume = projectResume({ activeThread: thread, openTasks: [task] });

@@ -95,7 +95,7 @@ The Note remains a Note. The new fact is established independently. The human au
 
 This record does not specify that act, does not authorize storage, and does not add `note_id`.
 
-[../decisions/2026-10-04-provenance-contract.md](../decisions/2026-10-04-provenance-contract.md) later answers the semantic question. The eligible fact is a Task. This scaffold is unchanged.
+[../decisions/2026-10-04-provenance-contract.md](../decisions/2026-10-04-provenance-contract.md) later answers the semantic question. The eligible fact is a Task. [PROVENANCE-001.md](PROVENANCE-001.md) authors the citation. This return scaffold is unchanged.
 
 ## Acceptance
 

@@ -70,3 +70,14 @@ export function authorizeNoteEstablishment(
 export function taskFromExpression(expression: string): NewTask {
   return newTaskFromCapture({ ...emptyCaptureDraft(), title: expression });
 }
+
+/**
+ * One Task explicitly established from a retained Note.
+ * The title is the text the human supplies. The Note is identified, not copied.
+ */
+export function taskFromRetainedNote(title: string, originatingNoteId: string): NewTask {
+  return {
+    ...taskFromExpression(title),
+    originatingNoteId: requireNoteId(originatingNoteId),
+  };
+}

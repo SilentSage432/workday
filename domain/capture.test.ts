@@ -30,6 +30,7 @@ const openTask: Task = {
   plannedOn: null,
   mustDo: false,
   origin: "user_created",
+  originatingNoteId: null,
 };
 
 describe("capture draft", () => {

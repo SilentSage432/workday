@@ -17,6 +17,7 @@ function task(id: string, extras: Partial<Task> = {}): Task {
     plannedOn: "2026-10-02",
     mustDo: false,
     origin: "user_created",
+    originatingNoteId: null,
     ...extras,
   };
 }

@@ -12,6 +12,7 @@ const openTask: TaskRow = {
   planned_on: "2026-10-05",
   must_do: true,
   origin: "user_created",
+  originating_note_id: null,
 };
 
 describe("context and task mapping", () => {
@@ -81,6 +82,31 @@ describe("context and task mapping", () => {
     });
     expect(assigned.context_id).toBe("context-family");
     expect(toTaskUpdate({ contextId: null })).toEqual({ context_id: null });
+  });
+
+  it("reads an absent originating note as none and keeps a supplied one", () => {
+    expect(rowToTask(openTask).originatingNoteId).toBeNull();
+    expect(toTaskInsert("user-1", { title: "File the receipt" }).originating_note_id).toBeNull();
+    expect(toTaskInsert("user-1", { title: "File the receipt" }).origin).toBe("user_created");
+
+    const sourced = toTaskInsert("user-1", {
+      title: "Check the department",
+      originatingNoteId: "00000000-0000-4000-8000-000000000001",
+    });
+    expect(sourced.originating_note_id).toBe("00000000-0000-4000-8000-000000000001");
+    expect(sourced.origin).toBe("user_created");
+    expect(sourced.must_do).toBe(false);
+    expect(sourced.planned_on).toBeNull();
+    expect(sourced.due_on).toBeNull();
+    expect(sourced.context_id).toBeNull();
+    expect(
+      rowToTask({ ...openTask, originating_note_id: "00000000-0000-4000-8000-000000000001" })
+        .originatingNoteId,
+    ).toBe("00000000-0000-4000-8000-000000000001");
+    expect(toTaskUpdate({ title: "File the receipt" })).not.toHaveProperty("originating_note_id");
+    expect(() =>
+      toTaskInsert("user-1", { title: "Check the department", originatingNoteId: "not-a-note" }),
+    ).toThrow(/stable identity/);
   });
 
   it("records a captured task as user-created and reads that origin back", () => {

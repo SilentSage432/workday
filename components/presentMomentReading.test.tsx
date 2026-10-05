@@ -49,6 +49,7 @@ const open: Task = {
   plannedOn: null,
   mustDo: false,
   origin: "user_created",
+  originatingNoteId: null,
 };
 
 const thread = activeThreadFromEstablishment(open.id, "2026-10-03T15:00:00.000Z");

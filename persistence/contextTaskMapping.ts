@@ -1,5 +1,6 @@
 import { formatCivilDate, parseCivilDate } from "@/domain/time/workFiscalWeek";
 import type { Context } from "@/domain/context";
+import { requireNoteId } from "@/domain/note";
 import {
   TASK_ORIGIN_USER_CREATED,
   type NewTask,
@@ -55,6 +56,7 @@ export function rowToTask(row: TaskRow): Task {
     plannedOn: row.planned_on,
     mustDo: row.must_do,
     origin: requireOrigin(row.origin),
+    originatingNoteId: row.originating_note_id,
   };
 }
 
@@ -67,6 +69,8 @@ export function toTaskInsert(userId: string, input: NewTask): TaskInsertRow {
     planned_on: civilDateOrNull(input.plannedOn, "plannedOn"),
     must_do: input.mustDo ?? false,
     origin: TASK_ORIGIN_USER_CREATED,
+    originating_note_id:
+      input.originatingNoteId == null ? null : requireNoteId(input.originatingNoteId),
   };
 }
 

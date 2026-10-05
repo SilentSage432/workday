@@ -180,4 +180,8 @@ Destructive Note-to-Task conversion. Inference of a Task or of any other fact fr
 
 ## Unresolved
 
-The physical interaction. Whether any later experience offers text before the human establishes the Task. The column and write that store the reference. Note edit, delete, archive, and any effect of a future Note deletion on a citing Task. Note provenance for any fact other than a Task.
+The physical interaction. Whether any later experience offers text before the human establishes the Task. Note edit, delete, archive, and any effect of a future Note deletion on a citing Task. Note provenance for any fact other than a Task.
+
+## Later
+
+[../implementation/PROVENANCE-001.md](../implementation/PROVENANCE-001.md) stores the relationship as nullable `tasks.originating_note_id`, one insert with the Task, and a same-owner foreign key that does not cascade or clear. The scaffold control is "Establish a task from this", with an empty title. The migration is authored and was not applied to the hosted database. The physical interaction remains unresolved. Note deletion remains unresolved.

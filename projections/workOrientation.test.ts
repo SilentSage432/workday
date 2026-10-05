@@ -201,6 +201,7 @@ describe("work orientation", () => {
       plannedOn: null,
       mustDo: false,
       origin: "user_created",
+      originatingNoteId: null,
     };
     const thread: ActiveThread = {
       taskId: task.id,

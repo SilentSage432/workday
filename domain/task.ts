@@ -12,6 +12,7 @@ export type Task = {
   plannedOn: string | null;
   mustDo: boolean;
   origin: TaskOrigin;
+  originatingNoteId: string | null;
 };
 
 export type NewTask = {
@@ -20,6 +21,7 @@ export type NewTask = {
   dueOn?: string | null;
   plannedOn?: string | null;
   mustDo?: boolean;
+  originatingNoteId?: string | null;
 };
 
 export type TaskPatch = {

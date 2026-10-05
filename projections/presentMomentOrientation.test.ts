@@ -72,6 +72,7 @@ function task(id: string, extras: Partial<Task> = {}): Task {
     plannedOn: null,
     mustDo: false,
     origin: "user_created",
+    originatingNoteId: null,
     ...extras,
   };
 }

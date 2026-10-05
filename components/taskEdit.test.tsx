@@ -79,6 +79,7 @@ function task(overrides: Partial<Task> = {}): Task {
     plannedOn: null,
     mustDo: false,
     origin: "user_created",
+    originatingNoteId: null,
     ...overrides,
   };
 }

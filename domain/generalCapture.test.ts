@@ -5,6 +5,7 @@ import {
   expressionChanged,
   initialGeneralCapture,
   taskFromExpression,
+  taskFromRetainedNote,
   type GeneralCaptureState,
 } from "@/domain/generalCapture";
 import { toTaskInsert } from "@/persistence/contextTaskMapping";
@@ -112,6 +113,33 @@ describe("general capture establishment", () => {
     });
     expect(toTaskInsert("user-1", task)).not.toHaveProperty("note_id");
     expect(toTaskInsert("user-1", task)).not.toHaveProperty("source_note_id");
+    expect(toTaskInsert("user-1", task).originating_note_id).toBeNull();
+  });
+
+  it("establishes one sourced task from a human title and one note identity", () => {
+    const task = taskFromRetainedNote("  Check the department  ", FIRST_ID);
+    expect(task).toEqual({
+      title: "Check the department",
+      contextId: null,
+      plannedOn: null,
+      dueOn: null,
+      mustDo: false,
+      originatingNoteId: FIRST_ID,
+    });
+    expect(task.title).not.toBe("Reminder to check the department");
+    const inserted = toTaskInsert("user-1", task);
+    expect(inserted).toMatchObject({
+      title: "Check the department",
+      origin: "user_created",
+      originating_note_id: FIRST_ID,
+      must_do: false,
+      planned_on: null,
+      due_on: null,
+      context_id: null,
+    });
+    const again = toTaskInsert("user-2", taskFromRetainedNote("Ask receiving", FIRST_ID));
+    expect(again.originating_note_id).toBe(inserted.originating_note_id);
+    expect(again.title).toBe("Ask receiving");
   });
 
   it("does not classify expression or persist capture state", () => {
@@ -158,6 +186,8 @@ describe("general capture establishment", () => {
     );
     expect(general).toContain("loadNotes");
     expect(general).toContain("Retained experiences");
+    expect(general).toContain("Establish a task from this");
+    expect(general).not.toMatch(/Convert|Promote|Turn into|Consume|Resolve/);
     expect(general).not.toMatch(
       /SpeechRecognition|webkitSpeech|getUserMedia|localStorage|sessionStorage|confidence|note_id|source_note_id|\.update\(|\.delete\(|updateNote|deleteNote|archiveNote|activeThread|\.sort\(|createProtectedTime|createBlock|createCommitment|updateTask/,
     );

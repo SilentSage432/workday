@@ -22,6 +22,7 @@ function taskRow(
     planned_on: null,
     must_do: false,
     origin: "user_created",
+    originating_note_id: null,
     ...extras,
   };
 }

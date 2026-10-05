@@ -14,6 +14,7 @@ const task: Task = {
   plannedOn: "2026-10-05",
   mustDo: false,
   origin: "user_created",
+  originatingNoteId: null,
 };
 
 describe("task edit draft", () => {

@@ -14,6 +14,7 @@ export type TaskRow = {
   planned_on: string | null;
   must_do: boolean;
   origin: string;
+  originating_note_id: string | null;
 };
 
 export type TaskInsertRow = {
@@ -24,6 +25,7 @@ export type TaskInsertRow = {
   planned_on: string | null;
   must_do: boolean;
   origin: "user_created";
+  originating_note_id: string | null;
 };
 
 export type TaskUpdateRow = {

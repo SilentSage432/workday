@@ -52,19 +52,25 @@ function createdTask(title: string): Task {
     plannedOn: null,
     mustDo: false,
     origin: "user_created",
+    originatingNoteId: null,
   };
 }
 
-function setExpression(container: ParentNode, value: string) {
-  const field = container.querySelector<HTMLTextAreaElement>("#general-expression");
-  if (!field) throw new Error("Missing expression");
-  const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
-  if (!setter) throw new Error("Cannot set expression");
+function setField(container: ParentNode, selector: string, value: string) {
+  const field = container.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector);
+  if (!field) throw new Error(`Missing ${selector}`);
+  const prototype = field instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+  const setter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
+  if (!setter) throw new Error(`Cannot set ${selector}`);
   setter.call(field, value);
   act(() => {
     field.dispatchEvent(new Event("input", { bubbles: true }));
     field.dispatchEvent(new Event("change", { bubbles: true }));
   });
+}
+
+function setExpression(container: ParentNode, value: string) {
+  setField(container, "#general-expression", value);
 }
 
 async function clickText(container: ParentNode, label: string) {
@@ -425,7 +431,8 @@ describe("general capture surface", () => {
     });
 
     const source = document.body.textContent ?? "";
-    expect(source).not.toMatch(/Edit|Delete|Archive|Make this a task|Establish/);
+    expect(source).toContain("Establish a task from this");
+    expect(source).not.toMatch(/Edit|Delete|Archive|Convert|Promote|Turn into|Resolve|Consume/);
     expect(mocks.createNote).not.toHaveBeenCalled();
     expect(mocks.createTask).not.toHaveBeenCalled();
     expect(mocks.loadNotes).toHaveBeenCalledTimes(1);
@@ -458,5 +465,110 @@ describe("general capture surface", () => {
     expect(mocks.loadNotes).toHaveBeenCalledTimes(1);
     expect(mocks.createTask).not.toHaveBeenCalled();
     expect(surface.querySelector("time")?.dateTime).toBe(ACTED_AT.toISOString());
+  });
+
+  async function openRetained(content = "Reminder to check the department") {
+    mocks.loadNotes.mockResolvedValue([retainedNote(NOTE_ID, content, ACTED_AT.toISOString())]);
+    const surface = render(<GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} />);
+    await clickText(surface, "Hold an experience");
+    await clickText(surface, "Retained experiences");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(surface.textContent).toContain(content);
+      });
+    });
+    return surface;
+  }
+
+  it("refers to a retained note without writing", async () => {
+    const surface = await openRetained();
+    expect(mocks.createTask).not.toHaveBeenCalled();
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(surface.querySelector("#sourced-task-title")).toBeNull();
+  });
+
+  it("opens sourced task establishment without writing or copying the note", async () => {
+    const surface = await openRetained("Reminder to check the department");
+    await clickText(surface, "Establish a task from this");
+    expect(surface.querySelector<HTMLInputElement>("#sourced-task-title")?.value).toBe("");
+    expect(surface.textContent).toContain("Reminder to check the department");
+    expect(mocks.createTask).not.toHaveBeenCalled();
+    expect(mocks.createNote).not.toHaveBeenCalled();
+  });
+
+  it("leaves a sourced task unestablished", async () => {
+    const surface = await openRetained();
+    await clickText(surface, "Establish a task from this");
+    setField(surface, "#sourced-task-title", "Check the department");
+    await clickText(surface, "Leave this");
+    expect(surface.querySelector("#sourced-task-title")).toBeNull();
+    expect(surface.textContent).toContain("Reminder to check the department");
+    expect(mocks.createTask).not.toHaveBeenCalled();
+    expect(mocks.createNote).not.toHaveBeenCalled();
+
+    await clickText(surface, "Establish a task from this");
+    setField(surface, "#sourced-task-title", "Check the department");
+    await clickText(surface, "Leave");
+    expect(mocks.createTask).not.toHaveBeenCalled();
+    expect(surface.querySelector("#general-expression")).toBeNull();
+  });
+
+  it("establishes a sourced task from the human title and one note", async () => {
+    const onTaskCreated = vi.fn();
+    mocks.loadNotes.mockResolvedValue([
+      retainedNote(NOTE_ID, "Reminder to check the department", ACTED_AT.toISOString()),
+    ]);
+    const surface = render(
+      <GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} onTaskCreated={onTaskCreated} />,
+    );
+    await clickText(surface, "Hold an experience");
+    await clickText(surface, "Retained experiences");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(surface.textContent).toContain("Reminder to check the department");
+      });
+    });
+    await clickText(surface, "Establish a task from this");
+    setField(surface, "#sourced-task-title", "  Check the department  ");
+    mocks.createTask.mockResolvedValue(createdTask("Check the department"));
+
+    await clickText(surface, "Establish this task");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(onTaskCreated).toHaveBeenCalledOnce();
+      });
+    });
+
+    expect(mocks.createTask).toHaveBeenCalledTimes(1);
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(mocks.createTask.mock.calls[0]?.[1]).toEqual({
+      title: "Check the department",
+      contextId: null,
+      plannedOn: null,
+      dueOn: null,
+      mustDo: false,
+      originatingNoteId: NOTE_ID,
+    });
+    expect(mocks.createTask.mock.calls[0]?.[1].title).not.toBe("Reminder to check the department");
+  });
+
+  it("does not report a failed sourced task as established", async () => {
+    const surface = await openRetained("Reminder to check the department");
+    await clickText(surface, "Establish a task from this");
+    setField(surface, "#sourced-task-title", "Check the department");
+    mocks.createTask.mockRejectedValueOnce(new Error("Could not save this task."));
+
+    await clickText(surface, "Establish this task");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(surface.querySelector("[role='alert']")?.textContent).toContain("Could not save this task.");
+      });
+    });
+
+    expect(mocks.createTask).toHaveBeenCalledTimes(1);
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(surface.textContent).toContain("Reminder to check the department");
+    expect(surface.querySelector<HTMLInputElement>("#sourced-task-title")?.value).toBe("Check the department");
+    expect(surface.querySelector("#general-expression")).not.toBeNull();
   });
 });

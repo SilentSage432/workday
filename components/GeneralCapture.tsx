@@ -6,6 +6,7 @@ import {
   expressionChanged,
   initialGeneralCapture,
   taskFromExpression,
+  taskFromRetainedNote,
   type GeneralCaptureState,
 } from "@/domain/generalCapture";
 import type { Note } from "@/domain/note";
@@ -55,9 +56,10 @@ export function GeneralCapture({
 }) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<GeneralCaptureState>(initialGeneralCapture);
-  const [pending, setPending] = useState<"note" | "task" | null>(null);
+  const [pending, setPending] = useState<"note" | "task" | "sourced" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [retained, setRetained] = useState<RetainedExperiences>({ phase: "hidden" });
+  const [sourced, setSourced] = useState<{ noteId: string; title: string } | null>(null);
   const pendingRef = useRef(false);
   const retainedRead = useRef(0);
   const blank = state.expression.trim().length === 0;
@@ -70,8 +72,21 @@ export function GeneralCapture({
   function leave() {
     if (pendingRef.current) return;
     discardRetainedRead();
+    setSourced(null);
     setState(initialGeneralCapture());
     setOpen(false);
+    setError(null);
+  }
+
+  function beginSourcedTask(noteId: string) {
+    if (pendingRef.current) return;
+    setSourced({ noteId, title: "" });
+    setError(null);
+  }
+
+  function leaveSourcedTask() {
+    if (pendingRef.current) return;
+    setSourced(null);
     setError(null);
   }
 
@@ -135,6 +150,33 @@ export function GeneralCapture({
     try {
       const created = await createTask(getSupabaseBrowserClient(), intent);
       discardRetainedRead();
+      setState(initialGeneralCapture());
+      setOpen(false);
+      onTaskCreated?.(created);
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "Could not save this task."));
+    } finally {
+      pendingRef.current = false;
+      setPending(null);
+    }
+  }
+
+  async function establishSourcedTask() {
+    if (pendingRef.current || sourced == null || sourced.title.trim().length === 0) return;
+    let intent;
+    try {
+      intent = taskFromRetainedNote(sourced.title, sourced.noteId);
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "A task title is required."));
+      return;
+    }
+    pendingRef.current = true;
+    setPending("sourced");
+    setError(null);
+    try {
+      const created = await createTask(getSupabaseBrowserClient(), intent);
+      discardRetainedRead();
+      setSourced(null);
       setState(initialGeneralCapture());
       setOpen(false);
       onTaskCreated?.(created);
@@ -232,6 +274,53 @@ export function GeneralCapture({
                   <time dateTime={note.capturedAt} className="mt-1 block text-sm text-stone-300">
                     {note.capturedAt}
                   </time>
+                  <button
+                    type="button"
+                    onClick={() => beginSourcedTask(note.id)}
+                    disabled={pending !== null}
+                    className={`mt-3 ${secondaryButtonClass}`}
+                  >
+                    Establish a task from this
+                  </button>
+                  {sourced?.noteId === note.id ? (
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium" htmlFor="sourced-task-title">
+                        Task title
+                      </label>
+                      <input
+                        id="sourced-task-title"
+                        name="sourced-task-title"
+                        type="text"
+                        autoComplete="off"
+                        disabled={pending !== null}
+                        value={sourced.title}
+                        onChange={(event) => {
+                          const title = event.target.value;
+                          setSourced({ noteId: note.id, title });
+                          setError(null);
+                        }}
+                        className="mt-1 w-full min-h-12 rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-base text-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-300"
+                      />
+                      <div className="mt-3 flex flex-col gap-3">
+                        <button
+                          type="button"
+                          onClick={() => void establishSourcedTask()}
+                          disabled={pending !== null || sourced.title.trim().length === 0}
+                          className={primaryButtonClass}
+                        >
+                          {pending === "sourced" ? "Saving" : "Establish this task"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={leaveSourcedTask}
+                          disabled={pending !== null}
+                          className={secondaryButtonClass}
+                        >
+                          Leave this
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>
