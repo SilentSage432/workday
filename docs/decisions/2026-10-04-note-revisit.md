@@ -108,6 +108,10 @@ Unrelated production blockers stay where that contract already places them.
 - A later runtime proof, if one is authorized, uses `loadNotes` and does not add Note meaning.
 - The act that establishes a later fact from a Note remains a separate decision.
 
+## Later
+
+[../implementation/NOTE-REVISIT-001.md](../implementation/NOTE-REVISIT-001.md) proves this relationship inside the existing General Capture surface. "Retained experiences" reads the complete `loadNotes` collection and shows each Note's content and capture instant. It does not add a selected Note, a field, a route, or a Notes application. It is not the production Capture experience. Edit, delete, archive, and the visible establishment-from-Note act remain unresolved.
+
 ## Rejected
 
 A Notes application, a Notes navigation destination, folders, notebooks, tags, search, archive as a revisit feature, statuses, title plus body, Context on the Note, reminders on Notes, user-facing sort, user-facing filter, pinning, importance, recency as priority, relevance ranking, actionability ranking, urgency ranking, AI interpretation of the collection, embeddings, a generic fact graph, destructive Note-to-Task conversion, edit, delete, an immutability rule, a `note_id` column, and a designed production Capture.

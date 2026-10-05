@@ -153,8 +153,17 @@ describe("general capture establishment", () => {
     expect(taskStore).not.toContain("notes");
     expect(canvas).toContain("export function establishFromSelection");
     expect(canvas).not.toContain("generalCapture");
-    expect(`${general}\n${domain}`).not.toMatch(
+    expect(domain).not.toMatch(
       /SpeechRecognition|webkitSpeech|getUserMedia|localStorage|sessionStorage|confidence|note_id|source_note_id|loadNotes/,
     );
+    expect(general).toContain("loadNotes");
+    expect(general).toContain("Retained experiences");
+    expect(general).not.toMatch(
+      /SpeechRecognition|webkitSpeech|getUserMedia|localStorage|sessionStorage|confidence|note_id|source_note_id|\.update\(|\.delete\(|updateNote|deleteNote|archiveNote|activeThread|\.sort\(|createProtectedTime|createBlock|createCommitment|updateTask/,
+    );
+    const nav = readFileSync(new URL("../components/BottomNav.tsx", import.meta.url), "utf8");
+    expect(nav).not.toContain("Notes");
+    expect(nav).not.toContain("loadNotes");
+    expect(schedule).not.toContain("Retained experiences");
   });
 });

@@ -4,6 +4,7 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { Note } from "@/domain/note";
 import type { Task } from "@/domain/task";
 
 const NOTE_ID = "00000000-0000-4000-8000-000000000001";
@@ -14,10 +15,12 @@ const LATER_AT = new Date("2026-10-04T19:15:00.000Z");
 const mocks = vi.hoisted(() => ({
   createNote: vi.fn(),
   createTask: vi.fn(),
+  loadNotes: vi.fn(),
 }));
 
 vi.mock("@/persistence/note", () => ({
   createNote: (...args: unknown[]) => mocks.createNote(...args),
+  loadNotes: (...args: unknown[]) => mocks.loadNotes(...args),
 }));
 
 vi.mock("@/persistence/contextsAndTasks", () => ({
@@ -29,6 +32,14 @@ vi.mock("@/persistence/supabaseBrowserClient", () => ({
 }));
 
 import { GeneralCapture } from "@/components/GeneralCapture";
+
+function retainedNote(id: string, content: string, capturedAt: string): Note {
+  return { id, content, capturedAt };
+}
+
+function noteItems(container: ParentNode): HTMLLIElement[] {
+  return [...container.querySelectorAll("li")];
+}
 
 function createdTask(title: string): Task {
   return {
@@ -300,5 +311,152 @@ describe("general capture surface", () => {
     expect(mocks.createTask).toHaveBeenCalledTimes(1);
     expect(surface.textContent).toContain("Could not save this task.");
     expect(surface.querySelector<HTMLTextAreaElement>("#general-expression")?.value).toBe("Call the school");
+  });
+
+  it("reaches retained experience only after capture is opened", async () => {
+    const surface = render(<GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} />);
+    expect(surface.textContent).not.toContain("Retained experiences");
+    expect(mocks.loadNotes).not.toHaveBeenCalled();
+
+    await clickText(surface, "Hold an experience");
+    expect(surface.textContent).toContain("Retained experiences");
+    expect(mocks.loadNotes).not.toHaveBeenCalled();
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(mocks.createTask).not.toHaveBeenCalled();
+  });
+
+  it("shows every retained note in the returned order, with content and capture time only", async () => {
+    const earlier = retainedNote(NOTE_ID, "  aisle 12  ", ACTED_AT.toISOString());
+    const later = retainedNote(NEXT_NOTE_ID, "manager wants the display revisited", LATER_AT.toISOString());
+    mocks.loadNotes.mockResolvedValue([earlier, later]);
+    const surface = render(<GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} />);
+    await clickText(surface, "Hold an experience");
+    await clickText(surface, "Retained experiences");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(noteItems(surface)).toHaveLength(2);
+      });
+    });
+
+    const items = noteItems(surface);
+    expect(items[0]?.textContent).toContain("  aisle 12  ");
+    expect(items[0]?.querySelector("time")?.dateTime).toBe(ACTED_AT.toISOString());
+    expect(items[0]?.querySelector("time")?.textContent).toBe(ACTED_AT.toISOString());
+    expect(items[1]?.textContent).toContain("manager wants the display revisited");
+    expect(items[1]?.querySelector("time")?.dateTime).toBe(LATER_AT.toISOString());
+    expect(items.map((item) => item.querySelector("time")?.dateTime)).toEqual([
+      ACTED_AT.toISOString(),
+      LATER_AT.toISOString(),
+    ]);
+    expect(items[0]?.textContent).not.toMatch(/Context|title|tag|folder|important|summary|action/i);
+    expect(surface.textContent).not.toContain("No notes have been retained.");
+    expect(mocks.loadNotes).toHaveBeenCalledTimes(1);
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(mocks.createTask).not.toHaveBeenCalled();
+  });
+
+  it("keeps the order loadNotes returned instead of sorting it", async () => {
+    const earlier = retainedNote(NOTE_ID, "first retained", ACTED_AT.toISOString());
+    const later = retainedNote(NEXT_NOTE_ID, "second retained", LATER_AT.toISOString());
+    mocks.loadNotes.mockResolvedValue([later, earlier]);
+    const surface = render(<GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} />);
+    await clickText(surface, "Hold an experience");
+    await clickText(surface, "Retained experiences");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(noteItems(surface)).toHaveLength(2);
+      });
+    });
+
+    expect(noteItems(surface).map((item) => item.querySelector("time")?.dateTime)).toEqual([
+      LATER_AT.toISOString(),
+      ACTED_AT.toISOString(),
+    ]);
+  });
+
+  it("says that no notes have been retained only after a complete empty read", async () => {
+    mocks.loadNotes.mockResolvedValue([]);
+    const surface = render(<GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} />);
+    await clickText(surface, "Hold an experience");
+    await clickText(surface, "Retained experiences");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(surface.textContent).toContain("No notes have been retained.");
+      });
+    });
+
+    expect(noteItems(surface)).toHaveLength(0);
+    expect(surface.querySelector("[role='alert']")).toBeNull();
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(mocks.createTask).not.toHaveBeenCalled();
+  });
+
+  it("does not treat a failed note read as an empty collection", async () => {
+    mocks.loadNotes.mockRejectedValue(new Error("A temporal read stopped before it was complete."));
+    const surface = render(<GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} />);
+    await clickText(surface, "Hold an experience");
+    await clickText(surface, "Retained experiences");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(surface.querySelector("[role='alert']")?.textContent).toContain(
+          "A temporal read stopped before it was complete.",
+        );
+      });
+    });
+
+    expect(surface.textContent).not.toContain("No notes have been retained.");
+    expect(surface.textContent).not.toMatch(/no notes|no retained experiences/i);
+    expect(noteItems(surface)).toHaveLength(0);
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(mocks.createTask).not.toHaveBeenCalled();
+  });
+
+  it("revisits without writing a note, a task, or another fact", async () => {
+    mocks.loadNotes.mockResolvedValue([
+      retainedNote(NOTE_ID, "aisle 12", ACTED_AT.toISOString()),
+    ]);
+    const surface = render(<GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} />);
+    await clickText(surface, "Hold an experience");
+    await clickText(surface, "Retained experiences");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(surface.textContent).toContain("aisle 12");
+      });
+    });
+
+    const source = document.body.textContent ?? "";
+    expect(source).not.toMatch(/Edit|Delete|Archive|Make this a task|Establish/);
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(mocks.createTask).not.toHaveBeenCalled();
+    expect(mocks.loadNotes).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows a newly retained note on the next complete revisit", async () => {
+    const kept = retainedNote(NOTE_ID, "aisle 12", ACTED_AT.toISOString());
+    mocks.createNote.mockResolvedValue(kept);
+    mocks.loadNotes.mockResolvedValue([kept]);
+    const surface = render(<GeneralCapture now={() => ACTED_AT} createNoteId={() => NOTE_ID} />);
+    await clickText(surface, "Hold an experience");
+    setExpression(surface, "aisle 12");
+    await clickText(surface, "Keep as a note");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(surface.querySelector("#general-expression")).toBeNull();
+      });
+    });
+    expect(mocks.loadNotes).not.toHaveBeenCalled();
+
+    await clickText(surface, "Hold an experience");
+    await clickText(surface, "Retained experiences");
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(surface.textContent).toContain("aisle 12");
+      });
+    });
+
+    expect(mocks.createNote).toHaveBeenCalledTimes(1);
+    expect(mocks.loadNotes).toHaveBeenCalledTimes(1);
+    expect(mocks.createTask).not.toHaveBeenCalled();
+    expect(surface.querySelector("time")?.dateTime).toBe(ACTED_AT.toISOString());
   });
 });

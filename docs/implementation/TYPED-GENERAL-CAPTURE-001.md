@@ -70,4 +70,4 @@ No interpretation, classification, candidate, confidence, runtime model, voice, 
 
 ## Later
 
-[../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) decides the return to a retained Note through the conceptual Capture experience. This tranche still does not show that return, and it still does not add a Notes application.
+[../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) decides the return to a retained Note through the conceptual Capture experience. [NOTE-REVISIT-001.md](NOTE-REVISIT-001.md) later shows that return inside this same surface. This tranche's own establishment behavior is unchanged, and it still does not add a Notes application.

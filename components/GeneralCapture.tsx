@@ -8,9 +8,10 @@ import {
   taskFromExpression,
   type GeneralCaptureState,
 } from "@/domain/generalCapture";
+import type { Note } from "@/domain/note";
 import type { Task } from "@/domain/task";
 import { createTask } from "@/persistence/contextsAndTasks";
-import { createNote } from "@/persistence/note";
+import { createNote, loadNotes } from "@/persistence/note";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 
 const fieldClass =
@@ -32,8 +33,14 @@ function failureMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
 }
 
+type RetainedExperiences =
+  | { phase: "hidden" }
+  | { phase: "loading" }
+  | { phase: "ready"; notes: readonly Note[] }
+  | { phase: "error"; message: string };
+
 /**
- * Provisional typed proof of capture establishment.
+ * Provisional typed proof of capture establishment, and the scaffold return to retained Notes.
  * The visible words are not final experience canon.
  * Quick Capture remains the direct Task surface.
  */
@@ -50,14 +57,40 @@ export function GeneralCapture({
   const [state, setState] = useState<GeneralCaptureState>(initialGeneralCapture);
   const [pending, setPending] = useState<"note" | "task" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [retained, setRetained] = useState<RetainedExperiences>({ phase: "hidden" });
   const pendingRef = useRef(false);
+  const retainedRead = useRef(0);
   const blank = state.expression.trim().length === 0;
+
+  function discardRetainedRead() {
+    retainedRead.current += 1;
+    setRetained({ phase: "hidden" });
+  }
 
   function leave() {
     if (pendingRef.current) return;
+    discardRetainedRead();
     setState(initialGeneralCapture());
     setOpen(false);
     setError(null);
+  }
+
+  async function revealRetained() {
+    if (pendingRef.current || retained.phase === "loading") return;
+    const request = retainedRead.current + 1;
+    retainedRead.current = request;
+    setRetained({ phase: "loading" });
+    try {
+      const notes = await loadNotes(getSupabaseBrowserClient());
+      if (retainedRead.current !== request) return;
+      setRetained({ phase: "ready", notes });
+    } catch (caught: unknown) {
+      if (retainedRead.current !== request) return;
+      setRetained({
+        phase: "error",
+        message: failureMessage(caught, "Could not read retained experiences."),
+      });
+    }
   }
 
   async function establishNote() {
@@ -75,6 +108,7 @@ export function GeneralCapture({
     setState(authorized.state);
     try {
       await createNote(getSupabaseBrowserClient(), authorized.note);
+      discardRetainedRead();
       setState(initialGeneralCapture());
       setOpen(false);
     } catch (caught: unknown) {
@@ -100,6 +134,7 @@ export function GeneralCapture({
     setError(null);
     try {
       const created = await createTask(getSupabaseBrowserClient(), intent);
+      discardRetainedRead();
       setState(initialGeneralCapture());
       setOpen(false);
       onTaskCreated?.(created);
@@ -168,7 +203,41 @@ export function GeneralCapture({
         <button type="button" onClick={leave} disabled={pending !== null} className={secondaryButtonClass}>
           Leave
         </button>
+        <button
+          type="button"
+          onClick={() => void revealRetained()}
+          disabled={pending !== null || retained.phase === "loading"}
+          className={secondaryButtonClass}
+        >
+          {retained.phase === "loading" ? "Reading" : "Retained experiences"}
+        </button>
       </div>
+      {retained.phase === "loading" ? (
+        <p className="mt-3 text-sm text-stone-300">Reading retained experiences.</p>
+      ) : null}
+      {retained.phase === "error" ? (
+        <p role="alert" className="mt-3 text-sm text-stone-200">
+          {retained.message}
+        </p>
+      ) : null}
+      {retained.phase === "ready" ? (
+        <div className="mt-4">
+          {retained.notes.length === 0 ? (
+            <p>No notes have been retained.</p>
+          ) : (
+            <ul>
+              {retained.notes.map((note) => (
+                <li key={note.id} className="border-t border-stone-800 py-3">
+                  <p className="break-words whitespace-pre-wrap text-base">{note.content}</p>
+                  <time dateTime={note.capturedAt} className="mt-1 block text-sm text-stone-300">
+                    {note.capturedAt}
+                  </time>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }
