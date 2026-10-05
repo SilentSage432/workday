@@ -49,7 +49,7 @@ These were treated as properties of the whole product. They are now Work discove
 - The Active Thread is a work activity that must belong to a shift. Earlier "working context" language for that thread is not the Context primitive.
 - Notes are defined by manager walks and work observations.
 - Today is identical to the current workday or shift. The Work discovery used it that way. The day boundary for the broader product is open.
-- The product name is Workday. The repository name `workday` remains. No product name is chosen.
+- The product name is Workday. The repository name `workday` remains. No product name is chosen. Superseded as naming authority by [../decisions/2026-10-04-product-name.md](../decisions/2026-10-04-product-name.md). The product name is Orient. The repository name stays `workday`.
 
 ## Context
 
@@ -98,7 +98,7 @@ The product is also not a generic to-do list, calendar, habit tracker, life dash
 
 ## Product naming
 
-Unresolved. `workday` is the repository and folder name only. Do not rename it in this tranche. A future name should fit the broader product once its identity is better understood. Historical documents keep the word Workday as the label used at the time.
+Unresolved. `workday` is the repository and folder name only. Do not rename it in this tranche. A future name should fit the broader product once its identity is better understood. Historical documents keep the word Workday as the label used at the time. Superseded as naming authority by [../decisions/2026-10-04-product-name.md](../decisions/2026-10-04-product-name.md). The product name is Orient. This ledger is not rewritten as if that name had already been chosen.
 
 ## New unresolved questions
 
@@ -116,7 +116,7 @@ Unresolved. `workday` is the repository and folder name only. Do not rename it i
 12. Which temporal concepts are universal, and which are Context-specific?
 13. What personal or daily recurring obligations actually exist?
 14. What non-work cadences actually exist?
-15. What should the product be named?
+15. What should the product be named? Superseded as naming authority by [../decisions/2026-10-04-product-name.md](../decisions/2026-10-04-product-name.md). The product name is Orient.
 
 Also unresolved, and easy to confuse with the new primitive: provenance "context" on a Note converted to a Task is originating information. It is not a decision that the Task belongs to a Context. Whether NOW surfaces "what did I need to remember," or only Capture and Notes do, is not decided. NOW's five questions do not yet include that as a separate line. Those five questions are superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). A Note is not part of the first composition. Whether a later experience surfaces one remains open.
 

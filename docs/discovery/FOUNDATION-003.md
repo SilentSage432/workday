@@ -152,7 +152,7 @@ Behavioral questions left open in FOUNDATION-002 remain open unless this file or
 12. What reschedule and carry-forward write, including the MUST DO flag.
 13. Whether a recurring-obligation occurrence is also a Task.
 14. Any non-work cadence, Window, or Recurring Obligation not yet evidenced.
-15. The product name.
+15. The product name. Superseded as naming authority by [../decisions/2026-10-04-product-name.md](../decisions/2026-10-04-product-name.md). The product name is Orient. The repository name stays `workday`.
 
 ## Remaining technical questions
 
@@ -174,6 +174,6 @@ The familiar Next.js, React, TypeScript, and Tailwind direction is still a prefe
 
 ## Naming and phase
 
-`workday` remains the temporary repository name. No product name was chosen. No folder was renamed.
+`workday` remains the temporary repository name. No product name was chosen. No folder was renamed. Superseded as naming authority by [../decisions/2026-10-04-product-name.md](../decisions/2026-10-04-product-name.md). The product name is Orient. This ledger did not choose it, and the repository was not renamed.
 
 Pure product foundation, as planned, ends with this tranche. Architecture and scaffolding wait for review. Nothing in this tranche authorizes application code.

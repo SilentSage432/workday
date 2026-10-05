@@ -1,6 +1,6 @@
 # Product
 
-The product helps one person remain temporally oriented inside the life they have chosen. It does not manage that life. The repository is named `workday`. The product name is unresolved. See [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
+Orient helps one person remain temporally oriented inside the life they have chosen. It does not manage that life. The repository is named `workday`. That name does not define product identity. The product name is Orient. See [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) and [docs/decisions/2026-10-04-product-name.md](docs/decisions/2026-10-04-product-name.md).
 
 Behavior below is the intended product. Work was the first deeply discovered Context. Examples from Work are evidence from that Context. They are not the ontology of the system. The intended product is a multi-context temporal foundation for how the user operates in time. Interaction details that have not been decided are marked unresolved. Historical product questions are in [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md). The operational-adoption boundary, and the questions it refuses to answer, are in [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md).
 

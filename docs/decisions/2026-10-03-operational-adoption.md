@@ -229,12 +229,12 @@ Not answered in this contract. Item 9 was later answered. The experience of that
 6. How does a Context become current?
 7. What does Capacity mean without treating unestablished time as available?
 8. What Task and temporal-fact relationship supports planning or allocation?
-9. What composition should NOW use without the UI inventing importance? Answered by [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md): Current Temporal Orientation and the Active Thread, as independent truths, with no ranking. The experience and any user-facing name remain open. No next behavior was authorized.
+9. What composition should NOW use without the UI inventing importance? Answered by [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md): Current Temporal Orientation and the Active Thread, as independent truths, with no ranking. The experience and its user-facing label remain open. The product name is Orient, in [2026-10-04-product-name.md](2026-10-04-product-name.md). No next behavior was authorized.
 10. Which external calendar facts may participate, and with what authority?
 11. What Week interactions are required beyond reading temporal shape?
 12. What Month interactions are required beyond landscape and orientation?
 
-Earlier open questions that this list does not repeat stay open where the canonical documents already mark them, including Start, Adjust, and Skip, the life-day boundary, and the product name. [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md) stays the historical ledger. It is not rewritten.
+Earlier open questions that this list does not repeat stay open where the canonical documents already mark them, including Start, Adjust, and Skip, and the life-day boundary. The product name is Orient, in [2026-10-04-product-name.md](2026-10-04-product-name.md). [../discovery/FOUNDATION-003.md](../discovery/FOUNDATION-003.md) stays the historical ledger. It is not rewritten.
 
 ## Consequences
 

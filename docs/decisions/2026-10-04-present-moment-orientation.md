@@ -132,6 +132,8 @@ The system does not infer an interruption. It does not create interruption state
 
 Product naming is outside this tranche. No name is chosen. "Orient" is not adopted. Application title, manifest, package metadata, repository name, URLs, runtime copy, and architecture identifiers stay as they are.
 
+Superseded as naming authority by [2026-10-04-product-name.md](2026-10-04-product-name.md). The product name is Orient. The sentences above record this contract's boundary. They are not authority to treat Orient as unadopted. This contract still does not rename identifiers, and it does not change the composition.
+
 ### Experience
 
 The experience is not designed. The composition does not require the eventual experience to be named NOW. No card, panel, navigation, visual hierarchy, color, layout, or animation is specified. Earlier visual explorations are not repository authority.
@@ -151,7 +153,7 @@ The Active Thread remains the explicit thread from [2026-10-02-active-thread.md]
 - No schema, table, migration, route, dependency, or runtime behavior follows from this file.
 - Week, Month, Pulse, Capacity, reminders, current Context, and recommendations stay outside this composition.
 - The production experience of this orientation remains unresolved and is not designed here. Operational adoption still requires that experience. This file does not build it.
-- The product name remains unresolved.
+- The product name remains unresolved in this contract. Later naming authority is [2026-10-04-product-name.md](2026-10-04-product-name.md). The name is Orient. This consequence does not apply that name to titles, routes, or copy.
 
 ## Superseded as composition authority
 
