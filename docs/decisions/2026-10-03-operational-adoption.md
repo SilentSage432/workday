@@ -22,7 +22,7 @@ Earlier product text defined V0 as the smallest system that could generate real 
 
 The user will not operationally adopt the system while that gate is all it meets.
 
-Work was the first deeply discovered Context, and the environment from which many temporal semantics were learned. Work is not the ontology of the system. The intended product is a multi-context temporal foundation: a system for how the user operates in time. The established Contexts remain Work, Family, TeamLab, and Financial. This contract does not decide how a Context becomes current, and it does not decide multi-Context membership.
+Work was the first deeply discovered Context, and the environment from which many temporal semantics were learned. Work is not the ontology of the system. The intended product is a multi-context temporal foundation: a system for how the user operates in time. The seed Contexts remain Work, Family, TeamLab, and Financial. [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md) decides that meaning. There is no current Context. This contract does not decide multi-Context membership.
 
 ## What this contract refuses to weaken
 
@@ -50,7 +50,7 @@ Work remains a deeply modeled Context: schedule, shift type, the discovered cade
 
 Family, TeamLab, and Financial are not labels that can stand in for a temporal foundation. Production adoption requires the architecture and the experience to relate temporal orientation to Context honestly. It does not require those Contexts to copy Work's cadence or Work's projections.
 
-Still unresolved, and not decided here: how a Context becomes current; whether Context can be inferred from established temporal facts; multi-Context membership; Context transitions. Present-moment orientation does not infer current Context. That refusal is [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md).
+Multi-Context membership, Context administration, Destination or Priority binding, and non-Work Capacity boundaries remain unresolved, and they are not decided here. There is no current Context, and Context is not inferred from established temporal facts. That decision is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md). Present-moment orientation does not infer one either. That composition is [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md).
 
 ## Temporal resolutions
 
@@ -185,7 +185,7 @@ These block operational adoption. They are not authorized for implementation unt
 - The present-moment experience. The composition is decided: Current Temporal Orientation and the Active Thread, with no ranking and no `rankNow`. NOW-001 later implements that projection. The experience is not built, and its interaction is not designed. The experience does not have to be labeled NOW. The records are [2026-10-04-present-moment-orientation.md](2026-10-04-present-moment-orientation.md) and [../implementation/NOW-001.md](../implementation/NOW-001.md).
 - The Week surface. Shape is decided in [2026-10-05-week-contract.md](2026-10-05-week-contract.md): perception of where established temporal structure exists, what kind it is, and where nothing has been established. Nothing established is not availability. [../implementation/WEEK-001.md](../implementation/WEEK-001.md) implements that reading for an explicit civil range and does not add a production interaction. The surface is not built. Interactions beyond that perception remain unresolved.
 - The Month surface. The question is decided in [2026-10-05-month-contract.md](2026-10-05-month-contract.md): explicitly established direction beside established temporal structure, without inferring that the structure expresses the direction. The surface is not built. Interactions beyond that perception remain unresolved.
-- Multi-context temporal behavior that is honest for Family, TeamLab, and Financial, without a decision yet on how Context becomes current.
+- The foundational Context meaning is decided in [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md). Family, TeamLab, and Financial do not copy Work. The experience that makes those areas perceptible is not built, and that experience still blocks operational adoption. It is not waiting on a current Context.
 - Recurring obligations the everyday system needs, including whether an occurrence is a Task.
 - Explicit reminders.
 - When a Pulse occurs, and the Pulse that follows from that decision. In-app is the established delivery scope. A push provider is not chosen.

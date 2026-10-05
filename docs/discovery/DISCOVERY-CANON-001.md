@@ -16,7 +16,7 @@ A Task meant action is required. The user establishes it. It does not have to be
 
 Cadence meant how the user intends to move through a meaningful period or Context. It was not a rigid schedule. Opening, Mid, and Closing are Work cadences. No cadence existed for Family, TeamLab, or Financial.
 
-Context meant a meaningful area or operating mode. Work, Family, TeamLab, and Financial were established. How a Context becomes current was unresolved.
+Context meant a meaningful area or operating mode. Work, Family, TeamLab, and Financial were established. How a Context becomes current was unresolved here. [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md) later decides there is no current Context. "Operating mode" in this ledger does not mean a mutually exclusive application mode.
 
 Target meant a preferred completion point. Objective meant a desired operating condition, not automatically a Task. Deadline stayed a completion boundary. Those three were not collapsed.
 
@@ -130,7 +130,7 @@ That is not a persisted hierarchy and not a project tree. Not every Task require
 
 These meanings do not replace the temporal architecture. Time remains the canvas. Protected Time, Commitment, Block, Task, Active Thread, Timeline, and current temporal orientation keep their existing semantics. Capacity is not defined here. [../decisions/2026-10-05-capacity-contract.md](../decisions/2026-10-05-capacity-contract.md) later defines the bounded reading. [../implementation/CAPACITY-001.md](../implementation/CAPACITY-001.md) implements that reading and does not add a production interaction. Timeline semantics are unchanged. NOW composition is not defined in this discovery. No ranking is created. Present-moment orientation was later decided in [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). Destination and Priority are not inputs to that composition.
 
-Context stays a meaningful area or operating mode. Destination and Priority are not folded into it. A Context may relate to several Destinations and Priorities. That relationship is not authorized. How Context becomes current stays unresolved.
+Context stays a meaningful area of life in this discovery's terms. Destination and Priority are not folded into it. A Context may relate to several Destinations and Priorities. That relationship is not authorized. How Context becomes current was unresolved here. [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md) later decides there is no current Context, and it leaves Direction binding outside that close.
 
 ## Production classification
 
@@ -165,7 +165,7 @@ Destination and Priority are established conceptual meanings. Their production i
 - NOW composition, as left open here; the later present-moment decision is the composition, and the experience is not built
 - Week interactions
 - Month interactions
-- how a Context becomes current
+- how a Context becomes current, as left open here; [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md) later decides there is no current Context. Multi-membership, Direction binding, and Context administration remain unresolved
 
 ## Contradictions held
 

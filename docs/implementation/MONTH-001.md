@@ -57,10 +57,10 @@ A complete reading whose `temporalFacts` are empty means no participating tempor
 
 ## Context and progress
 
-The reading does not read or establish a current Context, and it does not filter direction or service pairs by Context. A Timeline fact may already carry `contextId`. That field is preserved and not interpreted.
+The reading does not read or establish a current Context, and it does not filter direction or service pairs by Context. A Timeline fact may already carry `contextId`. That field is preserved and not interpreted. [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md) decides that this neutrality is foundational. There is no current Context.
 
 The reading does not derive meaning from how many pairs or Blocks exist, from Task completion, from duration, or from density.
 
 ## What this does not close
 
-Span selection, Month interaction, Month visual expression, multi-context architecture, progress, and Capacity aggregation remain unresolved.
+Span selection, Month interaction, Month visual expression, experience focus by Context, progress, and Capacity aggregation remain unresolved. The foundational Context meaning is [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md).

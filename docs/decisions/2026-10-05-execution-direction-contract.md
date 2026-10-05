@@ -133,7 +133,7 @@ This record does not implement a Month reading.
 
 ## Context
 
-Context agreement is not required. This contract does not bind a Destination or a Priority to a Context, and it does not infer the relationship from matching Context.
+Context agreement is not required. This contract does not bind a Destination or a Priority to a Context, and it does not infer the relationship from matching Context. A different Context does not invalidate the pair. [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md) keeps that rule and leaves Direction binding outside the foundational close.
 
 Whether a Destination or a Priority is Context-bound, and whether one Destination spans Contexts, remain unresolved.
 

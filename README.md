@@ -65,6 +65,7 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md) | Human-established direction. Semantics. Not a surface |
 | [docs/decisions/2026-10-05-month-contract.md](docs/decisions/2026-10-05-month-contract.md) | Month perceives direction beside structure. Not an implementation |
 | [docs/decisions/2026-10-05-execution-direction-contract.md](docs/decisions/2026-10-05-execution-direction-contract.md) | A Task or a Block may be in service of a Priority. Semantics |
+| [docs/decisions/2026-10-05-multi-context-contract.md](docs/decisions/2026-10-05-multi-context-contract.md) | Context is a meaningful area of one life. Not a mode or a workspace |
 | [docs/implementation/DIRECTION-REP-001.md](docs/implementation/DIRECTION-REP-001.md) | Stored Destination and Priority. Not a production interaction |
 | [docs/implementation/EXECUTION-DIRECTION-REP-001.md](docs/implementation/EXECUTION-DIRECTION-REP-001.md) | Stored Task and Block pairs in service of a Priority. Migration not applied. Not a surface |
 | [docs/implementation/WEEK-001.md](docs/implementation/WEEK-001.md) | Deterministic Week shape reading. Not a production interaction |

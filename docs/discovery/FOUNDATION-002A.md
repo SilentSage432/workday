@@ -53,7 +53,7 @@ These were treated as properties of the whole product. They are now Work discove
 
 ## Context
 
-Context is a new primitive: a meaningful area or operating mode of the user's life, inside which cadence, obligations, tasks, notes, windows, and time may have particular meaning.
+Context is a new primitive: a meaningful area or operating mode of the user's life, inside which cadence, obligations, tasks, notes, windows, and time may have particular meaning. Superseded as the Context definition by [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md). A Context is a meaningful area of one life. "Operating mode" here does not mean a mutually exclusive application mode. Notes, Commitments, and Protected Time do not gain a Context from this sentence.
 
 It is not established as a folder, category, workspace, project, profile, or account.
 
@@ -107,12 +107,12 @@ Unresolved. `workday` is the repository and folder name only. Do not rename it i
 3. Does every Note belong to a Context? Same position as the Task question.
 4. Can a Task relate to more than one Context?
 5. Can multiple Contexts preserve suspended Active Threads at the same time?
-6. How does NOW choose a Context? Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). Present-moment orientation does not choose a Context. How a Context becomes current remains unresolved.
-7. Does the user explicitly enter or switch Context, can time provide it, or some combination?
+6. How does NOW choose a Context? Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). Present-moment orientation does not choose a Context. Superseded as current-Context authority by [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md). There is no current Context.
+7. Does the user explicitly enter or switch Context, can time provide it, or some combination? Superseded as current-Context authority by [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md). Experience focus is not a domain mode. The control is not designed here.
 8. How do system-level Today and a Context-specific cadence interact?
 9. What constitutes a day for the broader product?
 10. How should Work schedule boundaries interact with the broader daily cadence?
-11. How does transition between Work and non-Work behave?
+11. How does transition between Work and non-Work behave? Superseded where it assumed a current-mode primitive by [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md). Overlap on one timeline is coexistence. There is no current Context to transition.
 12. Which temporal concepts are universal, and which are Context-specific?
 13. What personal or daily recurring obligations actually exist?
 14. What non-work cadences actually exist?

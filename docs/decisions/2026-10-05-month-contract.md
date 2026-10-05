@@ -84,7 +84,7 @@ How a Month span is selected remains unresolved. A future reading may be asked o
 
 ## Context
 
-Destination is not a Context. Priority is not a Context. Month does not require a current Context, and it does not assign one. Whether a Destination or a Priority is Context-bound, and whether one Destination spans Contexts, remain unresolved. This record does not answer them.
+Destination is not a Context. Priority is not a Context. Month does not require a current Context, and it does not assign one. [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md) decides that there is no current Context and that Month stays Context-neutral. Whether a Destination or a Priority is Context-bound, and whether one Destination spans Contexts, remain unresolved. This record does not answer them.
 
 ## Capacity
 
@@ -126,7 +126,7 @@ It is not authorized by this record to establish a Destination, a Priority, a te
 
 Month may make deterministic observations about explicitly established directions and about established temporal structure.
 
-It may not decide what matters, what happens next, which direction outranks another, whether a direction is succeeding, whether a Priority is healthy, whether more time should be allocated, whether something should be abandoned, or which Context is current.
+It may not decide what matters, what happens next, which direction outranks another, whether a direction is succeeding, whether a Priority is healthy, whether more time should be allocated, or whether something should be abandoned. There is no current Context for it to choose.
 
 Orient makes the established truths legible. The human interprets them.
 

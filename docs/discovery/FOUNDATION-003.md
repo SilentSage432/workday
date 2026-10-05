@@ -139,7 +139,7 @@ Behavioral questions left open in FOUNDATION-002 remain open unless this file or
 ## Remaining product questions
 
 1. NOW's selection order, including Commitment and Block boundaries among the candidate facts. Superseded as composition authority by [../decisions/2026-10-04-present-moment-orientation.md](../decisions/2026-10-04-present-moment-orientation.md). There is no selection order. A Commitment or a Block participates only when it contains the supplied instant, as one Current Temporal Orientation fact among others.
-2. How a Context becomes current: explicit switch, time, or both.
+2. How a Context becomes current: explicit switch, time, or both. Superseded as current-Context authority by [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md). There is no current Context primitive. Multi-membership remains open in the next item.
 3. Whether a Task or Note can belong to more than one Context.
 4. Whether several Contexts can retain suspended Active Threads.
 5. What a day is, and how Today meets a Context cadence and a shift.

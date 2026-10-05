@@ -50,7 +50,7 @@ A Block answers: what has the user chosen this time for?
 
 A Task-associated Block answers: which already-established action did the user choose this time for?
 
-The purpose text remains the user's words. It stays required. It is not a category, and it is not replaced by the Task. The Task title is not copied into the purpose. The purpose does not edit the Task. Context on the Block and Context on the Task stay independent. Neither is inferred from the other.
+The purpose text remains the user's words. It stays required. It is not a category, and it is not replaced by the Task. The Task title is not copied into the purpose. The purpose does not edit the Task. Context on the Block and Context on the Task stay independent. Neither is inferred from the other. They may differ, and that difference is not a failed association. [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md) is that boundary.
 
 Absence of a Task reference means only that this Block does not cite a Task. A Block with only a purpose remains legitimate.
 

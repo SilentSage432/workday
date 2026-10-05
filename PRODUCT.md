@@ -54,11 +54,11 @@ An empty Current Temporal Orientation means only that no established temporal fa
 
 No Active Thread means only that no current Task intention has been explicitly established. The system does not infer one.
 
-The first composition contains only those two truths. Today Tasks, all open Tasks, Must Do, Due, Planned, Notes, Destination, Priority, Cadence, reminders, Pulse, Capacity, inferred Context, current Context, upcoming temporal facts, the next Commitment, arbitrary nearby Tasks, and recommendations are not inputs merely because the data exists. A later orientation experience may include one of them only after its relationship to present orientation is independently established.
+The first composition contains only those two truths. Today Tasks, all open Tasks, Must Do, Due, Planned, Notes, Destination, Priority, Cadence, reminders, Pulse, Capacity, inferred Context, upcoming temporal facts, the next Commitment, arbitrary nearby Tasks, and recommendations are not inputs merely because the data exists. A later orientation experience may include one of them only after its relationship to present orientation is independently established. Current Context is not one of those deferred inputs.
 
 The composition does not determine what matters right now, a highest priority, urgency, a best next action, or what the user should do next. A next temporal boundary, a next temporal fact, a next planned Task, a next due Task, and the next thing the user should do are not equivalent. No next behavior is authorized.
 
-Current Context is not inferred from the Active Thread, from Work, from a Block, a Commitment, or Protected Time, or from whichever fact contains the instant. Task Context and temporal-fact Context stay properties of those source truths. How a Context becomes current remains unresolved.
+There is no current Context. [docs/decisions/2026-10-05-multi-context-contract.md](docs/decisions/2026-10-05-multi-context-contract.md) decides that. Orient does not infer one from the Active Thread, from Work, from a Block, a Commitment, or Protected Time, or from whichever fact contains the instant. A Task Context and a Block Context stay properties of those facts.
 
 After interruption, the composition can restore the two kinds of evidence above. That is reorientation, not a recommendation. The system does not infer an interruption and does not store interruption state.
 
@@ -249,7 +249,7 @@ V0 is the historical name for the smallest system that could generate real use. 
 6. **Blocks.** Reserve a time range, or potentially a whole day. A Block may relate to a Context. It does not require Tasks or an outcome.
 7. **Commitments.** Time constrained by something the user has committed to. User-created rows exist. External calendar sourcing may follow.
 8. **Active Thread / Resume.** The user explicitly sets the thread. The system can offer Resume on return. No automatic interruption detection.
-9. **Contexts.** Work, Family, TeamLab, and Financial. No workspace administration. Unassigned Tasks and Notes remain allowed. Permanent membership in several Contexts is not decided.
+9. **Contexts.** Work, Family, TeamLab, and Financial are canonical seeds, not a closed enum. No workspace administration. A Task or a Block may carry one explicit Context, or none. The meaning is [docs/decisions/2026-10-05-multi-context-contract.md](docs/decisions/2026-10-05-multi-context-contract.md). Permanent membership in several Contexts is not decided.
 10. **Work schedule.** Manual entry sufficient to know shift boundaries. Opening, Mid, and Closing stay meaningful.
 11. **Work cadence.** The discovered cadence can participate in orientation. Do not build a cadence editor first.
 12. **Recurring obligations and reminders.** The system can represent repeating responsibilities and explicit reminders. The first cut may be minimal.

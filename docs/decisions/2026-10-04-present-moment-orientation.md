@@ -74,13 +74,12 @@ These are not included merely because the data exists:
 - Pulse
 - Capacity
 - inferred Context
-- current Context
 - upcoming temporal facts
 - next Commitment
 - arbitrary nearby Tasks
 - recommendations
 
-They may participate in a later orientation experience only after their relationship to present orientation is independently established. This contract does not establish those relationships.
+They may participate in a later orientation experience only after their relationship to present orientation is independently established. This contract does not establish those relationships. Current Context is not a deferred member of that list. [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md) decides that there is no current Context primitive.
 
 ### What the composition does not determine
 
@@ -151,7 +150,7 @@ The Active Thread remains the explicit thread from [2026-10-02-active-thread.md]
 - Canonical documents that offered an attention hierarchy, a `NowProjection` group list, or `rankNow` as the present-moment composition point here. Historical ledgers keep their original sentences and are marked superseded where those sentences would otherwise be read as current authority.
 - `rankNow` is not authorized. UI code must not invent a cross-group order.
 - No schema, table, migration, route, dependency, or runtime behavior follows from this file.
-- Week, Month, Pulse, Capacity, reminders, current Context, and recommendations stay outside this composition.
+- Week, Month, Pulse, Capacity, reminders, and recommendations stay outside this composition. There is no current Context to add later. That decision is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md).
 - The production experience of this orientation remains unresolved and is not designed here. Operational adoption still requires that experience. This file does not build it.
 - The product name remains unresolved in this contract. Later naming authority is [2026-10-04-product-name.md](2026-10-04-product-name.md). The name is Orient. This consequence does not apply that name to titles, routes, or copy.
 

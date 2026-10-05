@@ -82,11 +82,11 @@ Placement, clipping, overnight continuation, the spring-forward gap, and the rep
 
 ## Exclusions
 
-No Week page, route, grid, gesture, color, or navigation. No Month. No recurrence. No weekly Capacity. No schema, migration, or dependency. No universal week boundary. No current Context.
+No Week page, route, grid, gesture, color, or navigation. No Month. No recurrence. No weekly Capacity. No schema, migration, or dependency. No universal week boundary. No current Context. [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md) later decides that there is none.
 
 ## Unresolved
 
-Production Week interaction and visual expression. How a life-wide or default Week boundary is selected. Whether Week later exposes `planned_on`, Due, or Must Do without giving them territory. Week expression of individual Capacity readings. Recurrence's later participation. Month. Multi-context behavior. The final phone experience and the final desktop experience.
+Production Week interaction and visual expression. How a life-wide or default Week boundary is selected. Whether Week later exposes `planned_on`, Due, or Must Do without giving them territory. Week expression of individual Capacity readings. Recurrence's later participation. Month. Experience focus by Context. The foundational Context meaning is [../decisions/2026-10-05-multi-context-contract.md](../decisions/2026-10-05-multi-context-contract.md). The final phone experience and the final desktop experience.
 
 ## Tests
 

@@ -14,7 +14,7 @@ An earlier directional statement asked where the user is in the day, what curren
 
 The still earlier sentence, "externalize my work cadence… when the workday interrupts me," remains true of the Work Context. It is not the purpose of the whole product.
 
-Work was the first deeply discovered Context, and the environment from which many temporal semantics were learned. It is not the architectural center of the product. The intended product is a multi-context temporal foundation: a system for how the user operates in time. How a Context becomes current is unresolved.
+Work was the first deeply discovered Context, and the environment from which many temporal semantics were learned. It is not the architectural center of the product. The intended product is a multi-context temporal foundation: a system for how the user operates in time. A Context is a meaningful area of that life, not a current mode. The decision is [docs/decisions/2026-10-05-multi-context-contract.md](docs/decisions/2026-10-05-multi-context-contract.md).
 
 The user generally knows what they intend. The problem is staying oriented in time, and remembering what they notice instead of keeping it only in memory. The product is an external memory and orientation surface. Sophistication comes from a small set of explicit relationships, not from feature count.
 

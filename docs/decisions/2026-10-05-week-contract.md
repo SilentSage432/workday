@@ -166,7 +166,7 @@ Priority and Destination remain outside the Week temporal-structure reading unle
 
 Week may establish deterministic observations about temporal structure.
 
-It may not decide what matters, what should happen next, which day is overloaded, which day is underused, what should move, what should be sacrificed, what unused territory should contain, whether the week is good or bad, whether cadence succeeded, or which Context is current.
+It may not decide what matters, what should happen next, which day is overloaded, which day is underused, what should move, what should be sacrificed, what unused territory should contain, whether the week is good or bad, or whether cadence succeeded. There is no current Context for it to choose. That decision is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md).
 
 Orient makes the shape legible. The human interprets it.
 
@@ -214,7 +214,7 @@ Week remains a production requirement. [../implementation/WEEK-001.md](../implem
 
 This record closes the semantic meaning of Week shape. WEEK-001 closes the deterministic reading.
 
-It does not close production Week interaction, production Week visual expression, generic or life-wide week-boundary selection, Week Capacity expression, recurrence, Month, multi-context behavior, the final phone experience, or the final desktop experience.
+It does not close production Week interaction, production Week visual expression, generic or life-wide week-boundary selection, Week Capacity expression, recurrence, Month, experience focus by Context, the final phone experience, or the final desktop experience.
 
 Operational adoption is not closed.
 
@@ -227,7 +227,7 @@ Operational adoption is not closed.
 - Week expression of individual Capacity readings.
 - Recurrence's later participation in temporal composition.
 - Month interaction beyond perception. The question is [2026-10-05-month-contract.md](2026-10-05-month-contract.md).
-- Multi-context behavior, and which Context is current.
+- Experience focus by Context. Week does not require a current Context. The meaning is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md).
 - The final phone experience and the final desktop experience.
 
 ## Not authorized

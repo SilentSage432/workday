@@ -153,7 +153,7 @@ This contract does not create goal tracking, OKRs, habit tracking, productivity 
 - whether one Priority may serve more than one Destination
 - Destination lifecycle and Priority lifecycle
 - editing, removal, archival, abandonment, supersession, and replacement of those endpoints
-- Context binding and multi-context directional behavior
+- Context binding of Destination and Priority. Foundational multi-context meaning, including the refusal to bind Direction here, is [2026-10-05-multi-context-contract.md](2026-10-05-multi-context-contract.md).
 - the finer boundary among Destination, Objective, and Target
 - whether Cadence explicitly relates to a Priority
 - interaction and visual expression
