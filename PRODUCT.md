@@ -18,11 +18,11 @@ An earlier directional statement asked where the user is in the day, what curren
 
 Importance derives from relationship to where the user has established they are going, not merely from what currently demands attention. Attention is not evidence of importance.
 
-Destination and Priority name that relationship. They are defined in [DOMAIN.md](DOMAIN.md). They do not replace time as the canvas. They are not Contexts. Their representation is unresolved. Their production implementation classification is unresolved in [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md). Discovering them does not make them adoption blockers.
+Destination and Priority name that relationship. A Destination is where the human is deliberately trying to take some part of life or reality. A Priority is sustained attention downstream of an established Destination. A directional relationship records that the human explicitly established that one already-established truth exists in service of a larger human-established direction. That relationship is not required of every fact. Activity is not proof of progress. They do not replace time as the canvas. They are not Contexts. Representation is unresolved. Production implementation classification remains unresolved in [docs/decisions/2026-10-03-operational-adoption.md](docs/decisions/2026-10-03-operational-adoption.md). The semantics are [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md). Discovering them does not make them adoption blockers.
 
 A strong operating foundation makes deviation easier for the human to perceive. Ordinary life contains friction. The aim is not zero disturbance. Stable foundations and explicit relationships make a departure from intended operation more legible. The human determines meaning and cause. The product does not add a Friction object, detect anomalies, or infer a cause.
 
-The system should preserve why an established action exists when that provenance is known. Provenance is an inspectable relationship to evidence the user originated.
+Provenance preserves where an established Task came from. It is an inspectable relationship to a retained Note the user originated. It does not answer why an execution was deliberately established in a larger direction. That question is the directional relationship, and it is not provenance.
 
 ## Life loop
 
@@ -305,5 +305,6 @@ External authorities may remain. Google Calendar may remain authoritative for ex
 - Treating chosen time as less important because it was not imposed
 - Inferring action from informational capture
 - Inferring Priority from attention, urgency, recency, or frequency
+- Inferring a Destination, directional ancestry, or progress from activity, time spent, or repetition
 - A Friction object, anomaly detection, or an inferred cause of deviation
 - Turning targets, objectives, or interrupted cadence into punitive status language

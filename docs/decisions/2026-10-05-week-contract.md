@@ -152,7 +152,7 @@ The discovered Lowe's weekly strategy remains Work-context evidence. It is not a
 
 ## Priority and Destination
 
-Destination, then Priority, then cadence or execution, remains the conceptual chain.
+Destination, then Priority, then cadence or execution, is the semantic direction in [2026-10-05-direction-contract.md](2026-10-05-direction-contract.md). Week shape does not supply that direction.
 
 Attention is not evidence of importance.
 

@@ -62,6 +62,7 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md) | A Block may refer to one Task. Not Capacity |
 | [docs/decisions/2026-10-05-capacity-contract.md](docs/decisions/2026-10-05-capacity-contract.md) | Bounded Capacity reading. Not an allocator |
 | [docs/decisions/2026-10-05-week-contract.md](docs/decisions/2026-10-05-week-contract.md) | Week perceives temporal shape. Not an implementation |
+| [docs/decisions/2026-10-05-direction-contract.md](docs/decisions/2026-10-05-direction-contract.md) | Human-established direction. Semantics only. Not stored |
 | [docs/implementation/WEEK-001.md](docs/implementation/WEEK-001.md) | Deterministic Week shape reading. Not a production interaction |
 | [docs/implementation/CAPACITY-001.md](docs/implementation/CAPACITY-001.md) | Deterministic Work Capacity reading. Not a production interaction |
 | [docs/implementation/TASK-TIME-001.md](docs/implementation/TASK-TIME-001.md) | Optional Task reference on a Block. Hosted schema verified. S26 Ultra scaffold accepted. Not drag and drop |
@@ -76,7 +77,7 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/implementation/NOTE-STORAGE-001A.md](docs/implementation/NOTE-STORAGE-001A.md) | Correct the Notes migration comment syntax. No schema change |
 | [docs/decisions/2026-10-04-capture-establishment-contract.md](docs/decisions/2026-10-04-capture-establishment-contract.md) | Capture establishment boundary |
 | [docs/implementation/TYPED-GENERAL-CAPTURE-001.md](docs/implementation/TYPED-GENERAL-CAPTURE-001.md) | Provisional typed proof of Note, Task, or nothing |
-| [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md) | Note, Destination, Priority, and the Cadence refinement. Not an implementation |
+| [docs/discovery/DISCOVERY-CANON-001.md](docs/discovery/DISCOVERY-CANON-001.md) | Discovery of Note, Destination, Priority, and the Cadence refinement. Direction semantics now live in the direction contract |
 | [docs/discovery/VOICE-CAPABILITY-001.md](docs/discovery/VOICE-CAPABILITY-001.md) | Speech acquisition boundary. Primary-device dictation satisfies the established need |
 | [docs/implementation/VOICE-PROBE-001A.md](docs/implementation/VOICE-PROBE-001A.md) | Passed keyboard-dictation probe on the Samsung Galaxy S26 Ultra |
 | [docs/discovery/FOUNDATION-003.md](docs/discovery/FOUNDATION-003.md) | Product ledger: life evidence, V0, and remaining product questions |

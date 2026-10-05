@@ -235,7 +235,7 @@ Edit, delete, and archive are not in Required but unresolved, and they are not i
 
 ### Destination and Priority
 
-[../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md) establishes Destination and Priority as conceptual meanings. See [../../DOMAIN.md](../../DOMAIN.md).
+[2026-10-05-direction-contract.md](2026-10-05-direction-contract.md) decides Destination, Priority, and the directional relationship as semantics. [../discovery/DISCOVERY-CANON-001.md](../discovery/DISCOVERY-CANON-001.md) remains the discovery record. See [../../DOMAIN.md](../../DOMAIN.md).
 
 Their production implementation classification is unresolved. They are not added to Required but unresolved. They are not added to Future. The product identity in this contract is a temporal system the user can depend on. These concepts explain sustained importance and why temporal decisions matter. They do not replace Protected Time, Commitment, Block, Task, Active Thread, Timeline, or current temporal orientation. Evidence does not show that operational adoption must wait for their representation. Evidence also does not show that the product may treat them as disposable future capabilities. This contract does not classify them further, and it does not authorize building them.
 
