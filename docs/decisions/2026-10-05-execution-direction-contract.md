@@ -4,7 +4,7 @@ Date: 2026-10-05.
 
 Baseline: `c1198369fd03269f667343c7aa64aae2cae89df2`.
 
-[2026-10-05-direction-contract.md](2026-10-05-direction-contract.md) defined a directional relationship and left its execution endpoints open. [2026-10-05-month-contract.md](2026-10-05-month-contract.md) then refused to treat coexistence as that relationship. Discovery has now chosen the endpoints, the cardinality, and withdrawal. This record states those semantics. It does not store them.
+[2026-10-05-direction-contract.md](2026-10-05-direction-contract.md) defined a directional relationship and left its execution endpoints open. [2026-10-05-month-contract.md](2026-10-05-month-contract.md) then refused to treat coexistence as that relationship. Discovery has now chosen the endpoints, the cardinality, and withdrawal. This record states those semantics. [../implementation/EXECUTION-DIRECTION-REP-001.md](../implementation/EXECUTION-DIRECTION-REP-001.md) later stores the pairs. The migration is not applied. This record does not add a surface.
 
 ## Decision
 
@@ -16,7 +16,7 @@ An already-established Task, or an already-established Block, may be explicitly 
 
 The relationship creates neither endpoint and changes neither endpoint's meaning. Orient does not infer it. While it is retained, it is inspectable and deterministic. It is optional. It carries no rank, no score, and no progress claim.
 
-This record does not implement the relationship.
+This record does not implement the relationship. [../implementation/EXECUTION-DIRECTION-REP-001.md](../implementation/EXECUTION-DIRECTION-REP-001.md) stores a Task pair and a Block pair. It does not add a production interaction.
 
 ## Eligible execution
 
@@ -150,7 +150,7 @@ The semantics imply these constraints for a later representation:
 - Withdrawal removes the relationship.
 - No historical relationship state is required.
 
-[../implementation/DIRECTION-REP-001.md](../implementation/DIRECTION-REP-001.md) stores Destination and Priority. It does not store this relationship.
+[../implementation/DIRECTION-REP-001.md](../implementation/DIRECTION-REP-001.md) stores Destination and Priority. [../implementation/EXECUTION-DIRECTION-REP-001.md](../implementation/EXECUTION-DIRECTION-REP-001.md) stores this relationship as two pair tables. It does not add `priority_id` to a Task or a Block.
 
 ## Non-goals
 
@@ -158,7 +158,7 @@ No runtime, schema, migration, persistence, UI, route, Month projection, or chan
 
 ## Unresolved
 
-- Persistence representation and any production interaction.
+- Any production interaction. The pair tables are [../implementation/EXECUTION-DIRECTION-REP-001.md](../implementation/EXECUTION-DIRECTION-REP-001.md). The migration is not applied.
 - Whether one Priority may serve more than one Destination.
 - Whether Cadence explicitly relates to a Priority.
 - Context binding of Destination and Priority.

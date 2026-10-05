@@ -4,7 +4,7 @@ Date: 2026-10-05.
 
 Baseline: `893b210a30e3ad2a86fc56bbc92938cd2cc76fdc`.
 
-Month had a role name, landscape, and no question. Week already answers where established temporal structure is, what kind it is, and where none has been established. Direction is now an explicit human establishment: Destination, then Priority. The link from that direction into an execution fact is not stored. This record gives Month the question those facts can support. It does not define that link. [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) later does, and this record does not implement it.
+Month had a role name, landscape, and no question. Week already answers where established temporal structure is, what kind it is, and where none has been established. Direction is now an explicit human establishment: Destination, then Priority. This record does not store the link from direction into an execution fact. This record gives Month the question those facts can support. It does not define that link. [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) later does, and this record does not implement it.
 
 ## Decision
 
@@ -50,7 +50,7 @@ A Destination and a Priority do not occupy temporal territory because they exist
 
 The chain runs Destination, then Priority, then cadence or execution, then observable lived reality. That direction is semantic. It is not a license to infer the last step backward.
 
-[2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) decides the explicit relationship. A Task or a Block may be in service of a Priority because the human established that pair. Month may perceive that relationship where it is retained. Month must not say a Commitment, Protected Time, a Work shift, or any other fact is in service of a Priority under that contract. Coexistence is not the relationship. A withdrawn relationship is not retained, so Month has no historical pair to perceive.
+[2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) decides the explicit relationship. [../implementation/EXECUTION-DIRECTION-REP-001.md](../implementation/EXECUTION-DIRECTION-REP-001.md) stores a Task pair and a Block pair. Month may perceive that relationship where it is retained. This record does not read those tables. Month must not say a Commitment, Protected Time, a Work shift, or any other fact is in service of a Priority under that contract. Coexistence is not the relationship. A withdrawn relationship is not retained, so Month has no historical pair to perceive.
 
 "In service of" remains intended placement. It is not expression, progress, or success.
 

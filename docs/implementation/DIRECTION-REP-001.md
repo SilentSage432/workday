@@ -12,9 +12,9 @@ Orient can read those facts back. The read is the complete collection for the si
 
 ## What stays semantic only
 
-The directional relationship into an execution fact is not stored.
+This tranche does not store the directional relationship into an execution fact.
 
-[../decisions/2026-10-05-execution-direction-contract.md](../decisions/2026-10-05-execution-direction-contract.md) later decides the semantics: a Task or a Block may be explicitly established in service of a Priority. This tranche does not store that relationship, and it does not choose a schema for it.
+[../decisions/2026-10-05-execution-direction-contract.md](../decisions/2026-10-05-execution-direction-contract.md) decides the semantics. [EXECUTION-DIRECTION-REP-001.md](EXECUTION-DIRECTION-REP-001.md) later stores a Task pair and a Block pair. This tranche does not.
 
 Note-to-Task provenance still answers where a Task came from. A task-associated Block still answers what that chosen time is for. Neither field is reused for direction.
 
