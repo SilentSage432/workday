@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { establishFromSelection, establishmentBlocked, updateFromStored } from "@/components/canvasEstablishment";
 
+const TASK_ID = "00000000-0000-4000-8000-000000000010";
+
 const selection = { civilDate: "2026-10-03", startMinute: 18 * 60, endMinute: 21 * 60 };
 
 describe("canvas establishment", () => {
@@ -77,8 +79,49 @@ describe("canvas establishment", () => {
     expect(updateFromStored({ ...shared, id: "studio", meaning: "block" })).toMatchObject({
       id: "studio",
       meaning: "block",
-      input: { kind: "timed", purpose: "Studio", contextId: "ctx-1", startLocal: "16:45", endLocal: "17:15" },
+      input: { kind: "timed", purpose: "Studio", contextId: "ctx-1", taskId: null, startLocal: "16:45", endLocal: "17:15" },
     });
+    const taskId = "00000000-0000-4000-8000-000000000010";
+    expect(
+      updateFromStored({
+        ...shared,
+        id: "studio",
+        meaning: "block",
+        startMinute: 15 * 60,
+        endMinute: 15 * 60 + 30,
+        taskId,
+      }),
+    ).toMatchObject({
+      input: { purpose: "Studio", taskId, startLocal: "15:00", endLocal: "15:30" },
+    });
+    expect(
+      establishFromSelection({
+        selection,
+        meaning: "block",
+        clock: "ordinary",
+        label: "",
+        purpose: "Focus",
+        contextId: "",
+        title: "Complete quarterly report",
+        taskId: TASK_ID,
+      }),
+    ).toMatchObject({
+      meaning: "block",
+      input: { purpose: "Focus", taskId: TASK_ID, contextId: null },
+    });
+    expect(
+      establishFromSelection({
+        selection: { civilDate: "2026-10-06", startMinute: 13 * 60, endMinute: 14 * 60 },
+        meaning: "block",
+        clock: "ordinary",
+        label: "",
+        purpose: "Continue",
+        contextId: "",
+        title: "",
+        taskId: TASK_ID,
+      }).input,
+    ).toMatchObject({ purpose: "Continue", taskId: TASK_ID, startsOn: "2026-10-06" });
+
     expect(updateFromStored({ ...shared, id: "school", meaning: "commitment" })).toMatchObject({
       id: "school",
       meaning: "commitment",

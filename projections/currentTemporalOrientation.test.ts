@@ -607,6 +607,32 @@ describe("current temporal orientation", () => {
     ).toEqual([]);
   });
 
+  it("keeps a task reference on the block and does not add the task as a fact", () => {
+    const taskId = "00000000-0000-4000-8000-000000000010";
+    const result = orient({
+      instant: "2026-10-03T16:00:00.000Z",
+      blocks: [
+        block("floor", {
+          kind: "timed",
+          startsOn: "2026-10-03",
+          startLocal: "09:00",
+          endLocal: "11:00",
+          purpose: "Flooring walk",
+          taskId,
+        }),
+      ],
+    });
+    expect(result.facts).toEqual([
+      expect.objectContaining({
+        sourceKind: "block",
+        sourceId: "floor",
+        purpose: "Flooring walk",
+        taskId,
+      }),
+    ]);
+    expect(result.facts.map((fact) => fact.sourceKind)).toEqual(["block"]);
+  });
+
   it("does not read a clock, the network, or task truth", () => {
     const source = readFileSync(new URL("./currentTemporalOrientation.ts", import.meta.url), "utf8");
     expect(source).not.toMatch(

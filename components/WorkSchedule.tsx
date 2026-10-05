@@ -12,6 +12,7 @@ import type {
   CanvasEstablishment,
   CanvasFactRemoval,
   CanvasFactUpdate,
+  OpenTaskChoices,
 } from "@/components/canvasEstablishment";
 import { Icon } from "@/components/Icon";
 import { useBlockNavigation } from "@/components/navigationGuard";
@@ -36,7 +37,7 @@ import {
 import type { TemporalSettings, WorkScheduleEntry } from "@/domain/workSchedule";
 import { createBlock, deleteBlock, loadBlocks, updateBlock } from "@/persistence/block";
 import { createCommitment, deleteCommitment, loadCommitments, updateCommitment } from "@/persistence/commitment";
-import { loadContexts } from "@/persistence/contextsAndTasks";
+import { loadContexts, loadOpenTasks } from "@/persistence/contextsAndTasks";
 import {
   createProtectedTime,
   deleteProtectedTime,
@@ -109,6 +110,7 @@ export function WorkSchedule() {
   const [managing, setManaging] = useState(false);
   const [selectionDiscard, setSelectionDiscard] = useState(0);
   const [blockContexts, setBlockContexts] = useState<CanvasContextOption[]>([]);
+  const [openTasks, setOpenTasks] = useState<OpenTaskChoices>({ status: "loading" });
 
   const dirty = editing && draft !== null && weekDraftIsDirty(draft);
   useBlockNavigation(dirty, () => {
@@ -194,15 +196,31 @@ export function WorkSchedule() {
     async function loadCanvas() {
       setCanvasPhase("loading");
       setCanvasError(null);
+      setOpenTasks({ status: "loading" });
+      const taskRead = loadOpenTasks(client)
+        .then(
+          (tasks): OpenTaskChoices => ({
+            status: "ready",
+            tasks: tasks.map((task) => ({ id: task.id, title: task.title })),
+          }),
+        )
+        .catch(
+          (error: unknown): OpenTaskChoices => ({
+            status: "error",
+            message: failureMessage(error, "Could not load tasks."),
+          }),
+        );
       try {
-        const [workSchedule, protectedTime, blocks, commitments, contexts] = await Promise.all([
+        const [workSchedule, protectedTime, blocks, commitments, contexts, tasks] = await Promise.all([
           loadWorkSchedule(client, query.from, query.to),
           loadProtectedTime(client, query),
           loadBlocks(client, query),
           loadCommitments(client, query),
           loadContexts(client),
+          taskRead,
         ]);
         if (ignore) return;
+        setOpenTasks(tasks);
         const contextNames: Record<string, string> = {};
         const options: CanvasContextOption[] = [];
         for (const context of contexts) {
@@ -224,6 +242,7 @@ export function WorkSchedule() {
         setCanvasPhase("ready");
       } catch (error: unknown) {
         if (ignore) return;
+        setOpenTasks(await taskRead);
         setCanvas(null);
         setCanvasError(failureMessage(error, "Could not load this day."));
         setCanvasPhase("error");
@@ -459,6 +478,7 @@ export function WorkSchedule() {
           timeZone={settings.timeZone}
           discardToken={`${settings.timeZone}:${canvasReload}:${selectionDiscard}`}
           contexts={blockContexts}
+          openTasks={openTasks}
           onPreviousDay={() => shiftDay(-1)}
           onNextDay={() => shiftDay(1)}
           onToday={showConfirmedToday}

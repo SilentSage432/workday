@@ -7,6 +7,7 @@ type BlockBase = {
   startsOn: string;
   purpose: string;
   contextId: string | null;
+  taskId: string | null;
 };
 
 export type AllDayBlock = BlockBase & {
@@ -37,13 +38,15 @@ export function defineBlock(input: {
   endLocal?: string | null;
   purpose?: string | null;
   contextId?: string | null;
+  taskId?: string | null;
 }): BlockInput {
   const startsOn = formatCivilDate(parseCivilDate(input.startsOn));
   const purpose = requirePurpose(input.purpose);
   const contextId = normalizeContextId(input.contextId);
+  const taskId = normalizeTaskId(input.taskId);
 
   if (input.kind === "all_day") {
-    return { kind: "all_day", startsOn, purpose, contextId };
+    return { kind: "all_day", startsOn, purpose, contextId, taskId };
   }
 
   if (!input.startLocal || !input.endLocal) {
@@ -57,6 +60,7 @@ export function defineBlock(input: {
     endLocal: formatLocalTime(parseLocalTime(input.endLocal)),
     purpose,
     contextId,
+    taskId,
   };
 }
 
@@ -72,6 +76,12 @@ export function requirePurpose(value: string | null | undefined): string {
 }
 
 function normalizeContextId(value: string | null | undefined): string | null {
+  if (value == null) return null;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
+
+function normalizeTaskId(value: string | null | undefined): string | null {
   if (value == null) return null;
   const trimmed = value.trim();
   return trimmed.length === 0 ? null : trimmed;

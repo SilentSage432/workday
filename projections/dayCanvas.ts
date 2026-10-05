@@ -53,6 +53,7 @@ export type DayCanvasStoredFact =
       endLocal: string;
       purpose: string;
       contextId: string | null;
+      taskId: string | null;
     }
   | {
       sourceKind: "commitment";
@@ -283,6 +284,7 @@ function storedFact(fact: Extract<TimelineFact, { allDay: false }>): DayCanvasSt
       endLocal: fact.endLocal,
       purpose: fact.purpose,
       contextId: fact.contextId,
+      taskId: fact.taskId,
     };
   }
   return {

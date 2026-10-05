@@ -19,6 +19,7 @@ export type BlockDraft = {
   end: TwelveHourClock;
   contextId: string;
   purpose: string;
+  taskId: string | null;
 };
 
 export function newBlockDraft(startsOn: string): BlockDraft {
@@ -30,6 +31,7 @@ export function newBlockDraft(startsOn: string): BlockDraft {
     end: emptyTwelveHourClock(),
     contextId: "",
     purpose: "",
+    taskId: null,
   };
 }
 
@@ -39,6 +41,7 @@ export function draftFromBlock(entry: Block): BlockDraft {
     startsOn: entry.startsOn,
     contextId: entry.contextId ?? "",
     purpose: entry.purpose,
+    taskId: entry.taskId,
   };
   if (entry.kind === "all_day") {
     return {
@@ -67,6 +70,7 @@ export function blockInputFromDraft(draft: BlockDraft): BlockInput {
       startsOn: draft.startsOn,
       purpose: draft.purpose,
       contextId: draft.contextId,
+      taskId: draft.taskId,
     });
   }
 
@@ -83,6 +87,7 @@ export function blockInputFromDraft(draft: BlockDraft): BlockInput {
     endLocal,
     purpose: draft.purpose,
     contextId: draft.contextId,
+    taskId: draft.taskId,
   });
 }
 

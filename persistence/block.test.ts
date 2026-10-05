@@ -19,6 +19,7 @@ const allDayRow: BlockRow = {
   end_local: null,
   context_id: null,
   purpose: "TeamLab retreat",
+  task_id: null,
   created_at: "2026-10-02T18:00:00.000Z",
 };
 
@@ -40,6 +41,7 @@ describe("block persistence", () => {
       startsOn: "2026-10-03",
       purpose: "TeamLab retreat",
       contextId: null,
+      taskId: null,
     });
 
     const write = toBlockWrite(
@@ -61,8 +63,8 @@ describe("block persistence", () => {
       end_local: "11:07:00",
       context_id: "context-teamlab",
       purpose: "Work on Studio",
+      task_id: null,
     });
-    expect(write).not.toHaveProperty("task_id");
     expect(write).not.toHaveProperty("label");
     expect(write).not.toHaveProperty("recurrence");
   });
@@ -88,6 +90,7 @@ describe("block persistence", () => {
       kind: "all_day",
       purpose: "TeamLab retreat",
       context_id: null,
+      task_id: null,
       start_local: null,
     });
 

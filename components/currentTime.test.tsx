@@ -14,6 +14,7 @@ const block: CurrentTemporalFact = {
   endLocal: "11:00",
   endsNextCivilDate: false,
   purpose: "Flooring walk",
+  taskId: null,
 };
 
 const work: CurrentTemporalFact = {

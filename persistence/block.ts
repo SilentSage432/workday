@@ -4,7 +4,7 @@ import { formatLocalTime, parseLocalTime } from "@/domain/time/localTime";
 import { readCompleteDateRows, requireCivilWindow, type CivilDateWindow } from "@/persistence/completeRead";
 
 export const BLOCK_COLUMNS =
-  "id, starts_on, kind, start_local, end_local, context_id, purpose, created_at";
+  "id, starts_on, kind, start_local, end_local, context_id, purpose, task_id, created_at";
 
 export type BlockRow = {
   id: string;
@@ -14,6 +14,7 @@ export type BlockRow = {
   end_local: string | null;
   context_id: string | null;
   purpose: string;
+  task_id: string | null;
   created_at: string;
 };
 
@@ -25,6 +26,7 @@ export type BlockWriteRow = {
   end_local: string | null;
   context_id: string | null;
   purpose: string;
+  task_id: string | null;
 };
 
 function localForDatabase(value: string): string {
@@ -50,6 +52,7 @@ export function rowToBlock(row: BlockRow): Block {
     endLocal: row.end_local ? localFromDatabase(row.end_local) : null,
     purpose: row.purpose,
     contextId: row.context_id,
+    taskId: row.task_id,
   });
 
   return { ...defined, id: row.id, createdAt: row.created_at };
@@ -66,6 +69,7 @@ export function toBlockWrite(userId: string, input: BlockInput): BlockWriteRow {
       end_local: null,
       context_id: defined.contextId,
       purpose: defined.purpose,
+      task_id: defined.taskId,
     };
   }
 
@@ -77,6 +81,7 @@ export function toBlockWrite(userId: string, input: BlockInput): BlockWriteRow {
     end_local: localForDatabase(defined.endLocal),
     context_id: defined.contextId,
     purpose: defined.purpose,
+    task_id: defined.taskId,
   };
 }
 

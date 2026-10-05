@@ -10,6 +10,7 @@ import {
   type CanvasEstablishment,
   type CanvasFactRemoval,
   type CanvasFactUpdate,
+  type OpenTaskChoices,
 } from "@/components/canvasEstablishment";
 import { factAddress, topmostRenderedFact, type FactAddress, type RenderedFactBox } from "@/components/factAddress";
 import { Icon } from "@/components/Icon";
@@ -107,6 +108,7 @@ type CompletionDraft = {
   purpose: string;
   contextId: string;
   title: string;
+  taskId: string;
 };
 
 type FactDraft = CompletionDraft & {
@@ -131,11 +133,12 @@ function draftFromStored(stored: DayCanvasStoredFact): FactDraft {
     purpose: stored.sourceKind === "block" ? stored.purpose : "",
     contextId: stored.sourceKind === "block" ? stored.contextId ?? "" : "",
     title: stored.sourceKind === "commitment" ? stored.title : "",
+    taskId: "",
   };
 }
 
 function emptyCompletion(): CompletionDraft {
-  return { label: "", purpose: "", contextId: "", title: "" };
+  return { label: "", purpose: "", contextId: "", title: "", taskId: "" };
 }
 
 export function DayCanvas({
@@ -147,6 +150,7 @@ export function DayCanvas({
   timeZone,
   discardToken,
   contexts = [],
+  openTasks,
   onPreviousDay,
   onNextDay,
   onToday,
@@ -162,6 +166,7 @@ export function DayCanvas({
   timeZone: string;
   discardToken: string;
   contexts?: CanvasContextOption[];
+  openTasks?: OpenTaskChoices;
   onPreviousDay: () => void;
   onNextDay: () => void;
   onToday: () => void;
@@ -179,6 +184,7 @@ export function DayCanvas({
       model={model}
       timeZone={timeZone}
       contexts={contexts}
+      openTasks={openTasks}
       onPreviousDay={onPreviousDay}
       onNextDay={onNextDay}
       onToday={onToday}
@@ -197,6 +203,7 @@ function DayCanvasSession({
   model,
   timeZone,
   contexts,
+  openTasks,
   onPreviousDay,
   onNextDay,
   onToday,
@@ -211,6 +218,7 @@ function DayCanvasSession({
   model: DayCanvasModel | null;
   timeZone: string;
   contexts: CanvasContextOption[];
+  openTasks?: OpenTaskChoices;
   onPreviousDay: () => void;
   onNextDay: () => void;
   onToday: () => void;
@@ -708,6 +716,7 @@ function DayCanvasSession({
         purpose: completion.purpose,
         contextId: completion.contextId,
         title: completion.title,
+        taskId: completion.taskId,
       });
       if (!onEstablish) {
         throw new Error("Could not establish this time.");
@@ -769,6 +778,7 @@ function DayCanvasSession({
         purpose: factInteraction.draft.purpose,
         contextId: factInteraction.draft.contextId,
         title: factInteraction.draft.title,
+        taskId: addressed.stored.sourceKind === "block" ? addressed.stored.taskId : null,
       });
       if (!onUpdateFact) {
         throw new Error("Could not save this fact.");
@@ -874,6 +884,7 @@ function DayCanvasSession({
           onRefine={refineBounds}
           completion={completion}
           contexts={contexts}
+          openTasks={openTasks}
           saving={saving}
           establishError={establishError}
           onCompletion={setCompletion}
@@ -1124,6 +1135,7 @@ function DayCanvasBody({
   onRefine,
   completion,
   contexts,
+  openTasks,
   saving,
   establishError,
   onCompletion,
@@ -1155,6 +1167,7 @@ function DayCanvasBody({
   onRefine: (startMinute: number, endMinute: number) => void;
   completion: CompletionDraft;
   contexts: CanvasContextOption[];
+  openTasks?: OpenTaskChoices;
   saving: boolean;
   establishError: string | null;
   onCompletion: (next: CompletionDraft) => void;
@@ -1260,6 +1273,7 @@ function DayCanvasBody({
                 onRefine={onRefine}
                 completion={completion}
                 contexts={contexts}
+                openTasks={openTasks}
                 saving={saving}
                 establishError={establishError}
                 onCompletion={onCompletion}
@@ -1284,6 +1298,7 @@ function TemporalHandoff({
   onRefine,
   completion,
   contexts,
+  openTasks,
   saving,
   establishError,
   onCompletion,
@@ -1299,6 +1314,7 @@ function TemporalHandoff({
   onRefine: (startMinute: number, endMinute: number) => void;
   completion: CompletionDraft;
   contexts: CanvasContextOption[];
+  openTasks?: OpenTaskChoices;
   saving: boolean;
   establishError: string | null;
   onCompletion: (next: CompletionDraft) => void;
@@ -1398,6 +1414,7 @@ function TemporalHandoff({
           meaning={intendedMeaning}
           completion={completion}
           contexts={contexts}
+          openTasks={openTasks}
           saving={saving}
           saveDisabled={saveDisabled}
           establishError={establishError}
@@ -1471,10 +1488,57 @@ function wrapMinute(minute: number, delta: number): number {
   return (minute + delta + 60) % 60;
 }
 
+function OpenTaskField({
+  choices,
+  taskId,
+  onTaskId,
+}: {
+  choices: OpenTaskChoices;
+  taskId: string;
+  onTaskId: (taskId: string) => void;
+}) {
+  if (choices.status === "loading") {
+    return (
+      <p className="mt-3 text-sm text-stone-400" data-open-tasks="loading">
+        Loading open tasks.
+      </p>
+    );
+  }
+  if (choices.status === "error") {
+    return (
+      <p className="mt-3 text-sm text-stone-200" role="alert" data-open-tasks="error">
+        {choices.message}
+      </p>
+    );
+  }
+  return (
+    <div className="mt-3" data-open-tasks="ready">
+      <label className="block text-sm text-stone-400" htmlFor="canvas-block-task">
+        Task
+      </label>
+      <select
+        id="canvas-block-task"
+        value={taskId}
+        onChange={(event) => onTaskId(event.target.value)}
+        className={fieldClass}
+      >
+        <option value="">None</option>
+        {choices.tasks.map((task) => (
+          <option key={task.id} value={task.id}>
+            {task.title}
+          </option>
+        ))}
+      </select>
+      <p className="mt-1 text-sm text-stone-500">Optional. It does not replace the purpose.</p>
+    </div>
+  );
+}
+
 function CompletionFields({
   meaning,
   completion,
   contexts,
+  openTasks,
   saving,
   saveDisabled,
   establishError,
@@ -1484,6 +1548,7 @@ function CompletionFields({
   meaning: IntendedMeaning;
   completion: CompletionDraft;
   contexts: CanvasContextOption[];
+  openTasks?: OpenTaskChoices;
   saving: boolean;
   saveDisabled: boolean;
   establishError: string | null;
@@ -1542,6 +1607,7 @@ function CompletionFields({
             </>
           ) : null}
           <p className="mt-1 text-sm text-stone-500">Optional. It does not replace the purpose.</p>
+          {openTasks ? <OpenTaskField choices={openTasks} taskId={completion.taskId} onTaskId={(taskId) => onCompletion({ ...completion, taskId })} /> : null}
         </>
       ) : null}
       {meaning === "commitment" ? (

@@ -16,6 +16,7 @@ describe("block", () => {
       startsOn: "2026-10-03",
       purpose: "TeamLab retreat",
       contextId: null,
+      taskId: null,
     });
     expect(() => defineBlock({ kind: "all_day", startsOn: "2026-10-03", purpose: "  " })).toThrow(
       /purpose/,
@@ -39,6 +40,7 @@ describe("block", () => {
       endLocal: "11:00",
       purpose: "Work on Studio",
       contextId: "context-teamlab",
+      taskId: null,
     });
   });
 
@@ -47,8 +49,35 @@ describe("block", () => {
     expect(timedBlockEndsNextCivilDate("09:00", "11:00")).toBe(false);
   });
 
-  it("does not borrow Protected Time, Tasks, or a clock", () => {
+  it("keeps a task reference off the purpose and off the clock", () => {
+    const taskId = "00000000-0000-4000-8000-000000000010";
+    expect(
+      defineBlock({
+        kind: "all_day",
+        startsOn: "2026-10-03",
+        purpose: "Focus",
+        taskId,
+      }),
+    ).toEqual({
+      kind: "all_day",
+      startsOn: "2026-10-03",
+      purpose: "Focus",
+      contextId: null,
+      taskId,
+    });
+    expect(
+      defineBlock({
+        kind: "timed",
+        startsOn: "2026-10-07",
+        startLocal: "15:00",
+        endLocal: "15:30",
+        purpose: "Focus",
+        taskId: "  ",
+      }).taskId,
+    ).toBeNull();
+
     const source = readFileSync(new URL("./block.ts", import.meta.url), "utf8");
-    expect(source).not.toMatch(/protected_time|planned_on|task_id|recurrence|Date\.now|new Date/);
+    expect(source).toContain("taskId");
+    expect(source).not.toMatch(/protected_time|planned_on|mustDo|duration|activeThread|recurrence|Date\.now|new Date/);
   });
 });

@@ -50,6 +50,7 @@ export type CurrentProtectedReading = CurrentTemporalBase & {
 export type CurrentBlockReading = CurrentTemporalBase & {
   sourceKind: "block";
   purpose: string;
+  taskId: string | null;
 } & (CurrentAllDayRange | CurrentTimedRange);
 
 export type CurrentCommitmentReading = CurrentTemporalBase & {
@@ -164,6 +165,7 @@ function blockReading(entry: Block): CurrentBlockReading {
     sourceId: entry.id,
     startsOn: entry.startsOn,
     purpose: entry.purpose,
+    taskId: entry.taskId,
   };
   if (entry.kind === "all_day") {
     return { ...shared, allDay: true };

@@ -35,7 +35,6 @@ type DisallowedTimelineKey =
   | "free"
   | "winner"
   | "loser"
-  | "taskId"
   | "rank";
 
 type TimelineFactDisallowed = Extract<TimelineFactKey, DisallowedTimelineKey>;
@@ -618,6 +617,7 @@ describe("timeline temporal truth", () => {
       startsOn: "2026-03-08",
       purpose: "Family",
       contextId: null,
+      taskId: null,
       allDay: true,
       intersection: { status: "civil" },
     });
@@ -745,6 +745,37 @@ describe("timeline non-goals", () => {
     });
     expect(JSON.stringify(workSchedule)).toBe(before);
     expect(workSchedule.map((entry) => entry.workOn)).toEqual(["2026-10-03", "2026-10-04"]);
+  });
+
+  it("carries a block task reference without adding a task source", () => {
+    const taskId = "00000000-0000-4000-8000-000000000010";
+    const facts = compose({
+      blocks: [
+        blockRow("monday", {
+          kind: "timed",
+          startsOn: "2026-10-03",
+          startLocal: "14:00",
+          endLocal: "15:00",
+          purpose: "Focus",
+          taskId,
+        }),
+        blockRow("tuesday", {
+          kind: "timed",
+          startsOn: "2026-10-03",
+          startLocal: "16:00",
+          endLocal: "17:00",
+          purpose: "Another period",
+          taskId,
+        }),
+      ],
+    });
+    expect(facts).toHaveLength(2);
+    expect(facts.map((fact) => fact.sourceKind)).toEqual(["block", "block"]);
+    expect(facts.map((fact) => (fact.sourceKind === "block" ? fact.taskId : null))).toEqual([taskId, taskId]);
+    expect(facts.map((fact) => (fact.sourceKind === "block" ? fact.purpose : null))).toEqual([
+      "Focus",
+      "Another period",
+    ]);
   });
 
   it("has no disallowed input or fact key, and does not read a clock or another projection", () => {

@@ -70,6 +70,7 @@ export type BlockTimelineFact = {
   startsOn: string;
   purpose: string;
   contextId: string | null;
+  taskId: string | null;
 } & (
   | { allDay: true; intersection: CivilTimelineInclusion }
   | TimedGeometry
@@ -235,6 +236,7 @@ function blockFact(
       startsOn: entry.startsOn,
       purpose: entry.purpose,
       contextId: entry.contextId,
+      taskId: entry.taskId,
       allDay: true,
       intersection: { status: "civil" },
     };
@@ -255,6 +257,7 @@ function blockFact(
     sourceId: entry.id,
     purpose: entry.purpose,
     contextId: entry.contextId,
+    taskId: entry.taskId,
     ...geometry,
   };
 }

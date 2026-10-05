@@ -59,7 +59,8 @@ The latest behavior record is [docs/implementation/V0-017.md](docs/implementatio
 | [docs/decisions/2026-10-04-product-name.md](docs/decisions/2026-10-04-product-name.md) | Product name. Orient. Repository stays `workday` |
 | [docs/decisions/2026-10-04-note-revisit.md](docs/decisions/2026-10-04-note-revisit.md) | Return to a retained Note through Capture. Not a Notes application |
 | [docs/decisions/2026-10-04-provenance-contract.md](docs/decisions/2026-10-04-provenance-contract.md) | Establishment of a Task from a retained Note. Semantics only |
-| [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md) | A Block may refer to one Task. Not Capacity. Not stored |
+| [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md) | A Block may refer to one Task. Not Capacity |
+| [docs/implementation/TASK-TIME-001.md](docs/implementation/TASK-TIME-001.md) | Optional Task reference on a Block. Migration not applied. Not drag and drop |
 | [docs/implementation/PROVENANCE-001.md](docs/implementation/PROVENANCE-001.md) | Task citation of one originating Note. Hosted schema verified. S26 Ultra scaffold accepted. Not the production experience |
 | [docs/implementation/NOTE-REVISIT-001.md](docs/implementation/NOTE-REVISIT-001.md) | Scaffold return to retained Notes. Accepted on the Samsung Galaxy S26 Ultra. Not the production experience |
 | [docs/implementation/NOW-001.md](docs/implementation/NOW-001.md) | Present-moment orientation projection. Not an experience |

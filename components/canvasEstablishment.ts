@@ -19,6 +19,16 @@ export type CanvasContextOption = {
   name: string;
 };
 
+export type OpenTaskChoice = {
+  id: string;
+  title: string;
+};
+
+export type OpenTaskChoices =
+  | { status: "loading" }
+  | { status: "ready"; tasks: readonly OpenTaskChoice[] }
+  | { status: "error"; message: string };
+
 export type CanvasEstablishment =
   | { meaning: "protected_time"; input: ProtectedTimeInput }
   | { meaning: "block"; input: BlockInput }
@@ -46,6 +56,7 @@ export function establishFromSelection(input: {
   purpose: string;
   contextId: string;
   title: string;
+  taskId?: string | null;
 }): CanvasEstablishment {
   const blocked = establishmentBlocked(input.clock);
   if (blocked) {
@@ -70,6 +81,7 @@ export function establishFromSelection(input: {
         ...bounds,
         purpose: input.purpose,
         contextId: input.contextId.trim().length === 0 ? null : input.contextId,
+        taskId: input.taskId,
       }),
     };
   }
@@ -94,6 +106,7 @@ export function updateFromStored(input: {
   purpose: string;
   contextId: string;
   title: string;
+  taskId?: string | null;
 }): CanvasFactUpdate {
   const blocked = establishmentBlocked(input.clock);
   if (blocked) {
@@ -120,6 +133,7 @@ export function updateFromStored(input: {
         ...bounds,
         purpose: input.purpose,
         contextId: input.contextId.trim().length === 0 ? null : input.contextId,
+        taskId: input.taskId,
       }),
     };
   }

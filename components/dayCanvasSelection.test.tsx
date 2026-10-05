@@ -5,7 +5,12 @@ import { act, useState, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DayCanvas } from "@/components/DayCanvas";
-import type { CanvasEstablishment, CanvasFactRemoval, CanvasFactUpdate } from "@/components/canvasEstablishment";
+import type {
+  CanvasEstablishment,
+  CanvasFactRemoval,
+  CanvasFactUpdate,
+  OpenTaskChoices,
+} from "@/components/canvasEstablishment";
 import { SELECTION_HOLD_MS } from "@/components/daySelection";
 import { defineBlock } from "@/domain/block";
 import { defineCommitment } from "@/domain/commitment";
@@ -54,6 +59,7 @@ function modelFor(selectedDay: string, timeZone: string, occupied: boolean): Day
               startLocal: "18:00",
               endLocal: "19:00",
               purpose: "Studio",
+              taskId: "00000000-0000-4000-8000-000000000010",
             }),
             id: "studio",
             createdAt: "2026-10-01T00:00:00.000Z",
@@ -789,6 +795,7 @@ function EstablishHarness({
   fail,
   occupied = false,
   contexts = [],
+  openTasks,
   selectedDay = day,
   timeZone = zone,
 }: {
@@ -796,6 +803,7 @@ function EstablishHarness({
   fail?: string;
   occupied?: boolean;
   contexts?: { id: string; name: string }[];
+  openTasks?: OpenTaskChoices;
   selectedDay?: string;
   timeZone?: string;
 }) {
@@ -809,6 +817,7 @@ function EstablishHarness({
         model: modelFor(selectedDay, timeZone, occupied),
         discardToken: token,
         contexts,
+        openTasks,
       })}
       onEstablish={async (establishment) => {
         sink.push(establishment);
@@ -915,6 +924,44 @@ describe("establishing selected temporal truth", () => {
     await clickSave(again.container);
     if (chosen[0]?.meaning !== "block") throw new Error("Expected a block.");
     expect(chosen[0].input).toMatchObject({ purpose: "Read", contextId: "context-1" });
+  });
+
+  it("optionally cites an open task without copying its title or writing before save", async () => {
+    const taskId = "00000000-0000-4000-8000-000000000010";
+    const sink: CanvasEstablishment[] = [];
+    const ready: OpenTaskChoices = {
+      status: "ready",
+      tasks: [{ id: taskId, title: "Complete quarterly report" }],
+    };
+    const view = renderHarness(<EstablishHarness sink={sink} openTasks={ready} />);
+    selectHours(view.surface, 18, 21);
+    clickLabel(view.container, "Choose a purpose");
+    typeInto(view.container, "canvas-block-purpose", "Focus");
+    const select = view.container.querySelector<HTMLSelectElement>("#canvas-block-task");
+    if (!select) throw new Error("Missing task choice");
+    expect(select.options[0]?.value).toBe("");
+    expect(select.options[1]?.textContent).toBe("Complete quarterly report");
+    expect(sink).toHaveLength(0);
+    const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
+    setter?.call(select, taskId);
+    act(() => {
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(view.container.querySelector<HTMLInputElement>("#canvas-block-purpose")?.value).toBe("Focus");
+    expect(sink).toHaveLength(0);
+    await clickSave(view.container);
+    if (sink[0]?.meaning !== "block") throw new Error("Expected a block.");
+    expect(sink[0].input).toMatchObject({ purpose: "Focus", taskId, contextId: null });
+
+    const failed: OpenTaskChoices = { status: "error", message: "Could not load tasks." };
+    const errorView = renderHarness(<EstablishHarness sink={[]} openTasks={failed} />);
+    selectHours(errorView.surface, 18, 21);
+    clickLabel(errorView.container, "Choose a purpose");
+    expect(errorView.container.querySelector("#canvas-block-task")).toBeNull();
+    expect(errorView.container.querySelector("[data-open-tasks='error']")?.textContent).toBe(
+      "Could not load tasks.",
+    );
+    expect(errorView.container.textContent).not.toContain("No open tasks");
   });
 
   it("requires a commitment title and establishes only that fact", async () => {
@@ -1618,7 +1665,14 @@ describe("established fact lifecycle", () => {
     expect(updates[0]).toMatchObject({
       id: "studio",
       meaning: "block",
-      input: { kind: "timed", purpose: "Practice", contextId: null, startLocal: "18:00", endLocal: "19:00" },
+      input: {
+        kind: "timed",
+        purpose: "Practice",
+        contextId: null,
+        taskId: "00000000-0000-4000-8000-000000000010",
+        startLocal: "18:00",
+        endLocal: "19:00",
+      },
     });
     const again = openFact("block", 18 * 60 + 15);
     clickLabel(again.view.container, "Delete");
