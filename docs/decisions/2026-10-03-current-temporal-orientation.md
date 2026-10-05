@@ -10,7 +10,7 @@ NOW-CONTRACT-001 later places this projection beside the Active Thread as the fi
 
 The facts stay distinct: Work schedule, Protected Time, Block, and Commitment. More than one may contain the same instant. The projection keeps all of them. It does not choose a winner, rank them, merge them into one event, or describe the overlap as a conflict.
 
-Absence of a fact is an empty result. The projection does not label that instant free, available, open, unscheduled, or unallocated. Unestablished time is not available time.
+Absence of a fact is an empty result. The projection does not label that instant free, available, open, unscheduled, or unallocated. Unestablished time is not available time in this projection. [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md) is a separate reading. This projection does not calculate it.
 
 Work contributes at most the shift that existing Work orientation already treats as the current schedule, and only while that shift contains the instant. Power Hour, FSR, opening steps, and the next boundary stay in Work orientation. This projection does not replace that reading.
 

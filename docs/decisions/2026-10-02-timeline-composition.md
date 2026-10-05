@@ -102,6 +102,6 @@ The Schedule list classifiers can call an unresolved row past once its civil dat
 - `projections/timeline.ts` is the composition. Schedule's separate lists are unchanged.
 - No Timeline table, CRUD, or row-level security policy exists.
 - Domain meaning survives the projection: shift type, label, purpose, Context id, title, and Commitment origin are carried on the matching fact.
-- The first temporal canvas can render these facts in layers. It still must not treat an empty stretch as available. Capacity remains its own later meaning.
+- The first temporal canvas can render these facts in layers. It still must not treat an empty stretch as available. Capacity remains a separate reading. [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md) defines that reading. This projection does not calculate it.
 
 The tranche record is [../implementation/V0-009.md](../implementation/V0-009.md).

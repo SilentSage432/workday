@@ -36,7 +36,7 @@ If a timed fact's intersection is unresolved, or the visible minutes cannot be r
 
 The axis is local clock labels. It does not scale a fact by elapsed milliseconds. On a spring-forward day, a resolved 1:00–3:00 span occupies two clock hours even though elapsed time is one hour. The missing local hour is not invented as a fact. On a fall-back day, the repeated hour is not drawn twice. Placement uses the existing first round-trip. A civil day whose two midnights are not 24 elapsed hours apart says so. If those midnights cannot be resolved, the timed axis is not drawn.
 
-Empty clock space is unlabeled. It is not free, available, open, or capacity.
+Empty clock space is unlabeled. It is not free, available, open, or capacity. That unlabeled space is not a Capacity claim. A bounded Capacity reading is separate, in [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md), and this canvas does not calculate it.
 
 ## Overlap and treatment
 

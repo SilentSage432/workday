@@ -103,7 +103,7 @@ Association does not change overlap.
 
 A Task-associated Block may overlap Protected Time, a Commitment, a Work shift, or another Block. Those remain separate truths. Overlap is not a conflict, not a warning, and not a statement that the time was available. The Block does not release, split, or shorten Protected Time.
 
-Unestablished time remains not available time. Empty canvas territory remains not free.
+Unestablished time remains not available time. Empty canvas territory remains not free. [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md) later distinguishes silence outside an allocatable boundary from unutilized territory inside one. This record does not make that distinction.
 
 ## Current Temporal Orientation
 
@@ -156,11 +156,11 @@ Reference to a Task, without the establishment act, establishes nothing.
 
 This relationship is not Capacity.
 
-Protected Time remains unavailable for allocation. A Commitment remains constrained time. A Block remains chosen purpose. The Work schedule remains temporal context, not available capacity. Unestablished time makes no capacity claim. A Task-associated Block does not prove that surrounding time is available. Empty canvas territory is not free.
+Protected Time remains unavailable for allocation. A Commitment remains constrained time. A Block remains chosen purpose. The Work schedule remains temporal context, not available capacity. Unestablished time makes no capacity claim. A Task-associated Block does not prove that surrounding time is available. Empty canvas territory is not free. Those sentences are this record. The later bounded reading is cited below.
 
 No allocator, auto-scheduler, optimization, inferred availability, or recommendation follows from the reference.
 
-A Task-associated Block may later be one explicit input to deterministic Capacity reasoning. That reasoning is not defined here. Capacity still blocks operational adoption.
+A Task-associated Block may later be one explicit input to deterministic Capacity reasoning. That reasoning is not defined here. [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md) later defines the bounded reading. The shift can bound it and is not itself Capacity. A Block still does not calculate what remains. The reading may treat covered territory as utilized. Capacity still blocks operational adoption until that reading exists in the product.
 
 ## Human authority
 
@@ -172,11 +172,11 @@ A future bounded external interface may request establishment. That interface is
 
 ## Unresolved
 
-- What Capacity means.
+- What Capacity means. Answered for the bounded reading by [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md). The reading is not built here.
 - What Task removal does to Blocks that refer to that Task.
 - Start, Adjust, and Skip.
 - The interaction that supplies the Block purpose when the human gives time to a Task.
 - Whether a later projection shows the Task reference on a Block.
 - Reschedule and carry-forward. They do not, by this contract, move Blocks.
 
-TASK-TIME-001 later stores the reference and proves the time-first scaffold. TASK-TIME-001A, in that same record, accepts the hosted schema on `ksmhgaamyheyhefbyglb` and the Samsung Galaxy S26 Ultra establishment path. The semantic contract is unchanged. The scaffold is not the final interaction. Capacity, Task removal, Start, Adjust, Skip, Task-first placement, and the production experience remain unresolved.
+TASK-TIME-001 later stores the reference and proves the time-first scaffold. TASK-TIME-001A, in that same record, accepts the hosted schema on `ksmhgaamyheyhefbyglb` and the Samsung Galaxy S26 Ultra establishment path. The semantic contract is unchanged. The scaffold is not the final interaction. Task removal, Start, Adjust, Skip, Task-first placement, and the production experience remain unresolved. The bounded Capacity reading is [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md). It is not built by this record.

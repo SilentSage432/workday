@@ -35,6 +35,7 @@ ARCHITECTURE-001 recorded the runtime, persistence, projection, and delivery dec
 - [2026-10-04-note-revisit.md](2026-10-04-note-revisit.md)
 - [2026-10-04-provenance-contract.md](2026-10-04-provenance-contract.md)
 - [2026-10-05-task-time-contract.md](2026-10-05-task-time-contract.md)
+- [2026-10-05-capacity-contract.md](2026-10-05-capacity-contract.md)
 
 The architecture those records point at is [../architecture/ARCHITECTURE-001.md](../architecture/ARCHITECTURE-001.md). Unresolved implementation details do not get speculative ADRs.
 

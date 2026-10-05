@@ -50,7 +50,7 @@ V0's hot path does not use that server. The browser talks to Supabase under row-
 
 ### Deferred
 
-These are deferred from the V0 architecture tranche. [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md) is the later adoption classification. Speech acquisition on the primary phone is proven by device dictation and does not block as an unbuilt speech system. The present-moment experience, Capacity, and a production visual experience still block operational adoption even though this list refused to build them here. The composition itself is later decided and is not a ranking. Push, offline queues, a cadence editor, and watch surfaces stay non-blocking unless a later decision says otherwise.
+These are deferred from the V0 architecture tranche. [../decisions/2026-10-03-operational-adoption.md](../decisions/2026-10-03-operational-adoption.md) is the later adoption classification. Speech acquisition on the primary phone is proven by device dictation and does not block as an unbuilt speech system. The present-moment experience, the unbuilt Capacity reading, and a production visual experience still block operational adoption even though this list refused to build them here. The bounded Capacity meaning is [../decisions/2026-10-05-capacity-contract.md](../decisions/2026-10-05-capacity-contract.md). The composition itself is later decided and is not a ranking. Push, offline queues, a cadence editor, and watch surfaces stay non-blocking unless a later decision says otherwise.
 
 - Google Calendar implementation, OAuth, and write-back
 - Push delivery and watch surfaces
