@@ -36,7 +36,7 @@ Repository authority supports that carrier.
 
 [../../DOMAIN.md](../../DOMAIN.md) listed "an optional association with a Block" among facts a Task may have. That wording put a singular association on the Task. Current authority puts the reference on the Block. Zero, one, or many Blocks may refer to the same Task. The Task does not hold one Block.
 
-[2026-10-02-blocks.md](2026-10-02-blocks.md) says no Task is stored on a Block. That remains true of storage. It is not a permanent semantic prohibition. The reference is decided here and is not implemented.
+[2026-10-02-blocks.md](2026-10-02-blocks.md) says no Task is stored on a Block. That remains true of storage as of this decision. It is not a permanent semantic prohibition. The reference is decided here and is not implemented by this record. [../implementation/TASK-TIME-001.md](../implementation/TASK-TIME-001.md) later stores it. TASK-TIME-001A accepts the hosted schema and the Samsung Galaxy S26 Ultra scaffold. The scaffold is not the final interaction.
 
 Timeline's later-source note still says planned Tasks may someday be composed. This contract does not add Tasks to Timeline. A Block that refers to a Task remains a Block. `planned_on` remains a civil day, not an interval.
 
@@ -178,3 +178,5 @@ A future bounded external interface may request establishment. That interface is
 - The interaction that supplies the Block purpose when the human gives time to a Task.
 - Whether a later projection shows the Task reference on a Block.
 - Reschedule and carry-forward. They do not, by this contract, move Blocks.
+
+TASK-TIME-001 later stores the reference and proves the time-first scaffold. TASK-TIME-001A, in that same record, accepts the hosted schema on `ksmhgaamyheyhefbyglb` and the Samsung Galaxy S26 Ultra establishment path. The semantic contract is unchanged. The scaffold is not the final interaction. Capacity, Task removal, Start, Adjust, Skip, Task-first placement, and the production experience remain unresolved.

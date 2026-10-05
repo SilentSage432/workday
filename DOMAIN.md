@@ -102,7 +102,7 @@ An all-day Block is one civil date. A timed Block is a local start and local end
 
 Chosen time is not less important because nobody else imposed it.
 
-A Block may refer to zero or one existing Task. That reference means the human chose this time for executing that action. The Task does not acquire a start, an end, or a duration. Many Blocks may refer to one Task. The Task does not list them. A Block without a Task remains valid. Purpose stays the user's words and is not the Task title. The reference is not provenance. [docs/implementation/TASK-TIME-001.md](docs/implementation/TASK-TIME-001.md) authors `blocks.task_id`. The migration is not applied to the hosted database. The decision is [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md).
+A Block may refer to zero or one existing Task. That reference means the human chose this time for executing that action. The Task does not acquire a start, an end, or a duration. Many Blocks may refer to one Task. The Task does not list them. A Block without a Task remains valid. Purpose stays the user's words and is not the Task title. The reference is not provenance. [docs/implementation/TASK-TIME-001.md](docs/implementation/TASK-TIME-001.md) stores `blocks.task_id`. The migration is applied on `ksmhgaamyheyhefbyglb`, and TASK-TIME-001A accepts the scaffold on the Samsung Galaxy S26 Ultra. The scaffold is not the production interaction. The decision is [docs/decisions/2026-10-05-task-time-contract.md](docs/decisions/2026-10-05-task-time-contract.md).
 
 **Unresolved:** what Start, Adjust, and Skip change when a Block and the lived day differ. What a future Task removal would do to Blocks that refer to that Task. Capacity remains unresolved.
 
