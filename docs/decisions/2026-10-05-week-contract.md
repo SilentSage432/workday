@@ -210,18 +210,17 @@ When recurrence exists, its participation in temporal composition must be establ
 
 ## Production
 
-Week remains a production requirement. It still blocks operational adoption because the reading is not built.
+Week remains a production requirement. [../implementation/WEEK-001.md](../implementation/WEEK-001.md) implements the deterministic reading and does not add a production interaction. The Week surface still blocks operational adoption.
 
-This record closes the semantic meaning of Week shape.
+This record closes the semantic meaning of Week shape. WEEK-001 closes the deterministic reading.
 
-It does not close WEEK-001, production Week interaction, production Week visual expression, generic or life-wide week-boundary selection, Week Capacity expression, recurrence, Month, multi-context behavior, the final phone experience, or the final desktop experience.
+It does not close production Week interaction, production Week visual expression, generic or life-wide week-boundary selection, Week Capacity expression, recurrence, Month, multi-context behavior, the final phone experience, or the final desktop experience.
 
 Operational adoption is not closed.
 
 ## Unresolved
 
-- WEEK-001, including the thin Week-specific projection over Timeline's composition.
-- Any Week interaction beyond perception.
+- Any Week interaction beyond perception. The deterministic reading is [../implementation/WEEK-001.md](../implementation/WEEK-001.md).
 - Production Week visual expression.
 - How a life-wide or default Week boundary is selected.
 - Whether Week later exposes `planned_on`, Due, or Must Do in a non-territorial way.
