@@ -147,7 +147,7 @@ Destination and Priority are established conceptual meanings. Their production i
 - exact Priority representation
 - Priority lifecycle
 - relationship of Priority to Context
-- whether and how Tasks explicitly relate to Priority
+- whether and how Tasks explicitly relate to Priority, as left open here; [../decisions/2026-10-05-execution-direction-contract.md](../decisions/2026-10-05-execution-direction-contract.md) later decides that a Task or a Block may be explicitly established in service of a Priority, with no inheritance between them. That relationship is not stored here
 - whether and how Cadence explicitly relates to Priority
 - Note schema and storage, as left open here; the minimum representation is the later note-representation decision, and storage is NOTE-STORAGE-001
 - Note editing, deletion, and archive, as left open here; [../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) later places them outside operational adoption without deciding their semantics, and decides the return to a retained Note through Capture. [../implementation/NOTE-REVISIT-001.md](../implementation/NOTE-REVISIT-001.md) is the scaffold proof, accepted on the Samsung Galaxy S26 Ultra, not the production experience

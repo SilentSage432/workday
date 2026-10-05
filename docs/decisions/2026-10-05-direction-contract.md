@@ -135,13 +135,13 @@ This record does not define Destination or Priority lifecycle, deletion, archiva
 
 [2026-10-05-month-contract.md](2026-10-05-month-contract.md) now decides Month's question. Week shape still cannot supply directional meaning. Temporal structure still does not imply a Destination or a Priority. Month may show explicitly established Destinations and Priorities beside established temporal structure. It must not infer that the structure expresses the direction. Expression is not progress, causality proven by activity, or success.
 
-The relationship from direction into an execution fact remains unresolved. Month does not create it.
+[2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) decides the execution relationship: a Task or a Block may be explicitly established in service of a Priority. There is no execution-to-Destination edge. Withdrawal removes that relationship and does not rewrite the execution. Month does not create the relationship, and this record does not store it.
 
 ## Human authority
 
 Orient must not infer a Destination, a Priority, directional ancestry, why something matters, whether an execution fact advances a Destination, whether a Destination is succeeding, whether a Priority is healthy, whether more time should be allocated, whether something should be abandoned, whether one Destination outranks another, what matters now, or what happens next.
 
-Orient preserves explicit human-established relationships. The human retains interpretation and authority.
+Orient preserves an explicit human-established relationship while the human retains it. Withdrawal of an execution-to-Priority relationship removes that relationship and does not rewrite the execution. The human retains interpretation and authority. [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) decides that withdrawal.
 
 ## Non-goals
 
@@ -150,13 +150,12 @@ This contract does not create goal tracking, OKRs, habit tracking, productivity 
 ## Unresolved
 
 - persistence representation and schema
-- cardinality beyond what current canon already proves
+- whether one Priority may serve more than one Destination
 - Destination lifecycle and Priority lifecycle
-- editing, removal, archival, abandonment, supersession, and replacement
+- editing, removal, archival, abandonment, supersession, and replacement of those endpoints
 - Context binding and multi-context directional behavior
 - the finer boundary among Destination, Objective, and Target
-- which execution facts may receive a directional relationship
-- whether a relationship attaches to Destination, to Priority, to Cadence, or to more than one of those layers
+- whether Cadence explicitly relates to a Priority
 - interaction and visual expression
 - Month reading mechanics, Month boundary, and Month UI
 - progress semantics, if a later decision ever authorizes them

@@ -4,7 +4,7 @@ Date: 2026-10-05.
 
 Baseline: `893b210a30e3ad2a86fc56bbc92938cd2cc76fdc`.
 
-Month had a role name, landscape, and no question. Week already answers where established temporal structure is, what kind it is, and where none has been established. Direction is now an explicit human establishment: Destination, then Priority. The link from that direction into an execution fact is not stored. This record gives Month the question those facts can support. It does not invent the missing link.
+Month had a role name, landscape, and no question. Week already answers where established temporal structure is, what kind it is, and where none has been established. Direction is now an explicit human establishment: Destination, then Priority. The link from that direction into an execution fact is not stored. This record gives Month the question those facts can support. It does not define that link. [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) later does, and this record does not implement it.
 
 ## Decision
 
@@ -28,7 +28,7 @@ The candidate was that Month is where the human perceives how deliberately estab
 
 "Expressed" is not adopted as a system claim. [2026-10-05-direction-contract.md](2026-10-05-direction-contract.md) already refuses to let expression mean progress, causality proven by activity, or success. Temporal structure does not imply a Destination or a Priority. Seeing both in one reading is not a relationship between them.
 
-The directional relationship into execution remains unresolved: which facts may receive it, and whether it attaches to Destination, Priority, Cadence, or more than one layer. This record does not choose those endpoints.
+This record did not choose the execution endpoints. [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) later decides them: a Task or a Block may be explicitly established in service of a Priority, with no inheritance between them and no execution-to-Destination edge.
 
 ## Week
 
@@ -46,13 +46,13 @@ Month must not infer a Destination, a Priority, or a directional relationship fr
 
 A Destination and a Priority do not occupy temporal territory because they exist. Month must not draw them as intervals.
 
-## The missing relationship
+## Execution in service of a Priority
 
 The chain runs Destination, then Priority, then cadence or execution, then observable lived reality. That direction is semantic. It is not a license to infer the last step backward.
 
-What is missing is an explicit human-established relationship that one already-established execution fact exists in service of a larger human-established direction. Until that relationship exists, Month cannot truthfully say that a particular Task, Block, Commitment, or other temporal fact serves a Destination or a Priority.
+[2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md) decides the explicit relationship. A Task or a Block may be in service of a Priority because the human established that pair. Month may perceive that relationship where it is retained. Month must not say a Commitment, Protected Time, a Work shift, or any other fact is in service of a Priority under that contract. Coexistence is not the relationship. A withdrawn relationship is not retained, so Month has no historical pair to perceive.
 
-Coexistence is not that relationship.
+"In service of" remains intended placement. It is not expression, progress, or success.
 
 ## Optional ancestry
 
@@ -99,9 +99,9 @@ Month is not a Capacity aggregate. It does not produce monthly free hours, utili
 | Work shift | Directly, as temporal structure. Not as direction. |
 | Protected Time | Directly, as temporal structure. Not as direction. |
 | Commitment | Directly, as temporal structure. Not as direction. |
-| Block | Directly, as temporal structure. A Task reference stays on the Block. Not as direction. |
+| Block | Directly, as temporal structure. Where explicitly established, also as in service of a Priority. The Task reference does not create that relationship. |
 | Cadence | Does not participate. Work cadence is not copied outward, and it is not graded. |
-| Task | Does not participate as territory. Participation through a future directional relationship is unresolved. |
+| Task | Does not participate as territory. Where explicitly established, as in service of a Priority. Not an interval. |
 | Must Do | Does not participate. It is not Priority. |
 | `planned_on` | Does not participate. It is not territory and not Priority. |
 | Due | Does not participate. It is not Priority and not a Destination. |
@@ -136,11 +136,11 @@ Month is not a conventional calendar month, a giant Day, or a collection of Week
 
 ## Non-goals
 
-No runtime, projection, UI, route, schema, migration, dependency, execution-direction relationship, change to Destination or Priority storage, monthly Capacity aggregate, recurrence implementation, or life-wide Month boundary follows from this record.
+No runtime, projection, UI, route, schema, migration, dependency, change to Destination or Priority storage, monthly Capacity aggregate, recurrence implementation, or life-wide Month boundary follows from this record. The execution-direction semantics are [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md). This record does not implement them.
 
 ## Unresolved
 
-- The explicit relationship from direction into an execution fact, including which facts and which layer.
+- A Month reading of the execution-direction relationship. The semantics are decided. This record does not implement the reading.
 - Whether one Priority may serve more than one Destination.
 - How a Month span is selected.
 - Any Month interaction beyond perception, including navigation.

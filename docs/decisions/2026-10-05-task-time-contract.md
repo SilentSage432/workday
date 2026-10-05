@@ -93,7 +93,7 @@ Choosing a time for a Task and explicitly establishing current intention are dif
 
 ## Facts this relationship does not establish
 
-A Task-associated Block does not establish Must Do, Priority, urgency, a due date, `planned_on`, a reminder, Context, or completion.
+A Task-associated Block does not establish Must Do, Priority, urgency, a due date, `planned_on`, a reminder, Context, or completion. It does not establish an execution-direction relationship. That relationship is a separate explicit act in [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md).
 
 It does not infer them from the Task, and the Task's existing values do not flow onto the Block.
 

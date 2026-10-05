@@ -14,7 +14,7 @@ Orient can read those facts back. The read is the complete collection for the si
 
 The directional relationship into an execution fact is not stored.
 
-DIRECTION-CONTRACT-001 leaves two questions open: which execution facts may receive that relationship, and whether it attaches to Destination, Priority, Cadence, or more than one layer. No existing canon names exactly one pair of endpoints. This tranche does not choose them.
+[../decisions/2026-10-05-execution-direction-contract.md](../decisions/2026-10-05-execution-direction-contract.md) later decides the semantics: a Task or a Block may be explicitly established in service of a Priority. This tranche does not store that relationship, and it does not choose a schema for it.
 
 Note-to-Task provenance still answers where a Task came from. A task-associated Block still answers what that chosen time is for. Neither field is reused for direction.
 
