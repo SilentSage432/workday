@@ -20,7 +20,7 @@ Month answers:
 
 Month does not answer whether any of that structure expresses, advances, or completes a direction. The human may look for that. Orient does not decide it.
 
-This record does not implement Month.
+This record does not implement Month. [../implementation/MONTH-001.md](../implementation/MONTH-001.md) implements the deterministic reading and does not add a production interaction.
 
 ## What was interrogated
 
@@ -70,7 +70,7 @@ The temporal truths that may appear are the same kinds Week may compose: a Work 
 
 Month does not need minute-level precision to answer its question. Exact intervals remain the source truth. Month perceives them at a distance. It does not become a minute canvas, and it does not flatten those facts into a density, a count, or a summary bar.
 
-Timeline's question remains "What is the shape of this time?" Month's question is not that question asked over more days. A future Month reading needs its own projection because it must include explicit directional truth and must fail closed on both the directional reads and the temporal reads. This record does not build that projection, and it does not require the temporal half to be a second copy of Timeline's placement rules. If a later reading reuses Timeline for placement, it inherits Timeline's identities, overlap, and look-behind. It still must not treat the result as directional meaning.
+Timeline's question remains "What is the shape of this time?" Month's question is not that question asked over more days. Month needs its own projection because it must include explicit directional truth and must fail closed on both the directional reads and the temporal reads. [../implementation/MONTH-001.md](../implementation/MONTH-001.md) builds that projection. It reuses Timeline for placement and inherits Timeline's identities, overlap, and look-behind. It does not treat the result as directional meaning. This record does not build that projection.
 
 ## Destination beyond the span
 
@@ -136,11 +136,11 @@ Month is not a conventional calendar month, a giant Day, or a collection of Week
 
 ## Non-goals
 
-No runtime, projection, UI, route, schema, migration, dependency, change to Destination or Priority storage, monthly Capacity aggregate, recurrence implementation, or life-wide Month boundary follows from this record. The execution-direction semantics are [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md). This record does not implement them.
+No UI, route, schema, migration, dependency, change to Destination or Priority storage, monthly Capacity aggregate, recurrence implementation, or life-wide Month boundary follows from this record. [../implementation/MONTH-001.md](../implementation/MONTH-001.md) implements the deterministic reading. This record does not. The execution-direction semantics are [2026-10-05-execution-direction-contract.md](2026-10-05-execution-direction-contract.md). This record does not implement them.
 
 ## Unresolved
 
-- A Month reading of the execution-direction relationship. The semantics are decided. This record does not implement the reading.
+- The deterministic Month reading is [../implementation/MONTH-001.md](../implementation/MONTH-001.md). This record does not implement it. Span selection, visual expression, and interaction remain open below.
 - Whether one Priority may serve more than one Destination.
 - How a Month span is selected.
 - Any Month interaction beyond perception, including navigation.
