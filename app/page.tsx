@@ -1,5 +1,5 @@
-import { TaskLoop } from "@/components/TaskLoop";
+import { OrientInstrument } from "@/components/orient/OrientInstrument";
 
 export default function Home() {
-  return <TaskLoop />;
+  return <OrientInstrument />;
 }

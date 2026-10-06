@@ -2,12 +2,12 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Open tasks",
-    short_name: "Tasks",
-    description: "Capture a task, and return to the one you started. The product name is not final.",
+    name: "Orient",
+    short_name: "Orient",
+    description: "One field of time.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0c0a09",
-    theme_color: "#0c0a09",
+    background_color: "#10141c",
+    theme_color: "#10141c",
   };
 }

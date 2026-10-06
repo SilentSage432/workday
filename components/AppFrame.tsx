@@ -110,9 +110,11 @@ export function AppFrame({ children }: { children: ReactNode }) {
 
 function SignedInShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const prototype = pathname === "/instrument";
-  if (prototype) {
+  if (pathname === "/instrument") {
     return <div className="h-dvh overflow-hidden bg-stone-950 text-stone-100">{children}</div>;
+  }
+  if (pathname === "/") {
+    return <div className="h-dvh overflow-hidden">{children}</div>;
   }
   return (
     <>
