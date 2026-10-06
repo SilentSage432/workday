@@ -127,5 +127,10 @@ describe("canvas establishment", () => {
       meaning: "commitment",
       input: { kind: "timed", title: "School", origin: "user_created", startLocal: "16:45", endLocal: "17:15" },
     });
+    expect(updateFromStored({ ...shared, id: "school", meaning: "commitment", startsOn: "2026-10-08" })).toMatchObject({
+      id: "school",
+      meaning: "commitment",
+      input: { kind: "timed", startsOn: "2026-10-08", title: "School", origin: "user_created", startLocal: "16:45", endLocal: "17:15" },
+    });
   });
 });

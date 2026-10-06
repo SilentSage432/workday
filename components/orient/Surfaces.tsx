@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   establishmentBlocked,
   establishFromSelection,
@@ -446,6 +446,7 @@ function FactDetail({
   const [armed, setArmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [dateDraft, setDateDraft] = useState(stored?.startsOn ?? "");
   const [startDraft, setStartDraft] = useState(stored && "startLocal" in stored ? stored.startLocal : "");
   const [endDraft, setEndDraft] = useState(stored && "endLocal" in stored ? stored.endLocal : "");
   const [label, setLabel] = useState(stored?.sourceKind === "protected_time" ? (stored.label ?? "") : "");
@@ -455,22 +456,29 @@ function FactDetail({
   const [taskId, setTaskId] = useState(stored?.sourceKind === "block" ? (stored.taskId ?? "") : "");
   const removable = fact.sourceKind === "protected_time" || fact.sourceKind === "block" || fact.sourceKind === "commitment";
 
+  useEffect(() => {
+    if (copy.found) return;
+    onClose();
+  }, [copy.found, onClose]);
+
   async function save() {
     if (!stored || saving) return;
     setSaving(true);
     setError(null);
     try {
+      const startMinute = localMinutes(parseLocalTime(startDraft));
+      const endMinute = localMinutes(parseLocalTime(endDraft));
       const update = updateFromStored({
         id: fact.sourceId,
-        startsOn: stored.startsOn,
+        startsOn: dateDraft,
         meaning: stored.sourceKind,
-        startMinute: localMinutes(parseLocalTime(startDraft)),
-        endMinute: localMinutes(parseLocalTime(endDraft)),
+        startMinute,
+        endMinute,
         clock: selectionLocalClock(
           {
-            civilDate: stored.startsOn,
-            startMinute: localMinutes(parseLocalTime(startDraft)),
-            endMinute: localMinutes(parseLocalTime(endDraft)),
+            civilDate: dateDraft,
+            startMinute,
+            endMinute,
           },
           timeZone,
         ),
@@ -502,6 +510,8 @@ function FactDetail({
     }
   }
 
+  if (!copy.found) return null;
+
   const taskTitle =
     stored?.sourceKind === "block" && stored.taskId
       ? openTasks.status === "ready"
@@ -530,6 +540,10 @@ function FactDetail({
       ) : null}
       {editing && stored ? (
         <div>
+          <label className="orient-note">
+            Date
+            <input type="date" aria-label="Fact date" value={dateDraft} onChange={(event) => setDateDraft(event.target.value)} />
+          </label>
           <label className="orient-note">
             Start
             <input aria-label="Fact start" value={startDraft} onChange={(event) => setStartDraft(event.target.value)} />
@@ -586,6 +600,7 @@ function FactDetail({
 }
 
 function describe(models: readonly DayCanvasModel[], fact: FactAddress): {
+  found: boolean;
   kindLabel: string;
   primary: string;
   interval: string;
@@ -598,6 +613,7 @@ function describe(models: readonly DayCanvasModel[], fact: FactAddress): {
     );
     if (placement) {
       return {
+        found: true,
         kindLabel: placement.kindLabel,
         primary: placement.primary,
         interval: placement.shownInterval ?? placement.sourceInterval,
@@ -610,6 +626,7 @@ function describe(models: readonly DayCanvasModel[], fact: FactAddress): {
     );
     if (listed) {
       return {
+        found: true,
         kindLabel: listed.kindLabel,
         primary: listed.primary,
         interval: listed.detail,
@@ -618,7 +635,7 @@ function describe(models: readonly DayCanvasModel[], fact: FactAddress): {
       };
     }
   }
-  return { kindLabel: fact.sourceKind, primary: "", interval: "", contextName: null, stored: null };
+  return { found: false, kindLabel: fact.sourceKind, primary: "", interval: "", contextName: null, stored: null };
 }
 
 function serviceLines(fact: FactAddress, services: OrientSources): string[] {

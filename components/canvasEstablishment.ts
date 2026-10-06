@@ -92,7 +92,8 @@ export function establishFromSelection(input: {
 }
 
 /**
- * Builds an update for one existing fact. The id, kind, and civil date stay.
+ * Builds an update for one existing fact. The id stays. The kind stays timed.
+ * `startsOn` is the draft civil date the caller supplies.
  * A Commitment input still carries user_created through defineCommitment.
  */
 export function updateFromStored(input: {
