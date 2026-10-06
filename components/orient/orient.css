@@ -2132,6 +2132,19 @@ button.orient-fact {
   max-height: none;
 }
 
+.orient-desktop-resolution .orient-landscape[data-distance="week"] .orient-column[data-today="true"] .orient-column-body {
+  background: none;
+}
+
+.orient-desktop-resolution .orient-landscape[data-distance="week"] .orient-column .orient-now {
+  background: none;
+}
+
+.orient-desktop-resolution .orient-landscape[data-distance="week"] .orient-column .orient-fact {
+  color: var(--orient-muted);
+  text-shadow: none;
+}
+
 .orient-desktop-thread:focus-visible,
 .orient-desktop-exact:focus-visible,
 .orient-desktop-return:focus-visible {

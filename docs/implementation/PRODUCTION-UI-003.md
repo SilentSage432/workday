@@ -22,6 +22,8 @@ The signature was beginning to work and sat too high, because the full local day
 
 The seven-day signature is unchanged: shared local-day axis, noon line, direct date and fact interaction, no Ask Day or Refer furniture. The composed object, coordinates included, is framed in the middle of the field. Quiet field remains above and below it.
 
+On desktop Week, Today is the gold present mark. The column is not washed. Desktop Week is physically accepted. [DESKTOP-WEEK-ACCEPTANCE-001.md](DESKTOP-WEEK-ACCEPTANCE-001.md).
+
 ## Day handles
 
 The start and end handles rendered and did nothing useful. `dragBound` ran only on pointer down. It sampled the minute already under the handle, published one refine, and never listened for pointer move. The selection could not be spread apart.
