@@ -272,7 +272,7 @@ Excluded unless later evidence changes priority:
 - broad integrations, including DeptSync, Wealth Engine, and bidirectional Google Calendar sync
 - a watch application or a native mobile application
 
-Browser or PWA capabilities were not authorized by the original V0 text. ARCHITECTURE-001 later required a mobile viewport, a web app manifest, and home-screen metadata. That installability requirement stands. A service worker stays deferred.
+Browser or PWA capabilities were not authorized by the original V0 text. ARCHITECTURE-001 later required a mobile viewport, a web app manifest, and home-screen metadata. That installability requirement stands. The installed icon is the Beacon in [docs/implementation/PRODUCTION-APP-IDENTITY-001.md](docs/implementation/PRODUCTION-APP-IDENTITY-001.md). It is not the horizontal wordmark inside the instrument. A service worker stays deferred.
 
 ### Experience the model must be able to describe
 

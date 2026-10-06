@@ -24,6 +24,13 @@ export const metadata: Metadata = {
     title: "Orient",
     statusBarStyle: "black-translucent",
   },
+  icons: {
+    icon: [
+      { url: "/orient-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/orient-icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/orient-icon-192.png", sizes: "192x192", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {
