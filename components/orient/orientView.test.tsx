@@ -171,6 +171,14 @@ function buttonNamed(node: ParentNode, name: string): HTMLButtonElement {
   return found;
 }
 
+async function openExact(view: HTMLElement) {
+  const exact = view.querySelector("[data-exact-time]") as HTMLButtonElement | null;
+  if (!exact) throw new Error("Missing Exact time");
+  await act(async () => {
+    exact.click();
+  });
+}
+
 async function ask(view: HTMLElement, name: string) {
   const control = view.querySelector("[data-question-control]") as HTMLButtonElement;
   if (control.getAttribute("aria-expanded") !== "true") {
@@ -232,11 +240,13 @@ describe("production orient instrument", () => {
     expect([...view.querySelectorAll("button")].some((item) => item.textContent?.trim() === "Sign out")).toBe(false);
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
     expect(view.textContent).not.toContain("Protect this time");
-    expect(view.querySelector("[data-present-mark]")).not.toBeNull();
+    expect(view.querySelector("[data-desktop-now]")).not.toBeNull();
+    expect(view.querySelector("[data-day-inscription]")).toBeNull();
+    expect(view.querySelector("[data-time-surface]")).toBeNull();
     expect(view.querySelector("[data-question-control] svg")).not.toBeNull();
     expect(view.querySelector("[data-capture-control] svg")).not.toBeNull();
-    expect(view.querySelector("[data-active-thread] svg")).not.toBeNull();
-    expect(view.querySelector("[data-active-thread]")?.textContent).toContain("Resume: Cycle counts");
+    expect(view.querySelector("[data-desktop-thread]")?.textContent).toContain("Resume: Cycle counts");
+    expect(view.querySelector("[data-active-thread]")).toBeNull();
     const scroller = view.querySelector("[data-field-scroll]") as HTMLElement;
     scroller.scrollTop = 120;
     await act(async () => {
@@ -263,6 +273,7 @@ describe("production orient instrument", () => {
       },
     });
     await ask(view, "Day");
+    await openExact(view);
     const surface = view.querySelector(`[data-civil-day="${ANCHOR}"] [data-time-surface]`) as HTMLElement;
     await act(async () => {
       surface.dispatchEvent(pointer("pointerdown", 1));
@@ -343,6 +354,7 @@ describe("production orient instrument", () => {
   it("focuses emphasis without moving facts", async () => {
     const view = await renderView();
     await ask(view, "Day");
+    await openExact(view);
     const before = view.querySelector('[data-source-id="block-1"]')?.getAttribute("data-top");
     await act(async () => {
       buttonNamed(view, "Focus: Everything").click();
@@ -365,6 +377,7 @@ describe("production orient instrument", () => {
   it("lists every fact that shares a point", async () => {
     const view = await renderView();
     await ask(view, "Day");
+    await openExact(view);
     const surface = view.querySelector(`[data-civil-day="${ANCHOR}"] [data-time-surface]`) as HTMLElement;
     for (const id of ["block-1", "commitment-1"]) {
       const article = view.querySelector(`[data-source-id="${id}"]`) as HTMLElement;
@@ -442,6 +455,7 @@ describe("production orient instrument", () => {
   it("refines an open Day draft from either handle without starting another selection", async () => {
     const view = await renderView();
     await ask(view, "Day");
+    await openExact(view);
     const surface = view.querySelector(`[data-civil-day="${ANCHOR}"] [data-time-surface]`) as HTMLElement;
     const scroller = view.querySelector("[data-field-scroll]") as HTMLElement;
     scroller.scrollTop = 80;
@@ -552,11 +566,12 @@ describe("production orient instrument", () => {
 
   it("keeps a failed thread distinct from absence and independent of Now", async () => {
     const view = await renderView({ thread: { status: "failed", message: "Thread storage failed." } });
-    const thread = view.querySelector("[data-active-thread]");
+    const thread = view.querySelector("[data-desktop-thread]");
     expect(thread?.textContent).toContain("could not be read");
     expect(thread?.textContent).not.toContain("No thread is established.");
     expect(thread?.getAttribute("data-thread-weight")).toBe("ordinary");
-    expect(view.querySelector("[data-present-mark]")).not.toBeNull();
+    expect(view.querySelector("[data-desktop-now]")).not.toBeNull();
+    expect(view.querySelector("[data-day-inscription]")).toBeNull();
   });
 
   function box(top: number, height: number): DOMRect {
@@ -602,11 +617,16 @@ describe("production orient instrument", () => {
   it("opens Present on the authoritative day and does not adopt October 3", async () => {
     const anchors: string[] = [];
     const view = await renderView({ onAnchor: (date) => anchors.push(date) });
+    expect(view.querySelector("[data-desktop-now]")).not.toBeNull();
+    expect(view.querySelector("[data-day-inscription]")).toBeNull();
+    expect(view.querySelector(".orient-day")).toBeNull();
+    expect(anchors).toEqual([]);
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    await openExact(view);
     const dates = [...view.querySelectorAll(".orient-day")].map((day) => day.getAttribute("data-civil-day"));
     expect(dates).toEqual(["2026-10-04", "2026-10-05", "2026-10-06"]);
     expect(dates).not.toContain("2026-10-03");
     expect(anchors).toEqual([]);
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
     const instrument = readFileSync("components/orient/OrientInstrument.tsx", "utf8");
     const page = readFileSync("app/page.tsx", "utf8");
     expect(instrument).not.toMatch(/localStorage|sessionStorage|workFiscalWeekStart/);
@@ -616,6 +636,7 @@ describe("production orient instrument", () => {
   it("keeps the mounted days when a manual scroll crosses midnight", async () => {
     const anchors: string[] = [];
     const view = await renderView({ onAnchor: (date) => anchors.push(date) });
+    await openExact(view);
     const scroller = layOutVerticalField(view);
     scroller.scrollTop = 80;
     await scrollField(scroller);
@@ -650,6 +671,7 @@ describe("production orient instrument", () => {
     const anchors: string[] = [];
     const view = await renderView({ onAnchor: (date) => anchors.push(date) });
     await ask(view, "Day");
+    await openExact(view);
     const scroller = view.querySelector("[data-field-scroll]") as HTMLElement;
     scroller.scrollTop = 640;
     await act(async () => {
@@ -706,6 +728,7 @@ describe("production orient instrument", () => {
     const anchors: string[] = [];
     const view = await renderView({ anchor: "2026-10-06", onAnchor: (date) => anchors.push(date) });
     await ask(view, "Day");
+    await openExact(view);
     const scroller = layOutVerticalField(view);
     scroller.scrollTop = 2000;
     await scrollField(scroller);
@@ -736,22 +759,18 @@ describe("production orient instrument", () => {
     const anchors: string[] = [];
     const view = await renderView({ onAnchor: (date) => anchors.push(date) });
     await ask(view, "Day");
-    const scroller = view.querySelector("[data-field-scroll]") as HTMLElement;
-    scroller.scrollTop = 240;
+    expect(view.querySelector("[data-day-inscription]")).not.toBeNull();
+    expect(view.querySelector("[data-desktop-day]")?.textContent).toContain("Oct 5");
     await ask(view, "Month");
-    expect(view.querySelectorAll(".orient-day")).toHaveLength(0);
+    expect(view.querySelector("[data-day-inscription]")).toBeNull();
     expect(view.querySelectorAll("[data-civil-day]")).toHaveLength(28);
     expect(view.querySelector("[data-month-geometry]")?.getAttribute("data-month-geometry")).toBe("7x4");
     await ask(view, "Week");
     expect(view.querySelector("[data-framed]")?.getAttribute("data-framed")).toBe("centered");
     await ask(view, "Day");
-    expect(view.querySelectorAll(".orient-day")).toHaveLength(3);
-    expect([...view.querySelectorAll(".orient-day")].map((day) => day.getAttribute("data-civil-day"))).toEqual([
-      "2026-10-04",
-      "2026-10-05",
-      "2026-10-06",
-    ]);
-    expect(scroller.scrollTop).toBe(240);
+    expect(view.querySelector("[data-day-inscription]")).not.toBeNull();
+    expect(view.querySelector(".orient-day")).toBeNull();
+    expect(view.querySelector("[data-desktop-day]")?.textContent).toContain("Oct 5");
     expect(anchors).toEqual([]);
   });
 
@@ -798,7 +817,9 @@ describe("production orient instrument", () => {
         />,
       );
     });
-    expect(view.querySelector('[data-civil-day="2026-10-08"]')).not.toBeNull();
+    expect(view.querySelector("[data-desktop-day]")?.textContent).toContain("Oct 8");
+    expect(view.querySelector("[data-day-inscription]")).not.toBeNull();
+    expect(view.querySelector("[data-signature-now]")).toBeNull();
     expect(view.querySelector("[data-month-geometry]")).toBeNull();
     expect(view.querySelector("[data-direction-plane]")).toBeNull();
   });

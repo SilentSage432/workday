@@ -69,6 +69,7 @@ These are deferred from the V0 architecture tranche. [../decisions/2026-10-03-op
 | Secrets, future Google token exchange, future provider webhooks | Next.js server only |
 | Persistence of user-owned facts | Supabase Postgres |
 | External calendar cache, when it exists | Server-side adapter writing a separate external-fact store, never a client-held token |
+| First session phase of the shell | Browser client's `getSession`, then `onAuthStateChange` for later changes. A failed initial read stays a failed check. [../implementation/AUTH-BOOTSTRAP-RELIABILITY-001.md](../implementation/AUTH-BOOTSTRAP-RELIABILITY-001.md) |
 
 Passing time is not a reason to refetch. A local tick may re-run the projection. A refetch happens when the user writes, when the app regains focus, or when a future adapter finishes a sync.
 
@@ -323,6 +324,10 @@ integrations/    External adapters. Empty of Google calls until that work is aut
 ```
 
 Bootstrap also adds the manifest, environment template, and Vitest. It does not add a schema, a Supabase project, or a Vercel link unless the later bootstrap tranche says so.
+
+## Production instrument
+
+`/` is the production instrument. Below 960px it is the accepted phone continuity. At 960px and wider, Present and Day are the accepted desktop reading: Present is authoritative Now without a whole-day inscription, and Day is the selected civil date with one 00:00–24:00 inscription. Exact time still opens the existing day clock. Week and Month stay the shared landscapes. Direction stays on Month. `/instrument` remains historical experimental evidence. The temporary `/desktop-reading` route is retired. The record is [../implementation/PRODUCTION-DESKTOP-READING-ACCEPTANCE-001.md](../implementation/PRODUCTION-DESKTOP-READING-ACCEPTANCE-001.md). Day-anchor provenance is not implemented.
 
 ## What remains open
 

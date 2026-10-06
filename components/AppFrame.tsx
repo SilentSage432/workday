@@ -15,7 +15,7 @@ import type { Task } from "@/domain/task";
 import { createTask } from "@/persistence/contextsAndTasks";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 
-type SessionPhase = "loading" | "signed-out" | "signed-in";
+type SessionPhase = "loading" | "signed-out" | "signed-in" | "unavailable";
 
 const shellClass =
   "mx-auto min-h-dvh max-w-lg overflow-x-hidden bg-stone-950 px-4 pt-4 pb-[calc(5rem+env(safe-area-inset-bottom))] text-stone-100";
@@ -48,10 +48,16 @@ function failureMessage(error: unknown, fallback: string): string {
 
 export function AppFrame({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<SessionPhase>("loading");
+  const [bootstrapAttempt, setBootstrapAttempt] = useState(0);
   const [capture, setCapture] = useState(() => initialCaptureSession());
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const savingRef = useRef(false);
+
+  function retrySessionCheck() {
+    setPhase("loading");
+    setBootstrapAttempt((current) => current + 1);
+  }
 
   async function submit(): Promise<Task | null> {
     if (savingRef.current) return null;
@@ -80,12 +86,50 @@ export function AppFrame({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Subscribe first, then read. A non-initial auth event that arrives while
+    // getSession is still pending is newer than that read, so the settled read
+    // must not replace it. INITIAL_SESSION is tolerated and is not the
+    // bootstrap authority.
+    let active = true;
+    let newerThanRead = false;
+    let supabase: ReturnType<typeof getSupabaseBrowserClient>;
+    try {
+      supabase = getSupabaseBrowserClient();
+    } catch {
+      queueMicrotask(() => {
+        if (active) setPhase("unavailable");
+      });
+      return () => {
+        active = false;
+      };
+    }
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active || event === "INITIAL_SESSION") return;
+      newerThanRead = true;
       setPhase(session ? "signed-in" : "signed-out");
     });
-    return () => data.subscription.unsubscribe();
-  }, []);
+
+    void supabase.auth
+      .getSession()
+      .then((result) => {
+        if (!active || newerThanRead) return;
+        if (result.error) {
+          setPhase("unavailable");
+          return;
+        }
+        setPhase(result.data.session ? "signed-in" : "signed-out");
+      })
+      .catch(() => {
+        if (!active || newerThanRead) return;
+        setPhase("unavailable");
+      });
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, [bootstrapAttempt]);
 
   if (phase === "loading") {
     return (
@@ -93,6 +137,10 @@ export function AppFrame({ children }: { children: ReactNode }) {
         <p>Checking session.</p>
       </main>
     );
+  }
+
+  if (phase === "unavailable") {
+    return <SessionCheckFailed onRetry={retrySessionCheck} />;
   }
 
   if (phase === "signed-out") {
@@ -132,6 +180,17 @@ function SignedInShell({ children }: { children: ReactNode }) {
       </div>
       <BottomNav />
     </>
+  );
+}
+
+function SessionCheckFailed({ onRetry }: { onRetry: () => void }) {
+  return (
+    <main className={shellClass}>
+      <p role="alert">The session could not be checked.</p>
+      <button type="button" onClick={onRetry} className={`mt-6 ${primaryButtonClass}`}>
+        Try again
+      </button>
+    </main>
   );
 }
 

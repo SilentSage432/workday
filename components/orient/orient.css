@@ -1750,3 +1750,496 @@ button.orient-fact {
     max-width: 9.5rem;
   }
 }
+
+.orient-desktop {
+  box-sizing: border-box;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  padding: 1.45rem 2rem 1.1rem;
+}
+
+.orient-desktop-where {
+  flex: none;
+  padding-right: 11rem;
+}
+
+.orient-desktop-now,
+.orient-desktop-day {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.orient-desktop-now-time {
+  color: var(--orient-now);
+  font-size: clamp(3.25rem, 4.4vw, 5.15rem);
+  font-weight: 520;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+}
+
+.orient-desktop-date {
+  color: var(--orient-muted);
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-day {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 1.15rem;
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-date {
+  color: var(--orient-ink);
+  font-size: clamp(2rem, 2.8vw, 3.05rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.orient-desktop-now-quiet {
+  color: var(--orient-now);
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.orient-desktop-empty {
+  margin: 0;
+  color: var(--orient-muted);
+}
+
+.orient-desktop-truth {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  max-height: min(32vh, 15rem);
+  overflow: auto;
+}
+
+.orient-desktop-memberships,
+.orient-desktop-day-reading {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: stretch;
+  gap: 0.45rem 1.5rem;
+  width: 100%;
+}
+
+.orient-desktop .orient-membership {
+  flex: 0 1 18rem;
+  max-width: 22rem;
+  min-height: 0;
+  padding: 0.15rem 0.2rem 0.15rem 0.7rem;
+  border-radius: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.orient-desktop-thread,
+.orient-desktop-exact,
+.orient-desktop-return {
+  font: inherit;
+  cursor: pointer;
+}
+
+.orient-desktop-thread {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: none;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 2.25rem;
+  padding: 0.1rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--orient-ink);
+  text-align: left;
+}
+
+.orient-desktop-thread-line {
+  width: 2px;
+  align-self: stretch;
+  min-height: 1.15rem;
+  border-radius: 999px;
+  background: var(--orient-now);
+}
+
+.orient-desktop-thread[data-thread-weight="quiet"] {
+  color: var(--orient-muted);
+  font-weight: 400;
+}
+
+.orient-desktop-thread[data-thread-weight="quiet"] .orient-desktop-thread-line {
+  opacity: 0.38;
+}
+
+.orient-desktop-thread[data-thread-weight="ordinary"] {
+  font-weight: 520;
+}
+
+.orient-desktop-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.65rem;
+}
+
+.orient-desktop[data-desktop-question="present"] > .orient-desktop-exact {
+  align-self: flex-start;
+  width: fit-content;
+  padding-left: 0;
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-field {
+  flex: none;
+  min-height: 0;
+  margin-top: 0.35rem;
+}
+
+.orient-desktop-signature {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.85rem 0 0.35rem;
+}
+
+.orient-desktop-hours {
+  position: relative;
+  height: 1rem;
+  color: var(--orient-faint);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.orient-desktop-hours span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.orient-desktop-hours span:first-child {
+  transform: none;
+}
+
+.orient-desktop-rail {
+  position: relative;
+  height: 1.35rem;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.orient-desktop-rail::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: rgb(244 239 230 / 0.36);
+  pointer-events: none;
+}
+
+.orient-desktop-signature .orient-signature-fact,
+.orient-desktop-signature .orient-signature-fact[data-contour="double"],
+.orient-desktop-signature .orient-signature-fact[data-contour="dotted"] {
+  top: 50%;
+  bottom: auto;
+  z-index: 1;
+  height: 5px;
+  margin-top: -2.5px;
+}
+
+.orient-desktop-signature .orient-signature-fact::before {
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1.35rem;
+  transform: translateY(-50%);
+}
+
+.orient-desktop-signature .orient-signature-mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 5px;
+  margin-top: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.orient-desktop-signature .orient-signature-mark[data-kind="work_schedule"] {
+  background: var(--orient-work);
+  background-image: none;
+  box-shadow: none;
+}
+
+.orient-desktop-signature .orient-signature-mark[data-kind="protected_time"] {
+  background-color: transparent;
+  background-image: repeating-linear-gradient(90deg, var(--orient-protected) 0 7px, transparent 7px 11px);
+  background-repeat: repeat;
+  background-size: auto;
+  background-position: center;
+  box-shadow: none;
+}
+
+.orient-desktop-signature .orient-signature-mark[data-kind="block"] {
+  background: var(--orient-block);
+  background-image: none;
+  box-shadow: none;
+}
+
+.orient-desktop-signature .orient-signature-mark[data-kind="commitment"] {
+  background-color: transparent;
+  background-image: repeating-linear-gradient(90deg, var(--orient-commitment) 0 2px, transparent 2px 5px);
+  background-repeat: repeat;
+  background-size: auto;
+  background-position: center;
+  box-shadow: none;
+}
+
+.orient-desktop-signature .orient-signature-now {
+  top: 50%;
+  bottom: auto;
+  z-index: 3;
+  width: 2px;
+  height: 0.95rem;
+  margin-top: -0.475rem;
+  margin-left: -1px;
+  border-radius: 0;
+  background: var(--orient-now);
+  box-shadow: none;
+}
+
+.orient-desktop-signature .orient-signature-now::after {
+  content: none;
+}
+
+.orient-desktop-exact-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.15rem;
+}
+
+.orient-desktop-exact {
+  min-height: 2rem;
+  padding: 0.15rem 0 0.15rem 0.6rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--orient-muted);
+  letter-spacing: 0.01em;
+  font-size: 0.84rem;
+}
+
+.orient-desktop-return {
+  min-height: 2.25rem;
+  padding: 0.2rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--orient-muted);
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+}
+
+.orient-desktop-precision {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 1.35rem;
+  padding: 1.05rem 11rem 0.55rem 1.6rem;
+  background: linear-gradient(180deg, #161b24 70%, rgb(22 27 36 / 0));
+}
+
+.orient-desktop-precision-day {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.9rem;
+  margin: 0;
+}
+
+.orient-desktop-precision-date {
+  color: var(--orient-ink);
+  font-size: clamp(1.65rem, 2.2vw, 2.35rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.orient-desktop-precision-depth {
+  color: var(--orient-muted);
+  font-size: 0.95rem;
+}
+
+.orient-desktop-window {
+  flex: none;
+  padding-right: 11rem;
+}
+
+.orient-desktop-span {
+  margin: 0;
+  color: var(--orient-ink);
+  font-size: clamp(1.85rem, 2.6vw, 2.85rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.orient-desktop-resolution {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.2rem 1.35rem 0.4rem;
+}
+
+.orient-desktop-resolution-field {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.orient-desktop-resolution .orient-landscape {
+  height: 100%;
+  padding: 0.15rem 0 0;
+}
+
+.orient-desktop-resolution .orient-landscape[data-distance="week"] {
+  justify-content: flex-start;
+}
+
+.orient-desktop-resolution .orient-landscape[data-distance="week"] .orient-landscape-days {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 16rem;
+  max-height: none;
+}
+
+.orient-desktop-thread:focus-visible,
+.orient-desktop-exact:focus-visible,
+.orient-desktop-return:focus-visible {
+  outline: 2px solid var(--orient-now);
+  outline-offset: 2px;
+}
+
+@media (min-width: 960px) {
+  .orient[data-form="desktop"] {
+    grid-template-areas:
+      "field"
+      "reach";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .orient[data-form="desktop"][data-question="month"] {
+    grid-template-areas:
+      "direction field"
+      "direction reach";
+    grid-template-columns: 18rem minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .orient[data-form="desktop"] .orient-reach {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.35rem 0.75rem;
+    border-top: 1px solid rgb(244 239 230 / 0.1);
+    border-left: 0;
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+    padding: 0.4rem 1.5rem 0.75rem;
+  }
+
+  .orient[data-form="desktop"] .orient-reach-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.15rem;
+  }
+
+  .orient[data-form="desktop"] .orient-control,
+  .orient[data-form="desktop"] .orient-thread {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .orient[data-form="desktop"] .orient-control {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.4rem;
+    width: auto;
+    min-height: 2.5rem;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.84rem;
+  }
+
+  .orient[data-form="desktop"] .orient-thread {
+    width: auto;
+    max-width: 22rem;
+    min-height: 2.5rem;
+  }
+
+  .orient[data-form="desktop"] .orient-surface {
+    left: auto;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: min(28rem, 36vw);
+    max-height: none;
+    border-radius: 0;
+    border-width: 0 0 0 1px;
+  }
+
+  .orient[data-form="desktop"][data-depth="exact"] .orient-stage {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .orient[data-form="desktop"][data-depth="exact"] .orient-field {
+    padding-top: 0;
+  }
+
+  .orient[data-form="desktop"][data-depth="exact"] .orient-day-date {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .orient[data-form="desktop"][data-depth="exact"] .orient-day .orient-gloss {
+    position: static;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: 0.2rem 1.25rem 0.75rem 3.4rem;
+  }
+
+  .orient[data-form="desktop"][data-depth="exact"] .orient-clock {
+    margin-top: 0.85rem;
+  }
+}

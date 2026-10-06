@@ -9,9 +9,11 @@ import { composeMonthReading } from "@/components/monthReading";
 import { composeWeekShapeReading } from "@/components/weekReading";
 import type { Block } from "@/domain/block";
 import { zonedLocalClock } from "@/domain/time/localTime";
+import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
 import { composeDayCanvas, type DayCanvasModel, type DayCanvasTimedPlacement } from "@/projections/dayCanvas";
 import type { TimelineSourceKind } from "@/projections/timeline";
+import { DesktopReading, DesktopWindow } from "@/components/orient/DesktopReading";
 import { DayClock } from "@/components/orient/DayField";
 import {
   contentTop,
@@ -113,6 +115,7 @@ export function OrientView({
   const sessionRef = useRef(session);
   const scrollRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
+  const surfaceRef = useRef<HTMLDivElement>(null);
   const places = useRef<Partial<Record<OrientQuestion, QuestionPlace>>>({});
   const previousQuestion = useRef<OrientQuestion>(question);
   const scrollLock = useRef(false);
@@ -312,7 +315,7 @@ export function OrientView({
       return;
     }
 
-    const reading = form === "phone" && depth === "reading" && (question === "present" || question === "day");
+    const reading = continuityReading(depth, question);
     if (reading) {
       anchorCause.current = "observe";
       return;
@@ -370,7 +373,7 @@ export function OrientView({
   }, [question, anchor, form, depth, alignMinute]);
 
   useEffect(() => {
-    const reading = form === "phone" && depth === "reading" && (question === "present" || question === "day");
+    const reading = continuityReading(depth, question);
     if (reading) return;
     const element = scrollRef.current;
     if (!element || (question !== "present" && question !== "day") || typeof ResizeObserver !== "function") return;
@@ -584,7 +587,7 @@ export function OrientView({
       return;
     }
     bringNow.current = true;
-    if (form === "phone" && (question === "present" || question === "day")) {
+    if (question === "present" || question === "day") {
       exactMinute.current = null;
       exactEntry.current = false;
       setExactAt(null);
@@ -598,7 +601,7 @@ export function OrientView({
   }
 
   function onFieldScroll() {
-    if (form === "phone" && depth === "reading" && (question === "present" || question === "day")) return;
+    if (continuityReading(depth, question)) return;
     measureNow();
     if (question === "week" || question === "month" || scrollLock.current) return;
     const element = scrollRef.current;
@@ -682,6 +685,8 @@ export function OrientView({
 
   let field: ReactNode;
   const phoneReading = form === "phone" && depth === "reading" && (question === "present" || question === "day");
+  const desktopReading = continuityReading(depth, question) && form === "desktop";
+  const desktopBorrowed = form === "desktop";
   const anchorModel = models.find((model) => model.selectedDay === anchor) ?? null;
   if (question === "week" && weekReading?.status === "incomplete") {
     field = (
@@ -714,6 +719,24 @@ export function OrientView({
         onExact={enterExact}
       />
     );
+  } else if (desktopReading && (question === "present" || question === "day")) {
+    field = (
+      <DesktopReading
+        question={question}
+        timeZone={timeZone}
+        now={clock}
+        anchor={anchor}
+        model={anchorModel}
+        sources={sources}
+        thread={thread}
+        focus={focus}
+        contextFor={contextFor}
+        withheld={temporalFailure?.message ?? null}
+        onRefer={referTo}
+        onThread={(event) => openFrom(event, { kind: "thread" })}
+        onExact={enterExact}
+      />
+    );
   } else if ((question === "present" || question === "day") && temporalFailure) {
     field = (
       <p data-reading="incomplete" className="orient-withheld">
@@ -721,7 +744,7 @@ export function OrientView({
       </p>
     );
   } else if (question === "week" || question === "month") {
-    field = (
+    const landscape = (
       <Landscape
         models={models}
         words={question === "week"}
@@ -736,6 +759,15 @@ export function OrientView({
         offFor={offFor}
       />
     );
+    field =
+      desktopBorrowed && models.length > 0 ? (
+        <div className="orient-desktop-resolution" data-desktop-resolution={question}>
+          <DesktopWindow distance={question} from={models[0].selectedDay} to={models[models.length - 1].selectedDay} />
+          <div className="orient-desktop-resolution-field">{landscape}</div>
+        </div>
+      ) : (
+        landscape
+      );
   } else {
     field = (
       <>
@@ -779,32 +811,67 @@ export function OrientView({
       <div className="orient-direction" hidden />
     );
 
+  const borrowedOpen =
+    surface.kind !== "none" ||
+    (session.visible !== null && (question === "present" || question === "day") && surface.kind === "none");
+
+  useEffect(() => {
+    if (!desktopBorrowed) return;
+    if (!borrowedOpen) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      if (surface.kind === "none") {
+        const next = reduceSelection(sessionRef.current, { type: "discard" });
+        sessionRef.current = next;
+        setSession(next);
+        return;
+      }
+      setSurface({ kind: "none" });
+      const opener = openerRef.current;
+      openerRef.current = null;
+      queueMicrotask(() => opener?.focus());
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [desktopBorrowed, borrowedOpen, surface.kind]);
+
+  useEffect(() => {
+    if (!desktopBorrowed || !borrowedOpen) return;
+    const dialog = surfaceRef.current;
+    if (!dialog || dialog.contains(document.activeElement)) return;
+    dialog.focus();
+  }, [desktopBorrowed, borrowedOpen, surface]);
+
   return (
     <main
       className="orient"
       data-production-instrument="true"
       data-question={question}
       data-form={form}
-      data-depth={form === "phone" ? depth : "reading"}
+      data-depth={depth}
       data-phone-reading={phoneReading ? "true" : "false"}
+      data-desktop-reading={desktopReading ? "true" : "false"}
       data-exact-minute={exactAt === null ? "" : String(exactAt)}
       data-reduced-motion={reduced ? "true" : "false"}
       aria-label="Orient"
     >
       <OrientIdentity />
       <div className="orient-reach" data-reach="bezel">
-        <button
-          type="button"
-          className="orient-thread"
-          data-active-thread="true"
-          data-thread-weight={threadWeight}
-          aria-expanded={surface.kind === "thread"}
-          onClick={(event) => openFrom(event, { kind: "thread" })}
-        >
-          <span className="orient-thread-line" aria-hidden="true" />
-          <span className="orient-thread-text">{threadText}</span>
-          <ChevronRight aria-hidden="true" className="orient-glyph" />
-        </button>
+        {desktopReading ? null : (
+          <button
+            type="button"
+            className="orient-thread"
+            data-active-thread="true"
+            data-thread-weight={threadWeight}
+            aria-expanded={surface.kind === "thread"}
+            onClick={(event) => openFrom(event, { kind: "thread" })}
+          >
+            <span className="orient-thread-line" aria-hidden="true" />
+            <span className="orient-thread-text">{threadText}</span>
+            <ChevronRight aria-hidden="true" className="orient-glyph" />
+          </button>
+        )}
         <div className="orient-reach-row">
           <button
             type="button"
@@ -849,6 +916,17 @@ export function OrientView({
         </div>
       </div>
       <div className="orient-stage">
+      {desktopBorrowed && depth === "exact" && (question === "present" || question === "day") ? (
+        <header className="orient-desktop-precision" data-exact-frame="true">
+          <button type="button" className="orient-desktop-return" data-orientation-return="true" onClick={leaveExact}>
+            Orientation
+          </button>
+          <p className="orient-desktop-precision-day">
+            <span className="orient-desktop-precision-date">{formatCivilDateLabel(anchor)}</span>
+            <span className="orient-desktop-precision-depth">Exact time</span>
+          </p>
+        </header>
+      ) : null}
       <div
         className="orient-field"
         data-field="true"
@@ -886,7 +964,15 @@ export function OrientView({
       </div>
       {questionShowsDirection(question) ? <div className="orient-direction">{direction}</div> : <div className="orient-direction" />}
       {surface.kind !== "none" || establishing || referring ? (
-        <div className="orient-surface" role="dialog" aria-label="Transient working surface">
+        <div
+          className="orient-surface"
+          role="dialog"
+          aria-label="Transient working surface"
+          aria-modal={desktopBorrowed ? false : undefined}
+          tabIndex={desktopBorrowed ? -1 : undefined}
+          ref={surfaceRef}
+          data-borrowed-surface={desktopBorrowed ? "drawer" : "sheet"}
+        >
           {surface.kind === "question" ? <QuestionList question={question} onChoose={chooseQuestion} /> : null}
           {surface.kind === "position" ? (
             <PositionSurface
@@ -958,6 +1044,10 @@ export function OrientView({
       ) : null}
     </main>
   );
+}
+
+function continuityReading(depth: "reading" | "exact", question: OrientQuestion): boolean {
+  return depth === "reading" && (question === "present" || question === "day");
 }
 
 function readInstrumentForm(): "phone" | "desktop" {

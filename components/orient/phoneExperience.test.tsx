@@ -542,15 +542,17 @@ describe("phone entry", () => {
 });
 
 describe("desktop composition", () => {
-  it("keeps the vertical clock when the instrument is not a phone", async () => {
+  it("reads Present on the accepted desktop reading when the instrument is not a phone", async () => {
     restoreMedia?.();
     installMedia((query) => query.includes("reduce"));
     const view = await renderPhone();
     expect(view.querySelector("[data-form]")?.getAttribute("data-form")).toBe("desktop");
     expect(view.querySelector("[data-phone-reading]")?.getAttribute("data-phone-reading")).toBe("false");
     expect(view.querySelector(".orient-phone")).toBeNull();
-    expect(view.querySelector("[data-time-surface]")).not.toBeNull();
-    expect(view.querySelector(".orient-clock [data-present-mark]")).not.toBeNull();
+    expect(view.querySelector(".orient-desktop")).not.toBeNull();
+    expect(view.querySelector("[data-desktop-now]")).not.toBeNull();
+    expect(view.querySelector("[data-day-inscription]")).toBeNull();
+    expect(view.querySelector("[data-time-surface]")).toBeNull();
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
     const mark = view.querySelector("[data-orient-identity] img") as HTMLImageElement;
     expect(mark.getAttribute("src")).toBe("/orient-logo.png");
