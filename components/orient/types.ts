@@ -9,6 +9,7 @@ import type { BlockPriorityService, TaskPriorityService } from "@/domain/executi
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import type { Task } from "@/domain/task";
+import type { WeekWrite } from "@/components/weekDraft";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
 
 export type ThreadReading =
@@ -47,6 +48,8 @@ export type OrientActions = {
   onCompleteTask: (taskId: string) => Promise<void>;
   onUpdateTask: (taskId: string, patch: import("@/domain/task").TaskPatch) => Promise<void>;
   onTasksChanged: () => void;
+  onLoadWorkWeek: (from: string, to: string) => Promise<WorkScheduleEntry[]>;
+  onSaveWorkWeek: (weekStart: string, writes: WeekWrite[]) => Promise<void>;
 };
 
 export type { OpenTaskChoice };

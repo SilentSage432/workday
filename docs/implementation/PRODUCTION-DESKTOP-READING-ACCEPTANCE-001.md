@@ -31,7 +31,7 @@ Week remains the shared seven-column temporal landscape. Desktop Week is physica
 
 ## Drawer
 
-Desktop uses one `surface` state. The surface is a borrowed right-side drawer. The reading stays mounted and perceivable. The drawer is non-modal. Escape closes it. Focus moves to the dialog and returns to the invoking control. Capture does not become permanent navigation. There is no standing 22rem production rail.
+Desktop uses one `surface` state. The surface is a borrowed right-side drawer. The reading stays mounted and perceivable. The drawer is non-modal. Escape closes it. Focus moves to the dialog and returns to the invoking control. Capture does not become permanent navigation. There is no standing 22rem production rail. Work schedule management is an accepted operation on this surface. [WORK-SCHEDULE-AUTHORITY-PATH-ACCEPTANCE-001.md](WORK-SCHEDULE-AUTHORITY-PATH-ACCEPTANCE-001.md).
 
 ## Auth
 

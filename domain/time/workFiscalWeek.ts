@@ -144,3 +144,16 @@ export function workFiscalWeekStart(instant: Date, timeZone: string): CivilDate 
 export function workFiscalWeekDates(weekStart: CivilDate): CivilDate[] {
   return Array.from({ length: 7 }, (_, index) => addCivilDays(weekStart, index));
 }
+
+/** Saturday that begins the Work fiscal week containing this civil date. Not an Orient window. */
+export function workFiscalWeekContaining(civilDate: string): string {
+  const date = parseCivilDate(civilDate);
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC",
+    weekday: "short",
+  }).format(new Date(Date.UTC(date.year, date.month - 1, date.day, 12)));
+  if (!(weekday in DAYS_SINCE_SATURDAY)) {
+    throw new Error(`Unrecognized weekday "${weekday}".`);
+  }
+  return formatCivilDate(addCivilDays(date, -DAYS_SINCE_SATURDAY[weekday]));
+}

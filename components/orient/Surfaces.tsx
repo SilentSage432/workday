@@ -80,6 +80,7 @@ export function PositionSurface({
   onMove,
   onAdoptToday,
   onSignOut,
+  onManageWork,
   onClose,
 }: {
   anchor: string;
@@ -87,6 +88,7 @@ export function PositionSurface({
   onMove: (civilDate: string) => void;
   onAdoptToday: (civilDate: string) => void;
   onSignOut: () => void;
+  onManageWork: () => void;
   onClose: () => void;
 }) {
   const [date, setDate] = useState(anchor);
@@ -122,6 +124,9 @@ export function PositionSurface({
       <div className="orient-actions">
         <button type="button" className="orient-action" onClick={onClose}>
           Close
+        </button>
+        <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
+          Manage Work schedule
         </button>
         <button type="button" className="orient-action" onClick={onSignOut}>
           Sign out
@@ -358,6 +363,7 @@ export function InspectionSurface({
   onClose,
   onUpdate,
   onRemove,
+  onManageWork,
 }: {
   facts: FactAddress[];
   chosen: FactAddress | null;
@@ -370,6 +376,7 @@ export function InspectionSurface({
   onClose: () => void;
   onUpdate: (update: CanvasFactUpdate) => Promise<void>;
   onRemove: (removal: CanvasFactRemoval) => Promise<void>;
+  onManageWork: (civilDate: string) => void;
 }) {
   if (!chosen && facts.length > 1) {
     return (
@@ -405,6 +412,7 @@ export function InspectionSurface({
       onClose={onClose}
       onUpdate={onUpdate}
       onRemove={onRemove}
+      onManageWork={onManageWork}
     />
   );
 }
@@ -419,6 +427,7 @@ function FactDetail({
   onClose,
   onUpdate,
   onRemove,
+  onManageWork,
 }: {
   fact: FactAddress;
   models: readonly DayCanvasModel[];
@@ -429,6 +438,7 @@ function FactDetail({
   onClose: () => void;
   onUpdate: (update: CanvasFactUpdate) => Promise<void>;
   onRemove: (removal: CanvasFactRemoval) => Promise<void>;
+  onManageWork: (civilDate: string) => void;
 }) {
   const copy = describe(models, fact);
   const stored = copy.stored;
@@ -513,7 +523,9 @@ function FactDetail({
       ))}
       {fact.sourceKind === "work_schedule" ? (
         <p>
-          <a href="/schedule">Edit the work week</a>
+          <button type="button" className="orient-action" onClick={() => onManageWork(fact.sourceId)}>
+            Edit the work week
+          </button>
         </p>
       ) : null}
       {editing && stored ? (

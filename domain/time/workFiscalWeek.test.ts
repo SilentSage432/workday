@@ -4,6 +4,7 @@ import {
   formatCivilDate,
   formatCivilDateLabel,
   parseCivilDate,
+  workFiscalWeekContaining,
   workFiscalWeekDates,
   workFiscalWeekStart,
 } from "./workFiscalWeek";
@@ -37,6 +38,12 @@ describe("workFiscalWeekStart", () => {
       "2026-10-02",
     ]);
     expect(formatCivilDate(addCivilDays(start, 7))).toBe("2026-10-03");
+  });
+
+  it("names the Saturday of the Work fiscal week that contains a civil date", () => {
+    expect(workFiscalWeekContaining("2026-10-05")).toBe("2026-10-03");
+    expect(workFiscalWeekContaining("2026-10-10")).toBe("2026-10-10");
+    expect(workFiscalWeekContaining("2026-10-09")).toBe("2026-10-03");
   });
 
   it("uses the supplied time zone when the same instant falls on different civil dates", () => {

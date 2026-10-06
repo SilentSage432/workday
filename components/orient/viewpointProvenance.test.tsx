@@ -44,6 +44,8 @@ function actions(): OrientActions {
     onCompleteTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
+    onLoadWorkWeek: async () => [],
+    onSaveWorkWeek: async () => {},
   };
 }
 

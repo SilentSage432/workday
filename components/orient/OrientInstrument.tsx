@@ -30,6 +30,7 @@ import { createProtectedTime, deleteProtectedTime, loadProtectedTime, updateProt
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import { loadTaskPriorityService } from "@/persistence/taskPriorityService";
 import { loadTemporalSettings, loadWorkSchedule } from "@/persistence/workSchedule";
+import { saveWorkWeek } from "@/persistence/saveWorkWeek";
 import { projectResume } from "@/projections/resume";
 
 type LoadedTruth = {
@@ -247,6 +248,12 @@ export function OrientInstrument() {
           });
         },
         onTasksChanged: () => setReloadToken((token) => token + 1),
+        onLoadWorkWeek: (from, to) => loadWorkSchedule(getSupabaseBrowserClient(), from, to),
+        onSaveWorkWeek: async (weekStart, writes) => {
+          await persist(async () => {
+            await saveWorkWeek(getSupabaseBrowserClient(), weekStart, writes);
+          });
+        },
       }}
     />
   );

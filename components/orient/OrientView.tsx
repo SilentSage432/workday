@@ -9,7 +9,7 @@ import { composeMonthReading } from "@/components/monthReading";
 import { composeWeekShapeReading } from "@/components/weekReading";
 import type { Block } from "@/domain/block";
 import { zonedLocalClock } from "@/domain/time/localTime";
-import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
+import { formatCivilDateLabel, workFiscalWeekContaining } from "@/domain/time/workFiscalWeek";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
 import { composeDayCanvas, type DayCanvasModel, type DayCanvasTimedPlacement } from "@/projections/dayCanvas";
 import type { TimelineSourceKind } from "@/projections/timeline";
@@ -46,6 +46,7 @@ import {
   type OrientQuestion,
 } from "@/components/orient/grammar";
 import { Landscape } from "@/components/orient/Landscape";
+import { WorkScheduleOperation, type WorkScheduleDismiss } from "@/components/orient/WorkScheduleOperation";
 import {
   CaptureSurface,
   DirectionInspection,
@@ -75,7 +76,8 @@ type Surface =
   | { kind: "capture" }
   | { kind: "thread" }
   | { kind: "facts"; facts: FactAddress[]; chosen: FactAddress | null }
-  | { kind: "direction"; priorityId: string };
+  | { kind: "direction"; priorityId: string }
+  | { kind: "work"; weekStart: string };
 
 export function OrientView({
   timeZone,
@@ -107,6 +109,7 @@ export function OrientView({
   const [question, setQuestion] = useState<OrientQuestion>(() => (readInstrumentForm() === "phone" ? "day" : "present"));
   const [focus, setFocus] = useState<ContextFocus>({ kind: "everything" });
   const [surface, setSurface] = useState<Surface>({ kind: "none" });
+  const workDismissRef = useRef<WorkScheduleDismiss | null>(null);
   const [session, setSession] = useState<SelectionSession>(initialSelectionSession);
   const [nowEdge, setNowEdge] = useState<"above" | "below" | "before" | "after" | null>(null);
   const [reduced, setReduced] = useState(false);
@@ -177,16 +180,35 @@ export function OrientView({
     setSession(next);
   }
 
-  function closeSurface() {
+  function finishClose() {
     setSurface({ kind: "none" });
     const opener = openerRef.current;
     openerRef.current = null;
     queueMicrotask(() => opener?.focus());
   }
 
+  function guardWork(proceed: () => void) {
+    if (surface.kind === "work" && workDismissRef.current) {
+      workDismissRef.current.requestLeave(proceed);
+      return;
+    }
+    proceed();
+  }
+
+  function closeSurface() {
+    guardWork(finishClose);
+  }
+
   function openFrom(event: { currentTarget: HTMLElement }, next: Surface) {
-    openerRef.current = event.currentTarget;
-    setSurface(next);
+    const target = event.currentTarget;
+    guardWork(() => {
+      openerRef.current = target;
+      setSurface(next);
+    });
+  }
+
+  function openWork(civilDate: string) {
+    setSurface({ kind: "work", weekStart: workFiscalWeekContaining(civilDate) });
   }
 
   function remember(current: OrientQuestion) {
@@ -206,6 +228,10 @@ export function OrientView({
   }
 
   function chooseQuestion(next: OrientQuestion) {
+    guardWork(() => chooseQuestionNow(next));
+  }
+
+  function chooseQuestionNow(next: OrientQuestion) {
     questionChosen.current = true;
     remember(question);
     if (next === "present") {
@@ -239,6 +265,10 @@ export function OrientView({
   }
 
   function askDay(civilDate: string) {
+    guardWork(() => askDayNow(civilDate));
+  }
+
+  function askDayNow(civilDate: string) {
     questionChosen.current = true;
     remember(question);
     places.current.day = { anchor: civilDate, scroll: null, provenance: "moved" };
@@ -664,8 +694,10 @@ export function OrientView({
   }
 
   function referTo(facts: FactAddress[]) {
-    publish(reduceSelection(sessionRef.current, { type: "discard" }));
-    setSurface(facts.length === 1 ? { kind: "facts", facts, chosen: facts[0] } : { kind: "facts", facts, chosen: null });
+    guardWork(() => {
+      publish(reduceSelection(sessionRef.current, { type: "discard" }));
+      setSurface(facts.length === 1 ? { kind: "facts", facts, chosen: facts[0] } : { kind: "facts", facts, chosen: null });
+    });
   }
 
   const showRemainder = questionAllowsCapacityRemainder(question);
@@ -828,7 +860,7 @@ export function OrientView({
         message={monthReading.status === "incomplete" ? monthReading.message : null}
         destinations={monthReading.status === "complete" ? monthReading.destinations : []}
         priorities={monthReading.status === "complete" ? monthReading.priorities : []}
-        onInspect={(priorityId) => setSurface({ kind: "direction", priorityId })}
+        onInspect={(priorityId) => guardWork(() => setSurface({ kind: "direction", priorityId }))}
       />
     ) : (
       <div className="orient-direction" hidden />
@@ -839,21 +871,22 @@ export function OrientView({
     (session.visible !== null && (question === "present" || question === "day") && surface.kind === "none");
 
   useEffect(() => {
-    if (!desktopBorrowed) return;
+    if (!desktopBorrowed && surface.kind !== "work") return;
     if (!borrowedOpen) return;
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       event.preventDefault();
+      if (surface.kind === "work") {
+        workDismissRef.current?.requestLeave(finishClose);
+        return;
+      }
       if (surface.kind === "none") {
         const next = reduceSelection(sessionRef.current, { type: "discard" });
         sessionRef.current = next;
         setSession(next);
         return;
       }
-      setSurface({ kind: "none" });
-      const opener = openerRef.current;
-      openerRef.current = null;
-      queueMicrotask(() => opener?.focus());
+      finishClose();
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -1005,6 +1038,11 @@ export function OrientView({
               onMove={moveViewpoint}
               onAdoptToday={adoptToday}
               onSignOut={actions.onSignOut}
+              onManageWork={() => {
+                const today = todayCivil();
+                if (!today) return;
+                openWork(today);
+              }}
               onClose={closeSurface}
             />
           ) : null}
@@ -1045,6 +1083,19 @@ export function OrientView({
               onClose={closeSurface}
               onUpdate={actions.onUpdate}
               onRemove={actions.onRemove}
+              onManageWork={(civilDate) => openWork(civilDate)}
+            />
+          ) : null}
+          {surface.kind === "work" ? (
+            <WorkScheduleOperation
+              key={surface.weekStart}
+              weekStart={surface.weekStart}
+              timeZone={timeZone}
+              dismissRef={workDismissRef}
+              onWeekStart={(next) => setSurface({ kind: "work", weekStart: next })}
+              onLoad={actions.onLoadWorkWeek}
+              onSave={actions.onSaveWorkWeek}
+              onDismiss={finishClose}
             />
           ) : null}
           {surface.kind === "direction" ? (

@@ -114,6 +114,8 @@ function actions(overrides?: Partial<OrientActions>): OrientActions {
     onCompleteTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
+    onLoadWorkWeek: async () => [],
+    onSaveWorkWeek: async () => {},
     ...overrides,
   };
 }
@@ -844,6 +846,447 @@ describe("production orient instrument", () => {
       expect(view.querySelector("[data-reduced-motion]")?.getAttribute("data-reduced-motion")).toBe("true");
       await ask(view, "Week");
       expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("week");
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+});
+
+describe("work schedule authority", () => {
+  async function settle() {
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  }
+
+  async function setField(node: ParentNode, name: string, value: string) {
+    const field = node.querySelector(`[aria-label="${name}"]`) as HTMLInputElement | HTMLSelectElement | null;
+    if (!field) throw new Error(`Missing field ${name}`);
+    const prototype = field instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+    const setter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
+    await act(async () => {
+      setter?.call(field, value);
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
+  async function enterShift(view: HTMLElement, label: string, start: string, end: string, type: string) {
+    const open = view.querySelector(
+      `[aria-label="Shift for ${label}"], [aria-label="Edit shift for ${label}"]`,
+    ) as HTMLButtonElement | null;
+    if (!open) throw new Error(`Missing shift control for ${label}`);
+    await act(async () => {
+      open.click();
+    });
+    await setField(view, `Start for ${label}`, start);
+    await setField(view, `End for ${label}`, end);
+    await setField(view, `Shift type for ${label}`, type);
+  }
+
+  async function openManage(view: HTMLElement) {
+    await act(async () => {
+      view.querySelector<HTMLButtonElement>("[data-position]")?.click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Manage Work schedule").click();
+    });
+    await settle();
+  }
+
+  it("reaches Work from nothing and keeps the reading in place", async () => {
+    const anchors: string[] = [];
+    const view = await renderView({
+      onAnchor: (date) => anchors.push(date),
+      sources: { ...sources(), work: ready([]) },
+    });
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-viewpoint]")?.getAttribute("data-viewpoint")).toBe("follows-today");
+    await openManage(view);
+    const editor = view.querySelector("[data-work-schedule]");
+    expect(editor?.getAttribute("data-fiscal-week")).toBe("2026-10-03");
+    expect(editor?.getAttribute("data-fiscal-through")).toBe("2026-10-09");
+    expect(editor?.textContent).toContain("Sat, Oct 3");
+    expect(editor?.textContent).toContain("Fri, Oct 9");
+    expect(view.querySelectorAll("[data-work-day]")).toHaveLength(7);
+    expect([...view.querySelectorAll("[data-work-state]")].every((day) => day.getAttribute("data-work-state") === "unknown")).toBe(true);
+    expect(view.textContent).toContain("Not entered");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-viewpoint]")?.getAttribute("data-viewpoint")).toBe("follows-today");
+    expect(view.querySelector("[data-field]")).not.toBeNull();
+    expect(view.querySelector('a[href="/schedule"]')).toBeNull();
+    expect(anchors).toEqual([]);
+  });
+
+  it("opens the inspected Work fact in the same operation", async () => {
+    const anchors: string[] = [];
+    const view = await renderView({
+      onAnchor: (date) => anchors.push(date),
+      sources: {
+        ...sources(),
+        work: ready([{ workOn: "2026-10-10", state: "scheduled", startLocal: "09:00", endLocal: "17:00", shiftType: "mid" }]),
+      },
+      actions: {
+        onLoadWorkWeek: async () => [
+          { workOn: "2026-10-10", state: "scheduled", startLocal: "09:00", endLocal: "17:00", shiftType: "mid" },
+        ],
+      },
+    });
+    await ask(view, "Week");
+    const fact = view.querySelector('[data-civil-day="2026-10-10"] [data-source-kind="work_schedule"]') as HTMLButtonElement;
+    await act(async () => {
+      fact.click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Edit the work week").click();
+    });
+    await settle();
+    expect(view.querySelector("[data-work-schedule]")?.getAttribute("data-fiscal-week")).toBe("2026-10-10");
+    expect(view.querySelector('[data-work-day="2026-10-10"]')?.textContent).toContain("09:00–17:00 Mid");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("week");
+    expect(view.querySelector('a[href="/schedule"]')).toBeNull();
+    expect(anchors).toEqual([]);
+    expect(readFileSync("app/schedule/page.tsx", "utf8")).toContain("WorkSchedule");
+  });
+
+  it("keeps unknown distinct from Off and writes a valid week through the existing save", async () => {
+    const saves: unknown[] = [];
+    let reads = 0;
+    const view = await renderView({
+      sources: { ...sources(), work: ready([]) },
+      actions: {
+        onLoadWorkWeek: async () => {
+          reads += 1;
+          if (reads === 1) return [];
+          return [{ workOn: "2026-10-03", state: "off" }];
+        },
+        onSaveWorkWeek: async (_weekStart, writes) => {
+          saves.push(writes);
+        },
+      },
+    });
+    await openManage(view);
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-state")).toBe("unknown");
+    await act(async () => {
+      buttonNamed(view, "Off").click();
+    });
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-state")).toBe("off");
+    expect(view.querySelector('[data-work-day="2026-10-04"]')?.getAttribute("data-work-state")).toBe("unknown");
+    await act(async () => {
+      buttonNamed(view, "Save").click();
+    });
+    await settle();
+    expect(saves).toHaveLength(1);
+    expect(view.querySelector("[data-work-schedule]")).not.toBeNull();
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-state")).toBe("off");
+    expect(view.querySelector('[data-work-day="2026-10-04"]')?.textContent).toContain("Not entered");
+    expect(readFileSync("components/orient/WorkScheduleOperation.tsx", "utf8")).toContain("planWeekSave");
+    expect(readFileSync("components/orient/OrientInstrument.tsx", "utf8")).toContain("saveWorkWeek");
+  });
+
+  it("writes nothing for an invalid shift and keeps a failed save", async () => {
+    const saves: unknown[] = [];
+    const view = await renderView({
+      sources: { ...sources(), work: ready([]) },
+      actions: {
+        onSaveWorkWeek: async () => {
+          saves.push("called");
+          throw new Error("This week was not saved.");
+        },
+      },
+    });
+    await openManage(view);
+    await act(async () => {
+      buttonNamed(view, "Shift").click();
+    });
+    await setField(view, "Start for Sat, Oct 3", "09:00");
+    await act(async () => {
+      buttonNamed(view, "Save").click();
+    });
+    await settle();
+    expect(saves).toEqual([]);
+    expect(view.querySelector('[data-work-day="2026-10-03"] [role="alert"]')?.textContent).toContain(
+      "A shift needs a start, an end, and Opening, Mid, or Closing.",
+    );
+    await act(async () => {
+      buttonNamed(view, "Off").click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Save").click();
+    });
+    await settle();
+    expect(saves).toEqual(["called"]);
+    expect(view.querySelector("[role='alert']")?.textContent).toContain("This week was not saved.");
+    expect(view.querySelector("[data-work-schedule]")).not.toBeNull();
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-state")).toBe("off");
+  });
+
+  it("refuses to discard a dirty week from Close or Escape", async () => {
+    const saves: unknown[] = [];
+    const view = await renderView({
+      sources: { ...sources(), work: ready([]) },
+      actions: {
+        onSaveWorkWeek: async () => {
+          saves.push("called");
+        },
+      },
+    });
+    await openManage(view);
+    await act(async () => {
+      buttonNamed(view, "Off").click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Close").click();
+    });
+    expect(view.textContent).toContain("This week has unsaved changes.");
+    expect(view.querySelector("[data-work-schedule]")).not.toBeNull();
+    await act(async () => {
+      buttonNamed(view, "Stay").click();
+    });
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-state")).toBe("off");
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    });
+    expect(view.textContent).toContain("This week has unsaved changes.");
+    expect(view.querySelector("[data-work-schedule]")).not.toBeNull();
+    await act(async () => {
+      buttonNamed(view, "Discard").click();
+    });
+    expect(view.querySelector("[data-work-schedule]")).toBeNull();
+    expect(saves).toEqual([]);
+  });
+
+  it("moves only the Work fiscal week", async () => {
+    const anchors: string[] = [];
+    const view = await renderView({
+      onAnchor: (date) => anchors.push(date),
+      sources: { ...sources(), work: ready([]) },
+    });
+    await ask(view, "Week");
+    expect(view.querySelector('[data-civil-day="2026-10-05"] [data-present-mark]')?.getAttribute("aria-label")).toBe("Now");
+    const weekDays = [...view.querySelectorAll("[data-landscape] [data-civil-day]")].map((day) => day.getAttribute("data-civil-day"));
+    await openManage(view);
+    await act(async () => {
+      buttonNamed(view, "Next fiscal week").click();
+    });
+    await settle();
+    expect(view.querySelector("[data-work-schedule]")?.getAttribute("data-fiscal-week")).toBe("2026-10-10");
+    expect([...view.querySelectorAll("[data-landscape] [data-civil-day]")].map((day) => day.getAttribute("data-civil-day"))).toEqual(weekDays);
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("week");
+    expect(anchors).toEqual([]);
+    await act(async () => {
+      buttonNamed(view, "Off").click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Next fiscal week").click();
+    });
+    expect(view.textContent).toContain("This week has unsaved changes.");
+    expect(view.querySelector("[data-work-schedule]")?.getAttribute("data-fiscal-week")).toBe("2026-10-10");
+    await act(async () => {
+      buttonNamed(view, "Stay").click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Close").click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Discard").click();
+    });
+    await ask(view, "Month");
+    expect(view.querySelector("[data-month-geometry]")?.getAttribute("data-month-geometry")).toBe("7x4");
+    expect(view.querySelector("[data-landscape] [data-present-mark]")).toBeNull();
+    expect(view.querySelector('[data-landscape] [aria-label="Now"]')).toBeNull();
+  });
+
+  it("uses the same operation on the phone sheet without leaving continuity", async () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes("max-width"),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+    })) as typeof window.matchMedia;
+    try {
+      const view = await renderView({ sources: { ...sources(), work: ready([]) } });
+      expect(view.querySelector("[data-form]")?.getAttribute("data-form")).toBe("phone");
+      expect(view.querySelector("[data-day-signature]")).not.toBeNull();
+      await openManage(view);
+      expect(view.querySelector("[data-borrowed-surface]")?.getAttribute("data-borrowed-surface")).toBe("sheet");
+      expect(view.querySelector("[data-work-schedule]")?.getAttribute("data-fiscal-week")).toBe("2026-10-03");
+      expect(view.querySelectorAll("[data-work-day]")).toHaveLength(7);
+      expect(view.querySelector("[data-day-signature]")).not.toBeNull();
+      expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+
+  it("keeps an opened unknown date out of the draft until a shift is entered", async () => {
+    const saves: unknown[] = [];
+    const view = await renderView({
+      sources: { ...sources(), work: ready([]) },
+      actions: { onSaveWorkWeek: async () => { saves.push("called"); } },
+    });
+    await openManage(view);
+    await act(async () => {
+      buttonNamed(view, "Shift").click();
+    });
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-state")).toBe("unknown");
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-open")).toBe("true");
+    expect((view.querySelector('[data-emphasis="save"]') as HTMLButtonElement).disabled).toBe(true);
+    expect(saves).toEqual([]);
+  });
+
+  it("keeps a finished shift while another date is selected", async () => {
+    const anchors: string[] = [];
+    const saves: unknown[] = [];
+    const view = await renderView({
+      onAnchor: (date) => anchors.push(date),
+      sources: { ...sources(), work: ready([]) },
+      actions: { onSaveWorkWeek: async () => { saves.push("called"); } },
+    });
+    await openManage(view);
+    await enterShift(view, "Sat, Oct 3", "09:00", "17:00", "opening");
+    await act(async () => {
+      (view.querySelector('[aria-label="Shift for Sun, Oct 4"]') as HTMLButtonElement).click();
+    });
+    expect(view.textContent).not.toContain("This week has unsaved changes.");
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.textContent).toContain("09:00–17:00 Opening");
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-state")).toBe("scheduled");
+    expect(view.querySelector('[data-work-day="2026-10-04"]')?.getAttribute("data-work-state")).toBe("unknown");
+    expect(view.querySelector("[data-work-schedule]")?.getAttribute("data-fiscal-week")).toBe("2026-10-03");
+    expect(view.querySelector("[data-viewpoint]")?.getAttribute("data-viewpoint")).toBe("follows-today");
+    expect(saves).toEqual([]);
+    expect(anchors).toEqual([]);
+  });
+
+  it("saves every changed date in one week write", async () => {
+    const saves: { workOn: string; action: string; state?: string }[][] = [];
+    const view = await renderView({
+      sources: { ...sources(), work: ready([]) },
+      actions: {
+        onLoadWorkWeek: async () => [],
+        onSaveWorkWeek: async (_weekStart, writes) => {
+          saves.push(
+            writes.map((write) => ({
+              workOn: write.workOn,
+              action: write.action,
+              state: write.action === "save" ? write.entry.state : undefined,
+            })),
+          );
+        },
+      },
+    });
+    await openManage(view);
+    await enterShift(view, "Sat, Oct 3", "06:00", "14:00", "opening");
+    await enterShift(view, "Sun, Oct 4", "08:00", "16:00", "mid");
+    await act(async () => {
+      (view.querySelector('[aria-label="Off for Mon, Oct 5"]') as HTMLButtonElement).click();
+    });
+    await enterShift(view, "Tue, Oct 6", "14:00", "22:00", "closing");
+    await enterShift(view, "Thu, Oct 8", "09:00", "17:00", "mid");
+    await act(async () => {
+      (view.querySelector('[aria-label="Off for Fri, Oct 9"]') as HTMLButtonElement).click();
+    });
+    expect(view.querySelector('[data-work-day="2026-10-07"]')?.getAttribute("data-work-state")).toBe("unknown");
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.textContent).toContain("06:00–14:00 Opening");
+    await act(async () => {
+      buttonNamed(view, "Save").click();
+    });
+    await settle();
+    expect(saves).toHaveLength(1);
+    expect(saves[0]?.map((write) => write.workOn)).toEqual([
+      "2026-10-03",
+      "2026-10-04",
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-08",
+      "2026-10-09",
+    ]);
+    expect(saves[0]?.find((write) => write.workOn === "2026-10-05")).toMatchObject({ action: "save", state: "off" });
+    expect(saves[0]?.find((write) => write.workOn === "2026-10-07")).toBeUndefined();
+  });
+
+  it("saves a finished shift when another date was only opened", async () => {
+    const saves: string[][] = [];
+    let saved = false;
+    const view = await renderView({
+      sources: { ...sources(), work: ready([]) },
+      actions: {
+        onLoadWorkWeek: async () =>
+          saved ? [{ workOn: "2026-10-03", state: "scheduled", startLocal: "09:00", endLocal: "17:00", shiftType: "opening" }] : [],
+        onSaveWorkWeek: async (_weekStart, writes) => {
+          saves.push(writes.map((write) => write.workOn));
+          saved = true;
+        },
+      },
+    });
+    await openManage(view);
+    await enterShift(view, "Sat, Oct 3", "09:00", "17:00", "opening");
+    await act(async () => {
+      (view.querySelector('[aria-label="Shift for Sun, Oct 4"]') as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Save").click();
+    });
+    await settle();
+    expect(saves).toEqual([["2026-10-03"]]);
+    expect(view.querySelector('[data-work-day="2026-10-03"]')?.getAttribute("data-work-state")).toBe("scheduled");
+    expect(view.querySelector('[data-work-day="2026-10-04"]')?.getAttribute("data-work-state")).toBe("unknown");
+  });
+
+  it("asks before leaving a dirty week for the previous fiscal week", async () => {
+    const view = await renderView({ sources: { ...sources(), work: ready([]) } });
+    await openManage(view);
+    await act(async () => {
+      buttonNamed(view, "Off").click();
+    });
+    await act(async () => {
+      buttonNamed(view, "Previous fiscal week").click();
+    });
+    expect(view.textContent).toContain("This week has unsaved changes.");
+    expect(view.querySelector("[data-work-schedule]")?.getAttribute("data-fiscal-week")).toBe("2026-10-03");
+  });
+
+  it("keeps the phone week draft when another date is selected", async () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes("max-width"),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+    })) as typeof window.matchMedia;
+    const saves: string[][] = [];
+    try {
+      const view = await renderView({
+        sources: { ...sources(), work: ready([]) },
+        actions: {
+          onSaveWorkWeek: async (_weekStart, writes) => {
+            saves.push(writes.map((write) => write.workOn));
+          },
+        },
+      });
+      await openManage(view);
+      await enterShift(view, "Sat, Oct 3", "09:00", "17:00", "mid");
+      await act(async () => {
+        (view.querySelector('[aria-label="Shift for Sun, Oct 4"]') as HTMLButtonElement).click();
+      });
+      expect(view.querySelector("[data-day-signature]")).not.toBeNull();
+      expect(view.querySelector('[data-work-day="2026-10-03"]')?.textContent).toContain("09:00–17:00 Mid");
+      expect(view.querySelector('[data-work-day="2026-10-04"]')?.getAttribute("data-work-state")).toBe("unknown");
+      expect(saves).toEqual([]);
+      await act(async () => {
+        buttonNamed(view, "Save").click();
+      });
+      await settle();
+      expect(saves).toEqual([["2026-10-03"]]);
     } finally {
       window.matchMedia = original;
     }
