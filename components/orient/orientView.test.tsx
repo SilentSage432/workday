@@ -336,6 +336,9 @@ describe("production orient instrument", () => {
     const anchors: string[] = [];
     const view = await renderView({ onAnchor: (date) => anchors.push(date) });
     await ask(view, "Week");
+    expect(view.querySelector('[data-civil-day="2026-10-05"]')?.getAttribute("data-today")).toBe("true");
+    expect(view.querySelector('[data-civil-day="2026-10-05"] [data-present-mark]')?.getAttribute("aria-label")).toBe("Now");
+    expect(view.querySelector('[data-civil-day="2026-10-06"] [data-present-mark]')).toBeNull();
     const block = view.querySelector('[data-civil-day="2026-10-05"] [data-source-id="block-1"]') as HTMLButtonElement;
     expect(block.tagName).toBe("BUTTON");
     await act(async () => {
@@ -429,8 +432,8 @@ describe("production orient instrument", () => {
     expect(dates[7]).toBe("2026-10-12");
     expect(dates.at(-1)).toBe("2026-11-01");
     expect(view.querySelector('[data-civil-day="2026-10-05"]')?.getAttribute("data-today")).toBe("true");
-    expect(view.querySelector('[data-civil-day="2026-10-05"] [data-present-mark]')).not.toBeNull();
-    expect(view.querySelector('[data-civil-day="2026-10-06"] [data-present-mark]')).toBeNull();
+    expect(view.querySelector("[data-landscape] [data-present-mark]")).toBeNull();
+    expect(view.querySelector('[data-landscape] [aria-label="Now"]')).toBeNull();
   });
 
   it("asks Day from a Month date and inspects material inside that date", async () => {

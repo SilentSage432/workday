@@ -27,7 +27,7 @@ The inscription is one dimension. Established spans stay proportional to civil t
 
 ## Week, Month, and Direction
 
-Week remains the shared seven-column temporal landscape. Desktop Week is physically accepted in [DESKTOP-WEEK-ACCEPTANCE-001.md](DESKTOP-WEEK-ACCEPTANCE-001.md). Month remains the shared 7×4 landscape. Direction remains the leading Month column. Legitimate Work Off representation stays where it was already established. Month and Direction remain a later physical gate.
+Week remains the shared seven-column temporal landscape. Desktop Week is physically accepted in [DESKTOP-WEEK-ACCEPTANCE-001.md](DESKTOP-WEEK-ACCEPTANCE-001.md). Month remains the shared 7×4 landscape. Direction remains the leading Month column. Legitimate Work Off representation stays where it was already established. Desktop Month is physically accepted in [DESKTOP-MONTH-ACCEPTANCE-001.md](DESKTOP-MONTH-ACCEPTANCE-001.md).
 
 ## Drawer
 

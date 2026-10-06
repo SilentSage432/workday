@@ -265,7 +265,6 @@ export function Landscape({
                           />
                         );
                       })}
-                      {today === model.selectedDay ? <div data-present-mark="true" className="orient-now" aria-label="Now" /> : null}
                       {offFor(model.selectedDay) ? (
                         <span data-work-off="true" className="orient-off">
                           Off
