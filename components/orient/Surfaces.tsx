@@ -77,13 +77,15 @@ export function QuestionList({
 export function PositionSurface({
   anchor,
   today,
-  onAnchor,
+  onMove,
+  onAdoptToday,
   onSignOut,
   onClose,
 }: {
   anchor: string;
   today: string | null;
-  onAnchor: (civilDate: string) => void;
+  onMove: (civilDate: string) => void;
+  onAdoptToday: (civilDate: string) => void;
   onSignOut: () => void;
   onClose: () => void;
 }) {
@@ -92,14 +94,14 @@ export function PositionSurface({
     <div data-relocation="true">
       <h2>Where in time</h2>
       <div className="orient-actions">
-        <button type="button" className="orient-action" onClick={() => onAnchor(shiftedAnchor(anchor, -1))}>
+        <button type="button" className="orient-action" onClick={() => onMove(shiftedAnchor(anchor, -1))}>
           Previous civil day
         </button>
-        <button type="button" className="orient-action" onClick={() => onAnchor(shiftedAnchor(anchor, 1))}>
+        <button type="button" className="orient-action" onClick={() => onMove(shiftedAnchor(anchor, 1))}>
           Next civil day
         </button>
         {today ? (
-          <button type="button" className="orient-action" onClick={() => onAnchor(today)}>
+          <button type="button" className="orient-action" onClick={() => onAdoptToday(today)}>
             Today
           </button>
         ) : null}
@@ -113,7 +115,7 @@ export function PositionSurface({
           onChange={(event) => {
             const next = event.target.value;
             setDate(next);
-            if (/^\d{4}-\d{2}-\d{2}$/.test(next)) onAnchor(next);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(next)) onMove(next);
           }}
         />
       </label>

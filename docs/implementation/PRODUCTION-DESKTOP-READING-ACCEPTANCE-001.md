@@ -41,7 +41,7 @@ Desktop uses one `surface` state. The surface is a borrowed right-side drawer. T
 
 Current anchor behavior is unchanged. The instrument still initializes an unset anchor from the live civil date in the active zone, and it still keeps that value until an explicit move.
 
-The diagnostic in [ORIENT-DESKTOP-DAY-INSCRIPTION-002.md](ORIENT-DESKTOP-DAY-INSCRIPTION-002.md) distinguishes an implicit temporal anchor from an explicit human-established anchor. That distinction is the next architectural question. It is not implemented. There is no provenance, no midnight movement, and no persistence added here.
+The diagnostic in [ORIENT-DESKTOP-DAY-INSCRIPTION-002.md](ORIENT-DESKTOP-DAY-INSCRIPTION-002.md) distinguishes an implicit temporal anchor from an explicit human-established anchor. That distinction is examined in [DAY-ANCHOR-PROVENANCE-DISCOVERY-001.md](DAY-ANCHOR-PROVENANCE-DISCOVERY-001.md) and recorded, without a midnight change, in [DAY-ANCHOR-PROVENANCE-001.md](DAY-ANCHOR-PROVENANCE-001.md). There is no provenance, no midnight movement, and no persistence added here.
 
 ## History
 

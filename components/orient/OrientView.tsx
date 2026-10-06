@@ -63,7 +63,9 @@ import type { SourceRead } from "@/components/currentTemporalReading";
 import type { Task } from "@/domain/task";
 import "./orient.css";
 
-type QuestionPlace = { anchor: string; scroll: number | null };
+type ViewpointProvenance = "follows-today" | "moved";
+
+type QuestionPlace = { anchor: string; scroll: number | null; provenance: ViewpointProvenance };
 
 type Surface =
   | { kind: "none" }
@@ -112,6 +114,7 @@ export function OrientView({
   const [depth, setDepth] = useState<"reading" | "exact">("reading");
   const [exactAt, setExactAt] = useState<number | null>(null);
   const [daySpan, setDaySpan] = useState<string[]>(() => [shiftedAnchor(anchor, -1), anchor, shiftedAnchor(anchor, 1)]);
+  const [provenance, setProvenance] = useState<ViewpointProvenance>("follows-today");
   const sessionRef = useRef(session);
   const scrollRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
@@ -187,9 +190,19 @@ export function OrientView({
   }
 
   function remember(current: OrientQuestion) {
+    if (current === "present") return;
     const element = scrollRef.current;
     const scroll = element ? (current === "week" || current === "month" ? element.scrollLeft : element.scrollTop) : 0;
-    places.current[current] = { anchor, scroll };
+    places.current[current] = { anchor, scroll, provenance };
+  }
+
+  function writeAnchor(date: string) {
+    if (date === anchor) return;
+    anchorCause.current = "explicit";
+    if (question === "present" || question === "day") {
+      setDaySpan([shiftedAnchor(date, -1), date, shiftedAnchor(date, 1)]);
+    }
+    onAnchor(date);
   }
 
   function chooseQuestion(next: OrientQuestion) {
@@ -198,6 +211,7 @@ export function OrientView({
     if (next === "present") {
       bringNow.current = true;
       anchorCause.current = "explicit";
+      setProvenance("follows-today");
       try {
         const today = orientCivilDate(clock, timeZone);
         if (today !== anchor) onAnchor(today);
@@ -206,9 +220,12 @@ export function OrientView({
       }
     } else {
       const saved = places.current[next];
-      if (saved && saved.anchor !== anchor) {
-        anchorCause.current = "explicit";
-        onAnchor(saved.anchor);
+      if (saved) {
+        setProvenance(saved.provenance);
+        if (saved.anchor !== anchor) {
+          anchorCause.current = "explicit";
+          onAnchor(saved.anchor);
+        }
       }
     }
     setQuestion(next);
@@ -223,10 +240,11 @@ export function OrientView({
 
   function askDay(civilDate: string) {
     questionChosen.current = true;
-    places.current.day = { anchor: civilDate, scroll: null };
+    remember(question);
+    places.current.day = { anchor: civilDate, scroll: null, provenance: "moved" };
+    setProvenance("moved");
     revealDay.current = civilDate;
     anchorCause.current = "explicit";
-    remember(question);
     setDaySpan([shiftedAnchor(civilDate, -1), civilDate, shiftedAnchor(civilDate, 1)]);
     if (civilDate !== anchor) onAnchor(civilDate);
     setQuestion("day");
@@ -237,13 +255,14 @@ export function OrientView({
     setDepth("reading");
   }
 
-  function relocate(date: string) {
-    if (date === anchor) return;
-    anchorCause.current = "explicit";
-    if (question === "present" || question === "day") {
-      setDaySpan([shiftedAnchor(date, -1), date, shiftedAnchor(date, 1)]);
-    }
-    onAnchor(date);
+  function moveViewpoint(date: string) {
+    setProvenance("moved");
+    writeAnchor(date);
+  }
+
+  function adoptToday(date: string) {
+    setProvenance("follows-today");
+    writeAnchor(date);
   }
 
   function placeMark(element: HTMLElement): boolean {
@@ -582,8 +601,9 @@ export function OrientView({
   function returnToNow() {
     const today = todayCivil();
     if (!today) return;
+    setProvenance("follows-today");
     if (question === "week" || question === "month") {
-      if (today !== anchor) relocate(today);
+      if (today !== anchor) writeAnchor(today);
       return;
     }
     bringNow.current = true;
@@ -593,7 +613,7 @@ export function OrientView({
       setExactAt(null);
       setDepth("exact");
     }
-    if (today !== anchor) relocate(today);
+    if (today !== anchor) writeAnchor(today);
     else {
       const element = scrollRef.current;
       if (element) placeMark(element);
@@ -618,6 +638,7 @@ export function OrientView({
     const nextAnchor = viewpointAfterScroll(anchor, observed);
     if (nextAnchor) {
       bringNow.current = false;
+      setProvenance("moved");
       onAnchor(nextAnchor);
     }
 
@@ -752,7 +773,9 @@ export function OrientView({
         contextFor={contextFor}
         onRefer={referTo}
         onShift={(days) => {
-          if (days !== 0) onAnchor(shiftedAnchor(anchor, days));
+          if (days === 0) return;
+          setProvenance("moved");
+          onAnchor(shiftedAnchor(anchor, days));
         }}
         onAskDay={askDay}
         today={todayCivil()}
@@ -854,6 +877,7 @@ export function OrientView({
       data-desktop-reading={desktopReading ? "true" : "false"}
       data-exact-minute={exactAt === null ? "" : String(exactAt)}
       data-reduced-motion={reduced ? "true" : "false"}
+      data-viewpoint={provenance}
       aria-label="Orient"
     >
       <OrientIdentity />
@@ -978,7 +1002,8 @@ export function OrientView({
             <PositionSurface
               anchor={anchor}
               today={todayCivil()}
-              onAnchor={relocate}
+              onMove={moveViewpoint}
+              onAdoptToday={adoptToday}
               onSignOut={actions.onSignOut}
               onClose={closeSurface}
             />
