@@ -61,9 +61,8 @@ describe("external credential architectural isolation", () => {
     for (const dir of clientRoots) {
       const files = walkFiles(join(root, dir), (name) => name.endsWith(".ts") || name.endsWith(".tsx"));
       for (const file of files) {
-        if (file.includes(`${join("persistence", "externalTemporal")}`)) {
-          // ordinary external temporal read path must stay credential-free
-        }
+        // App Router route handlers are server entrypoints and may import server modules.
+        if (file.includes(`${join("app", "api")}`)) continue;
         if (file.endsWith(".test.ts") || file.endsWith(".test.tsx")) continue;
         const source = readFileSync(file, "utf8");
         for (const token of banned) {

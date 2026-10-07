@@ -47,6 +47,7 @@ import {
   type OrientQuestion,
 } from "@/components/orient/grammar";
 import { Landscape } from "@/components/orient/Landscape";
+import { ExternalCalendarsOperation } from "@/components/orient/ExternalCalendarsOperation";
 import { WorkScheduleOperation, type WorkScheduleDismiss } from "@/components/orient/WorkScheduleOperation";
 import {
   ActSurface,
@@ -90,7 +91,8 @@ type Surface =
   | { kind: "thread" }
   | { kind: "facts"; facts: FactAddress[]; chosen: FactAddress | null; proposal: TemporalProposal | null }
   | { kind: "direction"; priorityId: string }
-  | { kind: "work"; weekStart: string };
+  | { kind: "work"; weekStart: string }
+  | { kind: "external-calendars"; googleError: string | null };
 
 export function OrientView({
   timeZone,
@@ -121,7 +123,7 @@ export function OrientView({
   const bringNow = useRef(true);
   const [question, setQuestion] = useState<OrientQuestion>(() => (readInstrumentForm() === "phone" ? "day" : "present"));
   const [focus, setFocus] = useState<ContextFocus>({ kind: "everything" });
-  const [surface, setSurface] = useState<Surface>({ kind: "none" });
+  const [surface, setSurface] = useState<Surface>(() => readExternalCalendarsSurfaceFromLocation());
   const workDismissRef = useRef<WorkScheduleDismiss | null>(null);
   const [session, setSession] = useState<SelectionSession>(initialSelectionSession);
   const [nowEdge, setNowEdge] = useState<"above" | "below" | "before" | "after" | null>(null);
@@ -223,6 +225,20 @@ export function OrientView({
   function openWork(civilDate: string) {
     setSurface({ kind: "work", weekStart: workFiscalWeekContaining(civilDate) });
   }
+
+  function openExternalCalendars(googleError: string | null = null) {
+    setSurface({ kind: "external-calendars", googleError });
+  }
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("manage") !== "external-calendars") return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("manage");
+    url.searchParams.delete("googleError");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }, []);
 
   function remember(current: OrientQuestion) {
     if (current === "present") return;
@@ -1123,6 +1139,7 @@ export function OrientView({
                 if (!today) return;
                 openWork(today);
               }}
+              onManageExternalCalendars={() => openExternalCalendars()}
               contexts={contexts}
               onChooseFocus={(next) => {
                 setFocus(next);
@@ -1144,6 +1161,7 @@ export function OrientView({
                 if (!today) return;
                 openWork(today);
               }}
+              onManageExternalCalendars={() => openExternalCalendars()}
               onClose={closeSurface}
             />
           ) : null}
@@ -1243,6 +1261,12 @@ export function OrientView({
               onDismiss={finishClose}
             />
           ) : null}
+          {surface.kind === "external-calendars" ? (
+            <ExternalCalendarsOperation
+              initialError={surface.googleError}
+              onDismiss={finishClose}
+            />
+          ) : null}
           {surface.kind === "direction" ? (
             <DirectionInspection priorityId={surface.priorityId} sources={sources} onClose={closeSurface} />
           ) : null}
@@ -1274,4 +1298,34 @@ function continuityReading(depth: "reading" | "exact", question: OrientQuestion)
 function readInstrumentForm(): "phone" | "desktop" {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") return "desktop";
   return window.matchMedia("(max-width: 959px)").matches ? "phone" : "desktop";
+}
+
+function googleCallbackErrorMessage(code: string | null): string | null {
+  if (!code) return null;
+  switch (code) {
+    case "authorization_denied":
+      return "Google authorization was denied.";
+    case "authorization_incomplete":
+      return "Google authorization was incomplete.";
+    case "authorization_failed":
+      return "Google authorization failed.";
+    case "state_expired":
+      return "Authorization expired. Connect again.";
+    case "state_reused":
+    case "state_invalid":
+    case "state_missing":
+      return "Authorization could not be completed. Connect again.";
+    default:
+      return "Google authorization could not be completed.";
+  }
+}
+
+function readExternalCalendarsSurfaceFromLocation(): Surface {
+  if (typeof window === "undefined") return { kind: "none" };
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("manage") !== "external-calendars") return { kind: "none" };
+  return {
+    kind: "external-calendars",
+    googleError: googleCallbackErrorMessage(params.get("googleError")),
+  };
 }

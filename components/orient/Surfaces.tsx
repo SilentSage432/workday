@@ -98,6 +98,7 @@ export function PositionSurface({
   onAdoptToday,
   onSignOut,
   onManageWork,
+  onManageExternalCalendars,
   onClose,
   includeDismiss = true,
   includeOperations = true,
@@ -108,6 +109,7 @@ export function PositionSurface({
   onAdoptToday: (civilDate: string) => void;
   onSignOut: () => void;
   onManageWork: () => void;
+  onManageExternalCalendars: () => void;
   onClose: () => void;
   includeDismiss?: boolean;
   includeOperations?: boolean;
@@ -153,6 +155,14 @@ export function PositionSurface({
             <>
               <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
                 Manage Work schedule
+              </button>
+              <button
+                type="button"
+                className="orient-action"
+                data-manage-external-calendars="true"
+                onClick={onManageExternalCalendars}
+              >
+                Google Calendar
               </button>
               <button type="button" className="orient-action" onClick={onSignOut}>
                 Sign out
@@ -839,6 +849,7 @@ export function LookSurface({
   onAdoptToday,
   onSignOut,
   onManageWork,
+  onManageExternalCalendars,
   contexts,
   onChooseFocus,
   onClose,
@@ -851,6 +862,7 @@ export function LookSurface({
   onAdoptToday: (civilDate: string) => void;
   onSignOut: () => void;
   onManageWork: () => void;
+  onManageExternalCalendars: () => void;
   contexts: SourceRead<Context>;
   onChooseFocus: (focus: { kind: "everything" } | { kind: "context"; id: string; name: string }) => void;
   onClose: () => void;
@@ -872,6 +884,7 @@ export function LookSurface({
         onAdoptToday={onAdoptToday}
         onSignOut={onSignOut}
         onManageWork={onManageWork}
+        onManageExternalCalendars={onManageExternalCalendars}
         onClose={onClose}
         includeDismiss={false}
         includeOperations={false}
@@ -882,6 +895,14 @@ export function LookSurface({
         <div className="orient-actions">
           <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
             Manage Work schedule
+          </button>
+          <button
+            type="button"
+            className="orient-action"
+            data-manage-external-calendars="true"
+            onClick={onManageExternalCalendars}
+          >
+            Google Calendar
           </button>
           <button type="button" className="orient-action" onClick={onSignOut}>
             Sign out

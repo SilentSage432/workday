@@ -335,6 +335,8 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(look.querySelector("[data-surface-close]")?.getAttribute("aria-label")).toBe("Close LOOK");
     expect(look.querySelector("[data-relocation]")?.textContent).not.toMatch(/\bClose\b/);
     expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Manage Work schedule");
+    expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Google Calendar");
+    expect(look.querySelector("[data-manage-external-calendars]")).not.toBeNull();
     expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Sign out");
     const closeButtons = [...look.querySelectorAll("button")].filter((item) => item.textContent?.trim() === "Close");
     expect(closeButtons).toHaveLength(0);
