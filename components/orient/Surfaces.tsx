@@ -40,6 +40,7 @@ import { createTask } from "@/persistence/contextsAndTasks";
 import { createNote, loadNotes } from "@/persistence/note";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import type { DayCanvasModel, DayCanvasStoredFact } from "@/projections/dayCanvas";
+import { orderActTasks } from "@/components/orient/actTasks";
 import type { CaptureBridge, OrientSources, ThreadReading } from "@/components/orient/types";
 import { shiftedAnchor, type OrientQuestion } from "@/components/orient/grammar";
 
@@ -712,28 +713,226 @@ function TaskSelect({
   );
 }
 
+export function LookSurface({
+  question,
+  onChooseQuestion,
+  anchor,
+  today,
+  onMove,
+  onAdoptToday,
+  onSignOut,
+  onManageWork,
+  contexts,
+  onChooseFocus,
+  onClose,
+}: {
+  question: OrientQuestion;
+  onChooseQuestion: (question: OrientQuestion) => void;
+  anchor: string;
+  today: string | null;
+  onMove: (civilDate: string) => void;
+  onAdoptToday: (civilDate: string) => void;
+  onSignOut: () => void;
+  onManageWork: () => void;
+  contexts: SourceRead<Context>;
+  onChooseFocus: (focus: { kind: "everything" } | { kind: "context"; id: string; name: string }) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div data-look-surface="true">
+      <h2>LOOK</h2>
+      <p className="orient-capture-lead">Where am I in time?</p>
+      <QuestionList question={question} onChoose={onChooseQuestion} />
+      <PositionSurface
+        anchor={anchor}
+        today={today}
+        onMove={onMove}
+        onAdoptToday={onAdoptToday}
+        onSignOut={onSignOut}
+        onManageWork={onManageWork}
+        onClose={onClose}
+      />
+      <FocusList contexts={contexts} onChoose={onChooseFocus} />
+    </div>
+  );
+}
+
+export function AddChooser({
+  onTask,
+  onNote,
+  onTimeOnTheDay,
+  onWorkSchedule,
+  onClose,
+}: {
+  onTask: () => void;
+  onNote: () => void;
+  onTimeOnTheDay: () => void;
+  onWorkSchedule?: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div data-add-chooser="true">
+      <h2>What are you adding?</h2>
+      <div className="orient-actions">
+        <button type="button" className="orient-action" data-add-choice="task" onClick={onTask}>
+          Task
+        </button>
+        <button type="button" className="orient-action" data-add-choice="note" onClick={onNote}>
+          Note
+        </button>
+        <button type="button" className="orient-action" data-add-choice="time-on-the-day" onClick={onTimeOnTheDay}>
+          Time on the day
+        </button>
+        {onWorkSchedule ? (
+          <button type="button" className="orient-action" data-add-choice="work" onClick={onWorkSchedule}>
+            Work schedule
+          </button>
+        ) : null}
+        <button type="button" className="orient-action" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function ActSurface({
+  tasks,
+  contexts,
+  viewpointCivilDate,
+  onStart,
+  onComplete,
+  onReopen,
+  onUpdate,
+  onAddTask,
+  onClose,
+}: {
+  tasks: SourceRead<Task>;
+  contexts: SourceRead<Context>;
+  viewpointCivilDate: string;
+  onStart: (taskId: string) => Promise<void>;
+  onComplete: (taskId: string) => Promise<void>;
+  onReopen: (taskId: string) => Promise<void>;
+  onUpdate: (taskId: string, patch: import("@/domain/task").TaskPatch) => Promise<void>;
+  onAddTask: () => void;
+  onClose: () => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [correction, setCorrection] = useState<{ id: string; title: string } | null>(null);
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
+  const [reopening, setReopening] = useState(false);
+
+  const ordered =
+    tasks.status === "ready" ? orderActTasks({ openTasks: tasks.rows, viewpointCivilDate }) : [];
+  const selected =
+    selectedId && tasks.status === "ready" ? (tasks.rows.find((item) => item.id === selectedId) ?? null) : null;
+
+  async function completeForCorrection(taskId: string) {
+    const title = selected?.id === taskId ? selected.title : (ordered.find((item) => item.id === taskId)?.title ?? "");
+    await onComplete(taskId);
+    setCorrectionError(null);
+    setCorrection({ id: taskId, title });
+    setSelectedId(null);
+  }
+
+  async function stillOpen() {
+    if (!correction) return;
+    setReopening(true);
+    setCorrectionError(null);
+    try {
+      await onReopen(correction.id);
+      setCorrection(null);
+    } catch (caught: unknown) {
+      setCorrectionError(failureMessage(caught, "The write did not happen."));
+    } finally {
+      setReopening(false);
+    }
+  }
+
+  return (
+    <div data-act-surface="true">
+      <h2>ACT</h2>
+      <p className="orient-capture-lead">What do I need to do?</p>
+      {correction ? (
+        <div data-completion-correction="true">
+          <p>{correction.title}</p>
+          <p>Marked complete.</p>
+          {correctionError ? <p role="alert">{correctionError}</p> : null}
+          <div className="orient-actions">
+            <button
+              type="button"
+              className="orient-action"
+              data-still-open="true"
+              disabled={reopening}
+              onClick={() => void stillOpen()}
+            >
+              Still open
+            </button>
+          </div>
+        </div>
+      ) : selected ? (
+        <div data-act-inspect="true">
+          <TaskDetail
+            task={selected}
+            contexts={contexts}
+            onComplete={completeForCorrection}
+            onUpdate={onUpdate}
+            onStart={onStart}
+            onBack={() => setSelectedId(null)}
+          />
+        </div>
+      ) : (
+        <ActTaskList
+          tasks={tasks}
+          ordered={ordered}
+          contexts={contexts}
+          onSelect={setSelectedId}
+          onStart={onStart}
+        />
+      )}
+      <div className="orient-actions">
+        <button type="button" className="orient-action" data-act-add-task="true" onClick={onAddTask}>
+          Add Task
+        </button>
+        <button
+          type="button"
+          className="orient-action"
+          onClick={() => {
+            setCorrection(null);
+            setCorrectionError(null);
+            setSelectedId(null);
+            onClose();
+          }}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ThreadSurface({
   thread,
   tasks,
   contexts,
-  onStart,
   onLeave,
   onComplete,
   onReopen,
   onUpdate,
+  onOpenAct,
   onClose,
 }: {
   thread: ThreadReading;
   tasks: SourceRead<Task>;
   contexts: SourceRead<Context>;
-  onStart: (taskId: string) => Promise<void>;
+  onStart?: (taskId: string) => Promise<void>;
   onLeave: () => Promise<void>;
   onComplete: (taskId: string) => Promise<void>;
   onReopen: (taskId: string) => Promise<void>;
   onUpdate: (taskId: string, patch: import("@/domain/task").TaskPatch) => Promise<void>;
+  onOpenAct?: () => void;
   onClose: () => void;
 }) {
-  const [collection, setCollection] = useState(thread.status !== "ready" || !thread.active || thread.resumeTitle === null);
   const [correction, setCorrection] = useState<{ id: string; title: string } | null>(null);
   const [correctionError, setCorrectionError] = useState<string | null>(null);
   const [reopening, setReopening] = useState(false);
@@ -801,9 +1000,11 @@ export function ThreadSurface({
         />
       ) : null}
       <div className="orient-actions">
-        <button type="button" className="orient-action" onClick={() => setCollection((open) => !open)}>
-          Open tasks
-        </button>
+        {onOpenAct ? (
+          <button type="button" className="orient-action" data-open-act="true" onClick={onOpenAct}>
+            ACT
+          </button>
+        ) : null}
         <button
           type="button"
           className="orient-action"
@@ -816,8 +1017,60 @@ export function ThreadSurface({
           Close
         </button>
       </div>
-      {collection ? <TaskCollection tasks={tasks} onStart={onStart} /> : null}
     </div>
+  );
+}
+
+function contextName(contexts: SourceRead<Context>, contextId: string | null): string | null {
+  if (!contextId || contexts.status !== "ready") return null;
+  return contexts.rows.find((context) => context.id === contextId)?.name ?? null;
+}
+
+function ActTaskList({
+  tasks,
+  ordered,
+  contexts,
+  onSelect,
+  onStart,
+}: {
+  tasks: SourceRead<Task>;
+  ordered: Task[];
+  contexts: SourceRead<Context>;
+  onSelect: (taskId: string) => void;
+  onStart: (taskId: string) => Promise<void>;
+}) {
+  if (tasks.status === "failed") {
+    return (
+      <p role="alert" data-reading="incomplete">
+        Open tasks could not be read. {tasks.message}
+      </p>
+    );
+  }
+  if (ordered.length === 0) return <p>No open task is established.</p>;
+  return (
+    <ul data-act-list="true">
+      {ordered.map((task) => {
+        const context = contextName(contexts, task.contextId);
+        return (
+          <li key={task.id} data-act-row={task.id}>
+            <button type="button" className="orient-action orient-act-select" data-act-select={task.id} onClick={() => onSelect(task.id)}>
+              <span className="orient-act-title">{task.title}</span>
+              {task.mustDo ? <span className="orient-act-meta">Must do</span> : null}
+              {task.plannedOn ? (
+                <span className="orient-act-meta">
+                  Planned {task.plannedOn}
+                  {task.plannedLocal ? ` at ${task.plannedLocal}` : ""}
+                </span>
+              ) : null}
+              {context ? <span className="orient-act-meta">{context}</span> : null}
+            </button>
+            <button type="button" className="orient-action" data-act-start={task.id} onClick={() => void onStart(task.id)}>
+              Start
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -827,17 +1080,22 @@ function TaskDetail({
   onLeave,
   onComplete,
   onUpdate,
+  onStart,
+  onBack,
 }: {
   task: Task;
   contexts: SourceRead<Context>;
-  onLeave: () => Promise<void>;
+  onLeave?: () => Promise<void>;
   onComplete: (taskId: string) => Promise<void>;
   onUpdate: (taskId: string, patch: import("@/domain/task").TaskPatch) => Promise<void>;
+  onStart?: (taskId: string) => Promise<void>;
+  onBack?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<TaskEditDraft>(() => taskEditDraftFromTask(task));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const context = contextName(contexts, task.contextId);
 
   async function save() {
     setSaving(true);
@@ -853,7 +1111,7 @@ function TaskDetail({
   }
 
   return (
-    <div>
+    <div data-task-detail="true">
       <p>{task.title}</p>
       {task.mustDo ? <p>Must do</p> : null}
       {task.plannedOn ? (
@@ -863,6 +1121,7 @@ function TaskDetail({
         </p>
       ) : null}
       {task.dueOn ? <p>Due {task.dueOn}</p> : null}
+      {context ? <p>Context {context}</p> : null}
       {editing ? (
         <div>
           <label className="orient-note">
@@ -878,9 +1137,9 @@ function TaskDetail({
             >
               <option value="">None</option>
               {contexts.status === "ready"
-                ? contexts.rows.map((context) => (
-                    <option key={context.id} value={context.id}>
-                      {context.name}
+                ? contexts.rows.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
                     </option>
                   ))
                 : null}
@@ -934,9 +1193,19 @@ function TaskDetail({
         </div>
       ) : (
         <div className="orient-actions">
+          {onBack ? (
+            <button type="button" className="orient-action" data-act-back="true" onClick={onBack}>
+              Back
+            </button>
+          ) : null}
           <button type="button" className="orient-action" onClick={() => setEditing(true)}>
             Edit
           </button>
+          {onStart ? (
+            <button type="button" className="orient-action" data-act-inspect-start="true" onClick={() => void onStart(task.id)}>
+              Start
+            </button>
+          ) : null}
           <button
             type="button"
             className="orient-action"
@@ -956,50 +1225,15 @@ function TaskDetail({
           >
             Complete
           </button>
-          <button type="button" className="orient-action" onClick={() => void onLeave()}>
-            Leave thread
-          </button>
+          {onLeave ? (
+            <button type="button" className="orient-action" onClick={() => void onLeave()}>
+              Leave thread
+            </button>
+          ) : null}
           {error ? <p role="alert">{error}</p> : null}
         </div>
       )}
     </div>
-  );
-}
-
-function TaskCollection({
-  tasks,
-  onStart,
-}: {
-  tasks: SourceRead<Task>;
-  onStart: (taskId: string) => Promise<void>;
-}) {
-  if (tasks.status === "failed") {
-    return (
-      <p role="alert" data-reading="incomplete">
-        Open tasks could not be read. {tasks.message}
-      </p>
-    );
-  }
-  if (tasks.rows.length === 0) return <p>No open task is established.</p>;
-  return (
-    <ul>
-      {tasks.rows.map((task) => (
-        <li key={task.id}>
-          <p>{task.title}</p>
-          {task.mustDo ? <p>Must do</p> : null}
-          {task.plannedOn ? (
-            <p>
-              Planned {task.plannedOn}
-              {task.plannedLocal ? ` at ${task.plannedLocal}` : ""}
-            </p>
-          ) : null}
-          {task.dueOn ? <p>Due {task.dueOn}</p> : null}
-          <button type="button" className="orient-action" onClick={() => void onStart(task.id)}>
-            Start
-          </button>
-        </li>
-      ))}
-    </ul>
   );
 }
 

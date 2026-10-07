@@ -281,7 +281,10 @@ describe("phone temporal continuity", () => {
     expect(view.querySelector('[data-day-signature] [data-source-id="block-1"]')?.getAttribute("data-width")).toBe(String(blockSpan.width));
     expect(view.querySelector("[data-day-signature] [data-source-kind='work_schedule']")?.getAttribute("data-start")).toBe(String(work.start));
     expect(view.querySelector("[data-signature-now]")).not.toBeNull();
-    expect(view.querySelector("[data-capture-control]")).not.toBeNull();
+    expect(view.querySelector("[data-look-control]")).not.toBeNull();
+    expect(view.querySelector("[data-add-control]")).not.toBeNull();
+    expect(view.querySelector("[data-act-control]")).not.toBeNull();
+    expect(view.querySelector("[data-capture-control]")).toBeNull();
     expect(view.querySelector("[data-portrait]")?.getAttribute("data-portrait")).toBe("field");
     expect(view.querySelector("[data-region='where'] [data-phone-now]")).not.toBeNull();
     expect(view.querySelector("[data-region='around'] [data-membership]")).not.toBeNull();
@@ -396,7 +399,10 @@ describe("phone temporal continuity", () => {
     });
     expect(view.querySelector('[aria-label="Protected time label"]')).not.toBeNull();
     await act(async () => {
-      (view.querySelector("[data-capture-control]") as HTMLButtonElement).click();
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector('[data-add-choice="task"]') as HTMLButtonElement).click();
     });
     expect(view.querySelector("[data-capture-surface]")).not.toBeNull();
     expect(scroller.scrollTop).toBe(40);
@@ -444,7 +450,7 @@ describe("phone temporal continuity", () => {
     const view = await renderPhone();
     await ask(view, "Present");
     await act(async () => {
-      (view.querySelector("[data-focus-control]") as HTMLButtonElement).click();
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
     });
     await act(async () => {
       buttonNamed(view, "TeamLab").click();
@@ -471,7 +477,7 @@ describe("phone entry", () => {
     const anchors: string[] = [];
     const view = await renderPhone({ onAnchor: (date) => anchors.push(date) });
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
-    expect(view.querySelector("[data-question-control]")?.textContent).toContain("Day");
+    expect(view.querySelector("[data-look-control]")?.textContent).toContain("LOOK");
     expect(view.querySelector("[data-phone-day]")?.textContent).toContain("Oct 5");
     expect(view.querySelector("[data-phone-now]")).toBeNull();
     expect(view.querySelector(".orient-phone-now-quiet")?.textContent).toMatch(/10:30/);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Aperture, ChevronRight, Compass, Crosshair, Locate, PenLine } from "lucide-react";
+import { Aperture, ChevronRight, Compass, Crosshair, ListTodo, Locate, PenLine, Plus } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { composeWorkCapacityReading } from "@/components/capacityReading";
 import { initialSelectionSession, reduceSelection, type SelectionSession } from "@/components/daySelection";
@@ -49,12 +49,15 @@ import {
 import { Landscape } from "@/components/orient/Landscape";
 import { WorkScheduleOperation, type WorkScheduleDismiss } from "@/components/orient/WorkScheduleOperation";
 import {
+  ActSurface,
+  AddChooser,
   CaptureSurface,
   DirectionInspection,
   DirectionPlane,
   EstablishmentSurface,
   FocusList,
   InspectionSurface,
+  LookSurface,
   PositionSurface,
   QuestionList,
   ThreadSurface,
@@ -71,9 +74,12 @@ type QuestionPlace = { anchor: string; scroll: number | null; provenance: Viewpo
 
 type Surface =
   | { kind: "none" }
+  | { kind: "look" }
   | { kind: "question" }
   | { kind: "position" }
   | { kind: "focus" }
+  | { kind: "add" }
+  | { kind: "act" }
   | { kind: "capture" }
   | { kind: "thread" }
   | { kind: "facts"; facts: FactAddress[]; chosen: FactAddress | null; proposal: TemporalProposal | null }
@@ -346,6 +352,16 @@ export function OrientView({
     setExactAt(null);
     setNowEdge(null);
     setDepth("reading");
+  }
+
+  function routeTimeOnTheDay() {
+    guardWork(() => {
+      if (question !== "present" && question !== "day") {
+        askDayNow(anchor);
+      }
+      enterExact(null);
+      setSurface({ kind: "none" });
+    });
   }
 
   useLayoutEffect(() => {
@@ -945,48 +961,87 @@ export function OrientView({
             <ChevronRight aria-hidden="true" className="orient-glyph" />
           </button>
         )}
-        <div className="orient-reach-row">
-          <button
-            type="button"
-            className="orient-control"
-            data-question-control="true"
-            aria-expanded={surface.kind === "question"}
-            onClick={(event) => openFrom(event, surface.kind === "question" ? { kind: "none" } : { kind: "question" })}
-          >
-            <Compass aria-hidden="true" className="orient-glyph" />
-            <span>{QUESTION_LABEL[question]}</span>
-          </button>
-          <button
-            type="button"
-            className="orient-control"
-            data-position="true"
-            aria-expanded={surface.kind === "position"}
-            onClick={(event) => openFrom(event, surface.kind === "position" ? { kind: "none" } : { kind: "position" })}
-          >
-            <Locate aria-hidden="true" className="orient-glyph" />
-            <span>{positionWord(question, anchor)}</span>
-          </button>
-          <button
-            type="button"
-            className="orient-control"
-            data-focus-control="true"
-            aria-expanded={surface.kind === "focus"}
-            onClick={(event) => openFrom(event, surface.kind === "focus" ? { kind: "none" } : { kind: "focus" })}
-          >
-            <Aperture aria-hidden="true" className="orient-glyph" />
-            <span>{focusLabel}</span>
-          </button>
-          <button
-            type="button"
-            className="orient-control"
-            data-capture-control="true"
-            aria-expanded={surface.kind === "capture"}
-            onClick={(event) => openFrom(event, surface.kind === "capture" ? { kind: "none" } : { kind: "capture" })}
-          >
-            <PenLine aria-hidden="true" className="orient-glyph" />
-            <span>Capture</span>
-          </button>
-        </div>
+        {form === "phone" ? (
+          <div className="orient-reach-row" data-reach-grammar="look-add-act">
+            <button
+              type="button"
+              className="orient-control"
+              data-look-control="true"
+              data-question-control="true"
+              aria-label={`LOOK · ${QUESTION_LABEL[question]}`}
+              aria-expanded={surface.kind === "look"}
+              onClick={(event) => openFrom(event, surface.kind === "look" ? { kind: "none" } : { kind: "look" })}
+            >
+              <Compass aria-hidden="true" className="orient-glyph" />
+              <span>LOOK</span>
+            </button>
+            <button
+              type="button"
+              className="orient-control orient-add-control"
+              data-add-control="true"
+              aria-label="Add"
+              aria-expanded={surface.kind === "add" || surface.kind === "capture"}
+              onClick={(event) => openFrom(event, surface.kind === "add" ? { kind: "none" } : { kind: "add" })}
+            >
+              <Plus aria-hidden="true" className="orient-glyph" />
+              <span>+</span>
+            </button>
+            <button
+              type="button"
+              className="orient-control"
+              data-act-control="true"
+              aria-label="ACT · What do I need to do?"
+              aria-expanded={surface.kind === "act"}
+              onClick={(event) => openFrom(event, surface.kind === "act" ? { kind: "none" } : { kind: "act" })}
+            >
+              <ListTodo aria-hidden="true" className="orient-glyph" />
+              <span>ACT</span>
+            </button>
+          </div>
+        ) : (
+          <div className="orient-reach-row">
+            <button
+              type="button"
+              className="orient-control"
+              data-question-control="true"
+              aria-expanded={surface.kind === "question"}
+              onClick={(event) => openFrom(event, surface.kind === "question" ? { kind: "none" } : { kind: "question" })}
+            >
+              <Compass aria-hidden="true" className="orient-glyph" />
+              <span>{QUESTION_LABEL[question]}</span>
+            </button>
+            <button
+              type="button"
+              className="orient-control"
+              data-position="true"
+              aria-expanded={surface.kind === "position"}
+              onClick={(event) => openFrom(event, surface.kind === "position" ? { kind: "none" } : { kind: "position" })}
+            >
+              <Locate aria-hidden="true" className="orient-glyph" />
+              <span>{positionWord(question, anchor)}</span>
+            </button>
+            <button
+              type="button"
+              className="orient-control"
+              data-focus-control="true"
+              aria-expanded={surface.kind === "focus"}
+              onClick={(event) => openFrom(event, surface.kind === "focus" ? { kind: "none" } : { kind: "focus" })}
+            >
+              <Aperture aria-hidden="true" className="orient-glyph" />
+              <span>{focusLabel}</span>
+            </button>
+            <button
+              type="button"
+              className="orient-control"
+              data-capture-control="true"
+              aria-expanded={surface.kind === "capture"}
+              onClick={(event) => openFrom(event, surface.kind === "capture" ? { kind: "none" } : { kind: "capture" })}
+            >
+              <PenLine aria-hidden="true" className="orient-glyph" />
+              <span>Capture</span>
+            </button>
+          </div>
+        )}
       </div>
       <div className="orient-stage">
       {desktopBorrowed && depth === "exact" && (question === "present" || question === "day") ? (
@@ -1046,6 +1101,28 @@ export function OrientView({
           ref={surfaceRef}
           data-borrowed-surface={desktopBorrowed ? "drawer" : "sheet"}
         >
+          {surface.kind === "look" ? (
+            <LookSurface
+              question={question}
+              onChooseQuestion={chooseQuestion}
+              anchor={anchor}
+              today={todayCivil()}
+              onMove={moveViewpoint}
+              onAdoptToday={adoptToday}
+              onSignOut={actions.onSignOut}
+              onManageWork={() => {
+                const today = todayCivil();
+                if (!today) return;
+                openWork(today);
+              }}
+              contexts={contexts}
+              onChooseFocus={(next) => {
+                setFocus(next);
+                closeSurface();
+              }}
+              onClose={closeSurface}
+            />
+          ) : null}
           {surface.kind === "question" ? <QuestionList question={question} onChoose={chooseQuestion} /> : null}
           {surface.kind === "position" ? (
             <PositionSurface
@@ -1071,6 +1148,32 @@ export function OrientView({
               }}
             />
           ) : null}
+          {surface.kind === "add" ? (
+            <AddChooser
+              onTask={() => setSurface({ kind: "capture" })}
+              onNote={() => setSurface({ kind: "capture" })}
+              onTimeOnTheDay={routeTimeOnTheDay}
+              onWorkSchedule={() => {
+                const today = todayCivil();
+                if (!today) return;
+                openWork(today);
+              }}
+              onClose={closeSurface}
+            />
+          ) : null}
+          {surface.kind === "act" ? (
+            <ActSurface
+              tasks={tasks}
+              contexts={contexts}
+              viewpointCivilDate={anchor}
+              onStart={actions.onStartThread}
+              onComplete={actions.onCompleteTask}
+              onReopen={actions.onReopenTask}
+              onUpdate={actions.onUpdateTask}
+              onAddTask={() => setSurface({ kind: "capture" })}
+              onClose={closeSurface}
+            />
+          ) : null}
           {surface.kind === "capture" ? (
             <CaptureSurface capture={capture} onChanged={actions.onTasksChanged} onClose={closeSurface} />
           ) : null}
@@ -1084,6 +1187,7 @@ export function OrientView({
               onComplete={actions.onCompleteTask}
               onReopen={actions.onReopenTask}
               onUpdate={actions.onUpdateTask}
+              onOpenAct={() => setSurface({ kind: "act" })}
               onClose={closeSurface}
             />
           ) : null}

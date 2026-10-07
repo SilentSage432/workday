@@ -557,7 +557,10 @@ describe("desktop reading", () => {
     expect(view.querySelector(".orient-phone")).not.toBeNull();
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     await act(async () => {
-      (view.querySelector("[data-capture-control]") as HTMLButtonElement).click();
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector('[data-add-choice="task"]') as HTMLButtonElement).click();
     });
     expect(view.querySelector("[data-capture-surface]")).not.toBeNull();
     expect(view.querySelector("[role='dialog']")?.getAttribute("aria-modal")).toBeNull();

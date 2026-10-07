@@ -890,8 +890,13 @@ describe("work schedule authority", () => {
   }
 
   async function openManage(view: HTMLElement) {
+    const phone = view.querySelector("[data-form]")?.getAttribute("data-form") === "phone";
     await act(async () => {
-      view.querySelector<HTMLButtonElement>("[data-position]")?.click();
+      if (phone) {
+        view.querySelector<HTMLButtonElement>("[data-look-control]")?.click();
+      } else {
+        view.querySelector<HTMLButtonElement>("[data-position]")?.click();
+      }
     });
     await act(async () => {
       buttonNamed(view, "Manage Work schedule").click();
