@@ -252,6 +252,10 @@ Do not add these tests in this tranche. The smallest later set:
 - Which Android browser on the Galaxy S26 Ultra drew the clock. Chrome and Samsung Internet both use the platform time dialog for `type="time"`. The element is identified either way.
 - This discovery did not physically re-open desktop Work schedule.
 
+## Closure
+
+The questions above stay as they stood at discovery. [MOBILE-WORK-TIME-ENTRY-001.md](MOBILE-WORK-TIME-ENTRY-001.md) later chose typed 24-hour `HH:MM` and records the Samsung acceptance. That pass closed the phone choice: typed `HH:MM` was accepted, and AM/PM input is not required. The minute select and the canvas steppers were not the accepted control. The overnight sentence, and which Android browser drew the original clock, stay unresolved here.
+
 ## Out of scope
 
 Cross-client coherence, Supabase Realtime, drag and drop, civil-date correction, Week and Month visuals, Present and Day visuals, Work persistence semantics, recurrence, reminders, Task reopen and undo, carry-forward, `/schedule` retirement, Google Calendar, external temporal sources, and AI. No redesign of the other time controls.

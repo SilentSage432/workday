@@ -2,7 +2,7 @@
 
 The production Work start and end fields no longer use `<input type="time">`. The human types `HH:MM`. Week Save is still the only write.
 
-Physical acceptance is still pending.
+Physically accepted on a Samsung Galaxy S26 Ultra. Candidate `aec0f0ead88f6a2da4892e7f5749fa07d0fd5061`.
 
 Discovery: [MOBILE-WORK-TIME-ENTRY-DISCOVERY-001.md](MOBILE-WORK-TIME-ENTRY-DISCOVERY-001.md).
 
@@ -80,4 +80,8 @@ Timed Block, Commitment, and Protected Time entry. Exact Time. Date inputs. `/sc
 
 ## Acceptance
 
-Not physically accepted. A phone pass still needs to edit a Work start and end by typing `HH:MM`, without the analog clock, and save the week once. A desktop pass should see the same fields.
+Physically accepted.
+
+The human exercised candidate `aec0f0ead88f6a2da4892e7f5749fa07d0fd5061` on a Samsung Galaxy S26 Ultra. Work Start and End did not open the Android analog clock-face picker. The typed `HH:MM` interaction was used, and the human found it substantially better. 24-hour entry was explicitly accepted. An AM/PM input is not required. No further interaction adjustment was requested.
+
+The same fields are what the laptop shows. This pass did not include a separate laptop observation.
