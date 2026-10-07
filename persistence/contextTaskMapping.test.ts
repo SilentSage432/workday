@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { rowToContext, rowToTask, toCompletionUpdate, toTaskInsert, toTaskUpdate } from "@/persistence/contextTaskMapping";
+import {
+  rowToContext,
+  rowToTask,
+  toCompletionUpdate,
+  toReopenUpdate,
+  toTaskInsert,
+  toTaskUpdate,
+} from "@/persistence/contextTaskMapping";
 import type { TaskRow } from "@/persistence/contextTaskRows";
 
 const openTask: TaskRow = {
@@ -70,6 +77,11 @@ describe("context and task mapping", () => {
 
     const completion = toCompletionUpdate(new Date("2026-10-02T22:15:00.000Z"));
     expect(completion).toEqual({ completed_at: "2026-10-02T22:15:00.000Z" });
+
+    const reopen = toReopenUpdate();
+    expect(reopen).toEqual({ completed_at: null });
+    expect(Object.keys(reopen)).toEqual(["completed_at"]);
+    expect(toTaskUpdate({ title: "Still filing", mustDo: true })).not.toHaveProperty("completed_at");
   });
 
   it("leaves Context optional", () => {

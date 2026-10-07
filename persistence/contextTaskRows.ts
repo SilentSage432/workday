@@ -34,5 +34,6 @@ export type TaskUpdateRow = {
   due_on?: string | null;
   planned_on?: string | null;
   must_do?: boolean;
-  completed_at?: string;
+  /** Instant when completing; null only via the reopen writer. */
+  completed_at?: string | null;
 };

@@ -719,6 +719,7 @@ export function ThreadSurface({
   onStart,
   onLeave,
   onComplete,
+  onReopen,
   onUpdate,
   onClose,
 }: {
@@ -728,31 +729,74 @@ export function ThreadSurface({
   onStart: (taskId: string) => Promise<void>;
   onLeave: () => Promise<void>;
   onComplete: (taskId: string) => Promise<void>;
+  onReopen: (taskId: string) => Promise<void>;
   onUpdate: (taskId: string, patch: import("@/domain/task").TaskPatch) => Promise<void>;
   onClose: () => void;
 }) {
   const [collection, setCollection] = useState(thread.status !== "ready" || !thread.active || thread.resumeTitle === null);
+  const [correction, setCorrection] = useState<{ id: string; title: string } | null>(null);
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
+  const [reopening, setReopening] = useState(false);
   const task =
     thread.status === "ready" && thread.active
       ? tasks.status === "ready"
         ? (tasks.rows.find((item) => item.id === thread.taskId) ?? null)
         : null
       : null;
+
+  async function completeForCorrection(taskId: string) {
+    const title = task?.id === taskId ? task.title : "";
+    await onComplete(taskId);
+    setCorrectionError(null);
+    setCorrection({ id: taskId, title });
+  }
+
+  async function stillOpen() {
+    if (!correction) return;
+    setReopening(true);
+    setCorrectionError(null);
+    try {
+      await onReopen(correction.id);
+      setCorrection(null);
+    } catch (caught: unknown) {
+      setCorrectionError(failureMessage(caught, "The write did not happen."));
+    } finally {
+      setReopening(false);
+    }
+  }
+
   return (
     <div data-thread-inspection="true">
       <h2>Thread</h2>
       {thread.status === "failed" ? (
         <p role="alert">The thread could not be read. {thread.message}</p>
       ) : null}
-      {thread.status === "ready" && thread.active && thread.resumeTitle === null ? (
+      {thread.status === "ready" && thread.active && thread.resumeTitle === null && !correction ? (
         <p>A thread is recorded, and its task is not open.</p>
       ) : null}
-      {task ? (
+      {correction ? (
+        <div data-completion-correction="true">
+          <p>{correction.title}</p>
+          <p>Marked complete.</p>
+          {correctionError ? <p role="alert">{correctionError}</p> : null}
+          <div className="orient-actions">
+            <button
+              type="button"
+              className="orient-action"
+              data-still-open="true"
+              disabled={reopening}
+              onClick={() => void stillOpen()}
+            >
+              Still open
+            </button>
+          </div>
+        </div>
+      ) : task ? (
         <TaskDetail
           task={task}
           contexts={contexts}
           onLeave={onLeave}
-          onComplete={onComplete}
+          onComplete={completeForCorrection}
           onUpdate={onUpdate}
         />
       ) : null}
@@ -760,7 +804,15 @@ export function ThreadSurface({
         <button type="button" className="orient-action" onClick={() => setCollection((open) => !open)}>
           Open tasks
         </button>
-        <button type="button" className="orient-action" onClick={onClose}>
+        <button
+          type="button"
+          className="orient-action"
+          onClick={() => {
+            setCorrection(null);
+            setCorrectionError(null);
+            onClose();
+          }}
+        >
           Close
         </button>
       </div>
@@ -858,12 +910,29 @@ function TaskDetail({
           <button type="button" className="orient-action" onClick={() => setEditing(true)}>
             Edit
           </button>
-          <button type="button" className="orient-action" onClick={() => void onComplete(task.id)}>
+          <button
+            type="button"
+            className="orient-action"
+            data-complete-task="true"
+            disabled={saving}
+            onClick={() => {
+              setSaving(true);
+              setError(null);
+              void onComplete(task.id)
+                .catch((caught: unknown) => {
+                  setError(failureMessage(caught, "The write did not happen."));
+                })
+                .finally(() => {
+                  setSaving(false);
+                });
+            }}
+          >
             Complete
           </button>
           <button type="button" className="orient-action" onClick={() => void onLeave()}>
             Leave thread
           </button>
+          {error ? <p role="alert">{error}</p> : null}
         </div>
       )}
     </div>

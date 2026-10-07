@@ -110,8 +110,9 @@ Database row shapes live in `persistence/contextTaskRows.ts`. `persistence/conte
 - `loadOpenTasks`
 - `updateTask`
 - `completeTask`
+- `reopenTask`
 
-`loadOpenTasks` returns rows with `completed_at` null, ordered by `created_at` so the list is stable. That order is not a NOW ranking. `completeTask` writes only the completion instant supplied by the caller.
+`loadOpenTasks` returns rows with `completed_at` null, ordered by `created_at` so the list is stable. That order is not a NOW ranking. `completeTask` writes only the completion instant supplied by the caller. `reopenTask` writes only `completed_at` null on the same row. It does not restore Active Thread. See [../implementation/TASK-COMPLETION-CORRECTION-001.md](../implementation/TASK-COMPLETION-CORRECTION-001.md).
 
 ## Auth bootstrap
 

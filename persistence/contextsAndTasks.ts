@@ -5,6 +5,7 @@ import {
   rowToContext,
   rowToTask,
   toCompletionUpdate,
+  toReopenUpdate,
   toTaskInsert,
   toTaskUpdate,
 } from "@/persistence/contextTaskMapping";
@@ -110,6 +111,22 @@ export async function completeTask(
   const { data, error } = await client
     .from("tasks")
     .update(toCompletionUpdate(completedAt))
+    .eq("id", id)
+    .select(TASK_COLUMNS)
+    .single();
+
+  return rowToTask(unwrap(data, error) as TaskRow);
+}
+
+/**
+ * Corrects a mistaken completion on the same Task row.
+ * Writes only `completed_at = null`. Does not establish or restore Active Thread.
+ */
+export async function reopenTask(client: SupabaseClient, id: string): Promise<Task> {
+  await requireUserId(client);
+  const { data, error } = await client
+    .from("tasks")
+    .update(toReopenUpdate())
     .eq("id", id)
     .select(TASK_COLUMNS)
     .single();

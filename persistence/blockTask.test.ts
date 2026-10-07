@@ -98,11 +98,18 @@ describe("block task reference", () => {
     expect(store.slice(store.indexOf("export function toBlockWrite"), store.indexOf("async function requireUserId"))).toContain("task_id");
     expect(update).not.toMatch(/from\("tasks"\)|from\("active_thread"\)/);
     const completion = readFileSync(new URL("./contextsAndTasks.ts", import.meta.url), "utf8");
-    const complete = completion.slice(completion.indexOf("export async function completeTask"));
+    const complete = completion.slice(
+      completion.indexOf("export async function completeTask"),
+      completion.indexOf("export async function reopenTask"),
+    );
+    const reopen = completion.slice(completion.indexOf("export async function reopenTask"));
     expect(complete).toContain("toCompletionUpdate");
     expect(complete).not.toMatch(/from\("blocks"\)|task_id/);
+    expect(reopen).toContain("toReopenUpdate");
+    expect(reopen).not.toMatch(/from\("blocks"\)|task_id|establishActiveThread/);
     const mapping = readFileSync(new URL("./contextTaskMapping.ts", import.meta.url), "utf8");
     expect(mapping.slice(mapping.indexOf("export function toCompletionUpdate"))).toContain("completed_at");
+    expect(mapping).toContain("export function toReopenUpdate");
     const schedule = readFileSync(new URL("../components/WorkSchedule.tsx", import.meta.url), "utf8");
     const establish = schedule.slice(
       schedule.indexOf("async function establishSelection"),

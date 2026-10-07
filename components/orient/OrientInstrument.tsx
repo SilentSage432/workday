@@ -28,7 +28,7 @@ import { createBlock, deleteBlock, loadBlocks, updateBlock } from "@/persistence
 import { loadBlockPriorityService } from "@/persistence/blockPriorityService";
 import { loadCitedTaskIdentities } from "@/persistence/citedTaskIdentity";
 import { createCommitment, deleteCommitment, loadCommitments, updateCommitment } from "@/persistence/commitment";
-import { completeTask, loadContexts, loadOpenTasks, updateTask } from "@/persistence/contextsAndTasks";
+import { completeTask, loadContexts, loadOpenTasks, reopenTask, updateTask } from "@/persistence/contextsAndTasks";
 import { loadDestinations } from "@/persistence/destination";
 import { loadPriorities } from "@/persistence/priority";
 import { createProtectedTime, deleteProtectedTime, loadProtectedTime, updateProtectedTime } from "@/persistence/protectedTime";
@@ -273,6 +273,11 @@ export function OrientInstrument() {
         onCompleteTask: async (taskId) => {
           await persist(async () => {
             await completeTask(getSupabaseBrowserClient(), taskId, new Date());
+          });
+        },
+        onReopenTask: async (taskId) => {
+          await persist(async () => {
+            await reopenTask(getSupabaseBrowserClient(), taskId);
           });
         },
         onUpdateTask: async (taskId, patch: TaskPatch) => {

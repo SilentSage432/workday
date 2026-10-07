@@ -71,6 +71,13 @@ describe("resume projection", () => {
     expect(openTasks[0]?.completedAt).toBeNull();
   });
 
+  it("does not restore resume when a completed task is open again without Start", () => {
+    const thread = activeThreadFromEstablishment(taskA.id, establishedAt);
+    const afterComplete = activeThreadAfterCompletion(thread, taskA.id);
+    expect(afterComplete).toBeNull();
+    expect(projectResume({ activeThread: afterComplete, openTasks: [taskA, taskB] })).toBeNull();
+  });
+
   it("keeps the thread when a different task is completed", () => {
     const thread = activeThreadFromEstablishment(taskA.id, establishedAt);
     const openTasks = openTasksAfterCompletion([taskA, taskB], taskB.id);

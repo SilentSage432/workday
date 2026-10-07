@@ -103,3 +103,8 @@ export function toCompletionUpdate(completedAt: Date): Pick<TaskUpdateRow, "comp
 
   return { completed_at: completedAt.toISOString() };
 }
+
+/** Clears completion only. Does not restore Active Thread or touch other Task fields. */
+export function toReopenUpdate(): Pick<TaskUpdateRow, "completed_at"> {
+  return { completed_at: null };
+}

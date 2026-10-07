@@ -46,6 +46,7 @@ export type OrientActions = {
   onStartThread: (taskId: string) => Promise<void>;
   onLeaveThread: () => Promise<void>;
   onCompleteTask: (taskId: string) => Promise<void>;
+  onReopenTask: (taskId: string) => Promise<void>;
   onUpdateTask: (taskId: string, patch: import("@/domain/task").TaskPatch) => Promise<void>;
   onTasksChanged: () => void;
   onLoadWorkWeek: (from: string, to: string) => Promise<WorkScheduleEntry[]>;

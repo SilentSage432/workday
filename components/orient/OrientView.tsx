@@ -1082,6 +1082,7 @@ export function OrientView({
               onStart={actions.onStartThread}
               onLeave={actions.onLeaveThread}
               onComplete={actions.onCompleteTask}
+              onReopen={actions.onReopenTask}
               onUpdate={actions.onUpdateTask}
               onClose={closeSurface}
             />

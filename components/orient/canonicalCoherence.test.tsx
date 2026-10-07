@@ -137,6 +137,8 @@ describe("canonical change notices", () => {
       "active_threads",
       "active_threads",
     ]);
+    expect(bindings.some((binding) => binding.table === "tasks" && binding.event === "UPDATE")).toBe(true);
+    expect(bindings.some((binding) => binding.table === "tasks" && binding.event === "INSERT")).toBe(true);
     expect(bindings.some((binding) => binding.table === "tasks" && binding.event === "DELETE")).toBe(false);
     for (const table of ["protected_time", "blocks", "commitments"] as const) {
       expect(bindings.find((binding) => binding.table === table && binding.event === "DELETE")?.filter).toBeUndefined();
@@ -277,6 +279,7 @@ function actions(): OrientActions {
     onStartThread: async () => {},
     onLeaveThread: async () => {},
     onCompleteTask: async () => {},
+    onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
     onLoadWorkWeek: async () => [],
