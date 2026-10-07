@@ -605,6 +605,11 @@
   cursor: pointer;
 }
 
+.orient-column .orient-provisional {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
 button.orient-fact {
   font: inherit;
   text-align: left;

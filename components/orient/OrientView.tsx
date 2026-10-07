@@ -24,6 +24,7 @@ import {
   viewpointAfterScroll,
 } from "@/components/orient/fieldScroll";
 import { PhoneContinuity } from "@/components/orient/PhoneContinuity";
+import type { TemporalProposal } from "@/components/orient/temporalProposal";
 import { OrientIdentity } from "@/components/orient/OrientIdentity";
 import { signatureScrollTop } from "@/components/orient/phoneSignature";
 import {
@@ -75,7 +76,7 @@ type Surface =
   | { kind: "focus" }
   | { kind: "capture" }
   | { kind: "thread" }
-  | { kind: "facts"; facts: FactAddress[]; chosen: FactAddress | null }
+  | { kind: "facts"; facts: FactAddress[]; chosen: FactAddress | null; proposal: TemporalProposal | null }
   | { kind: "direction"; priorityId: string }
   | { kind: "work"; weekStart: string };
 
@@ -696,7 +697,11 @@ export function OrientView({
   function referTo(facts: FactAddress[]) {
     guardWork(() => {
       publish(reduceSelection(sessionRef.current, { type: "discard" }));
-      setSurface(facts.length === 1 ? { kind: "facts", facts, chosen: facts[0] } : { kind: "facts", facts, chosen: null });
+      setSurface(
+        facts.length === 1
+          ? { kind: "facts", facts, chosen: facts[0], proposal: null }
+          : { kind: "facts", facts, chosen: null, proposal: null },
+      );
     });
   }
 
@@ -804,6 +809,13 @@ export function OrientView({
         focus={focus}
         contextFor={contextFor}
         onRefer={referTo}
+        directManipulation={form === "desktop" && question === "week"}
+        onPropose={(fact, proposal) => {
+          guardWork(() => {
+            publish(reduceSelection(sessionRef.current, { type: "discard" }));
+            setSurface({ kind: "facts", facts: [fact], chosen: fact, proposal });
+          });
+        }}
         onShift={(days) => {
           if (days === 0) return;
           setProvenance("moved");
@@ -1074,12 +1086,13 @@ export function OrientView({
             <InspectionSurface
               facts={surface.facts}
               chosen={surface.chosen}
+              proposal={surface.proposal}
               models={models}
               contexts={contexts}
               openTasks={openTasks}
               timeZone={timeZone}
               services={sources}
-              onChoose={(fact) => setSurface({ kind: "facts", facts: surface.facts, chosen: fact })}
+              onChoose={(fact) => setSurface({ kind: "facts", facts: surface.facts, chosen: fact, proposal: null })}
               onClose={closeSurface}
               onUpdate={actions.onUpdate}
               onRemove={actions.onRemove}

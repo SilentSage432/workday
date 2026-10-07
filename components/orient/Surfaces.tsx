@@ -23,6 +23,7 @@ import {
 } from "@/components/daySelection";
 import { localMinutes, parseLocalTime } from "@/domain/time/localTime";
 import type { FactAddress } from "@/components/factAddress";
+import type { TemporalProposal } from "@/components/orient/temporalProposal";
 import type { Context } from "@/domain/context";
 import {
   authorizeNoteEstablishment,
@@ -354,6 +355,7 @@ function refined(selection: TimeSelection, startText: string, endText: string): 
 export function InspectionSurface({
   facts,
   chosen,
+  proposal = null,
   models,
   contexts,
   openTasks,
@@ -367,6 +369,7 @@ export function InspectionSurface({
 }: {
   facts: FactAddress[];
   chosen: FactAddress | null;
+  proposal?: TemporalProposal | null;
   models: readonly DayCanvasModel[];
   contexts: SourceRead<Context>;
   openTasks: SourceRead<OpenTaskChoice>;
@@ -403,7 +406,9 @@ export function InspectionSurface({
   if (!fact) return null;
   return (
     <FactDetail
+      key={`${fact.sourceKind}:${fact.sourceId}:${proposal?.startsOn ?? ""}:${proposal?.startLocal ?? ""}:${proposal?.endLocal ?? ""}`}
       fact={fact}
+      proposal={proposal}
       models={models}
       contexts={contexts}
       openTasks={openTasks}
@@ -419,6 +424,7 @@ export function InspectionSurface({
 
 function FactDetail({
   fact,
+  proposal,
   models,
   contexts,
   openTasks,
@@ -430,6 +436,7 @@ function FactDetail({
   onManageWork,
 }: {
   fact: FactAddress;
+  proposal: TemporalProposal | null;
   models: readonly DayCanvasModel[];
   contexts: SourceRead<Context>;
   openTasks: SourceRead<OpenTaskChoice>;
@@ -442,13 +449,15 @@ function FactDetail({
 }) {
   const copy = describe(models, fact);
   const stored = copy.stored;
-  const [editing, setEditing] = useState(false);
+  const timedStored = stored && "startLocal" in stored ? stored : null;
+  const opening = proposal && timedStored ? proposal : null;
+  const [editing, setEditing] = useState(opening !== null);
   const [armed, setArmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [dateDraft, setDateDraft] = useState(stored?.startsOn ?? "");
-  const [startDraft, setStartDraft] = useState(stored && "startLocal" in stored ? stored.startLocal : "");
-  const [endDraft, setEndDraft] = useState(stored && "endLocal" in stored ? stored.endLocal : "");
+  const [dateDraft, setDateDraft] = useState(opening?.startsOn ?? stored?.startsOn ?? "");
+  const [startDraft, setStartDraft] = useState(opening?.startLocal ?? timedStored?.startLocal ?? "");
+  const [endDraft, setEndDraft] = useState(opening?.endLocal ?? timedStored?.endLocal ?? "");
   const [label, setLabel] = useState(stored?.sourceKind === "protected_time" ? (stored.label ?? "") : "");
   const [purpose, setPurpose] = useState(stored?.sourceKind === "block" ? stored.purpose : "");
   const [contextId, setContextId] = useState(stored?.sourceKind === "block" ? (stored.contextId ?? "") : "");
