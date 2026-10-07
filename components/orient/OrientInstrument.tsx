@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import type { CanvasEstablishment, CanvasFactRemoval, CanvasFactUpdate } from "@/components/canvasEstablishment";
 import type { SourceRead } from "@/components/currentTemporalReading";
 import { useCapture } from "@/components/AppFrame";
+import {
+  attachCanonicalVisibilityRecovery,
+  createCanonicalReload,
+  subscribeCanonicalChangesFromBrowser,
+} from "@/components/orient/canonicalCoherence";
 import { experienceLoadWindow, orientCivilDate } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import type { OrientSources, ThreadReading } from "@/components/orient/types";
@@ -110,6 +115,34 @@ export function OrientInstrument() {
     const id = window.setInterval(() => setNow(new Date()), 30_000);
     return () => window.clearInterval(id);
   }, [timeZone]);
+
+  useEffect(() => {
+    const reload = createCanonicalReload({
+      reload: () => setReloadToken((token) => token + 1),
+    });
+    let closed = false;
+    let unsubscribe: (() => void) | null = null;
+    const detachVisibility = attachCanonicalVisibilityRecovery(document, () => reload.request());
+    const client = getSupabaseBrowserClient();
+    void (async () => {
+      try {
+        const { data, error } = await client.auth.getUser();
+        if (closed || error || !data.user) return;
+        unsubscribe = subscribeCanonicalChangesFromBrowser(client, data.user.id, () => {
+          if (!closed) reload.request();
+        });
+        if (closed) unsubscribe();
+      } catch {
+        return;
+      }
+    })();
+    return () => {
+      closed = true;
+      detachVisibility();
+      reload.close();
+      unsubscribe?.();
+    };
+  }, []);
 
   useEffect(() => {
     if (!timeZone || !anchor) return;
