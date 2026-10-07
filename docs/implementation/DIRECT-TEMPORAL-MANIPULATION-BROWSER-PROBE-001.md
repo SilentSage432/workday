@@ -38,7 +38,7 @@ Lines:
 - `provisional` (a `[data-provisional]` node was in the Week row, or the current render still has one)
 - `detail` (OrientView passed a proposal into the FactDetail surface)
 
-`qualified` is the existing lift test: movement past 10px, vertical distance strictly greater than horizontal distance, and the half-column pan branch did not win. `lift` means `beginLift` ran. `capture` means `hasPointerCapture(pointerId)` was true immediately after `setPointerCapture` returned. `proposal` means pointer-up called `onPropose`. `detail` means that callback reached `setSurface` with the proposal.
+`qualified` means the eligible fact-origin press has moved past the 10px intentional-movement floor. It does not require vertical distance to exceed horizontal distance. `vertical` and `pan-half` stay on the card as diagnostics and do not decide the gesture. `lift` means `beginLift` ran. `capture` means `hasPointerCapture(pointerId)` was true immediately after `setPointerCapture` returned. `proposal` means pointer-up called `onPropose`. `detail` means that callback reached `setSurface` with the proposal.
 
 ## Behavior was not intentionally changed
 

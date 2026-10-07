@@ -132,7 +132,7 @@ export function Landscape({
       panHalf: math ? math.panHalf : prev.panHalf,
       jitter: math ? math.jitter : prev.jitter,
       vertical: math ? math.vertical : prev.vertical,
-      qualified: math ? math.jitter && math.vertical && !math.panHalf : prev.qualified,
+      qualified: math ? math.jitter : prev.qualified,
     }));
   }
 
@@ -297,18 +297,15 @@ export function Landscape({
       const dx = event.clientX - current.x;
       const dy = event.clientY - current.y;
       const width = event.currentTarget.clientWidth / Math.max(models.length, 1);
+      const intentional = Math.hypot(dx, dy) > WEEK_LIFT_JITTER_PX;
       noteMove(event, "pending", {
         dx,
         dy,
         panHalf: width > 0 && Math.abs(dx) >= width / 2,
-        jitter: Math.hypot(dx, dy) > WEEK_LIFT_JITTER_PX,
+        jitter: intentional,
         vertical: Math.abs(dy) > Math.abs(dx),
       });
-      if (width > 0 && Math.abs(dx) >= width / 2) {
-        claim.current = { phase: "pan", pointerId: current.pointerId, x: current.x };
-        return;
-      }
-      if (Math.hypot(dx, dy) > WEEK_LIFT_JITTER_PX && Math.abs(dy) > Math.abs(dx)) beginLift(current, event);
+      if (intentional) beginLift(current, event);
       return;
     }
     noteMove(event, "lifted", null);
@@ -369,6 +366,11 @@ export function Landscape({
           start,
         ),
       );
+      return;
+    }
+    if (current.phase === "pending") {
+      noteUp("pending", false, false);
+      claim.current = null;
       return;
     }
     noteUp(current.phase, false, false);

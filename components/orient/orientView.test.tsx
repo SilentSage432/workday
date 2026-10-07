@@ -1448,7 +1448,7 @@ describe("desktop week direct temporal manipulation", () => {
     expect(buttonNamed(view, "Edit")).not.toBeNull();
   });
 
-  it("lifts only after a vertical move past the jitter floor and does not write", async () => {
+  it("lifts after movement past the jitter floor and does not write", async () => {
     const updates: CanvasFactUpdate[] = [];
     const anchors: string[] = [];
     const view = await renderView({
@@ -1496,7 +1496,7 @@ describe("desktop week direct temporal manipulation", () => {
     expect(view.textContent).toContain("Write");
   });
 
-  it("pans when horizontal movement wins, and proposes another civil date when a lift crosses columns", async () => {
+  it("pans Week from territory and proposes another civil date when a lift crosses columns", async () => {
     const anchors: string[] = [];
     const updates: CanvasFactUpdate[] = [];
     const view = await renderView({
@@ -1505,10 +1505,10 @@ describe("desktop week direct temporal manipulation", () => {
     });
     await ask(view, "Week");
     const days = layWeek(view);
-    const block = view.querySelector('[data-civil-day="2026-10-05"] [data-source-id="block-1"]') as HTMLButtonElement;
-    await dispatchWeek(block, [weekPoint("pointerdown", 6, 40, 600), weekPoint("pointermove", 6, 100, 600), weekPoint("pointerup", 6, 100, 600)]);
+    await dispatchWeek(days, [weekPoint("pointerdown", 6, 40, 600), weekPoint("pointermove", 6, 100, 600), weekPoint("pointerup", 6, 100, 600)]);
     expect(anchors).toEqual(["2026-10-04"]);
     expect(view.querySelector('[aria-label="Fact date"]')).toBeNull();
+    expect(view.querySelector("[data-provisional]")).toBeNull();
     expect(updates).toEqual([]);
     anchors.length = 0;
     const again = view.querySelector('[data-civil-day="2026-10-05"] [data-source-id="block-1"]') as HTMLButtonElement;
@@ -1523,6 +1523,49 @@ describe("desktop week direct temporal manipulation", () => {
     expect((view.querySelector('[aria-label="Fact start"]') as HTMLInputElement).value).toBe("10:30");
     expect((view.querySelector('[aria-label="Fact end"]') as HTMLInputElement).value).toBe("11:30");
     expect(updates).toEqual([]);
+  });
+
+  it("lifts an eligible block when horizontal movement dominates and does not pan the week", async () => {
+    const anchors: string[] = [];
+    const updates: CanvasFactUpdate[] = [];
+    const view = await renderView({
+      onAnchor: (date) => anchors.push(date),
+      actions: { onUpdate: async (update) => void updates.push(update) },
+    });
+    await ask(view, "Week");
+    layWeek(view);
+    const block = () => view.querySelector('[data-civil-day="2026-10-05"] [data-source-id="block-1"]') as HTMLButtonElement;
+    const probe = () => view.querySelector("[data-dtm-probe]") as HTMLElement;
+    await dispatchWeek(block(), [weekPoint("pointerdown", 30, 40, 600), weekPoint("pointermove", 30, 70, 620)]);
+    expect(view.querySelector("[data-provisional]")).not.toBeNull();
+    expect(anchors).toEqual([]);
+    expect(updates).toEqual([]);
+    await dispatchWeek(block(), [weekPoint("pointerup", 30, -10, 620)]);
+    expect(view.querySelector('[aria-label="Fact date"]')).toBeNull();
+    expect(anchors).toEqual([]);
+    await dispatchWeek(block(), [weekPoint("pointerdown", 31, 40, 600), weekPoint("pointermove", 31, 80, 600)]);
+    expect(view.querySelector("[data-provisional]")).not.toBeNull();
+    expect(probe().textContent).toContain("vertical no");
+    expect(probe().textContent).toContain("qualified yes");
+    expect(probe().textContent).toContain("lift yes");
+    expect(anchors).toEqual([]);
+    await dispatchWeek(block(), [weekPoint("pointerup", 31, -10, 600)]);
+    expect(anchors).toEqual([]);
+    expect(updates).toEqual([]);
+    await dispatchWeek(block(), [weekPoint("pointerdown", 32, 40, 600), weekPoint("pointermove", 32, 840, 400)]);
+    expect(probe().textContent).toContain("dx 800.0");
+    expect(probe().textContent).toContain("dy -200.0");
+    expect(probe().textContent).toContain("vertical no");
+    expect(probe().textContent).toContain("qualified yes");
+    expect(probe().textContent).toContain("lift yes");
+    expect(anchors).toEqual([]);
+    expect(updates).toEqual([]);
+    await dispatchWeek(block(), [weekPoint("pointerup", 32, 140, 600)]);
+    expect(anchors).toEqual([]);
+    expect(updates).toEqual([]);
+    expect((view.querySelector('[aria-label="Fact date"]') as HTMLInputElement).value).toBe("2026-10-06");
+    expect((view.querySelector('[aria-label="Fact start"]') as HTMLInputElement).value).toBe("10:00");
+    expect((view.querySelector('[aria-label="Fact end"]') as HTMLInputElement).value).toBe("11:00");
   });
 
   it("preserves an overnight relationship from the stored pair and lets Save keep the same id", async () => {

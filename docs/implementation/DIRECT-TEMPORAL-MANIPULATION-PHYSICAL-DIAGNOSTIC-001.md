@@ -1,5 +1,7 @@
 # DIRECT-TEMPORAL-MANIPULATION-PHYSICAL-DIAGNOSTIC-001
 
+Superseded for root cause by the production browser probe on `3bb26d94c2c5ad04fa5620d8747110d8f9105041` and by [DIRECT-TEMPORAL-MANIPULATION-GESTURE-ARBITRATION-CORRECTION-001.md](DIRECT-TEMPORAL-MANIPULATION-GESTURE-ARBITRATION-CORRECTION-001.md). The pointer stream reached the Week handler. The lift never started because arbitration required vertical dominance. This file remains the pre-probe inspection.
+
 Physical acceptance of candidate `8d001be9a275326b7f73157870d4213caa621cce` has **FAILED**.
 
 Observed on the deployed production Desktop Week, verbatim:

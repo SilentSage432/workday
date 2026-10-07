@@ -1,6 +1,6 @@
 # DIRECT-TEMPORAL-MANIPULATION-001
 
-Implementation of desktop Week direct temporal manipulation. Physical acceptance is pending. No commit.
+Implementation of desktop Week direct temporal manipulation. Physical acceptance failed on the deployed candidate. The arbitration correction is recorded separately and is not yet deployed.
 
 Baseline: `ef846d74f510a7a8b05ca798319cfa38e59045c8` on `main`, matching `origin/main`.
 
@@ -10,7 +10,7 @@ Contract: [DIRECT-TEMPORAL-MANIPULATION-CONTRACT-001.md](DIRECT-TEMPORAL-MANIPUL
 
 Readiness: [DIRECT-TEMPORAL-MANIPULATION-READINESS-001.md](DIRECT-TEMPORAL-MANIPULATION-READINESS-001.md).
 
-**PHYSICAL ACCEPTANCE PENDING.**
+**PHYSICAL ACCEPTANCE FAILED.** A corrected candidate is pending deployment. The production probe proved the pointer stream. The failure was gesture arbitration. See [DIRECT-TEMPORAL-MANIPULATION-GESTURE-ARBITRATION-CORRECTION-001.md](DIRECT-TEMPORAL-MANIPULATION-GESTURE-ARBITRATION-CORRECTION-001.md).
 
 ## Files
 
@@ -29,8 +29,8 @@ No persistence file, `canonicalCoherence.ts`, schema, or package file changed.
 The Week row `.orient-landscape-days` still owns pointer down, move, up, cancel, lost capture, and wheel.
 
 - **Pan.** Any primary button-0 press that is not an eligible fact. Pointer-up still shifts by `round(deltaX / columnWidth)`.
-- **Pending.** Press on an eligible fact while desktop Week manipulation is enabled. Movement inside the 10px floor stays a click. Horizontal movement that reaches half a column before a lift becomes a pan and uses the original down X.
-- **Lifted.** Movement past 10px with vertical distance strictly greater than horizontal distance. The row takes pointer capture. Pan and the wheel shift are suppressed. Release inside a column body opens FactDetail. Release anywhere else clears the gesture.
+- **Pending.** Press on an eligible fact while desktop Week manipulation is enabled. Movement inside the 10px floor stays a click. Release from pending does not shift the Week.
+- **Lifted.** Movement past 10px in any direction from an eligible fact. The row takes pointer capture. Pan and the wheel shift are suppressed. Release inside a column body opens FactDetail. Release anywhere else clears the gesture. A fact-origin press does not pan the Week.
 
 There is no 220ms hold. The 10px floor is local to `Landscape.tsx`. It is not `SELECTION_MOVE_SLOP_PX`.
 
