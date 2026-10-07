@@ -868,6 +868,9 @@ describe("work schedule authority", () => {
       setter?.call(field, value);
       field.dispatchEvent(new Event("input", { bubbles: true }));
       field.dispatchEvent(new Event("change", { bubbles: true }));
+      if (field instanceof HTMLInputElement) {
+        field.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      }
     });
   }
 

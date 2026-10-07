@@ -10,6 +10,7 @@ import {
   type WeekDraft,
   type WeekWrite,
 } from "@/components/weekDraft";
+import { LocalClockField } from "@/components/orient/LocalClockField";
 import { emptyTwelveHourClock, localTimeToTwelveHour, twelveHourToLocalTime } from "@/components/twelveHourTime";
 import { SHIFT_TYPE_LABELS, SHIFT_TYPES, type WorkScheduleEntry } from "@/domain/workSchedule";
 import { addCivilDays, formatCivilDate, formatCivilDateLabel, parseCivilDate, workFiscalWeekDates } from "@/domain/time/workFiscalWeek";
@@ -314,20 +315,18 @@ function ShiftFields({
     <div>
       <label className="orient-note">
         Start
-        <input
-          aria-label={`Start for ${label}`}
-          type="time"
+        <LocalClockField
+          name={`Start for ${label}`}
           value={start}
-          onChange={(event) => onChange({ ...day, start: localTimeToTwelveHour(event.target.value) })}
+          onCommit={(next) => onChange({ ...day, start: localTimeToTwelveHour(next) })}
         />
       </label>
       <label className="orient-note">
         End
-        <input
-          aria-label={`End for ${label}`}
-          type="time"
+        <LocalClockField
+          name={`End for ${label}`}
           value={end}
-          onChange={(event) => onChange({ ...day, end: localTimeToTwelveHour(event.target.value) })}
+          onCommit={(next) => onChange({ ...day, end: localTimeToTwelveHour(next) })}
         />
       </label>
       <label className="orient-note">
