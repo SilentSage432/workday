@@ -1542,7 +1542,6 @@ describe("desktop week direct temporal manipulation", () => {
     await ask(view, "Week");
     layWeek(view);
     const block = () => view.querySelector('[data-civil-day="2026-10-05"] [data-source-id="block-1"]') as HTMLButtonElement;
-    const probe = () => view.querySelector("[data-dtm-probe]") as HTMLElement;
     await dispatchWeek(block(), [weekPoint("pointerdown", 30, 40, 600), weekPoint("pointermove", 30, 70, 620)]);
     expect(view.querySelector("[data-provisional]")).not.toBeNull();
     expect(anchors).toEqual([]);
@@ -1552,19 +1551,11 @@ describe("desktop week direct temporal manipulation", () => {
     expect(anchors).toEqual([]);
     await dispatchWeek(block(), [weekPoint("pointerdown", 31, 40, 600), weekPoint("pointermove", 31, 80, 600)]);
     expect(view.querySelector("[data-provisional]")).not.toBeNull();
-    expect(probe().textContent).toContain("vertical no");
-    expect(probe().textContent).toContain("qualified yes");
-    expect(probe().textContent).toContain("lift yes");
     expect(anchors).toEqual([]);
     await dispatchWeek(block(), [weekPoint("pointerup", 31, -10, 600)]);
     expect(anchors).toEqual([]);
     expect(updates).toEqual([]);
     await dispatchWeek(block(), [weekPoint("pointerdown", 32, 40, 600), weekPoint("pointermove", 32, 840, 400)]);
-    expect(probe().textContent).toContain("dx 800.0");
-    expect(probe().textContent).toContain("dy -200.0");
-    expect(probe().textContent).toContain("vertical no");
-    expect(probe().textContent).toContain("qualified yes");
-    expect(probe().textContent).toContain("lift yes");
     expect(anchors).toEqual([]);
     expect(updates).toEqual([]);
     await dispatchWeek(block(), [weekPoint("pointerup", 32, 140, 600)]);
@@ -1721,72 +1712,10 @@ describe("desktop week direct temporal manipulation", () => {
       const block = view.querySelector('[data-civil-day="2026-10-05"] [data-source-id="block-1"]') as HTMLButtonElement;
       await dispatchWeek(block, [weekPoint("pointerdown", 17, 40, 600), weekPoint("pointermove", 17, 40, 780), weekPoint("pointerup", 17, 40, 780)]);
       expect(view.querySelector("[data-form]")?.getAttribute("data-form")).toBe("phone");
-      expect(view.querySelector("[data-dtm-probe]")).toBeNull();
       expect(view.querySelector("[data-provisional]")).toBeNull();
       expect(view.querySelector('[aria-label="Fact date"]')).toBeNull();
     } finally {
       window.matchMedia = original;
     }
-  });
-
-  it("records a synthetic desktop week attempt on the temporary probe", async () => {
-    const view = await renderView();
-    await ask(view, "Week");
-    const days = layWeek(view);
-    const probe = () => view.querySelector("[data-dtm-probe]") as HTMLElement;
-    const block = () => view.querySelector('[data-civil-day="2026-10-05"] [data-source-id="block-1"]') as HTMLButtonElement;
-    expect(view.querySelector(".orient-landscape-days [data-dtm-probe]")).toBeNull();
-    expect(probe().textContent).toContain("down no");
-    expect(probe().textContent).toContain("detail no");
-    await dispatchWeek(block(), [weekPoint("pointerdown", 21, 40, 600), weekPoint("pointermove", 21, 40, 608)]);
-    expect(probe().textContent).toContain("down yes");
-    expect(probe().textContent).toContain("eligible yes");
-    expect(probe().textContent).toContain("pending yes");
-    expect(probe().textContent).toContain("target button.orient-fact");
-    expect(probe().textContent).toContain("type mouse");
-    expect(probe().textContent).toContain("moves 1");
-    expect(probe().textContent).toContain("dy 8.0");
-    expect(probe().textContent).toContain("qualified no");
-    expect(probe().textContent).toContain("lift no");
-    expect(view.querySelector("[data-provisional]")).toBeNull();
-    await dispatchWeek(block(), [weekPoint("pointerdown", 22, 40, 600), weekPoint("pointermove", 22, 42, 780)]);
-    expect(probe().textContent).toContain("qualified yes");
-    expect(probe().textContent).toContain("lift yes");
-    expect(probe().textContent).toContain("capture-try yes");
-    expect(probe().textContent).toContain("capture-threw no");
-    expect(probe().textContent).toContain("capture yes");
-    expect(probe().textContent).toContain("proposal-init yes");
-    expect(probe().textContent).toContain("provisional yes");
-    expect(probe().textContent).toContain("detail no");
-    expect(view.querySelector("[data-provisional]")).not.toBeNull();
-    expect(view.querySelector('[data-civil-day="2026-10-05"] [data-source-id="block-1"]')).not.toBeNull();
-    await dispatchWeek(block(), [weekPoint("pointerup", 22, 42, 787)]);
-    expect(probe().textContent).toContain("up yes (lifted)");
-    expect(probe().textContent).toContain("column yes");
-    expect(probe().textContent).toContain("proposal yes");
-    expect(probe().textContent).toContain("detail yes");
-    expect(view.querySelector('[aria-label="Fact date"]')).not.toBeNull();
-    await act(async () => {
-      (view.querySelector("[data-dtm-reset]") as HTMLButtonElement).click();
-    });
-    expect(probe().textContent).toContain("down no");
-    expect(probe().textContent).toContain("detail no");
-    expect(view.querySelector('[aria-label="Fact date"]')).not.toBeNull();
-    await act(async () => {
-      buttonNamed(view, "Close").click();
-    });
-    expect(view.querySelector('[aria-label="Fact date"]')).toBeNull();
-    await dispatchWeek(block(), [weekPoint("pointerdown", 23, 40, 600), weekPoint("pointermove", 23, 42, 780)]);
-    await dispatchWeek(days, [weekPoint("lostpointercapture", 23, 42, 780)]);
-    expect(probe().textContent).toContain("lost-capture yes (lifted)");
-    expect(view.querySelector("[data-provisional]")).toBeNull();
-    expect(view.querySelector('[aria-label="Fact date"]')).toBeNull();
-    await dispatchWeek(block(), [
-      weekPoint("pointerdown", 24, 40, 600),
-      weekPoint("pointermove", 24, 42, 780),
-      weekPoint("pointercancel", 24, 42, 780),
-    ]);
-    expect(probe().textContent).toContain("cancel yes (lifted)");
-    expect(view.querySelector("[data-provisional]")).toBeNull();
   });
 });

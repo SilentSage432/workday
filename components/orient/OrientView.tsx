@@ -122,7 +122,6 @@ export function OrientView({
   const [question, setQuestion] = useState<OrientQuestion>(() => (readInstrumentForm() === "phone" ? "day" : "present"));
   const [focus, setFocus] = useState<ContextFocus>({ kind: "everything" });
   const [surface, setSurface] = useState<Surface>({ kind: "none" });
-  const [probeDetailOpen, setProbeDetailOpen] = useState(false);
   const workDismissRef = useRef<WorkScheduleDismiss | null>(null);
   const [session, setSession] = useState<SelectionSession>(initialSelectionSession);
   const [nowEdge, setNowEdge] = useState<"above" | "below" | "before" | "after" | null>(null);
@@ -834,13 +833,10 @@ export function OrientView({
         contextFor={contextFor}
         onRefer={referTo}
         directManipulation={form === "desktop" && question === "week"}
-        probeDetailOpen={probeDetailOpen}
-        onProbeDetailClear={() => setProbeDetailOpen(false)}
         onPropose={(fact, proposal) => {
           guardWork(() => {
             publish(reduceSelection(sessionRef.current, { type: "discard" }));
             setSurface({ kind: "facts", facts: [fact], chosen: fact, proposal });
-            setProbeDetailOpen(true);
           });
         }}
         onShift={(days) => {
