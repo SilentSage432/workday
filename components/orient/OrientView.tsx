@@ -52,6 +52,8 @@ import {
   ActSurface,
   AddChooser,
   CaptureSurface,
+  DirectNoteSurface,
+  DirectTaskSurface,
   DirectionInspection,
   DirectionPlane,
   EstablishmentSurface,
@@ -80,6 +82,8 @@ type Surface =
   | { kind: "focus" }
   | { kind: "add" }
   | { kind: "act" }
+  | { kind: "create-task" }
+  | { kind: "create-note" }
   | { kind: "capture" }
   | { kind: "thread" }
   | { kind: "facts"; facts: FactAddress[]; chosen: FactAddress | null; proposal: TemporalProposal | null }
@@ -980,7 +984,9 @@ export function OrientView({
               className="orient-control orient-add-control"
               data-add-control="true"
               aria-label="Add"
-              aria-expanded={surface.kind === "add" || surface.kind === "capture"}
+              aria-expanded={
+                surface.kind === "add" || surface.kind === "create-task" || surface.kind === "create-note"
+              }
               onClick={(event) => openFrom(event, surface.kind === "add" ? { kind: "none" } : { kind: "add" })}
             >
               <Plus aria-hidden="true" className="orient-glyph" />
@@ -1150,8 +1156,8 @@ export function OrientView({
           ) : null}
           {surface.kind === "add" ? (
             <AddChooser
-              onTask={() => setSurface({ kind: "capture" })}
-              onNote={() => setSurface({ kind: "capture" })}
+              onTask={() => setSurface({ kind: "create-task" })}
+              onNote={() => setSurface({ kind: "create-note" })}
               onTimeOnTheDay={routeTimeOnTheDay}
               onWorkSchedule={() => {
                 const today = todayCivil();
@@ -1170,10 +1176,14 @@ export function OrientView({
               onComplete={actions.onCompleteTask}
               onReopen={actions.onReopenTask}
               onUpdate={actions.onUpdateTask}
-              onAddTask={() => setSurface({ kind: "capture" })}
+              onAddTask={() => setSurface({ kind: "create-task" })}
               onClose={closeSurface}
             />
           ) : null}
+          {surface.kind === "create-task" ? (
+            <DirectTaskSurface contexts={contexts} onChanged={actions.onTasksChanged} onClose={closeSurface} />
+          ) : null}
+          {surface.kind === "create-note" ? <DirectNoteSurface onClose={closeSurface} /> : null}
           {surface.kind === "capture" ? (
             <CaptureSurface capture={capture} onChanged={actions.onTasksChanged} onClose={closeSurface} />
           ) : null}

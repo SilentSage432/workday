@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   establishmentBlocked,
@@ -33,9 +34,9 @@ import {
   taskFromRetainedNote,
   type GeneralCaptureState,
 } from "@/domain/generalCapture";
-import type { Note } from "@/domain/note";
+import { requireNoteContent, type NewNote, type Note } from "@/domain/note";
 import { taskEditDraftFromTask, taskPatchFromEditDraft, type TaskEditDraft } from "@/domain/taskEdit";
-import type { Task } from "@/domain/task";
+import type { NewTask, Task } from "@/domain/task";
 import { createTask } from "@/persistence/contextsAndTasks";
 import { createNote, loadNotes } from "@/persistence/note";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
@@ -46,6 +47,14 @@ import { shiftedAnchor, type OrientQuestion } from "@/components/orient/grammar"
 
 function failureMessage(caught: unknown, fallback: string): string {
   return caught instanceof Error && caught.message.trim().length > 0 ? caught.message : fallback;
+}
+
+function SurfaceClose({ onClose, label = "Close" }: { onClose: () => void; label?: string }) {
+  return (
+    <button type="button" className="orient-surface-close" data-surface-close="true" aria-label={label} onClick={onClose}>
+      <X aria-hidden="true" className="orient-glyph" />
+    </button>
+  );
 }
 
 export function QuestionList({
@@ -84,6 +93,8 @@ export function PositionSurface({
   onSignOut,
   onManageWork,
   onClose,
+  includeDismiss = true,
+  includeOperations = true,
 }: {
   anchor: string;
   today: string | null;
@@ -92,6 +103,8 @@ export function PositionSurface({
   onSignOut: () => void;
   onManageWork: () => void;
   onClose: () => void;
+  includeDismiss?: boolean;
+  includeOperations?: boolean;
 }) {
   const [date, setDate] = useState(anchor);
   return (
@@ -123,17 +136,25 @@ export function PositionSurface({
           }}
         />
       </label>
-      <div className="orient-actions">
-        <button type="button" className="orient-action" onClick={onClose}>
-          Close
-        </button>
-        <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
-          Manage Work schedule
-        </button>
-        <button type="button" className="orient-action" onClick={onSignOut}>
-          Sign out
-        </button>
-      </div>
+      {includeDismiss || includeOperations ? (
+        <div className="orient-actions" data-position-operations={includeOperations ? "true" : undefined}>
+          {includeDismiss ? (
+            <button type="button" className="orient-action" onClick={onClose}>
+              Close
+            </button>
+          ) : null}
+          {includeOperations ? (
+            <>
+              <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
+                Manage Work schedule
+              </button>
+              <button type="button" className="orient-action" onClick={onSignOut}>
+                Sign out
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -740,8 +761,13 @@ export function LookSurface({
 }) {
   return (
     <div data-look-surface="true">
-      <h2>LOOK</h2>
-      <p className="orient-capture-lead">Where am I in time?</p>
+      <header className="orient-surface-header">
+        <div>
+          <h2>LOOK</h2>
+          <p className="orient-capture-lead">Where am I in time?</p>
+        </div>
+        <SurfaceClose onClose={onClose} label="Close LOOK" />
+      </header>
       <QuestionList question={question} onChoose={onChooseQuestion} />
       <PositionSurface
         anchor={anchor}
@@ -751,8 +777,21 @@ export function LookSurface({
         onSignOut={onSignOut}
         onManageWork={onManageWork}
         onClose={onClose}
+        includeDismiss={false}
+        includeOperations={false}
       />
       <FocusList contexts={contexts} onChoose={onChooseFocus} />
+      <section data-look-operations="true" aria-label="Operations">
+        <h2>Operations</h2>
+        <div className="orient-actions">
+          <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
+            Manage Work schedule
+          </button>
+          <button type="button" className="orient-action" onClick={onSignOut}>
+            Sign out
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
@@ -1233,6 +1272,234 @@ function TaskDetail({
           {error ? <p role="alert">{error}</p> : null}
         </div>
       )}
+    </div>
+  );
+}
+
+function taskInputFromDraft(draft: {
+  title: string;
+  contextId: string;
+  plannedOn: string;
+  plannedLocal: string;
+  dueOn: string;
+  mustDo: boolean;
+}): NewTask {
+  const title = draft.title.trim();
+  if (title.length === 0) {
+    throw new Error("A task needs a title.");
+  }
+  const plannedOn = draft.plannedOn.length > 0 ? draft.plannedOn : null;
+  return {
+    title,
+    contextId: draft.contextId.length > 0 ? draft.contextId : null,
+    plannedOn,
+    plannedLocal: plannedOn && draft.plannedLocal.length > 0 ? draft.plannedLocal : null,
+    dueOn: draft.dueOn.length > 0 ? draft.dueOn : null,
+    mustDo: draft.mustDo,
+  };
+}
+
+export function DirectTaskSurface({
+  contexts,
+  onChanged,
+  onClose,
+  establish = (input) => createTask(getSupabaseBrowserClient(), input),
+}: {
+  contexts: SourceRead<Context>;
+  onChanged: () => void;
+  onClose: () => void;
+  establish?: (input: NewTask) => Promise<Task>;
+}) {
+  const [title, setTitle] = useState("");
+  const [plannedOn, setPlannedOn] = useState("");
+  const [plannedLocal, setPlannedLocal] = useState("");
+  const [dueOn, setDueOn] = useState("");
+  const [contextId, setContextId] = useState("");
+  const [mustDo, setMustDo] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    if (saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await establish(
+        taskInputFromDraft({ title, contextId, plannedOn, plannedLocal, dueOn, mustDo }),
+      );
+      onChanged();
+      onClose();
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "The write did not happen."));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div data-direct-task="true" className="orient-direct-create">
+      <header className="orient-surface-header">
+        <h2>New Task</h2>
+        <SurfaceClose onClose={onClose} label="Close new Task" />
+      </header>
+      <label className="orient-note" htmlFor="orient-direct-task-title">
+        What needs doing?
+        <input
+          id="orient-direct-task-title"
+          aria-label="Task title"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          autoComplete="off"
+          disabled={saving}
+        />
+      </label>
+      <section data-direct-task-when="true" aria-label="When">
+        <h3>When</h3>
+        <label className="orient-note" htmlFor="orient-direct-task-planned">
+          Planned day
+          <span className="orient-field-hint">When you intend to work on it.</span>
+          <input
+            id="orient-direct-task-planned"
+            type="date"
+            aria-label="Planned day"
+            value={plannedOn}
+            disabled={saving}
+            onChange={(event) => {
+              const next = event.target.value;
+              setPlannedOn(next);
+              if (next.length === 0) setPlannedLocal("");
+            }}
+          />
+        </label>
+        <label className="orient-note" htmlFor="orient-direct-task-clock">
+          Planned clock
+          <span className="orient-field-hint">Optional local time on that day. Not a reserved interval.</span>
+          <input
+            id="orient-direct-task-clock"
+            type="time"
+            aria-label="Planned clock"
+            value={plannedLocal}
+            disabled={saving || plannedOn.length === 0}
+            onChange={(event) => setPlannedLocal(event.target.value)}
+          />
+        </label>
+        <label className="orient-note" htmlFor="orient-direct-task-due">
+          Due
+          <span className="orient-field-hint">When completion is required.</span>
+          <input
+            id="orient-direct-task-due"
+            type="date"
+            aria-label="Due day"
+            value={dueOn}
+            disabled={saving}
+            onChange={(event) => setDueOn(event.target.value)}
+          />
+        </label>
+      </section>
+      <label className="orient-note" htmlFor="orient-direct-task-context">
+        Context
+        <select
+          id="orient-direct-task-context"
+          aria-label="Task context"
+          value={contextId}
+          disabled={saving}
+          onChange={(event) => setContextId(event.target.value)}
+        >
+          <option value="">None</option>
+          {contexts.status === "ready"
+            ? contexts.rows.map((context) => (
+                <option key={context.id} value={context.id}>
+                  {context.name}
+                </option>
+              ))
+            : null}
+        </select>
+      </label>
+      <label className="orient-note">
+        <input
+          type="checkbox"
+          aria-label="Must do"
+          checked={mustDo}
+          disabled={saving}
+          onChange={(event) => setMustDo(event.target.checked)}
+        />{" "}
+        Must do
+      </label>
+      {error ? <p role="alert">{error}</p> : null}
+      <button
+        type="button"
+        className="orient-action"
+        data-emphasis="save"
+        data-add-task="true"
+        disabled={saving || title.trim().length === 0}
+        onClick={() => void save()}
+      >
+        {saving ? "Adding" : "Add Task"}
+      </button>
+    </div>
+  );
+}
+
+export function DirectNoteSurface({
+  onChanged,
+  onClose,
+  establish = (input) => createNote(getSupabaseBrowserClient(), input),
+}: {
+  onChanged?: () => void;
+  onClose: () => void;
+  establish?: (input: NewNote) => Promise<Note>;
+}) {
+  const [content, setContent] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    if (saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const retained = requireNoteContent(content);
+      await establish({
+        id: crypto.randomUUID(),
+        content: retained,
+        capturedAt: new Date(),
+      });
+      onChanged?.();
+      onClose();
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "The write did not happen."));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div data-direct-note="true" className="orient-direct-create">
+      <header className="orient-surface-header">
+        <h2>New Note</h2>
+        <SurfaceClose onClose={onClose} label="Close new Note" />
+      </header>
+      <label className="orient-note" htmlFor="orient-direct-note-content">
+        <span className="sr-only">Note content</span>
+        <textarea
+          id="orient-direct-note-content"
+          aria-label="Note content"
+          value={content}
+          disabled={saving}
+          onChange={(event) => setContent(event.target.value)}
+        />
+      </label>
+      {error ? <p role="alert">{error}</p> : null}
+      <button
+        type="button"
+        className="orient-action"
+        data-emphasis="save"
+        data-add-note="true"
+        disabled={saving || content.trim().length === 0}
+        onClick={() => void save()}
+      >
+        {saving ? "Adding" : "Add Note"}
+      </button>
     </div>
   );
 }

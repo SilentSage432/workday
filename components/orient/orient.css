@@ -1071,6 +1071,64 @@ button.orient-fact {
   cursor: default;
 }
 
+.orient-surface-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.orient-surface-header h2 {
+  margin: 0;
+}
+
+.orient-surface-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  margin: -0.2rem -0.15rem 0 0;
+  padding: 0;
+  border-radius: 0.85rem;
+  border: 1px solid var(--orient-control-edge);
+  background: var(--orient-control);
+  color: var(--orient-ink);
+  cursor: pointer;
+}
+
+.orient-surface-close:hover {
+  border-color: rgb(243 215 176 / 0.55);
+  background: rgb(243 215 176 / 0.12);
+}
+
+.orient-surface-close .orient-glyph {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.orient-field-hint {
+  display: block;
+  margin: 0.15rem 0 0.35rem;
+  color: var(--orient-muted);
+  font-size: 0.85em;
+}
+
+.orient-direct-create {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.orient-direct-create h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 520;
+}
+
 .orient-capture {
   display: flex;
   flex-direction: column;

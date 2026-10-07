@@ -404,7 +404,8 @@ describe("phone temporal continuity", () => {
     await act(async () => {
       (view.querySelector('[data-add-choice="task"]') as HTMLButtonElement).click();
     });
-    expect(view.querySelector("[data-capture-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-direct-task]")).not.toBeNull();
+    expect(view.querySelector("[data-capture-surface]")).toBeNull();
     expect(scroller.scrollTop).toBe(40);
     expect(view.querySelector("[data-exact-minute]")?.getAttribute("data-exact-minute")).toBe("");
   });

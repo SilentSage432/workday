@@ -562,7 +562,8 @@ describe("desktop reading", () => {
     await act(async () => {
       (view.querySelector('[data-add-choice="task"]') as HTMLButtonElement).click();
     });
-    expect(view.querySelector("[data-capture-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-direct-task]")).not.toBeNull();
+    expect(view.querySelector("[data-capture-surface]")).toBeNull();
     expect(view.querySelector("[role='dialog']")?.getAttribute("aria-modal")).toBeNull();
     expect(view.querySelector("[role='dialog']")?.getAttribute("data-borrowed-surface")).toBe("sheet");
   });

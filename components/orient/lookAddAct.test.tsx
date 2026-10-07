@@ -278,7 +278,7 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(started).toEqual(["task-1"]);
   });
 
-  it("ADD routes Task and Note to Capture and Time on the day to Exact", async () => {
+  it("ADD routes Task and Note to direct create and Time on the day to Exact", async () => {
     const view = await renderPhone();
     await act(async () => {
       (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
@@ -290,9 +290,22 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     await act(async () => {
       (view.querySelector('[data-add-choice="task"]') as HTMLButtonElement).click();
     });
-    expect(view.querySelector("[data-capture-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-direct-task]")).not.toBeNull();
+    expect(view.querySelector("[data-capture-surface]")).toBeNull();
+    expect(view.textContent).not.toMatch(/General capture|This is a task|Keep as a note/i);
     await act(async () => {
-      buttonNamed(view, "Close capture").click();
+      (view.querySelector('[data-surface-close]') as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector('[data-add-choice="note"]') as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-direct-note]")).not.toBeNull();
+    expect(view.textContent).not.toMatch(/This is a task|Keep as a note/i);
+    await act(async () => {
+      (view.querySelector('[data-surface-close]') as HTMLButtonElement).click();
     });
     await act(async () => {
       (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
@@ -302,6 +315,24 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     });
     expect(view.querySelector("[data-depth]")?.getAttribute("data-depth")).toBe("exact");
     expect(view.querySelector("[data-orientation-return]")).not.toBeNull();
+  });
+
+  it("LOOK dismisses from header close without an inline Close row in semantic content", async () => {
+    const view = await renderPhone();
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+    const look = view.querySelector("[data-look-surface]") as HTMLElement;
+    expect(look.querySelector("[data-surface-close]")?.getAttribute("aria-label")).toBe("Close LOOK");
+    expect(look.querySelector("[data-relocation]")?.textContent).not.toMatch(/\bClose\b/);
+    expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Manage Work schedule");
+    expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Sign out");
+    const closeButtons = [...look.querySelectorAll("button")].filter((item) => item.textContent?.trim() === "Close");
+    expect(closeButtons).toHaveLength(0);
+    await act(async () => {
+      (look.querySelector("[data-surface-close]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-look-surface]")).toBeNull();
   });
 
   it("keeps Exact time and composition thread on Present reading", async () => {
