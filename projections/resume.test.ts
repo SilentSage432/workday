@@ -16,6 +16,7 @@ function openTask(id: string, title: string, extras: Partial<Task> = {}): Task {
     completedAt: null,
     dueOn: null,
     plannedOn: null,
+    plannedLocal: null,
     mustDo: false,
     origin: "user_created",
     originatingNoteId: null,
@@ -106,6 +107,7 @@ describe("resume projection", () => {
     const captured = openTask("task-captured", drafted.title, {
       mustDo: drafted.mustDo,
       plannedOn: drafted.plannedOn ?? null,
+      plannedLocal: "09:00",
       dueOn: drafted.dueOn ?? null,
     });
 
@@ -120,6 +122,7 @@ describe("resume projection", () => {
   it("does not treat a planned or due task as an active thread", () => {
     const scheduled = openTask("task-scheduled", "Pack down", {
       plannedOn: "2026-10-02",
+      plannedLocal: null,
       dueOn: "2026-10-02",
     });
     expect(projectResume({ activeThread: null, openTasks: [scheduled] })).toBeNull();

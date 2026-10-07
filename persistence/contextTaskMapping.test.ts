@@ -17,6 +17,7 @@ const openTask: TaskRow = {
   completed_at: null,
   due_on: "2026-10-08",
   planned_on: "2026-10-05",
+  planned_local: null,
   must_do: true,
   origin: "user_created",
   originating_note_id: null,
@@ -38,6 +39,7 @@ describe("context and task mapping", () => {
 
     expect(inserted.due_on).toBe("2026-10-08");
     expect(inserted.planned_on).toBe("2026-10-05");
+    expect(inserted.planned_local).toBeNull();
 
     const dueOnly = toTaskUpdate({ dueOn: "2026-10-09" });
     expect(dueOnly).toEqual({ due_on: "2026-10-09" });
@@ -46,6 +48,7 @@ describe("context and task mapping", () => {
     const plannedOnly = toTaskUpdate({ plannedOn: "2026-10-06" });
     expect(plannedOnly).toEqual({ planned_on: "2026-10-06" });
     expect(plannedOnly).not.toHaveProperty("due_on");
+    expect(plannedOnly).not.toHaveProperty("planned_local");
   });
 
   it("rejects an instant where a civil date is required", () => {
@@ -61,6 +64,21 @@ describe("context and task mapping", () => {
     expect(rowToTask(openTask).mustDo).toBe(true);
     expect(toTaskInsert("user-1", { title: "File the receipt" }).must_do).toBe(false);
     expect(toTaskUpdate({ mustDo: true })).toEqual({ must_do: true });
+  });
+
+  it("stores planned local clock only with a planned day", () => {
+    expect(
+      toTaskInsert("user-1", {
+        title: "Call Mom",
+        plannedOn: "2026-10-08",
+        plannedLocal: "18:00",
+      }),
+    ).toMatchObject({ planned_on: "2026-10-08", planned_local: "18:00:00" });
+    expect(rowToTask({ ...openTask, planned_local: "18:00:00" }).plannedLocal).toBe("18:00");
+    expect(toTaskUpdate({ plannedOn: null })).toEqual({ planned_on: null, planned_local: null });
+    expect(() => toTaskInsert("user-1", { title: "Call Mom", plannedLocal: "18:00" })).toThrow(
+      /planned clock/,
+    );
   });
 
   it("preserves the completion instant and leaves the task open when it is null", () => {

@@ -77,6 +77,7 @@ function task(overrides: Partial<Task> = {}): Task {
     completedAt: null,
     dueOn: null,
     plannedOn: null,
+    plannedLocal: null,
     mustDo: false,
     origin: "user_created",
     originatingNoteId: null,
@@ -183,6 +184,7 @@ describe("editing an open task", () => {
       task({
         contextId: "family",
         plannedOn: planned,
+        plannedLocal: null,
         dueOn: due,
         mustDo: true,
       }),
@@ -352,6 +354,7 @@ describe("editing an open task", () => {
       title: "Call the school",
       contextId: "family",
       plannedOn: planned,
+      plannedLocal: null,
       dueOn: due,
       mustDo: true,
     });
@@ -370,6 +373,7 @@ describe("editing an open task", () => {
       title: "Call the school",
       contextId: "family",
       plannedOn: planned,
+      plannedLocal: null,
       dueOn: due,
       mustDo: false,
     });

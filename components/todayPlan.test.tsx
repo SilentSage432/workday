@@ -15,6 +15,7 @@ function task(id: string, extras: Partial<Task> = {}): Task {
     completedAt: null,
     dueOn: null,
     plannedOn: "2026-10-02",
+    plannedLocal: null,
     mustDo: false,
     origin: "user_created",
     originatingNoteId: null,

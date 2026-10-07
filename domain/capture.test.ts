@@ -28,6 +28,7 @@ const openTask: Task = {
   completedAt: null,
   dueOn: null,
   plannedOn: null,
+  plannedLocal: null,
   mustDo: false,
   origin: "user_created",
   originatingNoteId: null,
@@ -43,6 +44,7 @@ describe("capture draft", () => {
       title: "Call vendor",
       context_id: null,
       planned_on: null,
+      planned_local: null,
       due_on: null,
       must_do: false,
       origin: "user_created",
@@ -76,6 +78,7 @@ describe("capture draft", () => {
     expect(plannedOnly.dueOn).toBe("2026-10-08");
     expect(toTaskInsert("user-1", plannedOnly)).toMatchObject({
       planned_on: "2026-10-06",
+      planned_local: null,
       due_on: "2026-10-08",
     });
   });

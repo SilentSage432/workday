@@ -20,6 +20,7 @@ function taskRow(
     completed_at: null,
     due_on: null,
     planned_on: null,
+    planned_local: null,
     must_do: false,
     origin: "user_created",
     originating_note_id: null,

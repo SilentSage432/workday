@@ -86,7 +86,33 @@ export function TaskEditForm({
           disabled={saving}
           aria-describedby="edit-task-planned-hint"
           value={draft.plannedOn}
-          onChange={(event) => onChange({ ...draft, plannedOn: event.target.value })}
+          onChange={(event) => {
+            const plannedOn = event.target.value;
+            onChange({
+              ...draft,
+              plannedOn,
+              plannedLocal: plannedOn.length === 0 ? "" : draft.plannedLocal,
+            });
+          }}
+          className={fieldClass}
+        />
+      </div>
+      <div className="mt-4">
+        <label className="block text-sm font-medium" htmlFor="edit-task-planned-clock">
+          Planned clock
+        </label>
+        <p id="edit-task-planned-clock-hint" className="text-sm text-stone-400">
+          Optional local time on the planned day. Not a reserved interval.
+        </p>
+        <input
+          id="edit-task-planned-clock"
+          name="planned-clock"
+          type="time"
+          disabled={saving || draft.plannedOn.length === 0}
+          aria-describedby="edit-task-planned-clock-hint"
+          aria-label="Planned clock"
+          value={draft.plannedLocal}
+          onChange={(event) => onChange({ ...draft, plannedLocal: event.target.value })}
           className={fieldClass}
         />
       </div>

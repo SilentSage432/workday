@@ -12,6 +12,7 @@ const task: Task = {
   completedAt: null,
   dueOn: "2026-10-08",
   plannedOn: "2026-10-05",
+  plannedLocal: null,
   mustDo: false,
   origin: "user_created",
   originatingNoteId: null,
@@ -23,6 +24,7 @@ describe("task edit draft", () => {
       title: "Call the school",
       contextId: "family",
       plannedOn: "2026-10-05",
+      plannedLocal: "",
       dueOn: "2026-10-08",
       mustDo: false,
     });
@@ -30,6 +32,7 @@ describe("task edit draft", () => {
       title: "Call the school",
       contextId: "",
       plannedOn: "",
+      plannedLocal: "",
       dueOn: "",
       mustDo: false,
     });
@@ -65,6 +68,7 @@ describe("task edit draft", () => {
     const cleared = taskEditDraftFromTask({ ...task, plannedOn: null, dueOn: "2026-10-08" });
     expect(taskPatchFromEditDraft({ ...cleared, plannedOn: "2026-10-05" })).toMatchObject({
       plannedOn: "2026-10-05",
+      plannedLocal: null,
       dueOn: "2026-10-08",
     });
 
@@ -75,7 +79,48 @@ describe("task edit draft", () => {
 
     const removed = taskPatchFromEditDraft({ ...taskEditDraftFromTask(task), plannedOn: "" });
     expect(removed.plannedOn).toBeNull();
+    expect(removed.plannedLocal).toBeNull();
     expect(removed.dueOn).toBe("2026-10-08");
+    expect(toTaskUpdate(removed)).toMatchObject({ planned_on: null, planned_local: null });
+  });
+
+  it("can set, change, or clear planned clock without inventing duration", () => {
+    const withClock = taskPatchFromEditDraft({
+      ...taskEditDraftFromTask(task),
+      plannedLocal: "14:00",
+    });
+    expect(withClock).toMatchObject({
+      plannedOn: "2026-10-05",
+      plannedLocal: "14:00",
+      dueOn: "2026-10-08",
+      mustDo: false,
+    });
+    expect(toTaskUpdate(withClock)).toMatchObject({
+      planned_on: "2026-10-05",
+      planned_local: "14:00:00",
+      due_on: "2026-10-08",
+    });
+
+    const movedDay = taskPatchFromEditDraft({
+      ...taskEditDraftFromTask({ ...task, plannedLocal: "14:00" }),
+      plannedOn: "2026-10-06",
+    });
+    expect(movedDay.plannedOn).toBe("2026-10-06");
+    expect(movedDay.plannedLocal).toBe("14:00");
+
+    const clockCleared = taskPatchFromEditDraft({
+      ...taskEditDraftFromTask({ ...task, plannedLocal: "14:00" }),
+      plannedLocal: "",
+    });
+    expect(clockCleared.plannedOn).toBe("2026-10-05");
+    expect(clockCleared.plannedLocal).toBeNull();
+
+    expect(() =>
+      toTaskUpdate(taskPatchFromEditDraft({ ...taskEditDraftFromTask(task), plannedOn: "", plannedLocal: "14:00" })),
+    ).not.toThrow();
+    expect(
+      toTaskUpdate(taskPatchFromEditDraft({ ...taskEditDraftFromTask(task), plannedOn: "", plannedLocal: "14:00" })),
+    ).toMatchObject({ planned_on: null, planned_local: null });
   });
 
   it("can set, change, or clear the due day without changing the plan", () => {
@@ -83,6 +128,7 @@ describe("task edit draft", () => {
     expect(taskPatchFromEditDraft({ ...cleared, dueOn: "2026-10-08" })).toMatchObject({
       dueOn: "2026-10-08",
       plannedOn: "2026-10-05",
+      plannedLocal: null,
     });
 
     const changed = taskPatchFromEditDraft({ ...taskEditDraftFromTask(task), dueOn: "2026-10-09" });
@@ -111,6 +157,7 @@ describe("task edit draft", () => {
       title: "Call the school",
       contextId: "family",
       plannedOn: "2026-10-05",
+      plannedLocal: null,
       dueOn: "2026-10-08",
       mustDo: true,
     });
@@ -118,9 +165,11 @@ describe("task edit draft", () => {
       title: "Call the school",
       context_id: "family",
       planned_on: "2026-10-05",
+      planned_local: null,
       due_on: "2026-10-08",
       must_do: true,
     });
+    expect(enabled.plannedLocal).toBeNull();
 
     const disabled = taskPatchFromEditDraft({
       ...taskEditDraftFromTask({ ...task, mustDo: true }),

@@ -46,6 +46,7 @@ A unique `(id, user_id)` exists so a Task can reference both.
 | completed_at | timestamptz | yes | Null while open |
 | due_on | date | yes | Civil due date |
 | planned_on | date | yes | Civil planned day |
+| planned_local | time | yes | Optional local clock on planned_on; requires planned_on |
 | must_do | boolean | no | Default false |
 | origin | text | no | Default `user_created` |
 
@@ -55,7 +56,7 @@ The only index beyond keys and uniqueness is `tasks(user_id)`.
 
 `due_on` is a PostgreSQL `date`. `planned_on` is a separate `date`. Neither is converted through a time zone, so a planned day does not shift when the database session zone changes.
 
-Product examples of Task due and planned are civil days. A reminder is the established place for a time of day, and reminders are not stored here. V0 therefore does not invent a due instant.
+Product examples of Task due and planned are civil days. `planned_local` is optional local clock-point intention on `planned_on` (HH:MM civil clock text in the domain). It is not duration, Block territory, a due instant, a reminder, or a UTC instant. Clearing `planned_on` clears `planned_local`. A reminder remains a separate unresolved concept.
 
 Limitation: a Task cannot yet say it is due at a specific clock time. A later nullable `timestamptz` can be added beside `due_on` without rewriting the date. Until that exists, do not encode a time inside `due_on`.
 

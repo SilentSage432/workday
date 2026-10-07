@@ -14,7 +14,7 @@ import type { ContextRow, TaskRow } from "@/persistence/contextTaskRows";
 
 const CONTEXT_COLUMNS = "id, name, created_at";
 const TASK_COLUMNS =
-  "id, context_id, title, created_at, completed_at, due_on, planned_on, must_do, origin, originating_note_id";
+  "id, context_id, title, created_at, completed_at, due_on, planned_on, planned_local, must_do, origin, originating_note_id";
 
 async function requireUserId(client: SupabaseClient): Promise<string> {
   const { data, error } = await client.auth.getUser();

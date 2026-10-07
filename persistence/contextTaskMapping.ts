@@ -1,4 +1,5 @@
 import { formatCivilDate, parseCivilDate } from "@/domain/time/workFiscalWeek";
+import { formatLocalTime, parseLocalTime } from "@/domain/time/localTime";
 import type { Context } from "@/domain/context";
 import { requireNoteId } from "@/domain/note";
 import {
@@ -20,6 +21,29 @@ function civilDateOrNull(value: string | null | undefined, field: string): strin
   } catch {
     throw new Error(`${field} must be a civil date in the form YYYY-MM-DD.`);
   }
+}
+
+function localClockOrNull(value: string | null | undefined, field: string): string | null {
+  if (value == null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+  try {
+    return formatLocalTime(parseLocalTime(trimmed));
+  } catch {
+    throw new Error(`${field} must be a local time in the form HH:MM.`);
+  }
+}
+
+function localForDatabase(value: string): string {
+  return `${formatLocalTime(parseLocalTime(value))}:00`;
+}
+
+function localFromDatabase(value: string): string {
+  return formatLocalTime(parseLocalTime(value));
 }
 
 function requireTitle(title: string): string {
@@ -54,6 +78,7 @@ export function rowToTask(row: TaskRow): Task {
     completedAt: row.completed_at,
     dueOn: row.due_on,
     plannedOn: row.planned_on,
+    plannedLocal: row.planned_local ? localFromDatabase(row.planned_local) : null,
     mustDo: row.must_do,
     origin: requireOrigin(row.origin),
     originatingNoteId: row.originating_note_id,
@@ -61,12 +86,19 @@ export function rowToTask(row: TaskRow): Task {
 }
 
 export function toTaskInsert(userId: string, input: NewTask): TaskInsertRow {
+  const plannedOn = civilDateOrNull(input.plannedOn, "plannedOn");
+  const plannedLocal = localClockOrNull(input.plannedLocal, "plannedLocal");
+  if (plannedLocal !== null && plannedOn === null) {
+    throw new Error("A planned clock needs a planned day.");
+  }
+
   return {
     user_id: userId,
     title: requireTitle(input.title),
     context_id: input.contextId ?? null,
     due_on: civilDateOrNull(input.dueOn, "dueOn"),
-    planned_on: civilDateOrNull(input.plannedOn, "plannedOn"),
+    planned_on: plannedOn,
+    planned_local: plannedLocal === null ? null : localForDatabase(plannedLocal),
     must_do: input.mustDo ?? false,
     origin: TASK_ORIGIN_USER_CREATED,
     originating_note_id:
@@ -86,9 +118,24 @@ export function toTaskUpdate(patch: TaskPatch): TaskUpdateRow {
   if (patch.dueOn !== undefined) {
     row.due_on = civilDateOrNull(patch.dueOn, "dueOn");
   }
-  if (patch.plannedOn !== undefined) {
-    row.planned_on = civilDateOrNull(patch.plannedOn, "plannedOn");
+
+  const plannedOnInPatch =
+    patch.plannedOn !== undefined ? civilDateOrNull(patch.plannedOn, "plannedOn") : undefined;
+  if (plannedOnInPatch !== undefined) {
+    row.planned_on = plannedOnInPatch;
   }
+
+  if (patch.plannedLocal !== undefined) {
+    const plannedLocal = localClockOrNull(patch.plannedLocal, "plannedLocal");
+    if (plannedLocal !== null && plannedOnInPatch === null) {
+      throw new Error("A planned clock needs a planned day.");
+    }
+    row.planned_local = plannedLocal === null ? null : localForDatabase(plannedLocal);
+  } else if (plannedOnInPatch === null) {
+    // Clearing the planned day must not leave an orphaned clock point.
+    row.planned_local = null;
+  }
+
   if (patch.mustDo !== undefined) {
     row.must_do = patch.mustDo;
   }

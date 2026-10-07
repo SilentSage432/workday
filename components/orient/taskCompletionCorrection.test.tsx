@@ -21,6 +21,7 @@ function task(overrides: Partial<Task> = {}): Task {
     completedAt: null,
     dueOn: "2026-10-10",
     plannedOn: "2026-10-07",
+    plannedLocal: null,
     mustDo: true,
     origin: "user_created",
     originatingNoteId: "00000000-0000-4000-8000-000000000001",

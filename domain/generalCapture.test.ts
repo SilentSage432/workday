@@ -107,6 +107,7 @@ describe("general capture establishment", () => {
       title: "Call the school",
       context_id: null,
       planned_on: null,
+      planned_local: null,
       due_on: null,
       must_do: false,
       origin: "user_created",
@@ -134,6 +135,7 @@ describe("general capture establishment", () => {
       originating_note_id: FIRST_ID,
       must_do: false,
       planned_on: null,
+      planned_local: null,
       due_on: null,
       context_id: null,
     });

@@ -856,7 +856,12 @@ function TaskDetail({
     <div>
       <p>{task.title}</p>
       {task.mustDo ? <p>Must do</p> : null}
-      {task.plannedOn ? <p>Planned {task.plannedOn}</p> : null}
+      {task.plannedOn ? (
+        <p>
+          Planned {task.plannedOn}
+          {task.plannedLocal ? ` at ${task.plannedLocal}` : ""}
+        </p>
+      ) : null}
       {task.dueOn ? <p>Due {task.dueOn}</p> : null}
       {editing ? (
         <div>
@@ -883,7 +888,29 @@ function TaskDetail({
           </label>
           <label className="orient-note">
             Planned
-            <input type="date" aria-label="Planned day" value={draft.plannedOn} onChange={(event) => setDraft({ ...draft, plannedOn: event.target.value })} />
+            <input
+              type="date"
+              aria-label="Planned day"
+              value={draft.plannedOn}
+              onChange={(event) => {
+                const plannedOn = event.target.value;
+                setDraft({
+                  ...draft,
+                  plannedOn,
+                  plannedLocal: plannedOn.length === 0 ? "" : draft.plannedLocal,
+                });
+              }}
+            />
+          </label>
+          <label className="orient-note">
+            Planned clock
+            <input
+              type="time"
+              aria-label="Planned clock"
+              value={draft.plannedLocal}
+              disabled={draft.plannedOn.length === 0}
+              onChange={(event) => setDraft({ ...draft, plannedLocal: event.target.value })}
+            />
           </label>
           <label className="orient-note">
             Due
@@ -960,7 +987,12 @@ function TaskCollection({
         <li key={task.id}>
           <p>{task.title}</p>
           {task.mustDo ? <p>Must do</p> : null}
-          {task.plannedOn ? <p>Planned {task.plannedOn}</p> : null}
+          {task.plannedOn ? (
+            <p>
+              Planned {task.plannedOn}
+              {task.plannedLocal ? ` at ${task.plannedLocal}` : ""}
+            </p>
+          ) : null}
           {task.dueOn ? <p>Due {task.dueOn}</p> : null}
           <button type="button" className="orient-action" onClick={() => void onStart(task.id)}>
             Start

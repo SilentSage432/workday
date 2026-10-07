@@ -15,6 +15,7 @@ function openTask(id: string, extras: Partial<Task> = {}): Task {
     completedAt: null,
     dueOn: null,
     plannedOn: null,
+    plannedLocal: null,
     mustDo: false,
     origin: "user_created",
     originatingNoteId: null,
@@ -58,6 +59,7 @@ describe("today projection", () => {
   it("excludes a completed task that was planned for this civil date", () => {
     const completed = openTask("done", {
       plannedOn: today,
+      plannedLocal: null,
       completedAt: "2026-10-02T20:00:00.000Z",
     });
 
@@ -86,7 +88,7 @@ describe("today projection", () => {
 
   it("changes only planned_on, and completion leaves that date", () => {
     expect(toTaskUpdate({ plannedOn: today })).toEqual({ planned_on: today });
-    expect(toTaskUpdate({ plannedOn: null })).toEqual({ planned_on: null });
+    expect(toTaskUpdate({ plannedOn: null })).toEqual({ planned_on: null, planned_local: null });
     expect(toCompletionUpdate(new Date("2026-10-02T20:00:00.000Z"))).toEqual({
       completed_at: "2026-10-02T20:00:00.000Z",
     });

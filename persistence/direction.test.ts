@@ -270,6 +270,7 @@ describe("direction representation", () => {
       mustDo: true,
       dueOn: "2026-10-07",
       plannedOn: "2026-10-06",
+      plannedLocal: null,
       contextId: "00000000-0000-4000-8000-000000000030",
     });
     expect(row.must_do).toBe(true);

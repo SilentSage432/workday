@@ -19,6 +19,7 @@ function completedRow(overrides: Partial<TaskRow> = {}): TaskRow {
     completed_at: COMPLETED_AT,
     due_on: "2026-10-10",
     planned_on: "2026-10-07",
+    planned_local: null,
     must_do: true,
     origin: "user_created",
     originating_note_id: "00000000-0000-4000-8000-000000000001",
@@ -100,6 +101,7 @@ describe("reopenTask", () => {
       completedAt: null,
       dueOn: "2026-10-10",
       plannedOn: "2026-10-07",
+      plannedLocal: null,
       mustDo: true,
       origin: "user_created",
       originatingNoteId: "00000000-0000-4000-8000-000000000001",
@@ -135,6 +137,7 @@ describe("reopenTask", () => {
       completedAt: null,
       dueOn: "2026-10-10",
       plannedOn: "2026-10-07",
+      plannedLocal: null,
       mustDo: true,
       origin: "user_created" as const,
       originatingNoteId: "00000000-0000-4000-8000-000000000001",
@@ -153,9 +156,13 @@ describe("reopenTask", () => {
     const complete = source.slice(source.indexOf("export async function completeTask"), source.indexOf("export async function reopenTask"));
     const reopen = source.slice(source.indexOf("export async function reopenTask"));
     expect(complete).toContain("toCompletionUpdate");
-    expect(complete).not.toMatch(/establishActiveThread|active_threads|planned_on|must_do|due_on|context_id|title/);
+    expect(complete).not.toMatch(
+      /establishActiveThread|active_threads|planned_on|planned_local|must_do|due_on|context_id|title/,
+    );
     expect(reopen).toContain("toReopenUpdate");
-    expect(reopen).not.toMatch(/establishActiveThread|active_threads|planned_on|must_do|due_on|context_id|title|toCompletionUpdate/);
+    expect(reopen).not.toMatch(
+      /establishActiveThread|active_threads|planned_on|planned_local|must_do|due_on|context_id|title|toCompletionUpdate/,
+    );
     expect(source.indexOf("export async function updateTask")).toBeLessThan(source.indexOf("export async function completeTask"));
     void completeTask;
     void updateTask;

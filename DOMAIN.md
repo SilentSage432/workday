@@ -167,7 +167,7 @@ These facts stay independent. Planned is not due. A Task may be due Thursday and
 
 Today is not a Task type. It means this open Task is deliberately planned for the user's current civil day: `plannedOn` equals that date. It is not every unresolved Task, and it is not the Timeline. Due, Must Do, and Active Thread stay independent of it. See [PRODUCT.md](PRODUCT.md).
 
-MUST DO is `mustDo` true or false. The user sets it. It is not Priority, not a priority score, not a task state, and not a separate bucket. While set, the Task stays prominent until the user completes, reschedules, or removes it. DATA-001 stores that flag, a civil due date, a separate civil planned day, and a completion instant. A time-of-day due instant is not stored. See [docs/data/DATA-001.md](docs/data/DATA-001.md).
+MUST DO is `mustDo` true or false. The user sets it. It is not Priority, not a priority score, not a task state, and not a separate bucket. While set, the Task stays prominent until the user completes, reschedules, or removes it. DATA-001 stores that flag, a civil due date, a separate civil planned day, an optional local planned clock on that day, and a completion instant. The planned clock is intention to do or start the Task at that local time. It is not duration, Block territory, a due instant, or a reminder. A time-of-day due instant is not stored. See [docs/data/DATA-001.md](docs/data/DATA-001.md) and [docs/implementation/TASK-CLOCK-POINT-001.md](docs/implementation/TASK-CLOCK-POINT-001.md).
 
 Known operations include add, edit, complete, remove, reschedule, and carry forward.
 

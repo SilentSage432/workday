@@ -47,6 +47,7 @@ const open: Task = {
   completedAt: null,
   dueOn: null,
   plannedOn: null,
+  plannedLocal: null,
   mustDo: false,
   origin: "user_created",
   originatingNoteId: null,
