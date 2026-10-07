@@ -51,6 +51,7 @@ import { WorkScheduleOperation, type WorkScheduleDismiss } from "@/components/or
 import {
   ActSurface,
   AddChooser,
+  AllDayEstablishmentSurface,
   CaptureSurface,
   DirectNoteSurface,
   DirectTaskSurface,
@@ -84,6 +85,7 @@ type Surface =
   | { kind: "act" }
   | { kind: "create-task" }
   | { kind: "create-note" }
+  | { kind: "create-all-day" }
   | { kind: "capture" }
   | { kind: "thread" }
   | { kind: "facts"; facts: FactAddress[]; chosen: FactAddress | null; proposal: TemporalProposal | null }
@@ -814,6 +816,7 @@ export function OrientView({
         onRefer={referTo}
         onThread={(event) => openFrom(event, { kind: "thread" })}
         onExact={enterExact}
+        onAllDay={() => guardWork(() => setSurface({ kind: "create-all-day" }))}
       />
     );
   } else if ((question === "present" || question === "day") && temporalFailure) {
@@ -985,7 +988,10 @@ export function OrientView({
               data-add-control="true"
               aria-label="Add"
               aria-expanded={
-                surface.kind === "add" || surface.kind === "create-task" || surface.kind === "create-note"
+                surface.kind === "add" ||
+                surface.kind === "create-task" ||
+                surface.kind === "create-note" ||
+                surface.kind === "create-all-day"
               }
               onClick={(event) => openFrom(event, surface.kind === "add" ? { kind: "none" } : { kind: "add" })}
             >
@@ -1159,6 +1165,7 @@ export function OrientView({
               onTask={() => setSurface({ kind: "create-task" })}
               onNote={() => setSurface({ kind: "create-note" })}
               onTimeOnTheDay={routeTimeOnTheDay}
+              onAllDay={() => setSurface({ kind: "create-all-day" })}
               onWorkSchedule={() => {
                 const today = todayCivil();
                 if (!today) return;
@@ -1184,6 +1191,16 @@ export function OrientView({
             <DirectTaskSurface contexts={contexts} onChanged={actions.onTasksChanged} onClose={closeSurface} />
           ) : null}
           {surface.kind === "create-note" ? <DirectNoteSurface onClose={closeSurface} /> : null}
+          {surface.kind === "create-all-day" ? (
+            <AllDayEstablishmentSurface
+              startsOn={anchor}
+              contexts={contexts}
+              onEstablish={async (establishment) => {
+                await actions.onEstablish(establishment);
+              }}
+              onClose={closeSurface}
+            />
+          ) : null}
           {surface.kind === "capture" ? (
             <CaptureSurface capture={capture} onChanged={actions.onTasksChanged} onClose={closeSurface} />
           ) : null}

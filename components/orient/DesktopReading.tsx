@@ -39,6 +39,7 @@ export function DesktopReading({
   onRefer,
   onThread,
   onExact,
+  onAllDay,
 }: {
   question: Extract<OrientQuestion, "present" | "day">;
   timeZone: string;
@@ -53,6 +54,7 @@ export function DesktopReading({
   onRefer: (facts: FactAddress[]) => void;
   onThread: (event: { currentTarget: HTMLElement }) => void;
   onExact: (minute: number | null) => void;
+  onAllDay: () => void;
 }) {
   const clock = zonedLocalClock(now, timeZone);
   const nowLabel = formatLocalTimeLabel(`${String(clock.hour).padStart(2, "0")}:${String(clock.minute).padStart(2, "0")}`);
@@ -204,9 +206,14 @@ export function DesktopReading({
       </div>
 
       {question === "present" ? (
-        <button type="button" className="orient-desktop-exact" data-exact-time="true" data-present-precision="true" onClick={() => onExact(null)}>
-          Exact time
-        </button>
+        <div className="orient-desktop-exact-row" data-region="reach">
+          <button type="button" className="orient-desktop-exact" data-exact-time="true" data-present-precision="true" onClick={() => onExact(null)}>
+            Exact time
+          </button>
+          <button type="button" className="orient-desktop-exact" data-all-day-establish="true" onClick={onAllDay}>
+            All day
+          </button>
+        </div>
       ) : (
         <div className="orient-desktop-field" data-signature-role="structure">
           <DesktopSignature
@@ -221,6 +228,9 @@ export function DesktopReading({
           <div className="orient-desktop-exact-row" data-region="reach">
             <button type="button" className="orient-desktop-exact" data-exact-time="true" onClick={() => onExact(null)}>
               Exact time
+            </button>
+            <button type="button" className="orient-desktop-exact" data-all-day-establish="true" onClick={onAllDay}>
+              All day
             </button>
           </div>
         </div>

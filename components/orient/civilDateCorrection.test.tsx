@@ -605,23 +605,45 @@ describe("timed fact civil-date correction", () => {
     expect(view.querySelector("[data-phone-reading]")?.getAttribute("data-phone-reading")).toBe("true");
   });
 
-  it("does not give an all-day fact this edit", async () => {
-    const { view } = await renderHost({
-      seed: sources({
-        blocks: ready([
-          {
-            ...defineBlock({ kind: "all_day", startsOn: ANCHOR, purpose: "Family day", contextId: null, taskId: null }),
-            id: BLOCK_ID,
-            createdAt: CREATED_AT,
-          },
-        ]),
-      }),
+  it("corrects an all-day fact civil date on the same id without inventing clocks", async () => {
+    const original = {
+      ...defineBlock({ kind: "all_day", startsOn: ANCHOR, purpose: "Family day", contextId: null, taskId: null }),
+      id: BLOCK_ID,
+      createdAt: CREATED_AT,
+    };
+    const { view, anchors, updates } = await renderHost({
+      seed: sources({ blocks: ready([original]) }),
+      apply: (update, current) => {
+        if (update.meaning !== "block" || update.input.kind !== "all_day") return current;
+        return {
+          ...current,
+          blocks: ready([{ ...defineBlock(update.input), id: update.id, createdAt: CREATED_AT }]),
+        };
+      },
     });
     await openFact(view, "block");
-    expect(view.querySelector("[data-fact-inspection]")).not.toBeNull();
-    expect(view.querySelector('[aria-label="Fact date"]')).toBeNull();
-    expect([...view.querySelectorAll("button")].some((item) => item.textContent?.trim() === "Edit")).toBe(false);
+    expect(view.querySelector("[data-fact-inspection]")?.getAttribute("data-fact-kind")).toBe("all-day");
+    expect(buttonNamed(view, "Edit")).toBeTruthy();
     expect(buttonNamed(view, "Delete this fact")).toBeTruthy();
+    await act(async () => {
+      buttonNamed(view, "Edit").click();
+    });
+    expect(view.querySelector('[data-fact-edit="all-day"]')).not.toBeNull();
+    expect(view.querySelector('[aria-label="Fact start"]')).toBeNull();
+    expect(view.querySelector('[aria-label="Fact end"]')).toBeNull();
+    await setControl(dateInput(view), "2026-10-08");
+    await act(async () => {
+      buttonNamed(view, "Save").click();
+    });
+    expect(updates).toHaveLength(1);
+    expect(updates[0]).toMatchObject({
+      id: BLOCK_ID,
+      meaning: "block",
+      input: { kind: "all_day", startsOn: "2026-10-08", purpose: "Family day" },
+    });
+    expect(updates[0]?.input).not.toHaveProperty("startLocal");
+    expect(updates[0]?.input).not.toHaveProperty("endLocal");
+    expect(anchors).toEqual([]);
   });
 
   it("does not attach the date field to a work shift", async () => {

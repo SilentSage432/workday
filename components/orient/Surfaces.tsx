@@ -4,7 +4,9 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   establishmentBlocked,
+  establishAllDay,
   establishFromSelection,
+  updateFromAllDayStored,
   updateFromStored,
   type CanvasEstablishment,
   type CanvasFactRemoval,
@@ -19,9 +21,13 @@ import {
   reduceSelection,
   selectionClockSentence,
   selectionLocalClock,
+  type IntendedMeaning,
   type SelectionSession,
   type TimeSelection,
 } from "@/components/daySelection";
+import type { Block } from "@/domain/block";
+import type { Commitment } from "@/domain/commitment";
+import type { ProtectedTime } from "@/domain/protectedTime";
 import { localMinutes, parseLocalTime } from "@/domain/time/localTime";
 import type { FactAddress } from "@/components/factAddress";
 import type { TemporalProposal } from "@/components/orient/temporalProposal";
@@ -444,6 +450,59 @@ export function InspectionSurface({
   );
 }
 
+type AllDayEditable = {
+  meaning: "protected_time" | "block" | "commitment";
+  startsOn: string;
+  label: string;
+  purpose: string;
+  contextId: string;
+  title: string;
+  taskId: string | null;
+};
+
+function allDayEditableFromSources(fact: FactAddress, services: OrientSources): AllDayEditable | null {
+  if (fact.sourceKind === "protected_time" && services.protectedTime.status === "ready") {
+    const row = services.protectedTime.rows.find((entry: ProtectedTime) => entry.id === fact.sourceId);
+    if (row?.kind !== "all_day") return null;
+    return {
+      meaning: "protected_time",
+      startsOn: row.startsOn,
+      label: row.label ?? "",
+      purpose: "",
+      contextId: "",
+      title: "",
+      taskId: null,
+    };
+  }
+  if (fact.sourceKind === "block" && services.blocks.status === "ready") {
+    const row = services.blocks.rows.find((entry: Block) => entry.id === fact.sourceId);
+    if (row?.kind !== "all_day") return null;
+    return {
+      meaning: "block",
+      startsOn: row.startsOn,
+      label: "",
+      purpose: row.purpose,
+      contextId: row.contextId ?? "",
+      title: "",
+      taskId: row.taskId,
+    };
+  }
+  if (fact.sourceKind === "commitment" && services.commitments.status === "ready") {
+    const row = services.commitments.rows.find((entry: Commitment) => entry.id === fact.sourceId);
+    if (row?.kind !== "all_day") return null;
+    return {
+      meaning: "commitment",
+      startsOn: row.startsOn,
+      label: "",
+      purpose: "",
+      contextId: "",
+      title: row.title,
+      taskId: null,
+    };
+  }
+  return null;
+}
+
 function FactDetail({
   fact,
   proposal,
@@ -472,20 +531,32 @@ function FactDetail({
   const copy = describe(models, fact);
   const stored = copy.stored;
   const timedStored = stored && "startLocal" in stored ? stored : null;
+  const allDay = timedStored ? null : allDayEditableFromSources(fact, services);
+  const editable = timedStored !== null || allDay !== null;
   const opening = proposal && timedStored ? proposal : null;
   const [editing, setEditing] = useState(opening !== null);
   const [armed, setArmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [dateDraft, setDateDraft] = useState(opening?.startsOn ?? stored?.startsOn ?? "");
+  const [dateDraft, setDateDraft] = useState(opening?.startsOn ?? stored?.startsOn ?? allDay?.startsOn ?? "");
   const [startDraft, setStartDraft] = useState(opening?.startLocal ?? timedStored?.startLocal ?? "");
   const [endDraft, setEndDraft] = useState(opening?.endLocal ?? timedStored?.endLocal ?? "");
-  const [label, setLabel] = useState(stored?.sourceKind === "protected_time" ? (stored.label ?? "") : "");
-  const [purpose, setPurpose] = useState(stored?.sourceKind === "block" ? stored.purpose : "");
-  const [contextId, setContextId] = useState(stored?.sourceKind === "block" ? (stored.contextId ?? "") : "");
-  const [title, setTitle] = useState(stored?.sourceKind === "commitment" ? stored.title : "");
-  const [taskId, setTaskId] = useState(stored?.sourceKind === "block" ? (stored.taskId ?? "") : "");
+  const [label, setLabel] = useState(
+    stored?.sourceKind === "protected_time" ? (stored.label ?? "") : (allDay?.meaning === "protected_time" ? allDay.label : ""),
+  );
+  const [purpose, setPurpose] = useState(stored?.sourceKind === "block" ? stored.purpose : (allDay?.meaning === "block" ? allDay.purpose : ""));
+  const [contextId, setContextId] = useState(
+    stored?.sourceKind === "block" ? (stored.contextId ?? "") : (allDay?.meaning === "block" ? allDay.contextId : ""),
+  );
+  const [title, setTitle] = useState(
+    stored?.sourceKind === "commitment" ? stored.title : (allDay?.meaning === "commitment" ? allDay.title : ""),
+  );
+  const [taskId, setTaskId] = useState(
+    stored?.sourceKind === "block" ? (stored.taskId ?? "") : (allDay?.meaning === "block" ? (allDay.taskId ?? "") : ""),
+  );
   const removable = fact.sourceKind === "protected_time" || fact.sourceKind === "block" || fact.sourceKind === "commitment";
+  const editMeaning = timedStored?.sourceKind ?? allDay?.meaning ?? null;
+  const blockTaskId = timedStored?.sourceKind === "block" ? timedStored.taskId : allDay?.meaning === "block" ? allDay.taskId : null;
 
   useEffect(() => {
     if (copy.found) return;
@@ -493,33 +564,49 @@ function FactDetail({
   }, [copy.found, onClose]);
 
   async function save() {
-    if (!stored || saving) return;
+    if (!editMeaning || saving) return;
     setSaving(true);
     setError(null);
     try {
-      const startMinute = localMinutes(parseLocalTime(startDraft));
-      const endMinute = localMinutes(parseLocalTime(endDraft));
-      const update = updateFromStored({
-        id: fact.sourceId,
-        startsOn: dateDraft,
-        meaning: stored.sourceKind,
-        startMinute,
-        endMinute,
-        clock: selectionLocalClock(
-          {
-            civilDate: dateDraft,
-            startMinute,
-            endMinute,
-          },
-          timeZone,
-        ),
-        label,
-        purpose,
-        contextId,
-        title,
-        taskId: taskId.length > 0 ? taskId : null,
-      });
-      await onUpdate(update);
+      if (allDay) {
+        const update = updateFromAllDayStored({
+          id: fact.sourceId,
+          startsOn: dateDraft,
+          meaning: editMeaning,
+          label,
+          purpose,
+          contextId,
+          title,
+          taskId: taskId.length > 0 ? taskId : null,
+        });
+        await onUpdate(update);
+      } else if (timedStored) {
+        const startMinute = localMinutes(parseLocalTime(startDraft));
+        const endMinute = localMinutes(parseLocalTime(endDraft));
+        const update = updateFromStored({
+          id: fact.sourceId,
+          startsOn: dateDraft,
+          meaning: timedStored.sourceKind,
+          startMinute,
+          endMinute,
+          clock: selectionLocalClock(
+            {
+              civilDate: dateDraft,
+              startMinute,
+              endMinute,
+            },
+            timeZone,
+          ),
+          label,
+          purpose,
+          contextId,
+          title,
+          taskId: taskId.length > 0 ? taskId : null,
+        });
+        await onUpdate(update);
+      } else {
+        return;
+      }
       setEditing(false);
     } catch (caught: unknown) {
       setError(failureMessage(caught, "The write did not happen."));
@@ -544,21 +631,19 @@ function FactDetail({
   if (!copy.found) return null;
 
   const taskTitle =
-    stored?.sourceKind === "block" && stored.taskId
+    blockTaskId
       ? openTasks.status === "ready"
-        ? (openTasks.rows.find((task) => task.id === stored.taskId)?.title ?? null)
+        ? (openTasks.rows.find((task) => task.id === blockTaskId)?.title ?? null)
         : null
       : null;
 
   return (
-    <div data-fact-inspection="true">
+    <div data-fact-inspection="true" data-fact-kind={allDay ? "all-day" : timedStored ? "timed" : "other"}>
       <h2>{copy.kindLabel}</h2>
       {copy.primary ? <p>{copy.primary}</p> : null}
       <p>{copy.interval}</p>
       {copy.contextName ? <p>{copy.contextName}</p> : null}
-      {stored?.sourceKind === "block" && stored.taskId ? (
-        <p>{taskTitle ? `Cites task · ${taskTitle}` : "Cites a task."}</p>
-      ) : null}
+      {blockTaskId ? <p>{taskTitle ? `Cites task · ${taskTitle}` : "Cites a task."}</p> : null}
       {serviceLines(fact, services).map((line) => (
         <p key={line}>{line}</p>
       ))}
@@ -569,27 +654,31 @@ function FactDetail({
           </button>
         </p>
       ) : null}
-      {editing && stored ? (
-        <div>
+      {editing && editMeaning ? (
+        <div data-fact-edit={allDay ? "all-day" : "timed"}>
           <label className="orient-note">
             Date
             <input type="date" aria-label="Fact date" value={dateDraft} onChange={(event) => setDateDraft(event.target.value)} />
           </label>
-          <label className="orient-note">
-            Start
-            <input aria-label="Fact start" value={startDraft} onChange={(event) => setStartDraft(event.target.value)} />
-          </label>
-          <label className="orient-note">
-            End
-            <input aria-label="Fact end" value={endDraft} onChange={(event) => setEndDraft(event.target.value)} />
-          </label>
-          {stored.sourceKind === "protected_time" ? (
+          {timedStored ? (
+            <>
+              <label className="orient-note">
+                Start
+                <input aria-label="Fact start" value={startDraft} onChange={(event) => setStartDraft(event.target.value)} />
+              </label>
+              <label className="orient-note">
+                End
+                <input aria-label="Fact end" value={endDraft} onChange={(event) => setEndDraft(event.target.value)} />
+              </label>
+            </>
+          ) : null}
+          {editMeaning === "protected_time" ? (
             <label className="orient-note">
               Label
               <input value={label} onChange={(event) => setLabel(event.target.value)} />
             </label>
           ) : null}
-          {stored.sourceKind === "block" ? (
+          {editMeaning === "block" ? (
             <>
               <label className="orient-note">
                 Purpose
@@ -599,7 +688,7 @@ function FactDetail({
               <TaskSelect tasks={openTasks} value={taskId} onChange={setTaskId} />
             </>
           ) : null}
-          {stored.sourceKind === "commitment" ? (
+          {editMeaning === "commitment" ? (
             <label className="orient-note">
               Commitment
               <input value={title} onChange={(event) => setTitle(event.target.value)} />
@@ -612,7 +701,7 @@ function FactDetail({
       ) : null}
       {error ? <p role="alert">{error}</p> : null}
       <div className="orient-actions">
-        {stored && !editing ? (
+        {editable && !editing ? (
           <button type="button" className="orient-action" onClick={() => setEditing(true)}>
             Edit
           </button>
@@ -800,12 +889,14 @@ export function AddChooser({
   onTask,
   onNote,
   onTimeOnTheDay,
+  onAllDay,
   onWorkSchedule,
   onClose,
 }: {
   onTask: () => void;
   onNote: () => void;
   onTimeOnTheDay: () => void;
+  onAllDay: () => void;
   onWorkSchedule?: () => void;
   onClose: () => void;
 }) {
@@ -822,11 +913,128 @@ export function AddChooser({
         <button type="button" className="orient-action" data-add-choice="time-on-the-day" onClick={onTimeOnTheDay}>
           Time on the day
         </button>
+        <button type="button" className="orient-action" data-add-choice="all-day" onClick={onAllDay}>
+          All day
+        </button>
         {onWorkSchedule ? (
           <button type="button" className="orient-action" data-add-choice="work" onClick={onWorkSchedule}>
             Work schedule
           </button>
         ) : null}
+        <button type="button" className="orient-action" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Explicit all-day establishment. Timed vs all-day is already decided by the opener.
+ * The human still chooses which sovereign type to establish.
+ */
+export function AllDayEstablishmentSurface({
+  startsOn,
+  contexts,
+  onEstablish,
+  onClose,
+}: {
+  startsOn: string;
+  contexts: SourceRead<Context>;
+  onEstablish: (establishment: CanvasEstablishment) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [dateDraft, setDateDraft] = useState(startsOn);
+  const [meaning, setMeaning] = useState<IntendedMeaning | null>(null);
+  const [label, setLabel] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [contextId, setContextId] = useState("");
+  const [title, setTitle] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const canSave =
+    meaning !== null &&
+    dateDraft.trim().length > 0 &&
+    (meaning === "protected_time" ||
+      (meaning === "block" && purpose.trim().length > 0) ||
+      (meaning === "commitment" && title.trim().length > 0));
+
+  async function save() {
+    if (!meaning || !canSave || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const establishment = establishAllDay({
+        startsOn: dateDraft,
+        meaning,
+        label,
+        purpose,
+        contextId,
+        title,
+        taskId: null,
+      });
+      await onEstablish(establishment);
+      onClose();
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "The write did not happen."));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div data-all-day-establishment="true">
+      <h2>All day</h2>
+      <p>Establishes a fact for the whole civil date. No clock times.</p>
+      <label className="orient-note">
+        Date
+        <input
+          type="date"
+          aria-label="All-day date"
+          value={dateDraft}
+          onChange={(event) => setDateDraft(event.target.value)}
+        />
+      </label>
+      <div className="orient-actions" role="group" aria-label="All-day fact type">
+        {INTENDED_MEANINGS.map((item) => (
+          <button
+            key={item.meaning}
+            type="button"
+            className="orient-action"
+            data-all-day-meaning={item.meaning}
+            aria-pressed={meaning === item.meaning}
+            onClick={() => setMeaning(item.meaning)}
+          >
+            {item.title}
+          </button>
+        ))}
+      </div>
+      {meaning === "protected_time" ? (
+        <label className="orient-note">
+          Label
+          <input aria-label="Protected time label" value={label} onChange={(event) => setLabel(event.target.value)} />
+        </label>
+      ) : null}
+      {meaning === "block" ? (
+        <>
+          <label className="orient-note">
+            Purpose
+            <input aria-label="Block purpose" value={purpose} onChange={(event) => setPurpose(event.target.value)} />
+          </label>
+          <ContextSelect contexts={contexts} value={contextId} onChange={setContextId} />
+        </>
+      ) : null}
+      {meaning === "commitment" ? (
+        <label className="orient-note">
+          Commitment
+          <input aria-label="Commitment title" value={title} onChange={(event) => setTitle(event.target.value)} />
+        </label>
+      ) : null}
+      {error ? <p role="alert">{error}</p> : null}
+      <div className="orient-actions">
+        <button type="button" className="orient-action" data-emphasis="save" disabled={!canSave || saving} onClick={() => void save()}>
+          Establish
+        </button>
         <button type="button" className="orient-action" onClick={onClose}>
           Close
         </button>

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { establishFromSelection, establishmentBlocked, updateFromStored } from "@/components/canvasEstablishment";
+import {
+  establishAllDay,
+  establishFromSelection,
+  establishmentBlocked,
+  updateFromAllDayStored,
+  updateFromStored,
+} from "@/components/canvasEstablishment";
 
 const TASK_ID = "00000000-0000-4000-8000-000000000010";
 
@@ -131,6 +137,92 @@ describe("canvas establishment", () => {
       id: "school",
       meaning: "commitment",
       input: { kind: "timed", startsOn: "2026-10-08", title: "School", origin: "user_created", startLocal: "16:45", endLocal: "17:15" },
+    });
+  });
+
+  it("builds all-day inputs without inventing clocks", () => {
+    expect(
+      establishAllDay({
+        startsOn: "2026-10-03",
+        meaning: "protected_time",
+        label: "Family",
+        purpose: "",
+        contextId: "",
+        title: "",
+      }),
+    ).toEqual({
+      meaning: "protected_time",
+      input: { kind: "all_day", startsOn: "2026-10-03", label: "Family" },
+    });
+    expect(
+      establishAllDay({
+        startsOn: "2026-10-03",
+        meaning: "block",
+        label: "",
+        purpose: "Family day",
+        contextId: "",
+        title: "",
+      }),
+    ).toMatchObject({
+      meaning: "block",
+      input: { kind: "all_day", startsOn: "2026-10-03", purpose: "Family day", contextId: null, taskId: null },
+    });
+    expect(
+      establishAllDay({
+        startsOn: "2026-10-03",
+        meaning: "commitment",
+        label: "",
+        purpose: "",
+        contextId: "",
+        title: "Holiday",
+      }),
+    ).toMatchObject({
+      meaning: "commitment",
+      input: { kind: "all_day", startsOn: "2026-10-03", title: "Holiday", origin: "user_created" },
+    });
+    expect(() =>
+      establishAllDay({
+        startsOn: "",
+        meaning: "protected_time",
+        label: "",
+        purpose: "",
+        contextId: "",
+        title: "",
+      }),
+    ).toThrow(/date/i);
+  });
+
+  it("corrects all-day facts on the same id without inventing clocks", () => {
+    expect(
+      updateFromAllDayStored({
+        id: "protect",
+        startsOn: "2026-10-08",
+        meaning: "protected_time",
+        label: "Quiet",
+        purpose: "",
+        contextId: "",
+        title: "",
+      }),
+    ).toEqual({
+      id: "protect",
+      meaning: "protected_time",
+      input: { kind: "all_day", startsOn: "2026-10-08", label: "Quiet" },
+    });
+    expect(
+      updateFromAllDayStored({
+        id: "studio",
+        startsOn: "2026-10-09",
+        meaning: "block",
+        label: "",
+        purpose: "Focus",
+        contextId: "ctx-1",
+        title: "",
+        taskId: TASK_ID,
+      }),
+    ).toMatchObject({
+      id: "studio",
+      meaning: "block",
+      input: { kind: "all_day", startsOn: "2026-10-09", purpose: "Focus", contextId: "ctx-1", taskId: TASK_ID },
     });
   });
 });

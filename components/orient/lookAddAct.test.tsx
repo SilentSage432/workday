@@ -285,7 +285,8 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     });
     const chooser = view.querySelector("[data-add-chooser]");
     expect(chooser?.textContent).toContain("What are you adding?");
-    expect(chooser?.textContent).not.toMatch(/all-?day/i);
+    expect(chooser?.textContent).toContain("All day");
+    expect(chooser?.textContent).toContain("Time on the day");
     expect(chooser?.textContent).not.toMatch(/Destination|Priority/i);
     await act(async () => {
       (view.querySelector('[data-add-choice="task"]') as HTMLButtonElement).click();
@@ -315,6 +316,14 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     });
     expect(view.querySelector("[data-depth]")?.getAttribute("data-depth")).toBe("exact");
     expect(view.querySelector("[data-orientation-return]")).not.toBeNull();
+    await act(async () => {
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector('[data-add-choice="all-day"]') as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-all-day-establishment]")).not.toBeNull();
+    expect(view.querySelector("[data-all-day-establishment]")?.textContent).toMatch(/No clock times/i);
   });
 
   it("LOOK dismisses from header close without an inline Close row in semantic content", async () => {

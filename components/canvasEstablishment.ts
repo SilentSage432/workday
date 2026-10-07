@@ -144,3 +144,69 @@ export function updateFromStored(input: {
     input: defineCommitment({ ...bounds, title: input.title }),
   };
 }
+
+/**
+ * Builds an all-day fact from an explicit all-day establishment act.
+ * No clock values are invented. Callers must already have chosen all-day.
+ */
+export function establishAllDay(input: {
+  startsOn: string;
+  meaning: IntendedMeaning;
+  label: string;
+  purpose: string;
+  contextId: string;
+  title: string;
+  taskId?: string | null;
+}): CanvasEstablishment {
+  const startsOn = input.startsOn.trim();
+  if (startsOn.length === 0) {
+    throw new Error("Choose a date.");
+  }
+  const bounds = { kind: "all_day" as const, startsOn };
+  if (input.meaning === "protected_time") {
+    return {
+      meaning: "protected_time",
+      input: defineProtectedTime({ ...bounds, label: input.label }),
+    };
+  }
+  if (input.meaning === "block") {
+    return {
+      meaning: "block",
+      input: defineBlock({
+        ...bounds,
+        purpose: input.purpose,
+        contextId: input.contextId.trim().length === 0 ? null : input.contextId,
+        taskId: input.taskId,
+      }),
+    };
+  }
+  return {
+    meaning: "commitment",
+    input: defineCommitment({ ...bounds, title: input.title }),
+  };
+}
+
+/**
+ * Same-id all-day correction. Kind stays all_day. No clocks are invented.
+ */
+export function updateFromAllDayStored(input: {
+  id: string;
+  startsOn: string;
+  meaning: CanvasFactRemoval["meaning"];
+  label: string;
+  purpose: string;
+  contextId: string;
+  title: string;
+  taskId?: string | null;
+}): CanvasFactUpdate {
+  const established = establishAllDay({
+    startsOn: input.startsOn,
+    meaning: input.meaning,
+    label: input.label,
+    purpose: input.purpose,
+    contextId: input.contextId,
+    title: input.title,
+    taskId: input.taskId,
+  });
+  return { id: input.id, ...established };
+}
