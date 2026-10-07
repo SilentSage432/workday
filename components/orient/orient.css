@@ -2157,6 +2157,39 @@ button.orient-fact {
   outline-offset: 2px;
 }
 
+.orient-dtm-probe {
+  position: fixed;
+  z-index: 40;
+  top: 0.4rem;
+  right: 0.4rem;
+  width: 15rem;
+  margin: 0;
+  padding: 0.35rem 0.45rem 0.4rem;
+  border: 1px solid rgb(244 239 230 / 0.16);
+  border-radius: 0.4rem;
+  background: rgb(16 20 28 / 0.92);
+  color: var(--orient-faint);
+  font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
+  pointer-events: none;
+}
+
+.orient-dtm-probe pre {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.orient-dtm-probe button {
+  pointer-events: auto;
+  margin-top: 0.3rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid rgb(244 239 230 / 0.22);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--orient-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
 @media (min-width: 960px) {
   .orient[data-form="desktop"] {
     grid-template-areas:

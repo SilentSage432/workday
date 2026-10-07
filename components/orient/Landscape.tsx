@@ -57,6 +57,8 @@ export function Landscape({
   onShift,
   onPropose,
   directManipulation = false,
+  probeDetailOpen = false,
+  onProbeDetailClear,
   today,
   offFor,
 }: {
@@ -69,6 +71,9 @@ export function Landscape({
   onShift: (days: number) => void;
   onPropose?: (fact: FactAddress, proposal: TemporalProposal) => void;
   directManipulation?: boolean;
+  /** Temporary Desktop Week probe. True only after a proposal has opened FactDetail. */
+  probeDetailOpen?: boolean;
+  onProbeDetailClear?: () => void;
   today: string | null;
   offFor: (civilDate: string) => boolean;
 }) {
@@ -78,7 +83,106 @@ export function Landscape({
   const suppressClick = useRef(false);
   const suppressTimer = useRef<number | null>(null);
   const [lifted, setLifted] = useState<LiftPaint | null>(null);
+  const [probe, setProbe] = useState<DtmProbe>(emptyProbe);
+  const origin = useRef<{ x: number; y: number } | null>(null);
   const cancelRef = useRef<(paint: boolean) => void>(() => {});
+  const probing = words && directManipulation;
+
+  function describeTarget(target: Element): string {
+    const classes = [...target.classList].slice(0, 4).join(".");
+    return classes ? `${target.tagName.toLowerCase()}.${classes}` : target.tagName.toLowerCase();
+  }
+
+  function provisionalNodeMounted(): boolean {
+    return Boolean(daysRef.current?.querySelector("[data-provisional]"));
+  }
+
+  function noteDown(event: ReactPointerEvent<HTMLDivElement>, eligible: boolean, pending: boolean) {
+    if (!probing) return;
+    origin.current = { x: event.clientX, y: event.clientY };
+    const target = event.target instanceof Element ? describeTarget(event.target) : "non-element";
+    setProbe({
+      ...emptyProbe(),
+      down: true,
+      target,
+      pointerId: String(event.pointerId),
+      pointerType: event.pointerType || "—",
+      eligible,
+      pending,
+    });
+    onProbeDetailClear?.();
+  }
+
+  function noteMove(
+    event: ReactPointerEvent<HTMLDivElement>,
+    phase: string,
+    math: { dx: number; dy: number; panHalf: boolean; jitter: boolean; vertical: boolean } | null,
+  ) {
+    if (!probing) return;
+    const from = origin.current;
+    const dx = math ? math.dx : from ? event.clientX - from.x : null;
+    const dy = math ? math.dy : from ? event.clientY - from.y : null;
+    setProbe((prev) => ({
+      ...prev,
+      moves: prev.moves + 1,
+      dx: dx === null ? prev.dx : dx.toFixed(1),
+      dy: dy === null ? prev.dy : dy.toFixed(1),
+      total: dx === null || dy === null ? prev.total : Math.hypot(dx, dy).toFixed(1),
+      pendingAtMove: phase === "pending",
+      panHalf: math ? math.panHalf : prev.panHalf,
+      jitter: math ? math.jitter : prev.jitter,
+      vertical: math ? math.vertical : prev.vertical,
+      qualified: math ? math.jitter && math.vertical && !math.panHalf : prev.qualified,
+    }));
+  }
+
+  function noteLift(threw: boolean, hasCapture: boolean, proposalInitialized: boolean) {
+    if (!probing) return;
+    setProbe((prev) => ({
+      ...prev,
+      lift: true,
+      captureTry: true,
+      captureThrew: threw,
+      captured: hasCapture,
+      proposalInit: proposalInitialized,
+    }));
+  }
+
+  function noteLost(state: string) {
+    if (!probing) return;
+    const mounted = provisionalNodeMounted();
+    setProbe((prev) => ({ ...prev, lost: true, lostState: state, provisional: prev.provisional || mounted }));
+  }
+
+  function noteCancel(state: string) {
+    if (!probing) return;
+    const mounted = provisionalNodeMounted();
+    setProbe((prev) => ({ ...prev, cancel: true, cancelState: state, provisional: prev.provisional || mounted }));
+  }
+
+  function noteUp(state: string, column: boolean, emitted: boolean) {
+    if (!probing) return;
+    const mounted = provisionalNodeMounted();
+    setProbe((prev) => ({
+      ...prev,
+      up: true,
+      upState: state,
+      column,
+      proposal: emitted,
+      provisional: prev.provisional || mounted,
+    }));
+  }
+
+  function latchProvisional() {
+    if (!probing || !provisionalNodeMounted()) return;
+    setProbe((prev) => (prev.provisional ? prev : { ...prev, provisional: true }));
+  }
+
+  function resetProbe() {
+    origin.current = null;
+    setProbe(emptyProbe());
+    onProbeDetailClear?.();
+  }
 
   function rememberClickSuppression() {
     suppressClick.current = true;
@@ -106,7 +210,10 @@ export function Landscape({
       releaseCapture(current);
       rememberClickSuppression();
     }
-    if (paint) setLifted(null);
+    if (paint) {
+      latchProvisional();
+      setLifted(null);
+    }
   }
 
   useEffect(() => {
@@ -173,18 +280,30 @@ export function Landscape({
     const eligible = words && directManipulation ? eligiblePress(event, models) : null;
     if (eligible) {
       claim.current = { phase: "pending", pointerId: event.pointerId, x: event.clientX, y: event.clientY, ...eligible };
+      noteDown(event, true, true);
       return;
     }
     claim.current = { phase: "pan", pointerId: event.pointerId, x: event.clientX };
+    noteDown(event, false, false);
   }
 
   function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
     const current = claim.current;
-    if (!current || current.pointerId !== event.pointerId || current.phase === "pan") return;
+    if (!current || current.pointerId !== event.pointerId || current.phase === "pan") {
+      noteMove(event, current?.phase ?? "none", null);
+      return;
+    }
     if (current.phase === "pending") {
       const dx = event.clientX - current.x;
       const dy = event.clientY - current.y;
       const width = event.currentTarget.clientWidth / Math.max(models.length, 1);
+      noteMove(event, "pending", {
+        dx,
+        dy,
+        panHalf: width > 0 && Math.abs(dx) >= width / 2,
+        jitter: Math.hypot(dx, dy) > WEEK_LIFT_JITTER_PX,
+        vertical: Math.abs(dy) > Math.abs(dx),
+      });
       if (width > 0 && Math.abs(dx) >= width / 2) {
         claim.current = { phase: "pan", pointerId: current.pointerId, x: current.x };
         return;
@@ -192,6 +311,7 @@ export function Landscape({
       if (Math.hypot(dx, dy) > WEEK_LIFT_JITTER_PX && Math.abs(dy) > Math.abs(dx)) beginLift(current, event);
       return;
     }
+    noteMove(event, "lifted", null);
     const proposal = proposalUnderPointer(event.currentTarget, current, event.clientX, event.clientY);
     setLifted((paint) => {
       if (!paint || sameProposal(paint.proposal, proposal)) return paint;
@@ -207,20 +327,34 @@ export function Landscape({
     } catch {
       captured = false;
     }
+    let hasCapture = false;
+    if (captured) {
+      try {
+        hasCapture = event.currentTarget.hasPointerCapture(event.pointerId);
+      } catch {
+        hasCapture = false;
+      }
+    }
     const liftedClaim: PointerClaim = { ...current, phase: "lifted", captured };
     claim.current = liftedClaim;
+    const proposal = proposalUnderPointer(event.currentTarget, current, event.clientX, event.clientY);
+    noteLift(!captured, hasCapture, proposal !== null);
     setLifted({
       sourceKind: current.sourceKind,
       sourceId: current.sourceId,
-      proposal: proposalUnderPointer(event.currentTarget, current, event.clientX, event.clientY),
+      proposal,
     });
   }
 
   function onPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
     const current = claim.current;
-    if (!current || current.pointerId !== event.pointerId) return;
+    if (!current || current.pointerId !== event.pointerId) {
+      noteUp(current?.phase ?? "none", false, false);
+      return;
+    }
     if (current.phase === "lifted") {
       const hit = columnBodyAt(event.currentTarget, event.clientX, event.clientY);
+      noteUp("lifted", hit !== null, Boolean(hit && onPropose));
       claim.current = null;
       releaseCapture(current);
       rememberClickSuppression();
@@ -237,6 +371,7 @@ export function Landscape({
       );
       return;
     }
+    noteUp(current.phase, false, false);
     claim.current = null;
     const width = event.currentTarget.clientWidth / Math.max(models.length, 1);
     if (!(width > 0)) return;
@@ -246,6 +381,7 @@ export function Landscape({
 
   function onPointerCancel(event: ReactPointerEvent<HTMLDivElement>) {
     const current = claim.current;
+    noteCancel(!current ? "none" : current.pointerId === event.pointerId ? current.phase : `${current.phase}/other-pointer`);
     if (!current || current.pointerId !== event.pointerId) return;
     if (current.phase === "lifted" || current.phase === "pending") cancelManipulation(true);
     else claim.current = null;
@@ -253,6 +389,8 @@ export function Landscape({
 
   function onLostPointerCapture(event: ReactPointerEvent<HTMLDivElement>) {
     const current = claim.current;
+    const lostState = !current ? "none" : current.pointerId !== event.pointerId ? `${current.phase}/other-pointer` : current.phase;
+    noteLost(lostState);
     if (!current || current.phase !== "lifted" || current.pointerId !== event.pointerId) return;
     claim.current = null;
     rememberClickSuppression();
@@ -272,6 +410,9 @@ export function Landscape({
 
   const timed = models.flatMap((model) => [...model.context, ...model.foreground]);
   const axis = words ? null : monthClockAxis(timed);
+  const provisionalMountedNow =
+    probing && lifted !== null && models.some((model) => provisionalSlices(lifted, model.selectedDay).length > 0);
+  const shownProbe = probing ? { ...probe, provisional: probe.provisional || provisionalMountedNow, detail: probe.detail || probeDetailOpen } : probe;
 
   return (
     <div
@@ -284,6 +425,14 @@ export function Landscape({
       role="group"
       aria-label="Temporal landscape"
     >
+      {probing ? (
+        <aside className="orient-dtm-probe" data-dtm-probe="true" aria-label="DTM probe">
+          <pre>{formatProbe(shownProbe)}</pre>
+          <button type="button" data-dtm-reset="true" onClick={resetProbe}>
+            Reset probe
+          </button>
+        </aside>
+      ) : null}
       {axis && (axis.startMinute > 0 || axis.endMinute < DAY_AXIS_MINUTES) ? (
         <p className="orient-axis" data-clock-axis="true">
           <span className="sr-only">Local clock from </span>
@@ -635,4 +784,107 @@ function clockLabel(minute: number): string {
   const hour = Math.floor(bounded / 60);
   const min = bounded % 60;
   return formatLocalTimeLabel(`${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+}
+
+/** Temporary Desktop Week readout. Local component state only. */
+type DtmProbe = {
+  down: boolean;
+  target: string;
+  pointerId: string;
+  pointerType: string;
+  eligible: boolean;
+  pending: boolean;
+  moves: number;
+  dx: string;
+  dy: string;
+  total: string;
+  pendingAtMove: boolean;
+  panHalf: boolean;
+  jitter: boolean;
+  vertical: boolean;
+  qualified: boolean;
+  lift: boolean;
+  captureTry: boolean;
+  captureThrew: boolean;
+  captured: boolean;
+  lost: boolean;
+  lostState: string;
+  cancel: boolean;
+  cancelState: string;
+  up: boolean;
+  upState: string;
+  column: boolean;
+  proposalInit: boolean;
+  proposal: boolean;
+  provisional: boolean;
+  detail: boolean;
+};
+
+function emptyProbe(): DtmProbe {
+  return {
+    down: false,
+    target: "—",
+    pointerId: "—",
+    pointerType: "—",
+    eligible: false,
+    pending: false,
+    moves: 0,
+    dx: "—",
+    dy: "—",
+    total: "—",
+    pendingAtMove: false,
+    panHalf: false,
+    jitter: false,
+    vertical: false,
+    qualified: false,
+    lift: false,
+    captureTry: false,
+    captureThrew: false,
+    captured: false,
+    lost: false,
+    lostState: "—",
+    cancel: false,
+    cancelState: "—",
+    up: false,
+    upState: "—",
+    column: false,
+    proposalInit: false,
+    proposal: false,
+    provisional: false,
+    detail: false,
+  };
+}
+
+function formatProbe(probe: DtmProbe): string {
+  const yn = (value: boolean) => (value ? "yes" : "no");
+  return [
+    "DTM probe",
+    `down ${yn(probe.down)}`,
+    `eligible ${yn(probe.eligible)}`,
+    `pending ${yn(probe.pending)}`,
+    `target ${probe.target}`,
+    `pointer ${probe.pointerId}`,
+    `type ${probe.pointerType}`,
+    `moves ${probe.moves}`,
+    `dx ${probe.dx}`,
+    `dy ${probe.dy}`,
+    `dist ${probe.total}`,
+    `pending-at-move ${yn(probe.pendingAtMove)}`,
+    `pan-half ${yn(probe.panHalf)}`,
+    `jitter ${yn(probe.jitter)}`,
+    `vertical ${yn(probe.vertical)}`,
+    `qualified ${yn(probe.qualified)}`,
+    `lift ${yn(probe.lift)}`,
+    `capture-try ${yn(probe.captureTry)}`,
+    `capture-threw ${yn(probe.captureThrew)}`,
+    `capture ${yn(probe.captured)}`,
+    `lost-capture ${yn(probe.lost)} (${probe.lostState})`,
+    `cancel ${yn(probe.cancel)} (${probe.cancelState})`,
+    `up ${yn(probe.up)} (${probe.upState})`,
+    `column ${yn(probe.column)}`,
+    `proposal-init ${yn(probe.proposalInit)}`,
+    `proposal ${yn(probe.proposal)}`,
+    `provisional ${yn(probe.provisional)}`,
+    `detail ${yn(probe.detail)}`,
+  ].join("\n");
 }
