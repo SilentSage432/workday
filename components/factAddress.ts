@@ -27,6 +27,7 @@ const SOURCE_KINDS: ReadonlySet<string> = new Set([
   "protected_time",
   "block",
   "commitment",
+  "external_temporal",
 ]);
 
 export function factAddress(sourceKind: string, sourceId: string): FactAddress | null {

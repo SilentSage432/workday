@@ -4,12 +4,28 @@ import {
   type Commitment,
   type CommitmentOrigin,
 } from "@/domain/commitment";
+import {
+  admitsExternalFactToDayWeek,
+  deriveExternalObservationFreshness,
+  externalTimedLocalGeometry,
+  type ExternalConnectionStatus,
+  type ExternalFactLifecycle,
+  type ExternalObservationFreshness,
+  type ExternalTemporalFact,
+  type ObservedTemporalSource,
+} from "@/domain/externalTemporal";
 import { timedProtectedTimeEndsNextCivilDate, type ProtectedTime } from "@/domain/protectedTime";
 import { instantFromZonedLocal, requireIanaTimeZone } from "@/domain/time/localTime";
 import { addCivilDays, formatCivilDate, parseCivilDate } from "@/domain/time/workFiscalWeek";
 import { shiftEndsNextCivilDate, type ShiftType, type WorkScheduleEntry } from "@/domain/workSchedule";
 
-export const TIMELINE_SOURCE_KINDS = ["work_schedule", "protected_time", "block", "commitment"] as const;
+export const TIMELINE_SOURCE_KINDS = [
+  "work_schedule",
+  "protected_time",
+  "block",
+  "commitment",
+  "external_temporal",
+] as const;
 
 export type TimelineSourceKind = (typeof TIMELINE_SOURCE_KINDS)[number];
 
@@ -87,11 +103,42 @@ export type CommitmentTimelineFact = {
   | TimedGeometry
 );
 
+/**
+ * Provider-owned temporal evidence on the Timeline.
+ * Provenance is retained for later UI; this is not Orient-owned truth.
+ */
+export type ExternalTemporalTimelineFact = {
+  sourceKind: "external_temporal";
+  sourceId: string;
+  observedSourceId: string;
+  sourceDisplayName: string;
+  displayLabel: string;
+  lifecycle: ExternalFactLifecycle;
+  freshness: ExternalObservationFreshness;
+  stale: boolean;
+  correctionAuthority: "external";
+  startsOn: string;
+} & (
+  | {
+      allDay: true;
+      endsBefore: string;
+      intersection: CivilTimelineInclusion;
+    }
+  | TimedGeometry
+);
+
 export type TimelineFact =
   | WorkScheduleTimelineFact
   | ProtectedTimeTimelineFact
   | BlockTimelineFact
-  | CommitmentTimelineFact;
+  | CommitmentTimelineFact
+  | ExternalTemporalTimelineFact;
+
+/** Optional source health + connection status for freshness derivation. */
+export type ExternalTemporalTimelineContext = {
+  sources: readonly ObservedTemporalSource[];
+  connectionStatusById: Readonly<Record<string, ExternalConnectionStatus>>;
+};
 
 type RangeBounds = TimelineInterval;
 
@@ -101,6 +148,7 @@ const SOURCE_KIND_TIE_BREAK: Record<TimelineSourceKind, number> = {
   protected_time: 1,
   block: 2,
   commitment: 3,
+  external_temporal: 4,
 };
 
 const UNRESOLVABLE_LOCAL_TIME = "That local time does not occur once in this time zone.";
@@ -112,6 +160,9 @@ export function projectTimeline(input: {
   protectedTime: readonly ProtectedTime[];
   blocks: readonly Block[];
   commitments: readonly Commitment[];
+  /** Distinct external evidence. Omitted or empty until a real observation path supplies it. */
+  externalTemporalFacts?: readonly ExternalTemporalFact[];
+  externalTemporalContext?: ExternalTemporalTimelineContext;
 }): TimelineFact[] {
   const timeZone = requireIanaTimeZone(input.timeZone);
   const range = requireCivilDateRange(input.range);
@@ -132,6 +183,10 @@ export function projectTimeline(input: {
   }
   for (const entry of input.commitments) {
     const fact = commitmentFact(entry, range, timeZone, rangeBounds);
+    if (fact) facts.push(fact);
+  }
+  for (const entry of input.externalTemporalFacts ?? []) {
+    const fact = externalFact(entry, range, timeZone, rangeBounds, input.externalTemporalContext);
     if (fact) facts.push(fact);
   }
 
@@ -300,8 +355,103 @@ function commitmentFact(
   };
 }
 
+function externalFact(
+  entry: ExternalTemporalFact,
+  range: CivilDateRange,
+  timeZone: string,
+  rangeBounds: RangeBounds,
+  context: ExternalTemporalTimelineContext | undefined,
+): ExternalTemporalTimelineFact | null {
+  const source = context?.sources.find((item) => item.id === entry.sourceId) ?? null;
+  const connectionStatus =
+    source === null
+      ? ("connected" as const)
+      : (context?.connectionStatusById[source.connectionId] ?? "connected");
+  const freshness = deriveExternalObservationFreshness({
+    connectionStatus,
+    source: source ?? {
+      lastAttemptResult: "success_complete",
+      lastSuccessfulObservedAt: entry.lastObservedAt,
+    },
+  });
+  if (!admitsExternalFactToDayWeek({ fact: entry, freshness })) return null;
+
+  const provenance = {
+    sourceKind: "external_temporal" as const,
+    sourceId: entry.id,
+    observedSourceId: entry.sourceId,
+    sourceDisplayName: source?.displayName ?? "External source",
+    displayLabel: entry.displayLabel,
+    lifecycle: entry.lifecycle,
+    freshness,
+    stale: freshness !== "fresh",
+    correctionAuthority: "external" as const,
+  };
+
+  if (entry.kind === "all_day") {
+    if (!civilSpanIntersectsRange(entry.startsOn, entry.endsBefore, range)) return null;
+    return {
+      ...provenance,
+      startsOn: entry.startsOn,
+      allDay: true,
+      endsBefore: entry.endsBefore,
+      intersection: { status: "civil" },
+    };
+  }
+
+  const geometry = externalTimedGeometry(entry, range, timeZone, rangeBounds);
+  if (geometry === null) return null;
+  return {
+    ...provenance,
+    ...geometry,
+  };
+}
+
+function externalTimedGeometry(
+  entry: Extract<ExternalTemporalFact, { kind: "timed" }>,
+  range: CivilDateRange,
+  timeZone: string,
+  rangeBounds: RangeBounds,
+): TimedGeometry | null {
+  const bounds: ResolvedTimelineInterval = {
+    status: "resolved",
+    start: entry.startAt,
+    end: entry.endAt,
+  };
+  if (rangeBounds.status === "resolved") {
+    const intersection = clipToRange(bounds, rangeBounds);
+    if (intersection === null) return null;
+    const local = externalTimedLocalGeometry(entry, timeZone);
+    return {
+      startsOn: local.startsOn,
+      allDay: false,
+      startLocal: local.startLocal,
+      endLocal: local.endLocal,
+      endsNextCivilDate: local.endsNextCivilDate,
+      bounds,
+      intersection,
+    };
+  }
+
+  const local = externalTimedLocalGeometry(entry, timeZone);
+  if (!claimedSpanMeetsRange(local.startsOn, local.endsNextCivilDate, range)) return null;
+  return {
+    startsOn: local.startsOn,
+    allDay: false,
+    startLocal: local.startLocal,
+    endLocal: local.endLocal,
+    endsNextCivilDate: local.endsNextCivilDate,
+    bounds,
+    intersection: { status: "unresolved" },
+  };
+}
+
 function civilDateIncluded(startsOn: string, range: CivilDateRange): boolean {
   return startsOn >= range.startsOn && startsOn < range.endsBefore;
+}
+
+function civilSpanIntersectsRange(startsOn: string, endsBefore: string, range: CivilDateRange): boolean {
+  return startsOn < range.endsBefore && endsBefore > range.startsOn;
 }
 
 function timedGeometry(

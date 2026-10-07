@@ -4,9 +4,15 @@ import type { BlockPriorityService, TaskPriorityService } from "@/domain/executi
 import type { Priority } from "@/domain/priority";
 import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
+import type { ExternalTemporalFact } from "@/domain/externalTemporal";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
-import { projectTimeline, type CivilDateRange, type TimelineFact } from "@/projections/timeline";
+import {
+  projectTimeline,
+  type CivilDateRange,
+  type ExternalTemporalTimelineContext,
+  type TimelineFact,
+} from "@/projections/timeline";
 import { canonicalWeekRange } from "@/projections/weekShape";
 
 /**
@@ -41,6 +47,8 @@ export function projectMonth(input: {
   protectedTime: readonly ProtectedTime[];
   blocks: readonly Block[];
   commitments: readonly Commitment[];
+  externalTemporalFacts?: readonly ExternalTemporalFact[];
+  externalTemporalContext?: ExternalTemporalTimelineContext;
   taskPriorityService: readonly TaskPriorityService[];
   blockPriorityService: readonly BlockPriorityService[];
   citedTasks: readonly CitedTaskIdentity[];
@@ -58,6 +66,8 @@ export function projectMonth(input: {
       protectedTime: input.protectedTime,
       blocks: input.blocks,
       commitments: input.commitments,
+      externalTemporalFacts: input.externalTemporalFacts,
+      externalTemporalContext: input.externalTemporalContext,
     }),
     taskPriorityService: [...input.taskPriorityService],
     blockPriorityService: [...input.blockPriorityService],

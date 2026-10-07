@@ -1,9 +1,15 @@
 import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
+import type { ExternalTemporalFact } from "@/domain/externalTemporal";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import { addCivilDays, formatCivilDate, parseCivilDate } from "@/domain/time/workFiscalWeek";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
-import { projectTimeline, type CivilDateRange, type TimelineFact } from "@/projections/timeline";
+import {
+  projectTimeline,
+  type CivilDateRange,
+  type ExternalTemporalTimelineContext,
+  type TimelineFact,
+} from "@/projections/timeline";
 
 /**
  * The spatial distribution of established temporal structure for one explicit
@@ -59,6 +65,8 @@ export function projectWeekShape(input: {
   protectedTime: readonly ProtectedTime[];
   blocks: readonly Block[];
   commitments: readonly Commitment[];
+  externalTemporalFacts?: readonly ExternalTemporalFact[];
+  externalTemporalContext?: ExternalTemporalTimelineContext;
 }): WeekShape {
   const range = canonicalWeekRange(input.range);
   return {
@@ -70,6 +78,8 @@ export function projectWeekShape(input: {
       protectedTime: input.protectedTime,
       blocks: input.blocks,
       commitments: input.commitments,
+      externalTemporalFacts: input.externalTemporalFacts,
+      externalTemporalContext: input.externalTemporalContext,
     }),
   };
 }

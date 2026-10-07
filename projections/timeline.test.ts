@@ -41,7 +41,15 @@ type TimelineFactDisallowed = Extract<TimelineFactKey, DisallowedTimelineKey>;
 const timelineFactHasNoDisallowedKey: TimelineFactDisallowed extends never ? true : never = true;
 
 type TimelineInputKey = keyof Parameters<typeof projectTimeline>[0];
-type ExpectedTimelineInput = "range" | "timeZone" | "workSchedule" | "protectedTime" | "blocks" | "commitments";
+type ExpectedTimelineInput =
+  | "range"
+  | "timeZone"
+  | "workSchedule"
+  | "protectedTime"
+  | "blocks"
+  | "commitments"
+  | "externalTemporalFacts"
+  | "externalTemporalContext";
 type TimelineInputExact = Exclude<TimelineInputKey, ExpectedTimelineInput> extends never
   ? Exclude<ExpectedTimelineInput, TimelineInputKey> extends never
     ? true

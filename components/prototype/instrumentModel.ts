@@ -172,6 +172,7 @@ export function compressedKindLabel(kind: TimelineSourceKind): string {
   if (kind === "work_schedule") return "Work";
   if (kind === "protected_time") return "Protected";
   if (kind === "block") return "Block";
+  if (kind === "external_temporal") return "External";
   return "Commitment";
 }
 
@@ -207,6 +208,9 @@ export function compressedPlacement(
 ): CompressedPlacement | null {
   const date = formatCivilDate(parseCivilDate(civilDate));
   if ("allDay" in fact && fact.allDay) {
+    if (fact.sourceKind === "external_temporal") {
+      return fact.startsOn <= date && date < fact.endsBefore ? { placement: "all-day" } : null;
+    }
     return fact.startsOn === date ? { placement: "all-day" } : null;
   }
   if (fact.intersection.status === "unresolved") {

@@ -64,6 +64,7 @@ export function membershipCopy(fact: CurrentTemporalFact): { kind: string; name:
 function membershipName(fact: Exclude<CurrentTemporalFact, { sourceKind: "work_schedule" }>): string {
   if (fact.sourceKind === "protected_time") return fact.label ?? "Protected";
   if (fact.sourceKind === "block") return fact.purpose;
+  if (fact.sourceKind === "external_temporal") return fact.displayLabel;
   return fact.title;
 }
 

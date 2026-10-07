@@ -73,6 +73,7 @@ function kindLabel(fact: CurrentTemporalFact): string {
   if (fact.sourceKind === "work_schedule") return "Work";
   if (fact.sourceKind === "protected_time") return "Protected";
   if (fact.sourceKind === "block") return "Block";
+  if (fact.sourceKind === "external_temporal") return "External";
   return "Commitment";
 }
 
@@ -80,6 +81,7 @@ function identityLabel(fact: CurrentTemporalFact): string | null {
   if (fact.sourceKind === "work_schedule") return SHIFT_TYPE_LABELS[fact.shiftType];
   if (fact.sourceKind === "protected_time") return fact.label;
   if (fact.sourceKind === "block") return fact.purpose;
+  if (fact.sourceKind === "external_temporal") return fact.displayLabel;
   return fact.title;
 }
 

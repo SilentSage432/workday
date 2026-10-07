@@ -616,7 +616,14 @@ function FactDetail({
   }
 
   async function remove() {
-    if (!removable || saving || fact.sourceKind === "work_schedule") return;
+    if (!removable || saving) return;
+    if (
+      fact.sourceKind !== "protected_time" &&
+      fact.sourceKind !== "block" &&
+      fact.sourceKind !== "commitment"
+    ) {
+      return;
+    }
     setSaving(true);
     setError(null);
     try {

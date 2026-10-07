@@ -1,6 +1,7 @@
 import { SHIFT_TYPE_LABELS } from "@/domain/workSchedule";
 import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
+import type { ExternalTemporalFact } from "@/domain/externalTemporal";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import { formatLocalTimeLabel, instantFromZonedLocal, zonedLocalClock } from "@/domain/time/localTime";
 import { addCivilDays, formatCivilDate, formatCivilDateLabel, parseCivilDate } from "@/domain/time/workFiscalWeek";
@@ -8,6 +9,7 @@ import type { WorkScheduleEntry } from "@/domain/workSchedule";
 import {
   projectTimeline,
   type CivilDateRange,
+  type ExternalTemporalTimelineContext,
   type TimelineFact,
   type TimelineSourceKind,
 } from "@/projections/timeline";
@@ -138,6 +140,8 @@ export function composeDayCanvas(input: {
   protectedTime: readonly ProtectedTime[];
   blocks: readonly Block[];
   commitments: readonly Commitment[];
+  externalTemporalFacts?: readonly ExternalTemporalFact[];
+  externalTemporalContext?: ExternalTemporalTimelineContext;
   contextNames?: Readonly<Record<string, string>>;
 }): DayCanvasModel {
   const selectedDay = canonicalDay(input.selectedDay);
@@ -149,6 +153,8 @@ export function composeDayCanvas(input: {
     protectedTime: input.protectedTime,
     blocks: input.blocks,
     commitments: input.commitments,
+    externalTemporalFacts: input.externalTemporalFacts,
+    externalTemporalContext: input.externalTemporalContext,
   });
   const axis = dayAxis(selectedDay, input.timeZone);
   const allDay: DayCanvasListedFact[] = [];
@@ -208,7 +214,9 @@ function listedFact(fact: TimelineFact, selectedDay: string, mode: "all-day" | "
   const kindLabel = kindWord(fact);
   const primary = primaryText(fact);
   const detail = fact.allDay
-    ? `${formatCivilDateLabel(fact.startsOn)}. All day.`
+    ? fact.sourceKind === "external_temporal"
+      ? `${formatCivilDateLabel(fact.startsOn)}–${formatCivilDateLabel(fact.endsBefore)}. All day.`
+      : `${formatCivilDateLabel(fact.startsOn)}. All day.`
     : sourceInterval(fact);
   const uncertainty = mode === "unresolved" ? ` ${UNPOSITIONED_NOTE}` : "";
   const accessibleLabel = `${accessibleKind(fact, primary)} ${detail}${uncertainty}`.trim();
@@ -247,7 +255,10 @@ function placeTimedFact(
   return {
     sourceKind: fact.sourceKind,
     sourceId: fact.sourceId,
-    layer: fact.sourceKind === "work_schedule" || fact.sourceKind === "protected_time" ? "context" : "foreground",
+    layer:
+      fact.sourceKind === "work_schedule" || fact.sourceKind === "protected_time"
+        ? "context"
+        : "foreground",
     lane: 0,
     laneCount: 1,
     visibleStartMinute: visible.start,
@@ -267,6 +278,7 @@ function placeTimedFact(
 
 function storedFact(fact: Extract<TimelineFact, { allDay: false }>): DayCanvasStoredFact | null {
   if (fact.sourceKind === "work_schedule") return null;
+  if (fact.sourceKind === "external_temporal") return null;
   if (fact.sourceKind === "protected_time") {
     return {
       sourceKind: "protected_time",
@@ -382,6 +394,8 @@ function kindWord(fact: TimelineFact): string {
       return "Block";
     case "commitment":
       return "Commitment";
+    case "external_temporal":
+      return "External";
   }
 }
 
@@ -395,6 +409,8 @@ function primaryText(fact: TimelineFact): string {
       return fact.purpose;
     case "commitment":
       return fact.title;
+    case "external_temporal":
+      return fact.displayLabel;
   }
 }
 
@@ -408,6 +424,8 @@ function accessibleKind(fact: TimelineFact, primary: string): string {
       return `Block, ${primary}.`;
     case "commitment":
       return `Commitment, ${primary}.`;
+    case "external_temporal":
+      return `External, ${primary}.`;
   }
 }
 

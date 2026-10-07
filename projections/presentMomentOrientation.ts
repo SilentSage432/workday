@@ -1,6 +1,7 @@
 import type { ActiveThread } from "@/domain/activeThread";
 import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
+import type { ExternalTemporalFact } from "@/domain/externalTemporal";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import type { Task } from "@/domain/task";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
@@ -9,6 +10,7 @@ import {
   type CurrentTemporalOrientation,
 } from "@/projections/currentTemporalOrientation";
 import { projectResume, type ResumeProjection } from "@/projections/resume";
+import type { ExternalTemporalTimelineContext } from "@/projections/timeline";
 
 /**
  * Current temporal orientation and the Active Thread, kept as separate truths.
@@ -28,6 +30,8 @@ export function projectPresentMomentOrientation(input: {
   protectedTime: readonly ProtectedTime[];
   blocks: readonly Block[];
   commitments: readonly Commitment[];
+  externalTemporalFacts?: readonly ExternalTemporalFact[];
+  externalTemporalContext?: ExternalTemporalTimelineContext;
   activeThread: ActiveThread | null;
   openTasks: readonly Task[];
 }): PresentMomentOrientation {
@@ -39,6 +43,8 @@ export function projectPresentMomentOrientation(input: {
       protectedTime: input.protectedTime,
       blocks: input.blocks,
       commitments: input.commitments,
+      externalTemporalFacts: input.externalTemporalFacts,
+      externalTemporalContext: input.externalTemporalContext,
     }),
     thread: projectResume({
       activeThread: input.activeThread,

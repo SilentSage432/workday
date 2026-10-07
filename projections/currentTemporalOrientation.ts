@@ -1,5 +1,16 @@
 import { timedBlockEndsNextCivilDate, type Block } from "@/domain/block";
 import { timedCommitmentEndsNextCivilDate, type Commitment } from "@/domain/commitment";
+import {
+  admitsExternalFactToPresent,
+  deriveExternalObservationFreshness,
+  externalAllDayContainsCivilDate,
+  externalTimedContainsInstant,
+  externalTimedLocalGeometry,
+  type ExternalConnectionStatus,
+  type ExternalFactLifecycle,
+  type ExternalObservationFreshness,
+  type ExternalTemporalFact,
+} from "@/domain/externalTemporal";
 import { timedProtectedTimeEndsNextCivilDate, type ProtectedTime } from "@/domain/protectedTime";
 import {
   addCivilDays,
@@ -11,6 +22,7 @@ import type { ShiftType, WorkScheduleEntry } from "@/domain/workSchedule";
 import { classifyBlock } from "@/projections/block";
 import { classifyCommitment } from "@/projections/commitment";
 import { classifyProtectedTime } from "@/projections/protectedTime";
+import type { ExternalTemporalTimelineContext } from "@/projections/timeline";
 import { projectWorkOrientation } from "@/projections/workOrientation";
 
 /**
@@ -58,11 +70,23 @@ export type CurrentCommitmentReading = CurrentTemporalBase & {
   title: string;
 } & (CurrentAllDayRange | CurrentTimedRange);
 
+export type CurrentExternalReading = CurrentTemporalBase & {
+  sourceKind: "external_temporal";
+  observedSourceId: string;
+  sourceDisplayName: string;
+  displayLabel: string;
+  lifecycle: ExternalFactLifecycle;
+  freshness: ExternalObservationFreshness;
+  stale: boolean;
+  correctionAuthority: "external";
+} & (CurrentAllDayRange | CurrentTimedRange);
+
 export type CurrentTemporalFact =
   | CurrentWorkReading
   | CurrentProtectedReading
   | CurrentBlockReading
-  | CurrentCommitmentReading;
+  | CurrentCommitmentReading
+  | CurrentExternalReading;
 
 export type CurrentTemporalOrientation = {
   facts: CurrentTemporalFact[];
@@ -73,6 +97,7 @@ const SOURCE_KIND_TIE_BREAK = {
   protected_time: 1,
   block: 2,
   commitment: 3,
+  external_temporal: 4,
 } as const;
 
 export function projectCurrentTemporalOrientation(input: {
@@ -82,6 +107,8 @@ export function projectCurrentTemporalOrientation(input: {
   protectedTime: readonly ProtectedTime[];
   blocks: readonly Block[];
   commitments: readonly Commitment[];
+  externalTemporalFacts?: readonly ExternalTemporalFact[];
+  externalTemporalContext?: ExternalTemporalTimelineContext;
 }): CurrentTemporalOrientation {
   const facts: CurrentTemporalFact[] = [];
   const work = currentWork(input.instant, input.timeZone, input.workSchedule);
@@ -98,6 +125,10 @@ export function projectCurrentTemporalOrientation(input: {
   for (const entry of input.commitments) {
     if (classifyCommitment(entry, input.instant, input.timeZone) !== "current") continue;
     facts.push(commitmentReading(entry));
+  }
+  for (const entry of input.externalTemporalFacts ?? []) {
+    const reading = externalReading(entry, input.instant, input.timeZone, input.externalTemporalContext);
+    if (reading) facts.push(reading);
   }
 
   facts.sort(compareFacts);
@@ -195,6 +226,64 @@ function commitmentReading(entry: Commitment): CurrentCommitmentReading {
     startLocal: entry.startLocal,
     endLocal: entry.endLocal,
     endsNextCivilDate: timedCommitmentEndsNextCivilDate(entry.startLocal, entry.endLocal),
+  };
+}
+
+function externalReading(
+  entry: ExternalTemporalFact,
+  instant: Date,
+  timeZone: string,
+  context: ExternalTemporalTimelineContext | undefined,
+): CurrentExternalReading | null {
+  const source = context?.sources.find((item) => item.id === entry.sourceId) ?? null;
+  const connectionStatus: ExternalConnectionStatus =
+    source === null
+      ? "connected"
+      : (context?.connectionStatusById[source.connectionId] ?? "connected");
+  const freshness = deriveExternalObservationFreshness({
+    connectionStatus,
+    source: source ?? {
+      lastAttemptResult: "success_complete",
+      lastSuccessfulObservedAt: entry.lastObservedAt,
+    },
+  });
+  if (!admitsExternalFactToPresent({ fact: entry, freshness })) return null;
+
+  if (entry.kind === "timed") {
+    if (!externalTimedContainsInstant(entry, instant)) return null;
+    const local = externalTimedLocalGeometry(entry, timeZone);
+    return {
+      sourceKind: "external_temporal",
+      sourceId: entry.id,
+      startsOn: local.startsOn,
+      observedSourceId: entry.sourceId,
+      sourceDisplayName: source?.displayName ?? "External source",
+      displayLabel: entry.displayLabel,
+      lifecycle: entry.lifecycle,
+      freshness,
+      stale: false,
+      correctionAuthority: "external",
+      allDay: false,
+      startLocal: local.startLocal,
+      endLocal: local.endLocal,
+      endsNextCivilDate: local.endsNextCivilDate,
+    };
+  }
+
+  const civilToday = formatCivilDate(civilDateInTimeZone(instant, timeZone));
+  if (!externalAllDayContainsCivilDate(entry, civilToday)) return null;
+  return {
+    sourceKind: "external_temporal",
+    sourceId: entry.id,
+    startsOn: entry.startsOn,
+    observedSourceId: entry.sourceId,
+    sourceDisplayName: source?.displayName ?? "External source",
+    displayLabel: entry.displayLabel,
+    lifecycle: entry.lifecycle,
+    freshness,
+    stale: false,
+    correctionAuthority: "external",
+    allDay: true,
   };
 }
 

@@ -9,7 +9,6 @@ import { instantFromZonedLocal } from "@/domain/time/localTime";
 import { offWorkDay, scheduledWorkDay, type WorkScheduleEntry } from "@/domain/workSchedule";
 import { projectResume } from "@/projections/resume";
 import { projectTodayTasks } from "@/projections/today";
-import { TIMELINE_SOURCE_KINDS } from "@/projections/timeline";
 import {
   projectCurrentTemporalOrientation,
   type CurrentTemporalFact,
@@ -351,7 +350,12 @@ describe("current temporal orientation", () => {
       ],
     });
 
-    expect(result.facts.map((fact) => fact.sourceKind)).toEqual([...TIMELINE_SOURCE_KINDS]);
+    expect(result.facts.map((fact) => fact.sourceKind)).toEqual([
+      "work_schedule",
+      "protected_time",
+      "block",
+      "commitment",
+    ]);
   });
 
   it("has no conflict, availability, or capacity result", () => {
