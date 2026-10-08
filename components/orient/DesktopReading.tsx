@@ -21,8 +21,8 @@ import type { TimelineSourceKind } from "@/projections/timeline";
 
 /**
  * Desktop Present is the instant. Desktop Day is the selected civil day.
- * Only Day carries the one-dimensional 00:00–24:00 inscription. Exact time opens the existing Day clock.
- * This is not the phone portrait stretched wide.
+ * Day owns a bounded horizontal 00:00–24:00 temporal territory (not Exact Time, not DayClock).
+ * Exact time opens the existing Day clock for precision. This is not the phone portrait stretched wide.
  */
 
 export function DesktopReading({
@@ -158,10 +158,12 @@ export function DesktopReading({
                   <button
                     key={`${fact.sourceKind}:${fact.sourceId}`}
                     type="button"
-                    className="orient-membership"
+                    className="orient-membership orient-desktop-all-day"
                     data-source-kind={fact.sourceKind}
                     data-source-id={fact.sourceId}
                     data-contour={kindContour(fact.sourceKind)}
+                    data-all-day-membership="true"
+                    data-observed={fact.sourceKind === "external_temporal" ? "true" : undefined}
                     aria-label={fact.accessibleLabel}
                     onClick={() => onRefer([{ sourceKind: fact.sourceKind, sourceId: fact.sourceId }])}
                   >
@@ -174,17 +176,20 @@ export function DesktopReading({
               ? null
               : dayReading.map((placement) => {
                   const emphasis = emphasisFor(placement, contextFor, focus);
+                  const observed = placement.sourceKind === "external_temporal";
                   return (
                     <button
                       key={`${placement.sourceKind}:${placement.sourceId}`}
                       type="button"
-                      className="orient-membership"
+                      className="orient-membership orient-desktop-timed-membership"
                       data-source-kind={placement.sourceKind}
                       data-source-id={placement.sourceId}
                       data-kind={placement.sourceKind}
                       data-contour={kindContour(placement.sourceKind)}
                       data-emphasis={emphasis}
                       data-start-minute={placement.visibleStartMinute}
+                      data-timed-membership="true"
+                      data-observed={observed ? "true" : undefined}
                       aria-label={accessibleFactName(placement.accessibleLabel, emphasis)}
                       onClick={() => onRefer(overlappingFacts(placement, placements))}
                     >
@@ -218,7 +223,7 @@ export function DesktopReading({
           </button>
         </div>
       ) : (
-        <div className="orient-desktop-field" data-signature-role="structure">
+        <div className="orient-desktop-field" data-signature-role="structure" data-day-stage="true">
           <DesktopSignature
             model={model}
             dateLabel={dateLabel}
@@ -264,17 +269,23 @@ function DesktopSignature({
     <div
       className="orient-desktop-signature"
       data-day-signature="true"
+      data-day-territory-plane="true"
       role="group"
       aria-label={`Established shape of ${dateLabel}. Unmarked time is not established.`}
     >
-      <div className="orient-desktop-hours" aria-hidden="true">
+      <div className="orient-desktop-hours" data-day-axis="true" aria-hidden="true">
         {[0, 6, 12, 18].map((hour) => (
           <span key={hour} style={{ left: `${(hour / 24) * 100}%` }}>
             {formatLocalTimeLabel(`${String(hour).padStart(2, "0")}:00`)}
           </span>
         ))}
       </div>
-      <div className="orient-desktop-rail" data-day-inscription="true">
+      <div
+        className="orient-desktop-rail"
+        data-day-inscription="true"
+        data-day-territory="true"
+        data-temporal-axis="local-clock-24h"
+      >
         <button
           type="button"
           className="orient-signature-ground"
@@ -293,6 +304,7 @@ function DesktopSignature({
         {placements.map((placement) => {
           const span = signaturePlacement(placement.visibleStartMinute, placement.visibleEndMinute);
           const emphasis = emphasisFor(placement, contextFor, focus);
+          const observed = placement.sourceKind === "external_temporal";
           return (
             <button
               key={`${placement.sourceKind}:${placement.sourceId}`}
@@ -305,6 +317,8 @@ function DesktopSignature({
               data-emphasis={emphasis}
               data-start={span.start}
               data-width={span.width}
+              data-duration-extent="true"
+              data-observed={observed ? "true" : undefined}
               aria-label={accessibleFactName(placement.accessibleLabel, emphasis)}
               style={{ left: `${span.start * 100}%`, width: `${span.width * 100}%` }}
               onClick={(event) => {
@@ -312,7 +326,7 @@ function DesktopSignature({
                 onRefer(overlappingFacts(placement, placements));
               }}
             >
-              <span className="orient-signature-mark" data-kind={placement.sourceKind} />
+              <span className="orient-signature-mark" data-kind={placement.sourceKind} data-observed={observed ? "true" : undefined} />
             </button>
           );
         })}
@@ -320,6 +334,7 @@ function DesktopSignature({
           <div
             className="orient-signature-now"
             data-signature-now="true"
+            data-day-now-coordinate="true"
             style={{ left: `${minuteFraction(presentMinute) * 100}%` }}
             aria-hidden="true"
           />

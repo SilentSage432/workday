@@ -2065,6 +2065,10 @@ button.orient-fact {
   overflow: auto;
 }
 
+.orient-desktop[data-desktop-question="day"] .orient-desktop-truth {
+  max-height: min(24vh, 11.5rem);
+}
+
 .orient-desktop-memberships,
 .orient-desktop-day-reading {
   display: flex;
@@ -2085,6 +2089,27 @@ button.orient-fact {
   border-bottom: 0;
   background: transparent;
   box-shadow: none;
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-all-day {
+  flex: 0 1 16rem;
+  max-width: 20rem;
+  min-height: 2.35rem;
+  padding: 0.35rem 0.55rem 0.35rem 0.75rem;
+  border-left-width: 3px;
+  background: rgb(244 239 230 / 0.035);
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-all-day[data-observed="true"] {
+  background: transparent;
+  border-left-style: dashed;
+  opacity: 0.88;
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-timed-membership {
+  flex: 0 1 14rem;
+  max-width: 18rem;
+  opacity: 0.92;
 }
 
 .orient-desktop-thread,
@@ -2143,10 +2168,15 @@ button.orient-fact {
   padding-left: 0;
 }
 
+.orient-desktop[data-desktop-question="day"] {
+  min-height: 100%;
+}
+
 .orient-desktop[data-desktop-question="day"] .orient-desktop-field {
-  flex: none;
+  flex: 1 1 auto;
   min-height: 0;
-  margin-top: 0.35rem;
+  margin-top: 0.15rem;
+  justify-content: flex-end;
 }
 
 .orient-desktop-signature {
@@ -2154,6 +2184,15 @@ button.orient-fact {
   flex-direction: column;
   gap: 0.7rem;
   padding: 0.85rem 0 0.35rem;
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-signature {
+  flex: 1 1 auto;
+  min-height: clamp(8.25rem, 30vh, 14.5rem);
+  max-height: min(42vh, 16.5rem);
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding: 0.35rem 0 0.2rem;
 }
 
 .orient-desktop-hours {
@@ -2194,6 +2233,27 @@ button.orient-fact {
   pointer-events: none;
 }
 
+/* Bounded horizontal temporal territory — not Exact Time, not the rejected vertical Day field. */
+.orient-desktop-rail[data-day-territory="true"] {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: clamp(4.85rem, 17vh, 9.75rem);
+  border: 1px solid rgb(244 239 230 / 0.1);
+  border-radius: 0.2rem;
+  background:
+    linear-gradient(180deg, rgb(244 239 230 / 0.03), rgb(244 239 230 / 0.015) 42%, rgb(8 10 14 / 0.22)),
+    rgb(12 16 24 / 0.35);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
+}
+
+.orient-desktop-rail[data-day-territory="true"]::before {
+  top: auto;
+  bottom: 0;
+  height: 1px;
+  margin-top: 0;
+  background: rgb(244 239 230 / 0.22);
+}
+
 .orient-desktop-signature .orient-signature-fact,
 .orient-desktop-signature .orient-signature-fact[data-contour="double"],
 .orient-desktop-signature .orient-signature-fact[data-contour="dotted"] {
@@ -2204,12 +2264,37 @@ button.orient-fact {
   margin-top: -2.5px;
 }
 
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-fact {
+  top: 16%;
+  bottom: 16%;
+  z-index: 1;
+  height: auto;
+  margin-top: 0;
+}
+
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-fact[data-contour="double"],
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-fact[data-contour="dotted"] {
+  top: 30%;
+  bottom: 30%;
+  z-index: 2;
+  height: auto;
+  margin-top: 0;
+}
+
 .orient-desktop-signature .orient-signature-fact::before {
   left: 0;
   top: 50%;
   width: 100%;
   height: 1.35rem;
   transform: translateY(-50%);
+}
+
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-fact::before {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
 }
 
 .orient-desktop-signature .orient-signature-mark {
@@ -2224,10 +2309,25 @@ button.orient-fact {
   box-shadow: none;
 }
 
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-mark {
+  inset: 0;
+  height: auto;
+  border-radius: 0.1rem;
+}
+
 .orient-desktop-signature .orient-signature-mark[data-kind="work_schedule"] {
   background: var(--orient-work);
   background-image: none;
   box-shadow: none;
+}
+
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="work_schedule"] {
+  background:
+    linear-gradient(180deg, rgb(183 220 203 / 0.16), rgb(78 138 114 / 0.34)),
+    rgb(78 138 114 / 0.22);
+  box-shadow:
+    inset 0 1px 0 rgb(183 220 203 / 0.55),
+    inset 0 -1px 0 rgb(183 220 203 / 0.35);
 }
 
 .orient-desktop-signature .orient-signature-mark[data-kind="protected_time"] {
@@ -2239,10 +2339,31 @@ button.orient-fact {
   box-shadow: none;
 }
 
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="protected_time"] {
+  background-color: rgb(96 124 186 / 0.14);
+  background-image:
+    repeating-linear-gradient(90deg, var(--orient-protected) 0 7px, transparent 7px 11px),
+    linear-gradient(180deg, rgb(197 212 245 / 0.12), transparent);
+  box-shadow:
+    inset 0 1px 0 rgb(197 212 245 / 0.45),
+    inset 0 -1px 0 rgb(197 212 245 / 0.3);
+}
+
 .orient-desktop-signature .orient-signature-mark[data-kind="block"] {
   background: var(--orient-block);
   background-image: none;
   box-shadow: none;
+}
+
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="block"] {
+  background:
+    linear-gradient(180deg, rgb(240 196 154 / 0.14), rgb(168 92 54 / 0.32)),
+    rgb(168 92 54 / 0.2);
+  box-shadow:
+    inset 0 1px 0 var(--orient-block),
+    inset 0 3px 0 rgb(240 196 154 / 0.35),
+    inset 0 -1px 0 var(--orient-block),
+    inset 0 -3px 0 rgb(240 196 154 / 0.35);
 }
 
 .orient-desktop-signature .orient-signature-mark[data-kind="commitment"] {
@@ -2252,6 +2373,28 @@ button.orient-fact {
   background-size: auto;
   background-position: center;
   box-shadow: none;
+}
+
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="commitment"] {
+  background-color: rgb(132 96 176 / 0.12);
+  background-image:
+    repeating-linear-gradient(90deg, var(--orient-commitment) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, rgb(228 208 245 / 0.1), transparent);
+  box-shadow:
+    inset 0 1px 0 rgb(228 208 245 / 0.4),
+    inset 0 -1px 0 rgb(228 208 245 / 0.28);
+}
+
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="external_temporal"],
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-observed="true"] {
+  background-color: transparent;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgb(244 239 230 / 0.12) 0 1px,
+    transparent 1px 7px
+  );
+  box-shadow: inset 0 0 0 1px rgb(244 239 230 / 0.28);
+  opacity: 0.78;
 }
 
 .orient-desktop-signature .orient-signature-now {
@@ -2265,6 +2408,19 @@ button.orient-fact {
   border-radius: 0;
   background: var(--orient-now);
   box-shadow: none;
+}
+
+.orient-desktop-signature [data-day-territory="true"] .orient-signature-now {
+  top: 0.35rem;
+  bottom: 0.35rem;
+  z-index: 3;
+  width: 2px;
+  height: auto;
+  margin-top: 0;
+  margin-left: -1px;
+  border-radius: 0;
+  background: var(--orient-now);
+  box-shadow: 0 0 0 1px rgb(243 215 176 / 0.12);
 }
 
 .orient-desktop-signature .orient-signature-now::after {

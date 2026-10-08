@@ -73,7 +73,24 @@ function overnight(): Commitment {
   };
 }
 
-function sources(crossDay = false, workOff = false): OrientSources {
+function allDayCommitment(anchor = ANCHOR): Commitment {
+  return {
+    ...defineCommitment({
+      kind: "all_day",
+      startsOn: anchor,
+      title: "Spirit Day",
+    }),
+    id: "commitment-all-day",
+    createdAt: "2026-10-05T00:00:00.000Z",
+  };
+}
+
+function sources(crossDay = false, workOff = false, allDay = false): OrientSources {
+  const commitments = [
+    ...(allDay ? [allDayCommitment()] : []),
+    commitment(),
+    ...(crossDay ? [overnight()] : []),
+  ];
   return {
     work: ready(
       workOff
@@ -82,7 +99,7 @@ function sources(crossDay = false, workOff = false): OrientSources {
     ),
     protectedTime: ready([]),
     blocks: ready([block()]),
-    commitments: ready(crossDay ? [commitment(), overnight()] : [commitment()]),
+    commitments: ready(commitments),
     destinations: ready([]),
     priorities: ready([]),
     taskPriorityService: ready([]),
@@ -189,6 +206,7 @@ async function renderView(options?: {
   onAnchor?: (civilDate: string) => void;
   crossDay?: boolean;
   workOff?: boolean;
+  allDay?: boolean;
 }) {
   act(() => {
     root?.unmount();
@@ -209,7 +227,7 @@ async function renderView(options?: {
         anchor={anchor}
         onAnchor={options?.onAnchor ?? (() => {})}
         loaded={experienceLoadWindow(anchor)}
-        sources={sources(options?.crossDay, options?.workOff)}
+        sources={sources(options?.crossDay, options?.workOff, options?.allDay)}
         contexts={contexts()}
         tasks={ready([task()])}
         thread={options?.thread ?? { status: "ready", active: true, taskId: "task-1", resumeTitle: "Cycle counts" }}
@@ -367,6 +385,64 @@ describe("desktop reading", () => {
     expect(view.querySelector("[data-exact-time]")?.closest(".orient-desktop-field")).not.toBeNull();
     expect(view.querySelector("[data-exact-time]")?.closest("[data-day-inscription]")).toBeNull();
     expect(view.querySelector(".orient-desktop [data-work-off]")).toBeNull();
+  });
+
+  it("claims a bounded horizontal Day temporal territory without becoming Exact Time or the rejected Day field", async () => {
+    const view = await renderView({});
+    await ask(view, "Day");
+
+    const stage = view.querySelector("[data-day-stage]");
+    const plane = view.querySelector("[data-day-territory-plane]");
+    const territory = view.querySelector("[data-day-territory]");
+    expect(stage).not.toBeNull();
+    expect(plane).not.toBeNull();
+    expect(territory).not.toBeNull();
+    expect(territory?.getAttribute("data-day-inscription")).toBe("true");
+    expect(territory?.getAttribute("data-temporal-axis")).toBe("local-clock-24h");
+    expect(view.querySelector("[data-day-axis]")).not.toBeNull();
+    expect(view.querySelector("[data-day-field]")).toBeNull();
+    expect(view.querySelector("[data-time-surface]")).toBeNull();
+    expect(view.querySelector("[data-depth]")?.getAttribute("data-depth")).toBe("reading");
+
+    const work = view.querySelector('[data-day-territory] [data-source-kind="work_schedule"]') as HTMLElement;
+    const block = view.querySelector('[data-day-territory] [data-source-id="block-1"]') as HTMLElement;
+    const commitment = view.querySelector('[data-day-territory] [data-source-id="commitment-1"]') as HTMLElement;
+    expect(work.getAttribute("data-duration-extent")).toBe("true");
+    expect(work.getAttribute("data-width")).toBe(String(signaturePlacement(9 * 60, 17 * 60).width));
+    expect(block.getAttribute("data-duration-extent")).toBe("true");
+    expect(commitment.getAttribute("data-duration-extent")).toBe("true");
+    expect(Number(work.getAttribute("data-width"))).toBeGreaterThan(Number(block.getAttribute("data-width")));
+
+    expect(view.querySelector("[data-day-now-coordinate]")).not.toBeNull();
+    expect(view.querySelector("[data-day-territory]")?.contains(view.querySelector("[data-desktop-thread]"))).toBe(false);
+    expect(view.querySelectorAll("[data-timed-membership]").length).toBeGreaterThan(0);
+    expect(view.querySelector("[data-day-territory]")?.textContent).not.toMatch(/\bfree\b|\bavailable\b|\bopen\b|\bunused\b/i);
+
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-look-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-day-territory]")).not.toBeNull();
+    expect(view.querySelector("[data-desktop-day]")?.textContent).toContain("Oct 5");
+    expect(view.querySelector("[role='dialog']")?.getAttribute("data-borrowed-surface")).toBe("drawer");
+    expect(view.querySelector("[data-depth]")?.getAttribute("data-depth")).toBe("reading");
+  });
+
+  it("keeps all-day membership outside timed territory and Now off non-today Day", async () => {
+    const today = await renderView({ allDay: true });
+    await ask(today, "Day");
+    const allDay = today.querySelector("[data-day-reading] [data-all-day-membership]");
+    expect(allDay).not.toBeNull();
+    expect(allDay?.textContent).toContain("Spirit Day");
+    expect(allDay?.textContent).toMatch(/All day/);
+    expect(today.querySelector("[data-day-territory] [data-all-day-membership]")).toBeNull();
+    expect(today.querySelector('[data-day-territory] [data-source-id="commitment-all-day"]')).toBeNull();
+
+    const other = await renderView({ anchor: "2026-10-08" });
+    await ask(other, "Day");
+    expect(other.querySelector("[data-day-territory]")).not.toBeNull();
+    expect(other.querySelector("[data-signature-now]")).toBeNull();
+    expect(other.querySelector("[data-day-now-coordinate]")).toBeNull();
   });
 
   it("keeps Work Off off desktop Day and on Week, Month, and Exact time", async () => {
@@ -605,12 +681,16 @@ describe("desktop reading seam", () => {
     expect(frame).not.toContain("DesktopReading");
     expect(frame).not.toContain("data-day-signature");
     expect(desktop).toContain('data-day-inscription="true"');
+    expect(desktop).toContain('data-day-territory="true"');
+    expect(desktop).toContain('data-day-territory-plane="true"');
     expect(desktop).not.toContain("data-day-field");
     expect(desktop).not.toContain("data-work-off");
     expect(phone).toContain("data-work-off");
+    expect(phone).not.toContain("data-day-territory");
     expect(clock).toContain("data-work-off");
     expect(css).not.toContain("clamp(7.5rem, 18vh, 10.75rem)");
     expect(css).not.toContain("inset 0 1px 0 var(--orient-work), inset 0 -1px 0 var(--orient-work)");
+    expect(css).toContain('data-day-territory="true"');
     expect(css).toContain('.orient[data-form="desktop"]');
     expect(css).not.toContain("data-composition");
     expect(css).toContain("@media (min-width: 960px)");
