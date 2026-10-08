@@ -5,17 +5,45 @@
 
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SourceRead } from "@/components/currentTemporalReading";
 import { readyCaptureSession } from "@/domain/capture";
 import type { Context } from "@/domain/context";
-import type { Task } from "@/domain/task";
+import type { NewTask, Task } from "@/domain/task";
 import { experienceLoadWindow } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import { ActSurface } from "@/components/orient/Surfaces";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
 import { EMPTY_EXTERNAL_ORIENT_SOURCES } from "@/components/orient/types";
 import { scheduledWorkDay } from "@/domain/workSchedule";
+
+const createTaskMock = vi.hoisted(() =>
+  vi.fn(async (_client: unknown, input: NewTask): Promise<Task> => ({
+    id: `created-${input.title}`,
+    title: input.title,
+    contextId: input.contextId ?? null,
+    createdAt: "2026-10-07T18:00:00.000Z",
+    completedAt: null,
+    dueOn: input.dueOn ?? null,
+    plannedOn: input.plannedOn ?? null,
+    plannedLocal: input.plannedLocal ?? null,
+    mustDo: input.mustDo ?? false,
+    origin: "user_created",
+    originatingNoteId: null,
+  })),
+);
+
+vi.mock("@/persistence/contextsAndTasks", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/persistence/contextsAndTasks")>();
+  return {
+    ...actual,
+    createTask: createTaskMock,
+  };
+});
+
+vi.mock("@/persistence/supabaseBrowserClient", () => ({
+  getSupabaseBrowserClient: () => ({}),
+}));
 
 const ANCHOR = "2026-10-07";
 const NOW = new Date("2026-10-07T15:30:00.000Z");
@@ -200,7 +228,7 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(view.querySelector("[data-notes-surface]")).toBeNull();
   });
 
-  it("ACT opens without ActiveThread and keeps Other open secondary", async () => {
+  it("ACT opens without ActiveThread and keeps secondary tasks quiet", async () => {
     const view = await renderPhone({
       tasks: ready([
         task({ id: "remain", title: "Remain", createdAt: "2026-10-02T00:00:00.000Z" }),
@@ -219,15 +247,18 @@ describe("LOOK · ADD · ACT phone grammar", () => {
       (row) => row.getAttribute("data-act-row"),
     );
     expect(primaryRows).toEqual(["must", "plan"]);
-    expect(view.querySelector("[data-act-other-open]")?.textContent).toContain("Other open (1)");
+    expect(view.querySelector("[data-act-other-open]")?.textContent?.trim()).toBe("1 more task");
+    expect(view.querySelector("[data-act-section='other-open']")?.className).not.toContain("orient-action");
     expect(view.querySelector("[data-act-other-list]")).toBeNull();
     await act(async () => {
       (view.querySelector("[data-act-other-open]") as HTMLButtonElement).click();
     });
     expect(view.querySelector('[data-act-other-list] [data-act-row="remain"]')).not.toBeNull();
+    expect(view.querySelector('[data-act-start="remain"]')).not.toBeNull();
+    expect(view.querySelector('[data-act-select="remain"]')).not.toBeNull();
   });
 
-  it("ACT inspect edits without Start and Complete offers Still open without restoring thread", async () => {
+  it("ACT inspect edits without Start and Complete offers Undo without restoring thread", async () => {
     const started: string[] = [];
     const completed: string[] = [];
     const reopened: string[] = [];
@@ -321,7 +352,7 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(started).toEqual(["task-1"]);
   });
 
-  it("direct Task checkbox completes without inspect and offers Still open", async () => {
+  it("direct Task checkbox completes on the same row with checked line-through Undo", async () => {
     const completed: string[] = [];
     const reopened: string[] = [];
     const view = await renderPhone({
@@ -345,7 +376,11 @@ describe("LOOK · ADD · ACT phone grammar", () => {
       await Promise.resolve();
     });
     expect(completed).toEqual(["task-1"]);
-    expect(view.querySelector("[data-still-open]")).not.toBeNull();
+    const acknowledged = view.querySelector('[data-act-row="task-1"][data-act-acknowledged="true"]');
+    expect(acknowledged).not.toBeNull();
+    expect((acknowledged?.querySelector("[data-act-acknowledged-check]") as HTMLInputElement).checked).toBe(true);
+    expect(acknowledged?.querySelector(".orient-act-title-done")?.textContent).toBe("Call the school");
+    expect(view.textContent).not.toContain("Marked complete.");
     expect(view.querySelector("[data-act-inspect]")).toBeNull();
     await act(async () => {
       (view.querySelector("[data-still-open]") as HTMLButtonElement).click();
@@ -354,6 +389,71 @@ describe("LOOK · ADD · ACT phone grammar", () => {
       await Promise.resolve();
     });
     expect(reopened).toEqual(["task-1"]);
+  });
+
+  it("Add Task entered from ACT returns to ACT after save and cancel", async () => {
+    createTaskMock.mockClear();
+    const view = await renderPhone();
+    await act(async () => {
+      (view.querySelector("[data-act-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector("[data-act-add-task]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-create-task-return]")?.getAttribute("data-create-task-return")).toBe("act");
+    expect(view.querySelector("[data-direct-task]")).not.toBeNull();
+    await act(async () => {
+      const field = view.querySelector('[aria-label="Task title"]') as HTMLInputElement;
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(field, "First");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => {
+      (view.querySelector("[data-add-task]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(createTaskMock).toHaveBeenCalledTimes(1);
+    expect(createTaskMock.mock.calls[0]?.[1]?.title).toBe("First");
+    expect(view.querySelector("[data-act-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-direct-task]")).toBeNull();
+    await act(async () => {
+      (view.querySelector("[data-act-add-task]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-create-task-return]")?.getAttribute("data-create-task-return")).toBe("act");
+    await act(async () => {
+      const field = view.querySelector('[aria-label="Task title"]') as HTMLInputElement;
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(field, "Second");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => {
+      (view.querySelector("[data-add-task]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(createTaskMock).toHaveBeenCalledTimes(2);
+    expect(createTaskMock.mock.calls[1]?.[1]?.title).toBe("Second");
+    expect(view.querySelector("[data-act-surface]")).not.toBeNull();
+    await act(async () => {
+      (view.querySelector("[data-act-add-task]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector("[data-surface-close]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-act-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-direct-task]")).toBeNull();
+  });
+
+  it("ADD chooser Task creation does not force ACT return", async () => {
+    const view = await renderPhone();
+    await act(async () => {
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector('[data-add-choice="task"]') as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-create-task-return]")?.getAttribute("data-create-task-return")).toBe("none");
   });
 
   it("keeps Resume outside ACT and Task Detail reachable", async () => {
@@ -465,7 +565,7 @@ describe("LOOK · ADD · ACT phone grammar", () => {
   });
 });
 
-describe("ActSurface Still open", () => {
+describe("ActSurface acknowledgement", () => {
   let root: Root | null = null;
   let host: HTMLDivElement | null = null;
 
@@ -478,7 +578,7 @@ describe("ActSurface Still open", () => {
     host = null;
   });
 
-  it("does not Start when Still open succeeds", async () => {
+  it("does not Start when Undo succeeds after detail Complete", async () => {
     host = document.createElement("div");
     document.body.appendChild(host);
     root = createRoot(host);
@@ -517,6 +617,7 @@ describe("ActSurface Still open", () => {
     await act(async () => {
       await Promise.resolve();
     });
+    expect(host!.querySelector('[data-act-row="task-1"][data-act-acknowledged="true"]')).not.toBeNull();
     await act(async () => {
       (host!.querySelector("[data-still-open]") as HTMLButtonElement).click();
     });
@@ -526,12 +627,13 @@ describe("ActSurface Still open", () => {
     expect(started).toEqual([]);
   });
 
-  it("direct stewardship checkbox satisfies exact occurrence and withdraw restores", async () => {
+  it("direct stewardship checkbox uses same checked crossed grammar and withdraw writer", async () => {
     host = document.createElement("div");
     document.body.appendChild(host);
     root = createRoot(host);
     const satisfied: { definitionId: string; cycleKind: string; cycleKey: string }[] = [];
     const withdrawn: { definitionId: string; cycleKind: string; cycleKey: string }[] = [];
+    const completed: string[] = [];
     const defId = "00000000-0000-4000-8000-000000000001";
     await act(async () => {
       root!.render(
@@ -568,7 +670,9 @@ describe("ActSurface Still open", () => {
           now={NOW}
           timeZone="America/Denver"
           onStart={async () => {}}
-          onComplete={async () => {}}
+          onComplete={async (taskId) => {
+            completed.push(taskId);
+          }}
           onReopen={async () => {}}
           onUpdate={async () => {}}
           onSatisfyStewardship={async (input) => {
@@ -591,8 +695,13 @@ describe("ActSurface Still open", () => {
       await Promise.resolve();
     });
     expect(satisfied).toEqual([{ definitionId: defId, cycleKind: "workday", cycleKey: ANCHOR }]);
+    expect(completed).toEqual([]);
+    const acknowledged = host!.querySelector(`[data-act-row="${defId}:workday:${ANCHOR}"][data-act-acknowledged="true"]`);
+    expect(acknowledged).not.toBeNull();
+    expect((acknowledged?.querySelector("[data-act-acknowledged-check]") as HTMLInputElement).checked).toBe(true);
+    expect(acknowledged?.querySelector(".orient-act-title-done")?.textContent).toBe("Review pipelines");
+    expect(host!.textContent).not.toContain("Marked satisfied.");
     expect(host!.querySelector("[data-stewardship-withdraw]")).not.toBeNull();
-    expect(host!.querySelector("[data-complete-task]")).toBeNull();
     await act(async () => {
       (host!.querySelector("[data-stewardship-withdraw]") as HTMLButtonElement).click();
     });

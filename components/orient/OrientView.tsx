@@ -92,7 +92,7 @@ type Surface =
   | { kind: "focus" }
   | { kind: "add" }
   | { kind: "act" }
-  | { kind: "create-task" }
+  | { kind: "create-task"; returnTo?: "act" }
   | { kind: "create-note" }
   | { kind: "create-all-day" }
   | { kind: "capture" }
@@ -1258,12 +1258,24 @@ export function OrientView({
               onUpdate={actions.onUpdateTask}
               onSatisfyStewardship={actions.onSatisfyStewardship}
               onWithdrawStewardship={actions.onWithdrawStewardship}
-              onAddTask={() => setSurface({ kind: "create-task" })}
+              onAddTask={() => setSurface({ kind: "create-task", returnTo: "act" })}
               onClose={closeSurface}
             />
           ) : null}
           {surface.kind === "create-task" ? (
-            <DirectTaskSurface contexts={contexts} onChanged={actions.onTasksChanged} onClose={closeSurface} />
+            <div data-create-task-return={surface.returnTo ?? "none"}>
+              <DirectTaskSurface
+                contexts={contexts}
+                onChanged={actions.onTasksChanged}
+                onClose={() => {
+                  if (surface.returnTo === "act") {
+                    setSurface({ kind: "act" });
+                    return;
+                  }
+                  closeSurface();
+                }}
+              />
+            </div>
           ) : null}
           {surface.kind === "create-note" ? <DirectNoteSurface onClose={closeSurface} /> : null}
           {surface.kind === "create-all-day" ? (

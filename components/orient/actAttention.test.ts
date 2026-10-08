@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { composeActAttention, actStewardshipWorkContext } from "@/components/orient/actAttention";
+import {
+  actSecondaryTasksDisclosureLabel,
+  actStewardshipWorkContext,
+  composeActAttention,
+} from "@/components/orient/actAttention";
 import type {
   StewardshipDefinition,
   StewardshipDefinitionRevision,
@@ -207,6 +211,26 @@ describe("composeActAttention", () => {
     expect(composition.stewardship).toEqual([]);
     expect(composition.today.map((item) => item.id)).toEqual(["only"]);
     expect(JSON.stringify(composition)).not.toMatch(/Business|Inventory|People|Environment/);
+  });
+
+  it("keeps secondary admission unchanged and uses N more tasks expression", () => {
+    const composition = composeActAttention({
+      viewpointCivilDate: VIEWPOINT,
+      now: NOW,
+      timeZone: ZONE,
+      workEntries: [scheduled],
+      openTasks: [
+        task({ id: "a", title: "A" }),
+        task({ id: "b", title: "B", createdAt: "2026-10-02T00:00:00.000Z" }),
+        task({ id: "today", title: "Today", plannedOn: VIEWPOINT }),
+      ],
+      definitions: [],
+      revisions: [],
+      satisfactions: [],
+    });
+    expect(composition.otherOpen.map((item) => item.id)).toEqual(["a", "b"]);
+    expect(actSecondaryTasksDisclosureLabel(composition.otherOpen.length)).toBe("2 more tasks");
+    expect(actSecondaryTasksDisclosureLabel(1)).toBe("1 more task");
   });
 
   it("excludes completed Tasks and keeps stable section membership keys", () => {

@@ -6,6 +6,7 @@ export {
   composeActAttention,
   orderActTasks,
   actStewardshipWorkContext,
+  actSecondaryTasksDisclosureLabel,
   type ActAttentionComposition,
   type ActStewardshipRow,
 } from "@/components/orient/actAttention";

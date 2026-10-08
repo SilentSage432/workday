@@ -183,6 +183,16 @@ export function composeActAttention(input: {
 }
 
 /**
+ * Quiet secondary disclosure copy for non-primary open Tasks.
+ * Admission remains otherOpen; this is human expression only.
+ */
+export function actSecondaryTasksDisclosureLabel(count: number): string {
+  if (count <= 0) return "0 more tasks";
+  if (count === 1) return "1 more task";
+  return `${count} more tasks`;
+}
+
+/**
  * Legacy flat order for tests that still need MustDo → Today → remaining.
  * Other open is included after primary sections; UI treats it as secondary.
  */

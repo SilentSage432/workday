@@ -48,6 +48,7 @@ import { createNote, loadNotes } from "@/persistence/note";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import type { DayCanvasModel, DayCanvasStoredFact } from "@/projections/dayCanvas";
 import {
+  actSecondaryTasksDisclosureLabel,
   composeActAttention,
   type ActStewardshipRow,
 } from "@/components/orient/actAttention";
@@ -1091,15 +1092,25 @@ export function AllDayEstablishmentSurface({
   );
 }
 
+type ActTaskSection = "must-do" | "today" | "other-open";
+
 type ActCorrection =
-  | { kind: "task"; id: string; title: string }
+  | { kind: "task"; id: string; title: string; section: ActTaskSection }
   | {
       kind: "stewardship";
       definitionId: string;
       cycleKind: StewardshipCycleKind;
       cycleKey: string;
       title: string;
+      cycleLabel: "Workday" | "This week";
+      contextId: string | null;
     };
+
+function actTaskSectionFor(task: Task, viewpointCivilDate: string): ActTaskSection {
+  if (task.mustDo) return "must-do";
+  if (task.plannedOn === viewpointCivilDate) return "today";
+  return "other-open";
+}
 
 export function ActSurface({
   tasks,
@@ -1175,17 +1186,25 @@ export function ActSurface({
   const selected =
     selectedId && tasks.status === "ready" ? (tasks.rows.find((item) => item.id === selectedId) ?? null) : null;
 
+  function locateTask(taskId: string): Task | null {
+    if (selected?.id === taskId) return selected;
+    if (!composition) return null;
+    return (
+      composition.mustDo.find((item) => item.id === taskId) ??
+      composition.today.find((item) => item.id === taskId) ??
+      composition.otherOpen.find((item) => item.id === taskId) ??
+      null
+    );
+  }
+
   async function completeForCorrection(taskId: string) {
-    const title =
-      selected?.id === taskId
-        ? selected.title
-        : (composition?.mustDo.find((item) => item.id === taskId)?.title ??
-          composition?.today.find((item) => item.id === taskId)?.title ??
-          composition?.otherOpen.find((item) => item.id === taskId)?.title ??
-          "");
+    const task = locateTask(taskId);
+    const title = task?.title ?? "";
+    const section = task ? actTaskSectionFor(task, viewpointCivilDate) : "other-open";
     await onComplete(taskId);
     setCorrectionError(null);
-    setCorrection({ kind: "task", id: taskId, title });
+    setCorrection({ kind: "task", id: taskId, title, section });
+    if (section === "other-open") setOtherOpenExpanded(true);
     setSelectedId(null);
   }
 
@@ -1202,6 +1221,8 @@ export function ActSurface({
       cycleKind: row.cycleKind,
       cycleKey: row.cycleKey,
       title: row.wording,
+      cycleLabel: row.cycleLabel,
+      contextId: row.contextId,
     });
   }
 
@@ -1231,34 +1252,14 @@ export function ActSurface({
     composition !== null &&
     composition.mustDo.length === 0 &&
     composition.stewardship.length === 0 &&
-    composition.today.length === 0;
+    composition.today.length === 0 &&
+    correction === null;
 
   return (
     <div data-act-surface="true">
       <h2>ACT</h2>
       <p className="orient-capture-lead">What deserves my attention?</p>
-      {correction ? (
-        <div
-          data-completion-correction="true"
-          data-correction-kind={correction.kind}
-        >
-          <p>{correction.title}</p>
-          <p>{correction.kind === "task" ? "Marked complete." : "Marked satisfied."}</p>
-          {correctionError ? <p role="alert">{correctionError}</p> : null}
-          <div className="orient-actions">
-            <button
-              type="button"
-              className="orient-action"
-              data-still-open={correction.kind === "task" ? "true" : undefined}
-              data-stewardship-withdraw={correction.kind === "stewardship" ? "true" : undefined}
-              disabled={correcting}
-              onClick={() => void correct()}
-            >
-              {correction.kind === "task" ? "Still open" : "Not yet this cycle"}
-            </button>
-          </div>
-        </div>
-      ) : selected ? (
+      {selected ? (
         <div data-act-inspect="true">
           <TaskDetail
             task={selected}
@@ -1277,6 +1278,9 @@ export function ActSurface({
           stewardshipRevisions={stewardshipRevisions}
           stewardshipSatisfactions={stewardshipSatisfactions}
           composition={composition}
+          correction={correction}
+          correctionError={correctionError}
+          correcting={correcting}
           primaryEmpty={primaryEmpty}
           contexts={contexts}
           otherOpenExpanded={otherOpenExpanded}
@@ -1285,8 +1289,10 @@ export function ActSurface({
           onStart={onStart}
           onComplete={completeForCorrection}
           onSatisfy={satisfyForCorrection}
+          onCorrect={() => void correct()}
         />
       )}
+
       <div className="orient-actions">
         <button type="button" className="orient-action" data-act-add-task="true" onClick={onAddTask}>
           Add Task
@@ -1430,6 +1436,9 @@ function ActAttentionList({
   stewardshipRevisions,
   stewardshipSatisfactions,
   composition,
+  correction,
+  correctionError,
+  correcting,
   primaryEmpty,
   contexts,
   otherOpenExpanded,
@@ -1438,6 +1447,7 @@ function ActAttentionList({
   onStart,
   onComplete,
   onSatisfy,
+  onCorrect,
 }: {
   tasks: SourceRead<Task>;
   work: SourceRead<WorkScheduleEntry>;
@@ -1445,6 +1455,9 @@ function ActAttentionList({
   stewardshipRevisions: SourceRead<StewardshipDefinitionRevision>;
   stewardshipSatisfactions: SourceRead<StewardshipSatisfaction>;
   composition: ReturnType<typeof composeActAttention> | null;
+  correction: ActCorrection | null;
+  correctionError: string | null;
+  correcting: boolean;
   primaryEmpty: boolean;
   contexts: SourceRead<Context>;
   otherOpenExpanded: boolean;
@@ -1453,6 +1466,7 @@ function ActAttentionList({
   onStart: (taskId: string) => Promise<void>;
   onComplete: (taskId: string) => Promise<void>;
   onSatisfy: (row: ActStewardshipRow) => Promise<void>;
+  onCorrect: () => void;
 }) {
   if (tasks.status === "failed") {
     return (
@@ -1491,18 +1505,42 @@ function ActAttentionList({
   }
   if (!composition) return <p>Reading attention.</p>;
 
-  const hasOther = composition.otherOpen.length > 0;
-  if (primaryEmpty && !hasOther) {
+  const taskAck = correction?.kind === "task" ? correction : null;
+  const stewardshipAck = correction?.kind === "stewardship" ? correction : null;
+  const mustDoRows = composition.mustDo.filter((task) => taskAck?.id !== task.id);
+  const todayRows = composition.today.filter((task) => taskAck?.id !== task.id);
+  const otherOpenRows = composition.otherOpen.filter((task) => taskAck?.id !== task.id);
+  const stewardshipRows = composition.stewardship.filter(
+    (row) =>
+      !(
+        stewardshipAck &&
+        row.definitionId === stewardshipAck.definitionId &&
+        row.cycleKind === stewardshipAck.cycleKind &&
+        row.cycleKey === stewardshipAck.cycleKey
+      ),
+  );
+  const secondaryOpenCount = otherOpenRows.length;
+  const hasSecondaryOpen = secondaryOpenCount > 0;
+  const otherAck = taskAck !== null && taskAck.section === "other-open";
+  const showOther = hasSecondaryOpen || otherAck;
+  const showMustDo =
+    mustDoRows.length > 0 || (taskAck !== null && taskAck.section === "must-do");
+  const showStewardship = stewardshipRows.length > 0 || stewardshipAck !== null;
+  const showToday =
+    todayRows.length > 0 || (taskAck !== null && taskAck.section === "today");
+  const showOtherList = otherOpenExpanded || otherAck;
+
+  if (primaryEmpty && !showOther && correction === null) {
     return <p data-act-empty="true">Nothing established needs attention here.</p>;
   }
 
   return (
     <div data-act-attention="true">
-      {composition.mustDo.length > 0 ? (
+      {showMustDo ? (
         <section data-act-section="must-do">
           <h3 className="orient-act-section-title">Must do</h3>
           <ul data-act-list="true">
-            {composition.mustDo.map((task) => (
+            {mustDoRows.map((task) => (
               <ActTaskRow
                 key={task.id}
                 task={task}
@@ -1512,14 +1550,23 @@ function ActAttentionList({
                 onComplete={onComplete}
               />
             ))}
+            {taskAck?.section === "must-do" ? (
+              <ActAcknowledgedTaskRow
+                id={taskAck.id}
+                title={taskAck.title}
+                correcting={correcting}
+                error={correctionError}
+                onCorrect={onCorrect}
+              />
+            ) : null}
           </ul>
         </section>
       ) : null}
-      {composition.stewardship.length > 0 ? (
+      {showStewardship ? (
         <section data-act-section="stewardship">
           <h3 className="orient-act-section-title">Stewardship</h3>
           <ul data-act-list="true">
-            {composition.stewardship.map((row) => (
+            {stewardshipRows.map((row) => (
               <ActStewardshipRowView
                 key={`${row.definitionId}:${row.cycleKind}:${row.cycleKey}`}
                 row={row}
@@ -1527,14 +1574,23 @@ function ActAttentionList({
                 onSatisfy={onSatisfy}
               />
             ))}
+            {stewardshipAck ? (
+              <ActAcknowledgedStewardshipRow
+                correction={stewardshipAck}
+                contexts={contexts}
+                correcting={correcting}
+                error={correctionError}
+                onCorrect={onCorrect}
+              />
+            ) : null}
           </ul>
         </section>
       ) : null}
-      {composition.today.length > 0 ? (
+      {showToday ? (
         <section data-act-section="today">
           <h3 className="orient-act-section-title">Today</h3>
           <ul data-act-list="true">
-            {composition.today.map((task) => (
+            {todayRows.map((task) => (
               <ActTaskRow
                 key={task.id}
                 task={task}
@@ -1544,23 +1600,34 @@ function ActAttentionList({
                 onComplete={onComplete}
               />
             ))}
+            {taskAck?.section === "today" ? (
+              <ActAcknowledgedTaskRow
+                id={taskAck.id}
+                title={taskAck.title}
+                correcting={correcting}
+                error={correctionError}
+                onCorrect={onCorrect}
+              />
+            ) : null}
           </ul>
         </section>
       ) : null}
-      {hasOther ? (
-        <section data-act-section="other-open">
-          <button
-            type="button"
-            className="orient-action orient-act-other-toggle"
-            data-act-other-open="true"
-            aria-expanded={otherOpenExpanded}
-            onClick={onToggleOtherOpen}
-          >
-            Other open ({composition.otherOpen.length})
-          </button>
-          {otherOpenExpanded ? (
+      {showOther ? (
+        <section data-act-section="other-open" data-act-secondary="true">
+          {hasSecondaryOpen ? (
+            <button
+              type="button"
+              className="orient-act-other-toggle"
+              data-act-other-open="true"
+              aria-expanded={showOtherList}
+              onClick={onToggleOtherOpen}
+            >
+              {actSecondaryTasksDisclosureLabel(secondaryOpenCount)}
+            </button>
+          ) : null}
+          {showOtherList ? (
             <ul data-act-list="true" data-act-other-list="true">
-              {composition.otherOpen.map((task) => (
+              {otherOpenRows.map((task) => (
                 <ActTaskRow
                   key={task.id}
                   task={task}
@@ -1570,6 +1637,15 @@ function ActAttentionList({
                   onComplete={onComplete}
                 />
               ))}
+              {otherAck && taskAck ? (
+                <ActAcknowledgedTaskRow
+                  id={taskAck.id}
+                  title={taskAck.title}
+                  correcting={correcting}
+                  error={correctionError}
+                  onCorrect={onCorrect}
+                />
+              ) : null}
             </ul>
           ) : null}
         </section>
@@ -1619,8 +1695,61 @@ function ActTaskRow({
         ) : null}
         {context ? <span className="orient-act-meta">{context}</span> : null}
       </button>
-      <button type="button" className="orient-action" data-act-start={task.id} onClick={() => void onStart(task.id)}>
+      <button
+        type="button"
+        className="orient-action orient-act-start"
+        data-act-start={task.id}
+        onClick={() => void onStart(task.id)}
+      >
         Start
+      </button>
+    </li>
+  );
+}
+
+function ActAcknowledgedTaskRow({
+  id,
+  title,
+  correcting,
+  error,
+  onCorrect,
+}: {
+  id: string;
+  title: string;
+  correcting: boolean;
+  error: string | null;
+  onCorrect: () => void;
+}) {
+  return (
+    <li
+      data-act-row={id}
+      data-act-kind="task"
+      data-act-acknowledged="true"
+      data-completion-correction="true"
+      data-correction-kind="task"
+    >
+      <label className="orient-act-check">
+        <input
+          type="checkbox"
+          aria-label={`Completed ${title}`}
+          data-act-complete={id}
+          data-act-acknowledged-check="true"
+          checked
+          onChange={() => {}}
+        />
+      </label>
+      <div className="orient-act-select">
+        <span className="orient-act-title orient-act-title-done">{title}</span>
+        {error ? <p role="alert">{error}</p> : null}
+      </div>
+      <button
+        type="button"
+        className="orient-action orient-act-start"
+        data-still-open="true"
+        disabled={correcting}
+        onClick={onCorrect}
+      >
+        Undo
       </button>
     </li>
   );
@@ -1661,6 +1790,62 @@ function ActStewardshipRowView({
     </li>
   );
 }
+
+function ActAcknowledgedStewardshipRow({
+  correction,
+  contexts,
+  correcting,
+  error,
+  onCorrect,
+}: {
+  correction: Extract<ActCorrection, { kind: "stewardship" }>;
+  contexts: SourceRead<Context>;
+  correcting: boolean;
+  error: string | null;
+  onCorrect: () => void;
+}) {
+  const context = contextName(contexts, correction.contextId);
+  const rowKey = `${correction.definitionId}:${correction.cycleKind}:${correction.cycleKey}`;
+  return (
+    <li
+      data-act-row={rowKey}
+      data-act-kind="stewardship"
+      data-act-acknowledged="true"
+      data-completion-correction="true"
+      data-correction-kind="stewardship"
+      data-act-stewardship-definition={correction.definitionId}
+      data-act-stewardship-cycle-kind={correction.cycleKind}
+      data-act-stewardship-cycle-key={correction.cycleKey}
+    >
+      <label className="orient-act-check">
+        <input
+          type="checkbox"
+          aria-label={`Satisfied ${correction.title}`}
+          data-act-satisfy={rowKey}
+          data-act-acknowledged-check="true"
+          checked
+          onChange={() => {}}
+        />
+      </label>
+      <div className="orient-act-select">
+        <span className="orient-act-title orient-act-title-done">{correction.title}</span>
+        <span className="orient-act-meta">{correction.cycleLabel}</span>
+        {context ? <span className="orient-act-meta">{context}</span> : null}
+        {error ? <p role="alert">{error}</p> : null}
+      </div>
+      <button
+        type="button"
+        className="orient-action orient-act-start"
+        data-stewardship-withdraw="true"
+        disabled={correcting}
+        onClick={onCorrect}
+      >
+        Undo
+      </button>
+    </li>
+  );
+}
+
 
 function TaskDetail({
   task,
