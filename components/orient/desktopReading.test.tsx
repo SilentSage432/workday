@@ -264,8 +264,9 @@ describe("desktop reading", () => {
     const desktop = await renderView();
     expect(desktop.querySelector("[data-form]")?.getAttribute("data-form")).toBe("desktop");
     expect(desktop.querySelector("[data-composition]")).toBeNull();
-    expect(desktop.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(desktop.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(desktop.querySelector(".orient-desktop")).not.toBeNull();
+    expect(desktop.querySelector("[data-day-territory]")).not.toBeNull();
     expect(desktop.querySelector("[data-time-surface]")).toBeNull();
     expect(desktop.querySelector(".orient-phone")).toBeNull();
     expect(desktop.querySelector("[data-desktop-thread]")).not.toBeNull();
@@ -273,13 +274,24 @@ describe("desktop reading", () => {
 
     const phone = await renderView({ phone: true });
     expect(phone.querySelector("[data-form]")?.getAttribute("data-form")).toBe("phone");
+    expect(phone.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(phone.querySelector(".orient-phone")).not.toBeNull();
     expect(phone.querySelector(".orient-desktop")).toBeNull();
     expect(phone.querySelector("[data-time-surface]")).toBeNull();
   });
 
+  it("keeps Present reachable through LOOK with peer Now composition", async () => {
+    const view = await renderView({});
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    await ask(view, "Present");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-desktop-now]")).not.toBeNull();
+    expect(view.querySelector("[data-day-inscription]")).toBeNull();
+  });
+
   it("reads Present from authoritative Now and peer truths, with the thread apart from them", async () => {
     const view = await renderView({});
+    await ask(view, "Present");
     expect(view.querySelector("[data-region='where'] [data-desktop-now]")?.textContent).toMatch(/10:30/);
     expect(view.querySelector("[data-desktop-now]")?.textContent).toContain("Oct");
     const memberships = [...view.querySelectorAll("[data-membership] button")];
@@ -313,6 +325,7 @@ describe("desktop reading", () => {
   it("opens Exact time from Present without a day signature", async () => {
     const anchors: string[] = [];
     const view = await renderView({ onAnchor: (date) => anchors.push(date) });
+    await ask(view, "Present");
     await act(async () => {
       (view.querySelector("[data-present-precision]") as HTMLButtonElement).click();
     });
@@ -573,7 +586,8 @@ describe("desktop reading", () => {
     const view = await renderView({});
     const reading = view.querySelector(".orient-desktop") as HTMLElement;
     reading.dataset.kept = "yes";
-    expect(view.querySelector("[data-day-signature]")).toBeNull();
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    expect(view.querySelector("[data-day-territory]")).not.toBeNull();
     expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
     const add = view.querySelector("[data-add-control]") as HTMLButtonElement;
     await act(async () => {
@@ -588,7 +602,7 @@ describe("desktop reading", () => {
     expect(view.querySelector("[data-borrowed-operation]")?.getAttribute("data-borrowed-operation")).toBe("add");
     expect(view.querySelector("[data-borrow-width]")?.getAttribute("data-borrow-width")).toBe("tight");
     expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
-    expect(view.querySelector("[data-day-signature]")).toBeNull();
+    expect(view.querySelector("[data-day-territory]")).not.toBeNull();
     expect(document.activeElement).toBe(view.querySelector("[role='dialog']"));
     await act(async () => {
       window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
@@ -599,8 +613,8 @@ describe("desktop reading", () => {
     expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
     expect(view.querySelector("[data-borrow-mode]")).toBeNull();
     expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
-    expect(view.querySelector("[data-day-signature]")).toBeNull();
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-day-territory]")).not.toBeNull();
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(document.activeElement).toBe(add);
 
     await act(async () => {
@@ -631,7 +645,7 @@ describe("desktop reading", () => {
     expect(view.querySelector("[data-borrowed-operation]")?.getAttribute("data-borrowed-operation")).toBe("act");
     expect(view.querySelector("[data-borrow-width]")?.getAttribute("data-borrow-width")).toBe("standard");
     expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(view.querySelector("[data-depth]")?.getAttribute("data-depth")).toBe("reading");
     await act(async () => {
       window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
@@ -640,7 +654,7 @@ describe("desktop reading", () => {
     expect(view.querySelector("[data-act-surface]")).toBeNull();
     expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
     expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(document.activeElement).toBe(actControl);
   });
 

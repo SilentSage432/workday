@@ -363,7 +363,7 @@ describe("canonical reread on the reading", () => {
   it("drops a deleted fact, closes its inspection, and stays on the same question", async () => {
     const replace: { current: ((next: OrientSources) => void) | null } = { current: null };
     const { view, anchors } = await renderReading(replace, [block()]);
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     await openBlock(view);
     expect(view.querySelector("[data-fact-inspection]")).not.toBeNull();
     await act(async () => {
@@ -371,7 +371,7 @@ describe("canonical reread on the reading", () => {
     });
     expect(view.querySelector('button[data-source-kind="block"]')).toBeNull();
     expect(view.querySelector("[data-fact-inspection]")).toBeNull();
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(view.querySelector("[data-viewpoint]")?.getAttribute("data-viewpoint")).toBe("follows-today");
     expect(anchors).toEqual([]);
   });
@@ -385,7 +385,7 @@ describe("canonical reread on the reading", () => {
     });
     expect(view.querySelector('button[data-source-kind="block"]')).toBeNull();
     expect(view.querySelector("[data-fact-inspection]")).toBeNull();
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(anchors).toEqual([]);
   });
 });

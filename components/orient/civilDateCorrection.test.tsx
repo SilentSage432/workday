@@ -356,6 +356,8 @@ describe("timed fact civil-date correction", () => {
     });
     expect(view.querySelector("[data-form]")?.getAttribute("data-form")).toBe("desktop");
     expect(view.querySelector("[data-viewpoint]")?.getAttribute("data-viewpoint")).toBe("follows-today");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    await ask(view, "Present");
     await openFact(view, "protected_time");
     await act(async () => {
       buttonNamed(view, "Edit").click();
@@ -422,6 +424,7 @@ describe("timed fact civil-date correction", () => {
         };
       },
     });
+    await ask(view, "Present");
     await openFact(view, "block");
     expect(view.querySelector("[data-fact-inspection]")?.textContent).toContain("Serves priority · Keep the bench");
     await act(async () => {
@@ -464,6 +467,7 @@ describe("timed fact civil-date correction", () => {
     const { view, updates } = await renderHost({
       seed: sources({ commitments: ready([original]) }),
     });
+    await ask(view, "Present");
     await openFact(view, "commitment");
     await act(async () => {
       buttonNamed(view, "Edit").click();
@@ -494,6 +498,7 @@ describe("timed fact civil-date correction", () => {
     const { view, anchors, updates } = await renderHost({
       seed: sources({ blocks: ready([block()]) }),
     });
+    await ask(view, "Present");
     await openFact(view, "block");
     await act(async () => {
       buttonNamed(view, "Edit").click();
@@ -537,6 +542,7 @@ describe("timed fact civil-date correction", () => {
       fail: "Could not save this block.",
     });
     const viewpoint = view.querySelector("[data-viewpoint]")?.getAttribute("data-viewpoint");
+    await ask(view, "Present");
     await openFact(view, "block");
     await act(async () => {
       buttonNamed(view, "Edit").click();

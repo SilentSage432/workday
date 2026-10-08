@@ -252,6 +252,9 @@ describe("production orient instrument", () => {
     expect(view.textContent).not.toContain("Earlier");
     expect(view.textContent).not.toContain("Later");
     expect([...view.querySelectorAll("button")].some((item) => item.textContent?.trim() === "Sign out")).toBe(false);
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    expect(view.querySelector("[data-day-territory]")).not.toBeNull();
+    await ask(view, "Present");
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
     expect(view.textContent).not.toContain("Protect this time");
     expect(view.querySelector("[data-desktop-now]")).not.toBeNull();
@@ -586,6 +589,12 @@ describe("production orient instrument", () => {
 
   it("keeps a failed thread distinct from absence and independent of Now", async () => {
     const view = await renderView({ thread: { status: "failed", message: "Thread storage failed." } });
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    const dayThread = view.querySelector("[data-desktop-thread]");
+    expect(dayThread?.textContent).toContain("could not be read");
+    expect(dayThread?.textContent).not.toContain("No thread is established.");
+    expect(dayThread?.getAttribute("data-thread-weight")).toBe("ordinary");
+    await ask(view, "Present");
     const thread = view.querySelector("[data-desktop-thread]");
     expect(thread?.textContent).toContain("could not be read");
     expect(thread?.textContent).not.toContain("No thread is established.");
@@ -637,6 +646,8 @@ describe("production orient instrument", () => {
   it("opens Present on the authoritative day and does not adopt October 3", async () => {
     const anchors: string[] = [];
     const view = await renderView({ onAnchor: (date) => anchors.push(date) });
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    await ask(view, "Present");
     expect(view.querySelector("[data-desktop-now]")).not.toBeNull();
     expect(view.querySelector("[data-day-inscription]")).toBeNull();
     expect(view.querySelector(".orient-day")).toBeNull();
@@ -656,6 +667,7 @@ describe("production orient instrument", () => {
   it("keeps the mounted days when a manual scroll crosses midnight", async () => {
     const anchors: string[] = [];
     const view = await renderView({ onAnchor: (date) => anchors.push(date) });
+    await ask(view, "Present");
     await openExact(view);
     const scroller = layOutVerticalField(view);
     scroller.scrollTop = 80;
@@ -918,7 +930,7 @@ describe("work schedule authority", () => {
       onAnchor: (date) => anchors.push(date),
       sources: { ...sources(), work: ready([]) },
     });
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(view.querySelector("[data-viewpoint]")?.getAttribute("data-viewpoint")).toBe("follows-today");
     await openManage(view);
     const editor = view.querySelector("[data-work-schedule]");
@@ -929,7 +941,7 @@ describe("work schedule authority", () => {
     expect(view.querySelectorAll("[data-work-day]")).toHaveLength(7);
     expect([...view.querySelectorAll("[data-work-state]")].every((day) => day.getAttribute("data-work-state") === "unknown")).toBe(true);
     expect(view.textContent).toContain("Not entered");
-    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     expect(view.querySelector("[data-viewpoint]")?.getAttribute("data-viewpoint")).toBe("follows-today");
     expect(view.querySelector("[data-field]")).not.toBeNull();
     expect(view.querySelector('a[href="/schedule"]')).toBeNull();

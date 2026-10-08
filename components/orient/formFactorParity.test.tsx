@@ -215,7 +215,7 @@ describe("cross-form-factor semantic parity", () => {
     expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
     expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
     expect(view.querySelector("[data-look-role]")?.getAttribute("data-look-role")).toBe("navigator-lens");
-    expect(view.querySelector("[data-look-orientation]")?.textContent).toContain("Present");
+    expect(view.querySelector("[data-look-orientation]")?.textContent).toContain("Day");
     expect(view.querySelector("[data-look-operations-disclosure]")).not.toBeNull();
     expect(view.querySelector("[data-question-list]")).not.toBeNull();
     expect(view.querySelector("[data-relocation]")).not.toBeNull();
@@ -316,6 +316,7 @@ describe("cross-form-factor semantic parity", () => {
 
   it("phone LOOK keeps full operations list and does not use desktop lateral borrow", async () => {
     const view = await renderForm(true);
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     await openLook(view);
     expect(view.querySelector("[data-look-surface]")).not.toBeNull();
     expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
@@ -324,6 +325,37 @@ describe("cross-form-factor semantic parity", () => {
     expect(view.querySelector("[data-look-orientation]")).toBeNull();
     expect(view.querySelector("[data-look-notes]")?.textContent).toBe("Notes");
     expect(view.querySelector("[role='dialog']")?.getAttribute("data-borrowed-surface")).toBe("sheet");
+  });
+
+  it("desktop and phone fresh startups ask Day, and LOOK still reaches Present", async () => {
+    const desktop = await renderForm(false);
+    expect(desktop.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    await openLook(desktop);
+    await act(async () => {
+      const list = desktop.querySelector("[data-question-list]") as HTMLElement;
+      const present = [...list.querySelectorAll("button")].find((item) => item.textContent?.trim() === "Present");
+      present?.click();
+    });
+    expect(desktop.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(desktop.querySelector("[data-desktop-now]")).not.toBeNull();
+
+    act(() => {
+      root?.unmount();
+    });
+    container?.remove();
+    root = null;
+    container = null;
+    restoreMedia?.();
+
+    const phone = await renderForm(true);
+    expect(phone.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    await openLook(phone);
+    await act(async () => {
+      const list = phone.querySelector("[data-question-list]") as HTMLElement;
+      const present = [...list.querySelectorAll("button")].find((item) => item.textContent?.trim() === "Present");
+      present?.click();
+    });
+    expect(phone.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
   });
 
   it("preserves desktop Week DTM specialization and phone LOOK · ADD · ACT chrome density difference", async () => {

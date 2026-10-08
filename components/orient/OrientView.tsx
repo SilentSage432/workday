@@ -136,7 +136,7 @@ export function OrientView({
   void _capture;
   const clock = now;
   const bringNow = useRef(true);
-  const [question, setQuestion] = useState<OrientQuestion>(() => (readInstrumentForm() === "phone" ? "day" : "present"));
+  const [question, setQuestion] = useState<OrientQuestion>("day");
   const [focus, setFocus] = useState<ContextFocus>({ kind: "everything" });
   const [surface, setSurface] = useState<Surface>(() => readExternalCalendarsSurfaceFromLocation());
   const workDismissRef = useRef<WorkScheduleDismiss | null>(null);

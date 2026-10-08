@@ -75,7 +75,7 @@ Desktop wider than 959px still shows the continuous canvas, the centered Week, t
 
 ## Unresolved
 
-- The phone reading was directionally accepted, and its portrait composition is [PRODUCTION-PHONE-EXPERIENCE-001A.md](PRODUCTION-PHONE-EXPERIENCE-001A.md). A fresh phone entry now opens on Day; that change is [PRODUCTION-PHONE-EXPERIENCE-002.md](PRODUCTION-PHONE-EXPERIENCE-002.md). Desktop still opens on Present.
+- The phone reading was directionally accepted, and its portrait composition is [PRODUCTION-PHONE-EXPERIENCE-001A.md](PRODUCTION-PHONE-EXPERIENCE-001A.md). A fresh phone entry now opens on Day; that change is [PRODUCTION-PHONE-EXPERIENCE-002.md](PRODUCTION-PHONE-EXPERIENCE-002.md). Desktop later adopted the same Day startup in [DESKTOP-DEFAULT-DAY-CLOSEOUT-001.md](DESKTOP-DEFAULT-DAY-CLOSEOUT-001.md); Present remains reachable through LOOK.
 - A Galaxy S26 Ultra in landscape can be wider than 959px. It then receives the desktop composition. Portrait is the phone reading this tranche built.
 - Richer task readings remain deferred until a product decision gives each truth its own meaning.
 - Desktop drawers remain unauthorized.

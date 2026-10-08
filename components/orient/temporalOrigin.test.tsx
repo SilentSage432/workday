@@ -264,7 +264,7 @@ describe("production temporal origin", () => {
         );
       });
       expect(anchors).toEqual([]);
-      expect(held.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+      expect(held.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
       await act(async () => {
         held.querySelector<HTMLButtonElement>("[data-question-control]")?.click();
       });

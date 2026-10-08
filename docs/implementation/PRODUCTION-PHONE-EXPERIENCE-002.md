@@ -22,7 +22,7 @@ A clock tick updates Now. It does not change the question or a selected Day anch
 
 Choosing Present moves to authoritative Now. Choosing Day again restores the Day anchor remembered for that question. After Month asks October 8, Present shows October 5's instant, and Day returns to October 8.
 
-Desktop still opens on Present. Shared ontology does not require the same starting composition.
+Historically, desktop opened on Present while phone opened on Day; shared ontology did not require the same starting composition. [DESKTOP-DEFAULT-DAY-CLOSEOUT-001.md](DESKTOP-DEFAULT-DAY-CLOSEOUT-001.md) later made Day the canonical fresh-start question on both forms. Present remains reachable through LOOK.
 
 ## Deferred evidence
 

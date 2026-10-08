@@ -571,6 +571,9 @@ describe("desktop composition", () => {
     expect(view.querySelector("[data-phone-reading]")?.getAttribute("data-phone-reading")).toBe("false");
     expect(view.querySelector(".orient-phone")).toBeNull();
     expect(view.querySelector(".orient-desktop")).not.toBeNull();
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    expect(view.querySelector("[data-day-territory]")).not.toBeNull();
+    await ask(view, "Present");
     expect(view.querySelector("[data-desktop-now]")).not.toBeNull();
     expect(view.querySelector("[data-day-inscription]")).toBeNull();
     expect(view.querySelector("[data-time-surface]")).toBeNull();
