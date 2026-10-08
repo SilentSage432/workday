@@ -70,6 +70,11 @@ import {
   StewardshipManageSurface,
   ThreadSurface,
 } from "@/components/orient/Surfaces";
+import {
+  DirectRecurringTaskSurface,
+  RecurringTaskDetailSurface,
+  RecurringTaskManageSurface,
+} from "@/components/orient/RecurringTaskSurfaces";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
 import type { Context } from "@/domain/context";
 import type { SourceRead } from "@/components/currentTemporalReading";
@@ -99,6 +104,9 @@ type Surface =
   | { kind: "create-stewardship"; returnTo?: "act" | "stewardship-manage" }
   | { kind: "stewardship-manage" }
   | { kind: "stewardship-detail"; definitionId: string }
+  | { kind: "create-recurring-task"; returnTo?: "recurring-task-manage" }
+  | { kind: "recurring-task-manage" }
+  | { kind: "recurring-task-detail"; definitionId: string }
   | { kind: "create-note" }
   | { kind: "create-all-day" }
   | { kind: "capture" }
@@ -1042,7 +1050,9 @@ export function OrientView({
                 surface.kind === "look" ||
                 surface.kind === "notes" ||
                 surface.kind === "stewardship-manage" ||
-                surface.kind === "stewardship-detail"
+                surface.kind === "stewardship-detail" ||
+                surface.kind === "recurring-task-manage" ||
+                surface.kind === "recurring-task-detail"
               }
               onClick={(event) =>
                 openFrom(
@@ -1050,7 +1060,9 @@ export function OrientView({
                   surface.kind === "look" ||
                     surface.kind === "notes" ||
                     surface.kind === "stewardship-manage" ||
-                    surface.kind === "stewardship-detail"
+                    surface.kind === "stewardship-detail" ||
+                    surface.kind === "recurring-task-manage" ||
+                    surface.kind === "recurring-task-detail"
                     ? { kind: "none" }
                     : { kind: "look" },
                 )
@@ -1068,6 +1080,7 @@ export function OrientView({
                 surface.kind === "add" ||
                 surface.kind === "create-task" ||
                 surface.kind === "create-stewardship" ||
+                surface.kind === "create-recurring-task" ||
                 surface.kind === "create-note" ||
                 surface.kind === "create-all-day"
               }
@@ -1212,6 +1225,7 @@ export function OrientView({
               onManageExternalCalendars={() => openExternalCalendars()}
               onOpenNotes={() => setSurface({ kind: "notes" })}
               onOpenStewardship={() => setSurface({ kind: "stewardship-manage" })}
+              onOpenRecurringTasks={() => setSurface({ kind: "recurring-task-manage" })}
               contexts={contexts}
               onChooseFocus={(next) => {
                 setFocus(next);
@@ -1252,6 +1266,29 @@ export function OrientView({
               onClose={() => setSurface({ kind: "stewardship-manage" })}
             />
           ) : null}
+          {surface.kind === "recurring-task-manage" ? (
+            <RecurringTaskManageSurface
+              definitions={sources.recurringTaskDefinitions}
+              contexts={contexts}
+              onEstablish={() => setSurface({ kind: "create-recurring-task", returnTo: "recurring-task-manage" })}
+              onOpen={(definitionId) => setSurface({ kind: "recurring-task-detail", definitionId })}
+              onClose={closeSurface}
+            />
+          ) : null}
+          {surface.kind === "recurring-task-detail" ? (
+            <RecurringTaskDetailSurface
+              definitionId={surface.definitionId}
+              definitions={sources.recurringTaskDefinitions}
+              contexts={contexts}
+              onUpdate={actions.onUpdateRecurringTask}
+              onRetire={async (definitionId) => {
+                await actions.onRetireRecurringTask(definitionId);
+                setSurface({ kind: "recurring-task-manage" });
+              }}
+              onClose={() => setSurface({ kind: "recurring-task-manage" })}
+            />
+          ) : null}
+
           {surface.kind === "question" ? <QuestionList question={question} onChoose={chooseQuestion} /> : null}
           {surface.kind === "position" ? (
             <PositionSurface
@@ -1281,6 +1318,7 @@ export function OrientView({
           {surface.kind === "add" ? (
             <AddChooser
               onTask={() => setSurface({ kind: "create-task" })}
+              onRecurringTask={() => setSurface({ kind: "create-recurring-task" })}
               onStewardship={() => setSurface({ kind: "create-stewardship" })}
               onNote={() => setSurface({ kind: "create-note" })}
               onTimeOnTheDay={routeTimeOnTheDay}
@@ -1351,6 +1389,22 @@ export function OrientView({
               />
             </div>
           ) : null}
+          {surface.kind === "create-recurring-task" ? (
+            <div data-create-recurring-task-return={surface.returnTo ?? "none"}>
+              <DirectRecurringTaskSurface
+                contexts={contexts}
+                onEstablish={actions.onEstablishRecurringTask}
+                onClose={() => {
+                  if (surface.returnTo === "recurring-task-manage") {
+                    setSurface({ kind: "recurring-task-manage" });
+                    return;
+                  }
+                  closeSurface();
+                }}
+              />
+            </div>
+          ) : null}
+
           {surface.kind === "create-note" ? <DirectNoteSurface onClose={closeSurface} /> : null}
           {surface.kind === "create-all-day" ? (
             <AllDayEstablishmentSurface

@@ -117,11 +117,11 @@ These are different system-level meanings. Do not collapse them. Every establish
 
 | Kind | Meaning | Established instance |
 | --- | --- | --- |
-| Deadline | A completion boundary associated with a requirement | Bay Audits: Wednesday. Cycle Counts: Friday. Both use the Lowe's fiscal week. |
-| Target | A preferred completion point. It may be earlier than a deadline. It does not become a deadline on its own. | Bay Audits: early. Cycle Counts: well before Friday. FSR: morning-clock target, intended before approximately 10:00 AM, with an outer expectation of approximately 11:00 AM. |
+| Deadline | A completion boundary associated with a requirement | Bay Audits: Wednesday. Cycle Counts: Wednesday. Both use the Lowe's fiscal week. |
+| Target | A preferred completion point. It may be earlier than a deadline. It does not become a deadline on its own. | Bay Audits: early. Cycle Counts: well before Wednesday. FSR: morning-clock target, intended before approximately 10:00 AM, with an outer expectation of approximately 11:00 AM. |
 | Objective | A desired operating condition. It is not automatically a Task and is not a checkbox. It may contextualize Tasks. | Thursday department readiness, so weekend Work attention can emphasize customers and sales. Weekend sales and customer readiness. Power Hour customer focus. |
 
-Availability is a further timing fact for the known Work obligations: Bay Audits and Cycle Counts become available on the weekend. Availability is not a deadline.
+Availability is a further timing fact for the known Work obligations: Bay Audits become available Saturday; Cycle Counts become available Sunday. Availability is not a deadline and is not `planned_on`.
 
 Do not harden "approximately," "early," or "well before" into exact clock rules. Do not silently convert a target or an objective into a hard deadline.
 
@@ -138,7 +138,7 @@ The product supports absolute clock time. It also supports relative cadence posi
 - Power Hour, 10:00 AM → 2:00 PM, a Work Window
 - Full Shelf Replenishment, a Work opening responsibility whose target is on the morning clock: intended before approximately 10:00 AM, outer expectation approximately 11:00 AM. This is not modeled solely as a number of minutes after shift start. Different opening shifts may begin at different times while that clock expectation still applies.
 - Entered shift boundaries, such as 6:00 AM → 3:00 PM
-- Fiscal weekdays for Work obligation deadlines, including Wednesday and Friday
+- Fiscal weekdays for Work obligation deadlines, including Wednesday
 - The Saturday-first order of the Lowe's fiscal week, inside Work only
 
 **Relative position** describes a place inside a cadence or, in Work, inside a shift. Work examples include start of shift, early shift, final hour, and closeout. Lunch and afternoon remain named shift-clock positions from earlier discovery. Exact boundaries for relative phases are not defined. Do not copy shift phases into Contexts that have no shift.

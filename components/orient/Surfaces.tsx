@@ -875,6 +875,7 @@ export function LookSurface({
   onManageExternalCalendars,
   onOpenNotes,
   onOpenStewardship,
+  onOpenRecurringTasks,
   contexts,
   onChooseFocus,
   onClose,
@@ -890,6 +891,7 @@ export function LookSurface({
   onManageExternalCalendars: () => void;
   onOpenNotes: () => void;
   onOpenStewardship: () => void;
+  onOpenRecurringTasks: () => void;
   contexts: SourceRead<Context>;
   onChooseFocus: (focus: { kind: "everything" } | { kind: "context"; id: string; name: string }) => void;
   onClose: () => void;
@@ -931,6 +933,14 @@ export function LookSurface({
           >
             Stewardship
           </button>
+          <button
+            type="button"
+            className="orient-action"
+            data-look-recurring-tasks="true"
+            onClick={onOpenRecurringTasks}
+          >
+            Recurring Tasks
+          </button>
           <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
             Manage Work schedule
           </button>
@@ -953,6 +963,7 @@ export function LookSurface({
 
 export function AddChooser({
   onTask,
+  onRecurringTask,
   onStewardship,
   onNote,
   onTimeOnTheDay,
@@ -961,6 +972,7 @@ export function AddChooser({
   onClose,
 }: {
   onTask: () => void;
+  onRecurringTask: () => void;
   onStewardship: () => void;
   onNote: () => void;
   onTimeOnTheDay: () => void;
@@ -974,6 +986,9 @@ export function AddChooser({
       <div className="orient-actions">
         <button type="button" className="orient-action" data-add-choice="task" onClick={onTask}>
           Task
+        </button>
+        <button type="button" className="orient-action" data-add-choice="recurring-task" onClick={onRecurringTask}>
+          Recurring Task
         </button>
         <button type="button" className="orient-action" data-add-choice="stewardship" onClick={onStewardship}>
           Stewardship

@@ -209,14 +209,14 @@ Current Work requirements:
 
 | Definition | Becomes available | Deadline | Preferred target |
 | --- | --- | --- | --- |
-| Bay Audits | weekend | Wednesday | early |
-| Cycle Counts | weekend | Friday | well before Friday |
+| Bay Audits | Saturday | Wednesday | early |
+| Cycle Counts | Sunday | Wednesday | well before Wednesday |
 
 Those weekdays use the Lowe's Saturday-first fiscal week. That week does not define a universal calendar. See [CADENCE.md](CADENCE.md) and [TIME_MODEL.md](TIME_MODEL.md).
 
-The definition activates an occurrence for a period. Completing the occurrence satisfies that period and leaves the definition. The completed occurrence no longer burdens the rest of the period. In Work, that means later shifts in the period. No recurrence algorithm is defined.
+The definition activates an occurrence for a period. Completing the occurrence satisfies that period and leaves the definition. The completed occurrence no longer burdens the rest of the period. In Work, that means later shifts in the period.
 
-**Unresolved:** whether an occurrence is also a Task.
+A Recurring Obligation occurrence for these weekly concrete Work cases is a **materialized ordinary Task** for that Lowe's fiscal week. Completion is Task completion for that occurrence only. The next week receives a new Task. Recurrence does not reset one Task.
 
 ## Caregiving reminders
 

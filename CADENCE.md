@@ -99,23 +99,21 @@ This is the user's current operating strategy inside the Lowe's fiscal week. Tha
 
 ## Recurring obligations
 
-Bay Audits and Cycle Counts are Work Recurring Obligation definitions. The primitive is not limited to work. No non-work Recurring Obligation, with availability and a deadline, has been discovered. User-established caregiving reminders are a different fact and are not given a period here. See [DOMAIN.md](DOMAIN.md). The Wednesday and Friday boundaries use the Lowe's fiscal week, not a universal week.
+Bay Audits and Cycle Counts are Work Recurring Obligation definitions. The primitive is not limited to work. No non-work Recurring Obligation, with availability and a deadline, has been discovered. User-established caregiving reminders are a different fact and are not given a period here. See [DOMAIN.md](DOMAIN.md). Availability and due weekdays use the Lowe's fiscal week, not a universal week.
 
-Each definition activates an occurrence for a fiscal period. Completing that occurrence satisfies the period. The definition remains. A completed occurrence no longer burdens later shifts in that period.
+Each definition activates an occurrence for a fiscal period. Completing that occurrence satisfies the period. The definition remains. A completed occurrence no longer burdens later shifts in that period. The occurrence is a materialized ordinary Task for that week.
 
 ### Bay Audits
 
-- Available: weekend
+- Available: Saturday
 - Deadline: Wednesday
 - Preferred target: early
 
 ### Cycle Counts
 
-- Available: weekend
-- Deadline: Friday
-- Preferred target: well before Friday
-
-**Unresolved:** whether the occurrence is also a Task. No recurrence algorithm is defined.
+- Available: Sunday
+- Deadline: Wednesday
+- Preferred target: well before Wednesday
 
 ## Established versus not established
 

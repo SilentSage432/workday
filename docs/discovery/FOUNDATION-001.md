@@ -47,7 +47,7 @@ No architectural decision is made here. Decisions belong in [../decisions/README
 - Power Hour is 10:00 AM → 2:00 PM on the store clock, independent of the user's shift. Customer focus takes precedence. Tasks remain and stay resumable.
 - Fiscal week is Saturday → Friday. Do not normalize it to Monday-first.
 - Deadlines, preferred completion targets, and operating objectives are distinct. Weekend availability of an obligation is not a deadline.
-- Bay Audits: available weekend, required Wednesday, prefer early. Cycle Counts: available weekend, deadline Friday, prefer well before Friday. Early completion should lift the burden from later shifts.
+- Bay Audits: available Saturday, required Wednesday, prefer early. Cycle Counts: available Sunday, deadline Wednesday, prefer well before Wednesday. Early completion should lift the burden from later shifts. Occurrences are ordinary Tasks materialized per Lowe's fiscal week.
 - Opening's normal sequence is the ordered list in [CADENCE.md](../../CADENCE.md) through associate alignment, then manager and department work as available, then a more fluid afternoon.
 - Mid has no rigid sequence.
 - Closing concerns are the unordered list in [CADENCE.md](../../CADENCE.md). Some apply only when assigned.

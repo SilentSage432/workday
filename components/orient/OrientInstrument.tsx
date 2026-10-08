@@ -28,6 +28,11 @@ import type { BlockPriorityService, TaskPriorityService } from "@/domain/executi
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import type {
+  RecurringTaskDefinition,
+  RecurringTaskDefinitionPatch,
+  RecurringTaskWeekday,
+} from "@/domain/recurringTask";
+import type {
   StewardshipCycleKind,
   StewardshipDefinition,
   StewardshipDefinitionRevision,
@@ -49,6 +54,14 @@ import {
 } from "@/persistence/externalTemporal";
 import { loadPriorities } from "@/persistence/priority";
 import { createProtectedTime, deleteProtectedTime, loadProtectedTime, updateProtectedTime } from "@/persistence/protectedTime";
+import {
+  ensureEligibleRecurringTaskOccurrences,
+  ensureRecurringTaskOccurrenceForDefinition,
+  establishRecurringTaskDefinition,
+  loadRecurringTaskDefinitions,
+  retireRecurringTaskDefinition,
+  updateRecurringTaskDefinition,
+} from "@/persistence/recurringTask";
 import {
   editStewardshipDefinitionForward,
   establishStewardshipDefinition,
@@ -194,6 +207,19 @@ export function OrientInstrument() {
     const client = getSupabaseBrowserClient();
     const loaded = experienceLoadWindow(anchor);
     void (async () => {
+      // Actual civil now — never the navigated Orient viewpoint — drives recurrence.
+      const civilNowInstant = new Date();
+      const recurringTaskDefinitions = await readRows<RecurringTaskDefinition>(() =>
+        loadRecurringTaskDefinitions(client),
+      );
+      if (recurringTaskDefinitions.status === "ready") {
+        await ensureEligibleRecurringTaskOccurrences(client, {
+          definitions: recurringTaskDefinitions.rows,
+          instant: civilNowInstant,
+          timeZone,
+        });
+      }
+
       const [
         work,
         protectedTime,
@@ -261,6 +287,7 @@ export function OrientInstrument() {
           stewardshipDefinitions,
           stewardshipRevisions,
           stewardshipSatisfactions,
+          recurringTaskDefinitions,
         },
         contexts,
         tasks,
@@ -409,6 +436,43 @@ export function OrientInstrument() {
         onRetireStewardship: async (definitionId: string) => {
           await persist(async () => {
             await retireStewardshipDefinition(getSupabaseBrowserClient(), {
+              definitionId,
+              retiredAt: new Date(),
+            });
+          });
+        },
+        onEstablishRecurringTask: async (input: {
+          title: string;
+          availableWeekday: RecurringTaskWeekday;
+          dueWeekday: RecurringTaskWeekday;
+          contextId: string | null;
+        }) => {
+          await persist(async () => {
+            const client = getSupabaseBrowserClient();
+            const establishedAt = new Date();
+            const definition = await establishRecurringTaskDefinition(client, {
+              id: crypto.randomUUID(),
+              title: input.title,
+              availableWeekday: input.availableWeekday,
+              dueWeekday: input.dueWeekday,
+              contextId: input.contextId,
+              establishedAt,
+            });
+            if (!timeZone) return;
+            await ensureRecurringTaskOccurrenceForDefinition(client, definition, {
+              instant: establishedAt,
+              timeZone,
+            });
+          });
+        },
+        onUpdateRecurringTask: async (definitionId: string, patch: RecurringTaskDefinitionPatch) => {
+          await persist(async () => {
+            await updateRecurringTaskDefinition(getSupabaseBrowserClient(), definitionId, patch);
+          });
+        },
+        onRetireRecurringTask: async (definitionId: string) => {
+          await persist(async () => {
+            await retireRecurringTaskDefinition(getSupabaseBrowserClient(), {
               definitionId,
               retiredAt: new Date(),
             });

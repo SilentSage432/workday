@@ -13,6 +13,11 @@ import type {
 import type { BlockPriorityService, TaskPriorityService } from "@/domain/executionDirection";
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
+import type {
+  RecurringTaskDefinition,
+  RecurringTaskDefinitionPatch,
+  RecurringTaskWeekday,
+} from "@/domain/recurringTask";
 import type { StewardshipCycleKind, StewardshipDefinition, StewardshipDefinitionRevision, StewardshipSatisfaction } from "@/domain/stewardship";
 import type { Task } from "@/domain/task";
 import type { WeekWrite } from "@/components/weekDraft";
@@ -41,6 +46,7 @@ export type OrientSources = {
   stewardshipDefinitions: SourceRead<StewardshipDefinition>;
   stewardshipRevisions: SourceRead<StewardshipDefinitionRevision>;
   stewardshipSatisfactions: SourceRead<StewardshipSatisfaction>;
+  recurringTaskDefinitions: SourceRead<RecurringTaskDefinition>;
 };
 
 /**
@@ -54,6 +60,7 @@ export const EMPTY_EXTERNAL_ORIENT_SOURCES = {
   stewardshipDefinitions: { status: "ready" as const, rows: [] as const },
   stewardshipRevisions: { status: "ready" as const, rows: [] as const },
   stewardshipSatisfactions: { status: "ready" as const, rows: [] as const },
+  recurringTaskDefinitions: { status: "ready" as const, rows: [] as const },
 } satisfies Pick<
   OrientSources,
   | "externalConnections"
@@ -62,6 +69,7 @@ export const EMPTY_EXTERNAL_ORIENT_SOURCES = {
   | "stewardshipDefinitions"
   | "stewardshipRevisions"
   | "stewardshipSatisfactions"
+  | "recurringTaskDefinitions"
 >;
 
 export type CaptureBridge = {
@@ -99,6 +107,14 @@ export type OrientActions = {
   }) => Promise<void>;
   onEditStewardshipForward: (input: { definitionId: string; content: string }) => Promise<void>;
   onRetireStewardship: (definitionId: string) => Promise<void>;
+  onEstablishRecurringTask: (input: {
+    title: string;
+    availableWeekday: RecurringTaskWeekday;
+    dueWeekday: RecurringTaskWeekday;
+    contextId: string | null;
+  }) => Promise<void>;
+  onUpdateRecurringTask: (definitionId: string, patch: RecurringTaskDefinitionPatch) => Promise<void>;
+  onRetireRecurringTask: (definitionId: string) => Promise<void>;
   onTasksChanged: () => void;
   onLoadWorkWeek: (from: string, to: string) => Promise<WorkScheduleEntry[]>;
   onSaveWorkWeek: (weekStart: string, writes: WeekWrite[]) => Promise<void>;
