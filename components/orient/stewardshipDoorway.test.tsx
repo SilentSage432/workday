@@ -196,6 +196,58 @@ describe("stewardship doorway", () => {
     expect(view.querySelector("[data-direct-stewardship]")).not.toBeNull();
   });
 
+  it("selects Each workday by default with pressed selected-state semantics", async () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const localRoot = createRoot(host);
+    await act(async () => {
+      localRoot.render(
+        <DirectStewardshipSurface contexts={contexts()} onEstablish={async () => {}} onClose={() => {}} />,
+      );
+    });
+    const workday = host.querySelector(
+      '[data-stewardship-cycle-choice="workday"]',
+    ) as HTMLButtonElement;
+    const week = host.querySelector(
+      '[data-stewardship-cycle-choice="lowes_fiscal_week"]',
+    ) as HTMLButtonElement;
+    expect(workday.getAttribute("aria-pressed")).toBe("true");
+    expect(week.getAttribute("aria-pressed")).toBe("false");
+    expect(workday.matches('[aria-pressed="true"]')).toBe(true);
+    expect(week.matches('[aria-pressed="true"]')).toBe(false);
+    act(() => localRoot.unmount());
+    host.remove();
+  });
+
+  it("moves cycle selected-state from Each workday to Each work week", async () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const localRoot = createRoot(host);
+    await act(async () => {
+      localRoot.render(
+        <DirectStewardshipSurface contexts={contexts()} onEstablish={async () => {}} onClose={() => {}} />,
+      );
+    });
+    const workday = () =>
+      host.querySelector('[data-stewardship-cycle-choice="workday"]') as HTMLButtonElement;
+    const week = () =>
+      host.querySelector('[data-stewardship-cycle-choice="lowes_fiscal_week"]') as HTMLButtonElement;
+    await act(async () => {
+      week().click();
+    });
+    expect(workday().getAttribute("aria-pressed")).toBe("false");
+    expect(week().getAttribute("aria-pressed")).toBe("true");
+    expect(workday().matches('[aria-pressed="true"]')).toBe(false);
+    expect(week().matches('[aria-pressed="true"]')).toBe(true);
+    await act(async () => {
+      workday().click();
+    });
+    expect(workday().getAttribute("aria-pressed")).toBe("true");
+    expect(week().getAttribute("aria-pressed")).toBe("false");
+    act(() => localRoot.unmount());
+    host.remove();
+  });
+
   it("establishes through existing writer with human cycle mapping and optional Context", async () => {
     const established: {
       content: string;
@@ -217,6 +269,10 @@ describe("stewardship doorway", () => {
       );
     });
     expect(host.querySelector("[data-establish-stewardship]")?.hasAttribute("disabled")).toBe(true);
+    const workdayChoice = host.querySelector(
+      '[data-stewardship-cycle-choice="workday"]',
+    ) as HTMLButtonElement;
+    expect(workdayChoice.getAttribute("aria-pressed")).toBe("true");
     await act(async () => {
       const field = host.querySelector('[aria-label="Stewardship wording"]') as HTMLInputElement;
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(field, "Review pipelines");
@@ -225,6 +281,16 @@ describe("stewardship doorway", () => {
     await act(async () => {
       (host.querySelector('[data-stewardship-cycle-choice="lowes_fiscal_week"]') as HTMLButtonElement).click();
     });
+    expect(
+      (host.querySelector('[data-stewardship-cycle-choice="workday"]') as HTMLButtonElement).getAttribute(
+        "aria-pressed",
+      ),
+    ).toBe("false");
+    expect(
+      (
+        host.querySelector('[data-stewardship-cycle-choice="lowes_fiscal_week"]') as HTMLButtonElement
+      ).getAttribute("aria-pressed"),
+    ).toBe("true");
     await act(async () => {
       const select = host.querySelector('[aria-label="Stewardship context"]') as HTMLSelectElement;
       select.value = "context-1";
@@ -267,6 +333,11 @@ describe("stewardship doorway", () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(field, "Close the store");
       field.dispatchEvent(new Event("input", { bubbles: true }));
     });
+    expect(
+      (host2.querySelector('[data-stewardship-cycle-choice="workday"]') as HTMLButtonElement).getAttribute(
+        "aria-pressed",
+      ),
+    ).toBe("true");
     await act(async () => {
       (host2.querySelector("[data-establish-stewardship]") as HTMLButtonElement).click();
     });

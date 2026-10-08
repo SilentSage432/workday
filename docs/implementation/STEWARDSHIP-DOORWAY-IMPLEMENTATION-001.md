@@ -91,10 +91,26 @@ No dedicated dashboard.
 
 Stewardship setup polish, unretire, history browser, categories, scoring, notifications, employee/zone models, desktop redesign.
 
+## Physical-acceptance refinement
+
+**STEWARDSHIP-CYCLE-SELECTION-REFINEMENT-001** (baseline `17fde71`):
+
+Physical acceptance confirmed establishment, LOOK management, and ACT Work gating.
+Remaining defect: cycle choice did not paint a clear selected state.
+
+Correction (presentation only):
+
+- Keep default `workday`, `aria-pressed`, and Save mapping unchanged.
+- Selected cycle reuses Orient key selected vocabulary (fill, border, text) plus
+  weight, inset edge, and a “Selected” label so selection is not color-alone.
+- Scoped to `[data-stewardship-cycle]`. Inspect/edit flows show cycle as text
+  only; no second selector to align.
+- No persistence, ACT admission, Work-gate, schema, or data changes.
+
 ## Validation
 
-- Targeted doorway / ACT / stewardship / ActiveThread / fiscal-week — pass
-- Full suite: 113 files / 974 tests — pass
+- Targeted doorway / ACT / stewardship / LOOK-ADD-ACT / phone — pass
+- Full suite: 113 files / 976 tests — pass
 - Lint — pass
 - Typecheck — pass
 - Production build — pass
