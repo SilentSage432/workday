@@ -399,6 +399,7 @@ describe("desktop reading", () => {
     expect(territory).not.toBeNull();
     expect(territory?.getAttribute("data-day-inscription")).toBe("true");
     expect(territory?.getAttribute("data-temporal-axis")).toBe("local-clock-24h");
+    expect(territory?.getAttribute("data-territory-material")).toBe("open");
     expect(view.querySelector("[data-day-axis]")).not.toBeNull();
     expect(view.querySelector("[data-day-field]")).toBeNull();
     expect(view.querySelector("[data-time-surface]")).toBeNull();
@@ -408,10 +409,17 @@ describe("desktop reading", () => {
     const block = view.querySelector('[data-day-territory] [data-source-id="block-1"]') as HTMLElement;
     const commitment = view.querySelector('[data-day-territory] [data-source-id="commitment-1"]') as HTMLElement;
     expect(work.getAttribute("data-duration-extent")).toBe("true");
+    expect(work.getAttribute("data-occupation-material")).toBe("band");
     expect(work.getAttribute("data-width")).toBe(String(signaturePlacement(9 * 60, 17 * 60).width));
     expect(block.getAttribute("data-duration-extent")).toBe("true");
+    expect(block.getAttribute("data-occupation-material")).toBe("band");
     expect(commitment.getAttribute("data-duration-extent")).toBe("true");
     expect(Number(work.getAttribute("data-width"))).toBeGreaterThan(Number(block.getAttribute("data-width")));
+
+    const workMembership = view.querySelector('[data-timed-membership][data-kind="work_schedule"]');
+    expect(workMembership).not.toBeNull();
+    expect(workMembership?.getAttribute("data-source-kind")).toBe("work_schedule");
+    expect(work.getAttribute("data-source-kind")).toBe(workMembership?.getAttribute("data-source-kind"));
 
     expect(view.querySelector("[data-day-now-coordinate]")).not.toBeNull();
     expect(view.querySelector("[data-day-territory]")?.contains(view.querySelector("[data-desktop-thread]"))).toBe(false);
@@ -683,14 +691,20 @@ describe("desktop reading seam", () => {
     expect(desktop).toContain('data-day-inscription="true"');
     expect(desktop).toContain('data-day-territory="true"');
     expect(desktop).toContain('data-day-territory-plane="true"');
+    expect(desktop).toContain('data-territory-material="open"');
+    expect(desktop).toContain('data-occupation-material="band"');
     expect(desktop).not.toContain("data-day-field");
     expect(desktop).not.toContain("data-work-off");
     expect(phone).toContain("data-work-off");
     expect(phone).not.toContain("data-day-territory");
+    expect(phone).not.toContain("data-territory-material");
     expect(clock).toContain("data-work-off");
     expect(css).not.toContain("clamp(7.5rem, 18vh, 10.75rem)");
     expect(css).not.toContain("inset 0 1px 0 var(--orient-work), inset 0 -1px 0 var(--orient-work)");
     expect(css).toContain('data-day-territory="true"');
+    expect(css).toContain("open space, not a card container");
+    expect(css).toContain("inset 2px 0 0 0 rgb(183 220 203 / 0.78)");
+    expect(css).toContain("inset -2px 0 0 0 rgb(183 220 203 / 0.78)");
     expect(css).toContain('.orient[data-form="desktop"]');
     expect(css).not.toContain("data-composition");
     expect(css).toContain("@media (min-width: 960px)");

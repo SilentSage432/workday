@@ -2109,7 +2109,39 @@ button.orient-fact {
 .orient-desktop[data-desktop-question="day"] .orient-desktop-timed-membership {
   flex: 0 1 14rem;
   max-width: 18rem;
-  opacity: 0.92;
+  min-height: 2.15rem;
+  padding: 0.28rem 0.45rem 0.28rem 0.75rem;
+  border-left-width: 3px;
+  opacity: 1;
+}
+
+/* Membership ↔ territory correspondence through shared hue / contour family. */
+.orient-desktop[data-desktop-question="day"] .orient-desktop-timed-membership[data-kind="work_schedule"] {
+  border-left-color: var(--orient-work);
+  background: linear-gradient(90deg, rgb(78 138 114 / 0.16), transparent 78%);
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-timed-membership[data-kind="protected_time"] {
+  border-left-color: var(--orient-protected);
+  background: linear-gradient(90deg, rgb(96 124 186 / 0.14), transparent 78%);
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-timed-membership[data-kind="block"] {
+  border-left-color: var(--orient-block);
+  background: linear-gradient(90deg, rgb(168 92 54 / 0.16), transparent 78%);
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-timed-membership[data-kind="commitment"] {
+  border-left-color: var(--orient-commitment);
+  background: linear-gradient(90deg, rgb(132 96 176 / 0.14), transparent 78%);
+}
+
+.orient-desktop[data-desktop-question="day"] .orient-desktop-timed-membership[data-observed="true"],
+.orient-desktop[data-desktop-question="day"] .orient-desktop-timed-membership[data-kind="external_temporal"] {
+  border-left-style: dashed;
+  border-left-color: rgb(244 239 230 / 0.42);
+  background: linear-gradient(90deg, rgb(244 239 230 / 0.05), transparent 78%);
+  opacity: 0.9;
 }
 
 .orient-desktop-thread,
@@ -2233,17 +2265,21 @@ button.orient-fact {
   pointer-events: none;
 }
 
-/* Bounded horizontal temporal territory — not Exact Time, not the rejected vertical Day field. */
+/* Bounded horizontal temporal territory — open space, not a card container. */
 .orient-desktop-rail[data-day-territory="true"] {
   flex: 1 1 auto;
   height: auto;
   min-height: clamp(4.85rem, 17vh, 9.75rem);
-  border: 1px solid rgb(244 239 230 / 0.1);
-  border-radius: 0.2rem;
-  background:
-    linear-gradient(180deg, rgb(244 239 230 / 0.03), rgb(244 239 230 / 0.015) 42%, rgb(8 10 14 / 0.22)),
-    rgb(12 16 24 / 0.35);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(244 239 230 / 0.018) 28%,
+    rgb(244 239 230 / 0.028) 72%,
+    transparent 100%
+  );
+  box-shadow: none;
 }
 
 .orient-desktop-rail[data-day-territory="true"]::before {
@@ -2251,7 +2287,30 @@ button.orient-fact {
   bottom: 0;
   height: 1px;
   margin-top: 0;
-  background: rgb(244 239 230 / 0.22);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(244 239 230 / 0.3) 5%,
+    rgb(244 239 230 / 0.3) 95%,
+    transparent 100%
+  );
+}
+
+.orient-desktop-rail[data-day-territory="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(244 239 230 / 0.1) 8%,
+    rgb(244 239 230 / 0.1) 92%,
+    transparent 100%
+  );
+  pointer-events: none;
 }
 
 .orient-desktop-signature .orient-signature-fact,
@@ -2312,7 +2371,7 @@ button.orient-fact {
 .orient-desktop-signature [data-day-territory="true"] .orient-signature-mark {
   inset: 0;
   height: auto;
-  border-radius: 0.1rem;
+  border-radius: 0;
 }
 
 .orient-desktop-signature .orient-signature-mark[data-kind="work_schedule"] {
@@ -2321,13 +2380,19 @@ button.orient-fact {
   box-shadow: none;
 }
 
+/* Work as temporal occupation band: duration extent + start/end edges, not an event card. */
 .orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="work_schedule"] {
-  background:
-    linear-gradient(180deg, rgb(183 220 203 / 0.16), rgb(78 138 114 / 0.34)),
-    rgb(78 138 114 / 0.22);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(183 220 203 / 0.08) 16%,
+    rgb(78 138 114 / 0.2) 50%,
+    rgb(183 220 203 / 0.08) 84%,
+    transparent 100%
+  );
   box-shadow:
-    inset 0 1px 0 rgb(183 220 203 / 0.55),
-    inset 0 -1px 0 rgb(183 220 203 / 0.35);
+    inset 2px 0 0 0 rgb(183 220 203 / 0.78),
+    inset -2px 0 0 0 rgb(183 220 203 / 0.78);
 }
 
 .orient-desktop-signature .orient-signature-mark[data-kind="protected_time"] {
@@ -2340,13 +2405,13 @@ button.orient-fact {
 }
 
 .orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="protected_time"] {
-  background-color: rgb(96 124 186 / 0.14);
+  background-color: transparent;
   background-image:
-    repeating-linear-gradient(90deg, var(--orient-protected) 0 7px, transparent 7px 11px),
-    linear-gradient(180deg, rgb(197 212 245 / 0.12), transparent);
+    repeating-linear-gradient(90deg, rgb(197 212 245 / 0.38) 0 6px, transparent 6px 11px),
+    linear-gradient(180deg, transparent 0%, rgb(96 124 186 / 0.12) 22%, rgb(96 124 186 / 0.12) 78%, transparent 100%);
   box-shadow:
-    inset 0 1px 0 rgb(197 212 245 / 0.45),
-    inset 0 -1px 0 rgb(197 212 245 / 0.3);
+    inset 2px 0 0 0 rgb(197 212 245 / 0.65),
+    inset -2px 0 0 0 rgb(197 212 245 / 0.65);
 }
 
 .orient-desktop-signature .orient-signature-mark[data-kind="block"] {
@@ -2356,14 +2421,19 @@ button.orient-fact {
 }
 
 .orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="block"] {
-  background:
-    linear-gradient(180deg, rgb(240 196 154 / 0.14), rgb(168 92 54 / 0.32)),
-    rgb(168 92 54 / 0.2);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(240 196 154 / 0.08) 18%,
+    rgb(168 92 54 / 0.2) 50%,
+    rgb(240 196 154 / 0.08) 82%,
+    transparent 100%
+  );
   box-shadow:
-    inset 0 1px 0 var(--orient-block),
-    inset 0 3px 0 rgb(240 196 154 / 0.35),
-    inset 0 -1px 0 var(--orient-block),
-    inset 0 -3px 0 rgb(240 196 154 / 0.35);
+    inset 2px 0 0 0 rgb(240 196 154 / 0.72),
+    inset -2px 0 0 0 rgb(240 196 154 / 0.72),
+    inset 0 2px 0 0 rgb(240 196 154 / 0.28),
+    inset 0 -2px 0 0 rgb(240 196 154 / 0.28);
 }
 
 .orient-desktop-signature .orient-signature-mark[data-kind="commitment"] {
@@ -2376,13 +2446,13 @@ button.orient-fact {
 }
 
 .orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="commitment"] {
-  background-color: rgb(132 96 176 / 0.12);
+  background-color: transparent;
   background-image:
-    repeating-linear-gradient(90deg, var(--orient-commitment) 0 2px, transparent 2px 5px),
-    linear-gradient(180deg, rgb(228 208 245 / 0.1), transparent);
+    repeating-linear-gradient(90deg, rgb(228 208 245 / 0.42) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, transparent 0%, rgb(132 96 176 / 0.1) 22%, rgb(132 96 176 / 0.1) 78%, transparent 100%);
   box-shadow:
-    inset 0 1px 0 rgb(228 208 245 / 0.4),
-    inset 0 -1px 0 rgb(228 208 245 / 0.28);
+    inset 2px 0 0 0 rgb(228 208 245 / 0.55),
+    inset -2px 0 0 0 rgb(228 208 245 / 0.55);
 }
 
 .orient-desktop-signature [data-day-territory="true"] .orient-signature-mark[data-kind="external_temporal"],
@@ -2393,7 +2463,9 @@ button.orient-fact {
     rgb(244 239 230 / 0.12) 0 1px,
     transparent 1px 7px
   );
-  box-shadow: inset 0 0 0 1px rgb(244 239 230 / 0.28);
+  box-shadow:
+    inset 1px 0 0 0 rgb(244 239 230 / 0.32),
+    inset -1px 0 0 0 rgb(244 239 230 / 0.32);
   opacity: 0.78;
 }
 

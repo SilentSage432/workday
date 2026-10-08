@@ -285,6 +285,7 @@ function DesktopSignature({
         data-day-inscription="true"
         data-day-territory="true"
         data-temporal-axis="local-clock-24h"
+        data-territory-material="open"
       >
         <button
           type="button"
@@ -318,6 +319,7 @@ function DesktopSignature({
               data-start={span.start}
               data-width={span.width}
               data-duration-extent="true"
+              data-occupation-material="band"
               data-observed={observed ? "true" : undefined}
               aria-label={accessibleFactName(placement.accessibleLabel, emphasis)}
               style={{ left: `${span.start * 100}%`, width: `${span.width * 100}%` }}
@@ -326,7 +328,12 @@ function DesktopSignature({
                 onRefer(overlappingFacts(placement, placements));
               }}
             >
-              <span className="orient-signature-mark" data-kind={placement.sourceKind} data-observed={observed ? "true" : undefined} />
+              <span
+                className="orient-signature-mark"
+                data-kind={placement.sourceKind}
+                data-occupation-material="band"
+                data-observed={observed ? "true" : undefined}
+              />
             </button>
           );
         })}
