@@ -855,6 +855,7 @@ export function LookSurface({
   onSignOut,
   onManageWork,
   onManageExternalCalendars,
+  onOpenNotes,
   contexts,
   onChooseFocus,
   onClose,
@@ -868,6 +869,7 @@ export function LookSurface({
   onSignOut: () => void;
   onManageWork: () => void;
   onManageExternalCalendars: () => void;
+  onOpenNotes: () => void;
   contexts: SourceRead<Context>;
   onChooseFocus: (focus: { kind: "everything" } | { kind: "context"; id: string; name: string }) => void;
   onClose: () => void;
@@ -898,6 +900,9 @@ export function LookSurface({
       <section data-look-operations="true" aria-label="Operations">
         <h2>Operations</h2>
         <div className="orient-actions">
+          <button type="button" className="orient-action" data-look-notes="true" onClick={onOpenNotes}>
+            Notes
+          </button>
           <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
             Manage Work schedule
           </button>
@@ -1681,6 +1686,160 @@ export function DirectTaskSurface({
   );
 }
 
+type RetainedNotesReading =
+  | { status: "loading" }
+  | { status: "ready"; rows: readonly Note[] }
+  | { status: "failed"; message: string };
+
+function RetainedNotesCollection({
+  reading,
+  sourced,
+  pending,
+  onBeginSource,
+  onSourceTitle,
+  onSaveSourced,
+}: {
+  reading: RetainedNotesReading | null;
+  sourced: { noteId: string; title: string } | null;
+  pending: boolean;
+  onBeginSource: (noteId: string) => void;
+  onSourceTitle: (noteId: string, title: string) => void;
+  onSaveSourced: () => void;
+}) {
+  if (reading == null) return null;
+  if (reading.status === "loading") {
+    return (
+      <p data-notes-loading="true" className="orient-note">
+        Reading retained notes.
+      </p>
+    );
+  }
+  if (reading.status === "failed") {
+    return (
+      <p role="alert" data-reading="incomplete" data-notes-failed="true">
+        {reading.message}
+      </p>
+    );
+  }
+  if (reading.rows.length === 0) {
+    return <p data-notes-empty="true">No notes have been retained.</p>;
+  }
+  return (
+    <div data-notes-collection="true">
+      {reading.rows.map((note) => (
+        <article key={note.id} data-retained-note={note.id}>
+          <p>{note.content}</p>
+          <time dateTime={note.capturedAt}>{note.capturedAt}</time>
+          <button type="button" className="orient-action" onClick={() => onBeginSource(note.id)}>
+            Establish a task from this
+          </button>
+          {sourced?.noteId === note.id ? (
+            <div>
+              <label className="orient-note">
+                Task title
+                <input
+                  aria-label="Task title from note"
+                  value={sourced.title}
+                  disabled={pending}
+                  onChange={(event) => onSourceTitle(note.id, event.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                className="orient-action"
+                data-emphasis="save"
+                disabled={pending || sourced.title.trim().length === 0}
+                onClick={() => onSaveSourced()}
+              >
+                Save
+              </button>
+            </div>
+          ) : null}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * LOOK → Notes. On-demand complete read of retained Notes.
+ * Inspection only: not Timeline, not ACT, not Present/Day/Week/Month.
+ */
+export function NotesSurface({
+  onChanged,
+  onClose,
+  readNotes,
+  establishTask,
+}: {
+  onChanged?: () => void;
+  onClose: () => void;
+  readNotes?: () => Promise<Note[]>;
+  establishTask?: (input: NewTask) => Promise<Task>;
+}) {
+  const [reading, setReading] = useState<RetainedNotesReading>({ status: "loading" });
+  const [sourced, setSourced] = useState<{ noteId: string; title: string } | null>(null);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loader = readNotes ?? (() => loadNotes(getSupabaseBrowserClient()));
+    void (async () => {
+      try {
+        const rows = await loader();
+        if (!cancelled) setReading({ status: "ready", rows });
+      } catch (caught: unknown) {
+        if (!cancelled) {
+          setReading({
+            status: "failed",
+            message: failureMessage(caught, "Notes could not be read."),
+          });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [readNotes]);
+
+  async function saveSourced() {
+    if (!sourced || pending || sourced.title.trim().length === 0) return;
+    setPending(true);
+    setError(null);
+    try {
+      const writer = establishTask ?? ((input: NewTask) => createTask(getSupabaseBrowserClient(), input));
+      await writer(taskFromRetainedNote(sourced.title, sourced.noteId));
+      setSourced(null);
+      onChanged?.();
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "The write did not happen."));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <div data-notes-surface="true" className="orient-capture">
+      <header className="orient-surface-header">
+        <div>
+          <h2>Notes</h2>
+          <p className="orient-capture-lead">What Orient remembers.</p>
+        </div>
+        <SurfaceClose onClose={onClose} label="Close Notes" />
+      </header>
+      {error ? <p role="alert">{error}</p> : null}
+      <RetainedNotesCollection
+        reading={reading}
+        sourced={sourced}
+        pending={pending}
+        onBeginSource={(noteId) => setSourced({ noteId, title: "" })}
+        onSourceTitle={(noteId, title) => setSourced({ noteId, title })}
+        onSaveSourced={() => void saveSourced()}
+      />
+    </div>
+  );
+}
+
 export function DirectNoteSurface({
   onChanged,
   onClose,
@@ -1757,7 +1916,7 @@ export function CaptureSurface({
   const [general, setGeneral] = useState<GeneralCaptureState>(initialGeneralCapture);
   const [pending, setPending] = useState<"note" | "task" | "sourced" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notes, setNotes] = useState<SourceRead<Note> | null>(null);
+  const [notes, setNotes] = useState<RetainedNotesReading | null>(null);
   const [sourced, setSourced] = useState<{ noteId: string; title: string } | null>(null);
   const blank = general.expression.trim().length === 0;
 
@@ -1807,7 +1966,7 @@ export function CaptureSurface({
   }
 
   async function readNotes() {
-    setNotes(null);
+    setNotes({ status: "loading" });
     try {
       setNotes({ status: "ready", rows: await loadNotes(getSupabaseBrowserClient()) });
     } catch (caught: unknown) {
@@ -1896,38 +2055,14 @@ export function CaptureSurface({
           </button>
         </div>
       </section>
-      {notes?.status === "failed" ? (
-        <p role="alert" data-reading="incomplete">
-          {notes.message}
-        </p>
-      ) : null}
-      {notes?.status === "ready" && notes.rows.length === 0 ? <p>No notes have been retained.</p> : null}
-      {notes?.status === "ready"
-        ? notes.rows.map((note) => (
-            <article key={note.id}>
-              <p>{note.content}</p>
-              <time dateTime={note.capturedAt}>{note.capturedAt}</time>
-              <button type="button" className="orient-action" onClick={() => setSourced({ noteId: note.id, title: "" })}>
-                Establish a task from this
-              </button>
-              {sourced?.noteId === note.id ? (
-                <div>
-                  <label className="orient-note">
-                    Task title
-                    <input
-                      aria-label="Task title from note"
-                      value={sourced.title}
-                      onChange={(event) => setSourced({ noteId: note.id, title: event.target.value })}
-                    />
-                  </label>
-                  <button type="button" className="orient-action" data-emphasis="save" onClick={() => void saveSourced()}>
-                    Save
-                  </button>
-                </div>
-              ) : null}
-            </article>
-          ))
-        : null}
+      <RetainedNotesCollection
+        reading={notes}
+        sourced={sourced}
+        pending={pending !== null}
+        onBeginSource={(noteId) => setSourced({ noteId, title: "" })}
+        onSourceTitle={(noteId, title) => setSourced({ noteId, title })}
+        onSaveSourced={() => void saveSourced()}
+      />
     </div>
   );
 }

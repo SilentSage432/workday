@@ -166,10 +166,35 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(view.querySelector("[data-question-list]")).not.toBeNull();
     expect(view.querySelector("[data-relocation]")).not.toBeNull();
     expect(view.querySelector('[aria-label="Context focus"]')).not.toBeNull();
+    expect(view.querySelector("[data-look-notes]")?.textContent).toBe("Notes");
     await act(async () => {
       buttonNamed(view.querySelector("[data-question-list]") as HTMLElement, "Present").click();
     });
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+  });
+
+  it("LOOK → Notes opens Notes inspection without changing ADD → Note", async () => {
+    const view = await renderPhone();
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector("[data-look-notes]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-notes-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-look-surface]")).toBeNull();
+    expect(view.querySelector("[data-direct-note]")).toBeNull();
+    await act(async () => {
+      (view.querySelector("[data-surface-close]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector('[data-add-choice="note"]') as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-direct-note]")).not.toBeNull();
+    expect(view.querySelector("[data-notes-surface]")).toBeNull();
   });
 
   it("ACT opens without ActiveThread and lists ordered open Tasks", async () => {
@@ -336,6 +361,8 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     const look = view.querySelector("[data-look-surface]") as HTMLElement;
     expect(look.querySelector("[data-surface-close]")?.getAttribute("aria-label")).toBe("Close LOOK");
     expect(look.querySelector("[data-relocation]")?.textContent).not.toMatch(/\bClose\b/);
+    expect(look.querySelector("[data-look-notes]")?.textContent).toBe("Notes");
+    expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Notes");
     expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Manage Work schedule");
     expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Google Calendar");
     expect(look.querySelector("[data-manage-external-calendars]")).not.toBeNull();

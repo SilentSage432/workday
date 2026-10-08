@@ -62,6 +62,7 @@ import {
   FocusList,
   InspectionSurface,
   LookSurface,
+  NotesSurface,
   PositionSurface,
   QuestionList,
   ThreadSurface,
@@ -85,6 +86,7 @@ type QuestionPlace = { anchor: string; scroll: number | null; provenance: Viewpo
 type Surface =
   | { kind: "none" }
   | { kind: "look" }
+  | { kind: "notes" }
   | { kind: "question" }
   | { kind: "position" }
   | { kind: "focus" }
@@ -1030,8 +1032,13 @@ export function OrientView({
               data-look-control="true"
               data-question-control="true"
               aria-label={`LOOK · ${QUESTION_LABEL[question]}`}
-              aria-expanded={surface.kind === "look"}
-              onClick={(event) => openFrom(event, surface.kind === "look" ? { kind: "none" } : { kind: "look" })}
+              aria-expanded={surface.kind === "look" || surface.kind === "notes"}
+              onClick={(event) =>
+                openFrom(
+                  event,
+                  surface.kind === "look" || surface.kind === "notes" ? { kind: "none" } : { kind: "look" },
+                )
+              }
             >
               <Compass aria-hidden="true" className="orient-glyph" />
               <span>LOOK</span>
@@ -1182,6 +1189,7 @@ export function OrientView({
                 openWork(today);
               }}
               onManageExternalCalendars={() => openExternalCalendars()}
+              onOpenNotes={() => setSurface({ kind: "notes" })}
               contexts={contexts}
               onChooseFocus={(next) => {
                 setFocus(next);
@@ -1189,6 +1197,9 @@ export function OrientView({
               }}
               onClose={closeSurface}
             />
+          ) : null}
+          {surface.kind === "notes" ? (
+            <NotesSurface onChanged={actions.onTasksChanged} onClose={closeSurface} />
           ) : null}
           {surface.kind === "question" ? <QuestionList question={question} onChoose={chooseQuestion} /> : null}
           {surface.kind === "position" ? (
