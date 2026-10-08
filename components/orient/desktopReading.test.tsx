@@ -433,6 +433,13 @@ describe("desktop reading", () => {
     expect(view.querySelector("[data-day-territory]")).not.toBeNull();
     expect(view.querySelector("[data-desktop-day]")?.textContent).toContain("Oct 5");
     expect(view.querySelector("[role='dialog']")?.getAttribute("data-borrowed-surface")).toBe("drawer");
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
+    expect(view.querySelector("[data-borrowed-operation]")?.getAttribute("data-borrowed-operation")).toBe("look");
+    expect(view.querySelector("[data-look-role]")?.getAttribute("data-look-role")).toBe("navigator-lens");
+    expect(view.querySelector("[data-look-orientation]")?.textContent).toMatch(/Present|Day/);
+    expect(view.querySelector("[data-look-operations-disclosure]")).not.toBeNull();
+    expect(view.querySelector("[data-look-notes]")).not.toBeNull();
     expect(view.querySelector("[data-depth]")?.getAttribute("data-depth")).toBe("reading");
   });
 
@@ -567,6 +574,7 @@ describe("desktop reading", () => {
     const reading = view.querySelector(".orient-desktop") as HTMLElement;
     reading.dataset.kept = "yes";
     expect(view.querySelector("[data-day-signature]")).toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
     const add = view.querySelector("[data-add-control]") as HTMLButtonElement;
     await act(async () => {
       add.click();
@@ -575,6 +583,10 @@ describe("desktop reading", () => {
     expect(view.querySelector("[role='dialog']")?.getAttribute("data-borrowed-surface")).toBe("drawer");
     expect(view.querySelector("[role='dialog']")?.getAttribute("aria-modal")).toBe("false");
     expect(view.querySelector("[data-add-chooser]")).not.toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
+    expect(view.querySelector("[data-borrowed-operation]")?.getAttribute("data-borrowed-operation")).toBe("add");
+    expect(view.querySelector("[data-borrow-width]")?.getAttribute("data-borrow-width")).toBe("tight");
     expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
     expect(view.querySelector("[data-day-signature]")).toBeNull();
     expect(document.activeElement).toBe(view.querySelector("[role='dialog']"));
@@ -584,6 +596,8 @@ describe("desktop reading", () => {
     });
     expect(view.querySelector("[role='dialog']")).toBeNull();
     expect(view.querySelector("[data-add-chooser]")).toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
+    expect(view.querySelector("[data-borrow-mode]")).toBeNull();
     expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
     expect(view.querySelector("[data-day-signature]")).toBeNull();
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
@@ -599,6 +613,65 @@ describe("desktop reading", () => {
     expect(view.querySelector("[data-add-chooser]")).toBeNull();
     expect(view.querySelector("[data-look-surface]")).not.toBeNull();
     expect(view.querySelector("[data-question-list]")).not.toBeNull();
+    expect(view.querySelector("[data-borrowed-operation]")?.getAttribute("data-borrowed-operation")).toBe("look");
+    expect(view.querySelector("[data-borrow-width]")?.getAttribute("data-borrow-width")).toBe("standard");
+  });
+
+  it("borrows laterally for ACT without remounting the temporal world or changing orientation", async () => {
+    const view = await renderView({});
+    const reading = view.querySelector(".orient-desktop") as HTMLElement;
+    reading.dataset.kept = "yes";
+    const actControl = view.querySelector("[data-act-control]") as HTMLButtonElement;
+    await act(async () => {
+      actControl.click();
+    });
+    expect(view.querySelector("[data-act-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
+    expect(view.querySelector("[data-borrowed-operation]")?.getAttribute("data-borrowed-operation")).toBe("act");
+    expect(view.querySelector("[data-borrow-width]")?.getAttribute("data-borrow-width")).toBe("standard");
+    expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(view.querySelector("[data-depth]")?.getAttribute("data-depth")).toBe("reading");
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(view.querySelector("[data-act-surface]")).toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
+    expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+    expect(document.activeElement).toBe(actControl);
+  });
+
+  it("keeps lateral borrow over Week and Month without remounting Landscape", async () => {
+    const view = await renderView({});
+    await ask(view, "Week");
+    const week = view.querySelector("[data-landscape]") as HTMLElement;
+    week.dataset.kept = "week";
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
+    expect(view.querySelector("[data-landscape]")?.getAttribute("data-kept")).toBe("week");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("week");
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await Promise.resolve();
+    });
+
+    await ask(view, "Month");
+    const month = view.querySelector("[data-landscape]") as HTMLElement;
+    month.dataset.kept = "month";
+    await act(async () => {
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrowed-operation]")?.getAttribute("data-borrowed-operation")).toBe("add");
+    expect(view.querySelector("[data-landscape]")?.getAttribute("data-kept")).toBe("month");
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("month");
+    expect(view.querySelector("[data-direction-plane]")).not.toBeNull();
   });
 
   it("keeps the wordmark noninteractive and Week and Month on the shared landscape", async () => {
@@ -709,5 +782,11 @@ describe("desktop reading seam", () => {
     expect(css).not.toContain("data-composition");
     expect(css).toContain("@media (min-width: 960px)");
     expect(css).not.toContain('.orient-desktop[data-desktop-question="present"] .orient-desktop-signature');
+    expect(css).toContain('data-borrow-mode="lateral"');
+    expect(css).toContain("grid-area: operation");
+    expect(css).toContain("Temporary lateral borrow");
+    expect(css).toContain('.orient[data-form="desktop"] .orient-surface');
+    expect(css).toContain("backdrop-filter: none");
+    expect(css).toContain("backdrop-filter: blur(22px) saturate(1.2)");
   });
 });

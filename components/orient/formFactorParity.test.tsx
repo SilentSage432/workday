@@ -212,6 +212,11 @@ describe("cross-form-factor semantic parity", () => {
     const view = await renderForm(false);
     await openLook(view);
     expect(view.querySelector("[data-look-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
+    expect(view.querySelector("[data-look-role]")?.getAttribute("data-look-role")).toBe("navigator-lens");
+    expect(view.querySelector("[data-look-orientation]")?.textContent).toContain("Present");
+    expect(view.querySelector("[data-look-operations-disclosure]")).not.toBeNull();
     expect(view.querySelector("[data-question-list]")).not.toBeNull();
     expect(view.querySelector("[data-relocation]")).not.toBeNull();
     expect(view.querySelector('[aria-label="Context focus"]')).not.toBeNull();
@@ -226,6 +231,9 @@ describe("cross-form-factor semantic parity", () => {
     const view = await renderForm(false);
     await openAdd(view);
     expect(view.querySelector("[data-add-chooser]")).not.toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
+    expect(view.querySelector("[data-borrow-width]")?.getAttribute("data-borrow-width")).toBe("tight");
     expect(view.querySelector('[data-add-choice="task"]')).not.toBeNull();
     expect(view.querySelector('[data-add-choice="recurring-task"]')).not.toBeNull();
     expect(view.querySelector('[data-add-choice="stewardship"]')).not.toBeNull();
@@ -282,6 +290,9 @@ describe("cross-form-factor semantic parity", () => {
       (view.querySelector("[data-act-control]") as HTMLButtonElement).click();
     });
     expect(view.querySelector("[data-act-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrowed-operation]")?.getAttribute("data-borrowed-operation")).toBe("act");
+    expect(view.querySelector("[data-borrow-width]")?.getAttribute("data-borrow-width")).toBe("standard");
 
     await act(async () => {
       (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
@@ -291,6 +302,7 @@ describe("cross-form-factor semantic parity", () => {
       (view.querySelector("[data-look-stewardship]") as HTMLButtonElement).click();
     });
     expect(view.querySelector("[data-stewardship-manage]")).not.toBeNull();
+    expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
 
     await act(async () => {
       (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
@@ -300,6 +312,18 @@ describe("cross-form-factor semantic parity", () => {
       (view.querySelector("[data-look-recurring-tasks]") as HTMLButtonElement).click();
     });
     expect(view.querySelector("[data-recurring-task-manage]")).not.toBeNull();
+  });
+
+  it("phone LOOK keeps full operations list and does not use desktop lateral borrow", async () => {
+    const view = await renderForm(true);
+    await openLook(view);
+    expect(view.querySelector("[data-look-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
+    expect(view.querySelector("[data-borrow-mode]")).toBeNull();
+    expect(view.querySelector("[data-look-operations-disclosure]")).toBeNull();
+    expect(view.querySelector("[data-look-orientation]")).toBeNull();
+    expect(view.querySelector("[data-look-notes]")?.textContent).toBe("Notes");
+    expect(view.querySelector("[role='dialog']")?.getAttribute("data-borrowed-surface")).toBe("sheet");
   });
 
   it("preserves desktop Week DTM specialization and phone LOOK · ADD · ACT chrome density difference", async () => {

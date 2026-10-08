@@ -54,7 +54,13 @@ import {
   type ActStewardshipRow,
 } from "@/components/orient/actAttention";
 import type { CaptureBridge, OrientSources, ThreadReading } from "@/components/orient/types";
-import { shiftedAnchor, type OrientQuestion } from "@/components/orient/grammar";
+import {
+  positionWord,
+  QUESTION_LABEL,
+  shiftedAnchor,
+  type ContextFocus,
+  type OrientQuestion,
+} from "@/components/orient/grammar";
 import {
   cycleInterval,
   latestStewardshipWording,
@@ -196,9 +202,11 @@ export function PositionSurface({
 export function FocusList({
   contexts,
   onChoose,
+  focus = { kind: "everything" },
 }: {
   contexts: SourceRead<Context>;
   onChoose: (focus: { kind: "everything" } | { kind: "context"; id: string; name: string }) => void;
+  focus?: ContextFocus;
 }) {
   if (contexts.status === "failed") {
     return (
@@ -211,7 +219,12 @@ export function FocusList({
     <div role="group" aria-label="Context focus">
       <h2>Focus</h2>
       <div className="orient-actions">
-        <button type="button" className="orient-action" onClick={() => onChoose({ kind: "everything" })}>
+        <button
+          type="button"
+          className="orient-action"
+          aria-current={focus.kind === "everything" ? "true" : undefined}
+          onClick={() => onChoose({ kind: "everything" })}
+        >
           Everything
         </button>
         {contexts.rows.map((context) => (
@@ -219,6 +232,7 @@ export function FocusList({
             key={context.id}
             type="button"
             className="orient-action"
+            aria-current={focus.kind === "context" && focus.id === context.id ? "true" : undefined}
             onClick={() => onChoose({ kind: "context", id: context.id, name: context.name })}
           >
             {context.name}
@@ -877,6 +891,8 @@ export function LookSurface({
   onOpenStewardship,
   onOpenRecurringTasks,
   contexts,
+  focus = { kind: "everything" },
+  operationsDisclosure = false,
   onChooseFocus,
   onClose,
 }: {
@@ -893,69 +909,92 @@ export function LookSurface({
   onOpenStewardship: () => void;
   onOpenRecurringTasks: () => void;
   contexts: SourceRead<Context>;
+  focus?: ContextFocus;
+  /** Desktop-only progressive disclosure for management/config operations. */
+  operationsDisclosure?: boolean;
   onChooseFocus: (focus: { kind: "everything" } | { kind: "context"; id: string; name: string }) => void;
   onClose: () => void;
 }) {
+  const focusLabel = focus.kind === "everything" ? "Everything" : focus.name;
+  const operations = (
+    <div className="orient-actions">
+      <button type="button" className="orient-action" data-look-notes="true" onClick={onOpenNotes}>
+        Notes
+      </button>
+      <button type="button" className="orient-action" data-look-stewardship="true" onClick={onOpenStewardship}>
+        Stewardship
+      </button>
+      <button
+        type="button"
+        className="orient-action"
+        data-look-recurring-tasks="true"
+        onClick={onOpenRecurringTasks}
+      >
+        Recurring Tasks
+      </button>
+      <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
+        Manage Work schedule
+      </button>
+      <button
+        type="button"
+        className="orient-action"
+        data-manage-external-calendars="true"
+        onClick={onManageExternalCalendars}
+      >
+        Google Calendar
+      </button>
+      <button type="button" className="orient-action" onClick={onSignOut}>
+        Sign out
+      </button>
+    </div>
+  );
+
   return (
-    <div data-look-surface="true">
+    <div data-look-surface="true" data-look-role={operationsDisclosure ? "navigator-lens" : "full"}>
       <header className="orient-surface-header">
         <div>
           <h2>LOOK</h2>
           <p className="orient-capture-lead">Where am I in time?</p>
+          {operationsDisclosure ? (
+            <p className="orient-look-orientation" data-look-orientation="true">
+              {QUESTION_LABEL[question]} · {positionWord(question, anchor)} · Focus {focusLabel}
+            </p>
+          ) : null}
         </div>
         <SurfaceClose onClose={onClose} label="Close LOOK" />
       </header>
-      <QuestionList question={question} onChoose={onChooseQuestion} />
-      <PositionSurface
-        anchor={anchor}
-        today={today}
-        onMove={onMove}
-        onAdoptToday={onAdoptToday}
-        onSignOut={onSignOut}
-        onManageWork={onManageWork}
-        onManageExternalCalendars={onManageExternalCalendars}
-        onClose={onClose}
-        includeDismiss={false}
-        includeOperations={false}
-      />
-      <FocusList contexts={contexts} onChoose={onChooseFocus} />
-      <section data-look-operations="true" aria-label="Operations">
-        <h2>Operations</h2>
-        <div className="orient-actions">
-          <button type="button" className="orient-action" data-look-notes="true" onClick={onOpenNotes}>
-            Notes
-          </button>
-          <button
-            type="button"
-            className="orient-action"
-            data-look-stewardship="true"
-            onClick={onOpenStewardship}
-          >
-            Stewardship
-          </button>
-          <button
-            type="button"
-            className="orient-action"
-            data-look-recurring-tasks="true"
-            onClick={onOpenRecurringTasks}
-          >
-            Recurring Tasks
-          </button>
-          <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
-            Manage Work schedule
-          </button>
-          <button
-            type="button"
-            className="orient-action"
-            data-manage-external-calendars="true"
-            onClick={onManageExternalCalendars}
-          >
-            Google Calendar
-          </button>
-          <button type="button" className="orient-action" onClick={onSignOut}>
-            Sign out
-          </button>
-        </div>
+      <div data-look-lens="true">
+        <QuestionList question={question} onChoose={onChooseQuestion} />
+        <PositionSurface
+          anchor={anchor}
+          today={today}
+          onMove={onMove}
+          onAdoptToday={onAdoptToday}
+          onSignOut={onSignOut}
+          onManageWork={onManageWork}
+          onManageExternalCalendars={onManageExternalCalendars}
+          onClose={onClose}
+          includeDismiss={false}
+          includeOperations={false}
+        />
+        <FocusList contexts={contexts} focus={focus} onChoose={onChooseFocus} />
+      </div>
+      <section
+        data-look-operations="true"
+        data-look-operations-secondary={operationsDisclosure ? "true" : undefined}
+        aria-label="Operations"
+      >
+        {operationsDisclosure ? (
+          <details className="orient-look-operations-disclosure" data-look-operations-disclosure="true">
+            <summary>Operations</summary>
+            {operations}
+          </details>
+        ) : (
+          <>
+            <h2>Operations</h2>
+            {operations}
+          </>
+        )}
       </section>
     </div>
   );

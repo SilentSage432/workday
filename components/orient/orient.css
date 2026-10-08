@@ -2680,6 +2680,7 @@ button.orient-fact {
     min-height: 2.5rem;
   }
 
+  /* Resting absolute geometry retained only as fallback before borrow attributes settle. */
   .orient[data-form="desktop"] .orient-surface {
     left: auto;
     right: 0;
@@ -2689,6 +2690,91 @@ button.orient-fact {
     max-height: none;
     border-radius: 0;
     border-width: 0 0 0 1px;
+    background: #141820;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  /*
+   * Temporary lateral borrow: the temporal world yields a bounded right column.
+   * The operation participates in layout; it does not cover the field.
+   */
+  .orient[data-form="desktop"][data-spatial-borrow="true"][data-borrow-mode="lateral"] {
+    --orient-borrow-width: min(28rem, 36vw);
+    grid-template-areas:
+      "field operation"
+      "reach reach";
+    grid-template-columns: minmax(20rem, 1fr) var(--orient-borrow-width);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .orient[data-form="desktop"][data-spatial-borrow="true"][data-borrow-mode="lateral"][data-borrow-width="tight"] {
+    --orient-borrow-width: min(22rem, 30vw);
+  }
+
+  .orient[data-form="desktop"][data-spatial-borrow="true"][data-borrow-mode="lateral"][data-question="month"] {
+    grid-template-areas:
+      "direction field operation"
+      "direction reach reach";
+    grid-template-columns: minmax(12rem, 18rem) minmax(16rem, 1fr) var(--orient-borrow-width);
+  }
+
+  .orient[data-form="desktop"][data-spatial-borrow="true"][data-borrow-mode="lateral"] .orient-surface {
+    position: relative;
+    inset: auto;
+    grid-area: operation;
+    width: auto;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    border-radius: 0;
+    border-width: 0 0 0 1px;
+    border-color: rgb(244 239 230 / 0.14);
+    background: #141820;
+    backdrop-filter: none;
+    box-shadow: none;
+    z-index: 2;
+  }
+
+  .orient[data-form="desktop"][data-spatial-borrow="true"][data-borrow-mode="lateral"] .orient-identity {
+    right: calc(var(--orient-borrow-width) + 0.75rem);
+  }
+
+  .orient[data-form="desktop"] .orient-look-orientation {
+    margin: 0.2rem 0 0;
+    color: var(--orient-muted);
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+  }
+
+  .orient[data-form="desktop"] .orient-look-operations-disclosure {
+    margin: 0.55rem 0 0;
+    border-top: 1px solid rgb(244 239 230 / 0.1);
+    padding-top: 0.55rem;
+  }
+
+  .orient[data-form="desktop"] .orient-look-operations-disclosure > summary {
+    cursor: pointer;
+    list-style: none;
+    color: var(--orient-muted);
+    font-size: 0.9rem;
+    font-weight: 560;
+    letter-spacing: -0.01em;
+    padding: 0.35rem 0;
+  }
+
+  .orient[data-form="desktop"] .orient-look-operations-disclosure > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .orient[data-form="desktop"] .orient-look-operations-disclosure[open] > summary {
+    color: var(--orient-ink);
+  }
+
+  .orient[data-form="desktop"] [aria-label="Context focus"] .orient-action[aria-current="true"],
+  .orient[data-form="desktop"] [data-question-list] .orient-key[aria-current="true"] {
+    border-color: rgb(244 239 230 / 0.34);
+    background: rgb(244 239 230 / 0.08);
   }
 
   .orient[data-form="desktop"][data-depth="exact"] .orient-stage {

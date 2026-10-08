@@ -964,6 +964,15 @@ export function OrientView({
   const borrowedOpen =
     surface.kind !== "none" ||
     (session.visible !== null && (question === "present" || question === "day") && surface.kind === "none");
+  const spatialBorrowActive = desktopBorrowed && (surface.kind !== "none" || establishing || referring);
+  const borrowedOperation = spatialBorrowActive
+    ? surface.kind !== "none"
+      ? surface.kind
+      : establishing
+        ? "establish"
+        : "refer"
+    : null;
+  const borrowWidth = borrowedOperation != null && addBorrowFamily(borrowedOperation) ? "tight" : "standard";
 
   useEffect(() => {
     if (!desktopBorrowed && surface.kind !== "work") return;
@@ -1006,6 +1015,10 @@ export function OrientView({
       data-exact-minute={exactAt === null ? "" : String(exactAt)}
       data-reduced-motion={reduced ? "true" : "false"}
       data-viewpoint={provenance}
+      data-spatial-borrow={spatialBorrowActive ? "true" : "false"}
+      data-borrow-mode={spatialBorrowActive ? "lateral" : undefined}
+      data-borrowed-operation={borrowedOperation ?? undefined}
+      data-borrow-width={spatialBorrowActive ? borrowWidth : undefined}
       aria-label="Orient"
     >
       <OrientIdentity />
@@ -1168,6 +1181,8 @@ export function OrientView({
               onOpenStewardship={() => setSurface({ kind: "stewardship-manage" })}
               onOpenRecurringTasks={() => setSurface({ kind: "recurring-task-manage" })}
               contexts={contexts}
+              focus={focus}
+              operationsDisclosure={form === "desktop"}
               onChooseFocus={(next) => {
                 setFocus(next);
                 closeSurface();
@@ -1407,6 +1422,17 @@ export function OrientView({
 
 function continuityReading(depth: "reading" | "exact", question: OrientQuestion): boolean {
   return depth === "reading" && (question === "present" || question === "day");
+}
+
+function addBorrowFamily(operation: string): boolean {
+  return (
+    operation === "add" ||
+    operation === "create-task" ||
+    operation === "create-stewardship" ||
+    operation === "create-recurring-task" ||
+    operation === "create-note" ||
+    operation === "create-all-day"
+  );
 }
 
 function readInstrumentForm(): "phone" | "desktop" {
