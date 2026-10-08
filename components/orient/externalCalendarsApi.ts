@@ -1,18 +1,25 @@
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 
+export type GoogleSourceStatus = {
+  id: string;
+  sourceLocalId: string;
+  displayName: string;
+  selected: boolean;
+  sourceTimeZone: string | null;
+  accessRole: string | null;
+  lastAttemptedAt: string | null;
+  lastAttemptResult: "success_complete" | "success_partial" | "failure" | null;
+  lastSuccessfulObservedAt: string | null;
+  lastSuccessfulWindowStartsOn: string | null;
+  lastSuccessfulWindowEndsBefore: string | null;
+};
+
 export type GoogleConnectionStatusResponse = {
   status: "disconnected" | "pending_auth" | "connected" | "auth_failed";
   connectionId: string | null;
   displayLabel?: string | null;
   selectedCount: number;
-  sources: Array<{
-    id: string;
-    sourceLocalId: string;
-    displayName: string;
-    selected: boolean;
-    sourceTimeZone: string | null;
-    accessRole: string | null;
-  }>;
+  sources: GoogleSourceStatus[];
 };
 
 export type GoogleCalendarOption = {
@@ -29,6 +36,30 @@ export type GoogleCalendarsResponse = {
   enumerationStatus: "complete" | "partial";
   message: string | null;
   calendars: GoogleCalendarOption[];
+};
+
+export type GoogleObservationSourceResult = {
+  sourceId: string;
+  sourceLocalId: string;
+  displayName: string;
+  result: "success_complete" | "success_partial" | "failure" | "skipped_throttle";
+  observedEventCount: number | null;
+  code: string | null;
+  message: string | null;
+  reconnectRequired: boolean;
+};
+
+export type GoogleObservationResponse = {
+  connectionId: string;
+  windowStartsOn: string;
+  windowEndsBefore: string;
+  selectedSourceCount: number;
+  successfulSourceCount: number;
+  failedSourceCount: number;
+  partialSourceCount: number;
+  skippedThrottleCount: number;
+  reconnectRequired: boolean;
+  sources: GoogleObservationSourceResult[];
 };
 
 async function bearerHeaders(): Promise<HeadersInit> {
@@ -79,6 +110,17 @@ export async function saveGoogleCalendarSelection(
     method: "PUT",
     headers: await bearerHeaders(),
     body: JSON.stringify({ selectedSourceLocalIds }),
+  });
+  return readJson(response);
+}
+
+export async function observeGoogleCalendars(input?: {
+  force?: boolean;
+}): Promise<GoogleObservationResponse> {
+  const response = await fetch("/api/external/google/observe", {
+    method: "POST",
+    headers: await bearerHeaders(),
+    body: JSON.stringify({ force: input?.force === true }),
   });
   return readJson(response);
 }

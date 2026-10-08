@@ -40,6 +40,11 @@ export async function GET(request: Request): Promise<Response> {
         selected: source.selected,
         sourceTimeZone: source.source_time_zone,
         accessRole: source.provider_access_role,
+        lastAttemptedAt: source.last_attempted_at,
+        lastAttemptResult: source.last_attempt_result,
+        lastSuccessfulObservedAt: source.last_successful_observed_at,
+        lastSuccessfulWindowStartsOn: source.last_successful_window_starts_on,
+        lastSuccessfulWindowEndsBefore: source.last_successful_window_ends_before,
       })),
     });
   } catch (error) {

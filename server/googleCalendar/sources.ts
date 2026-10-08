@@ -23,6 +23,11 @@ export type ObservedSourceRow = {
   selected: boolean;
   provider_access_role: string | null;
   source_time_zone: string | null;
+  last_attempted_at: string | null;
+  last_attempt_result: string | null;
+  last_successful_observed_at: string | null;
+  last_successful_window_starts_on: string | null;
+  last_successful_window_ends_before: string | null;
 };
 
 /**
@@ -162,7 +167,7 @@ export async function listGoogleSourcesForConnection(
   const { data, error } = await admin
     .from("external_temporal_sources")
     .select(
-      "id, user_id, connection_id, source_local_id, display_name, selected, provider_access_role, source_time_zone",
+      "id, user_id, connection_id, source_local_id, display_name, selected, provider_access_role, source_time_zone, last_attempted_at, last_attempt_result, last_successful_observed_at, last_successful_window_starts_on, last_successful_window_ends_before",
     )
     .eq("user_id", access.userId)
     .eq("connection_id", access.connectionId)

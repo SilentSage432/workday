@@ -2,12 +2,20 @@ import type { Block } from "@/domain/block";
 import type { CitedTaskIdentity } from "@/domain/citedTask";
 import type { Commitment } from "@/domain/commitment";
 import type { Destination } from "@/domain/destination";
+import type {
+  ExternalConnection,
+  ExternalTemporalFact,
+  ObservedTemporalSource,
+} from "@/domain/externalTemporal";
 import type { BlockPriorityService, TaskPriorityService } from "@/domain/executionDirection";
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import { formatCivilDate, parseCivilDate } from "@/domain/time/workFiscalWeek";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
-import type { SourceRead } from "@/components/currentTemporalReading";
+import {
+  externalTemporalContextFromReads,
+  type SourceRead,
+} from "@/components/currentTemporalReading";
 import { projectMonth, type MonthPerception } from "@/projections/month";
 import type { CivilDateRange } from "@/projections/timeline";
 import { canonicalWeekRange, weekLoadedSpan } from "@/projections/weekShape";
@@ -44,6 +52,9 @@ export function composeMonthReading(input: {
   taskPriorityService: SourceRead<TaskPriorityService>;
   blockPriorityService: SourceRead<BlockPriorityService>;
   citedTasks: SourceRead<CitedTaskIdentity>;
+  externalConnections?: SourceRead<ExternalConnection>;
+  externalSources?: SourceRead<ObservedTemporalSource>;
+  externalFacts?: SourceRead<ExternalTemporalFact>;
 }): MonthReading {
   const range = canonicalWeekRange(input.range);
   const sources = [
@@ -85,6 +96,19 @@ export function composeMonthReading(input: {
     return { status: "incomplete", message: `${INCOMPLETE} A cited task identity is missing.` };
   }
 
+  const externalFactsRead = input.externalFacts;
+  const externalSourcesRead = input.externalSources;
+  const externalConnectionsRead = input.externalConnections;
+  const externalTemporalFacts =
+    externalFactsRead &&
+    externalSourcesRead &&
+    externalConnectionsRead &&
+    externalFactsRead.status === "ready" &&
+    externalSourcesRead.status === "ready" &&
+    externalConnectionsRead.status === "ready"
+      ? externalFactsRead.rows
+      : [];
+
   const perception = projectMonth({
     range,
     timeZone: input.timeZone,
@@ -97,6 +121,11 @@ export function composeMonthReading(input: {
     taskPriorityService: input.taskPriorityService.rows,
     blockPriorityService: input.blockPriorityService.rows,
     citedTasks: input.citedTasks.rows,
+    externalTemporalFacts,
+    externalTemporalContext: externalTemporalContextFromReads({
+      externalConnections: externalConnectionsRead,
+      externalSources: externalSourcesRead,
+    }),
   });
   return { status: "complete", ...perception };
 }

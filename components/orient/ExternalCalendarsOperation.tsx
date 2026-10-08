@@ -6,9 +6,12 @@ import {
   disconnectGoogleCalendar,
   fetchGoogleCalendars,
   fetchGoogleConnectionStatus,
+  observeGoogleCalendars,
   saveGoogleCalendarSelection,
   type GoogleCalendarOption,
   type GoogleConnectionStatusResponse,
+  type GoogleObservationResponse,
+  type GoogleSourceStatus,
 } from "@/components/orient/externalCalendarsApi";
 
 type Phase =
@@ -31,15 +34,20 @@ type Phase =
 export function ExternalCalendarsOperation({
   onDismiss,
   initialError = null,
+  onObservationComplete,
 }: {
   onDismiss: () => void;
   initialError?: string | null;
+  /** Invoked after a successful observation so production can reread external evidence. */
+  onObservationComplete?: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>({ kind: "status-loading" });
   const [draftSelected, setDraftSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [observing, setObserving] = useState(false);
   const [actionError, setActionError] = useState<string | null>(initialError);
   const [notice, setNotice] = useState<string | null>(null);
+  const [lastObservation, setLastObservation] = useState<GoogleObservationResponse | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -76,6 +84,13 @@ export function ExternalCalendarsOperation({
   }, []);
 
   const selectedCount = useMemo(() => draftSelected.size, [draftSelected]);
+  const connectedStatus =
+    phase.kind === "connected" ||
+    phase.kind === "calendars-loading" ||
+    phase.kind === "calendars-ready" ||
+    phase.kind === "calendars-error"
+      ? phase.status
+      : null;
 
   async function connect() {
     setBusy(true);
@@ -123,16 +138,42 @@ export function ExternalCalendarsOperation({
     setNotice(null);
     try {
       const result = await saveGoogleCalendarSelection([...draftSelected]);
+      const nextStatus = { ...status, selectedCount: result.selectedCount };
+      setPhase({ kind: "connected", status: nextStatus });
       setNotice(
         result.selectedCount === 0
           ? "No calendars selected for observation."
           : `${result.selectedCount} calendar${result.selectedCount === 1 ? "" : "s"} selected for observation.`,
       );
-      setPhase({ kind: "connected", status: { ...status, selectedCount: result.selectedCount } });
+      if (result.selectedCount > 0) {
+        // Selection route stays free of observation logic; client triggers the canonical observe path.
+        await runObservation({ force: true, refreshStatus: true });
+      }
     } catch (error: unknown) {
       setActionError(error instanceof Error ? error.message : "Calendar selection could not be saved.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function runObservation(input: { force: boolean; refreshStatus: boolean }) {
+    setObserving(true);
+    setActionError(null);
+    try {
+      const result = await observeGoogleCalendars({ force: input.force });
+      setLastObservation(result);
+      setNotice(observationNotice(result));
+      if (input.refreshStatus) {
+        const status = await fetchGoogleConnectionStatus();
+        if (status.status === "connected") {
+          setPhase({ kind: "connected", status });
+        }
+      }
+      onObservationComplete?.();
+    } catch (error: unknown) {
+      setActionError(error instanceof Error ? error.message : "Observation failed.");
+    } finally {
+      setObserving(false);
     }
   }
 
@@ -144,7 +185,9 @@ export function ExternalCalendarsOperation({
       const result = await disconnectGoogleCalendar();
       setPhase({ kind: "disconnected" });
       setDraftSelected(new Set());
+      setLastObservation(null);
       setNotice(result.message);
+      onObservationComplete?.();
     } catch (error: unknown) {
       setActionError(error instanceof Error ? error.message : "Disconnect failed.");
     } finally {
@@ -200,29 +243,37 @@ export function ExternalCalendarsOperation({
         </section>
       ) : null}
 
-      {phase.kind === "connected" ||
-      phase.kind === "calendars-loading" ||
-      phase.kind === "calendars-ready" ||
-      phase.kind === "calendars-error" ? (
+      {connectedStatus ? (
         <section>
           <p>
             Connected.
-            {"selectedCount" in phase.status ? ` ${phase.status.selectedCount} selected.` : null}
+            {` ${connectedStatus.selectedCount} selected.`}
           </p>
-          <p className="orient-note">
-            Selection permits later observation. Events are not loaded here.
-          </p>
+          <ObservationStatusBlock
+            sources={connectedStatus.sources.filter((source) => source.selected)}
+            observing={observing}
+            lastObservation={lastObservation}
+          />
           <div className="orient-actions">
             <button
               type="button"
               className="orient-action"
               data-google-load-calendars="true"
-              disabled={busy}
-              onClick={() => void loadCalendars(phase.status)}
+              disabled={busy || observing}
+              onClick={() => void loadCalendars(connectedStatus)}
             >
               {phase.kind === "calendars-loading" ? "Loading calendars…" : "Load calendars"}
             </button>
-            <button type="button" className="orient-action" disabled={busy} onClick={() => void disconnect()}>
+            <button
+              type="button"
+              className="orient-action"
+              data-google-observe="true"
+              disabled={busy || observing || connectedStatus.selectedCount === 0}
+              onClick={() => void runObservation({ force: true, refreshStatus: true })}
+            >
+              {observing ? "Observing…" : "Refresh observed calendars"}
+            </button>
+            <button type="button" className="orient-action" disabled={busy || observing} onClick={() => void disconnect()}>
               Disconnect
             </button>
           </div>
@@ -268,7 +319,7 @@ export function ExternalCalendarsOperation({
               type="button"
               className="orient-action"
               data-google-save-selection="true"
-              disabled={busy || phase.enumerationStatus !== "complete"}
+              disabled={busy || observing || phase.enumerationStatus !== "complete"}
               onClick={() => void saveSelection(phase.status)}
             >
               Save selection
@@ -278,7 +329,90 @@ export function ExternalCalendarsOperation({
       ) : null}
 
       {actionError ? <p role="alert">{actionError}</p> : null}
-      {notice ? <p>{notice}</p> : null}
+      {notice ? <p data-observation-notice="true">{notice}</p> : null}
     </div>
   );
+}
+
+function ObservationStatusBlock({
+  sources,
+  observing,
+  lastObservation,
+}: {
+  sources: GoogleSourceStatus[];
+  observing: boolean;
+  lastObservation: GoogleObservationResponse | null;
+}) {
+  if (observing) {
+    return <p data-observation-status="observing">Observing selected calendars…</p>;
+  }
+  if (sources.length === 0) {
+    return <p data-observation-status="none-selected">No calendars selected for observation.</p>;
+  }
+  if (lastObservation?.reconnectRequired) {
+    return <p data-observation-status="reconnect-required" role="alert">Reconnect required. Observation could not authorize Google.</p>;
+  }
+  if (lastObservation && lastObservation.failedSourceCount > 0 && lastObservation.successfulSourceCount === 0) {
+    return <p data-observation-status="failed" role="alert">Observation failed. Last-known evidence was retained.</p>;
+  }
+  if (lastObservation && lastObservation.partialSourceCount > 0) {
+    return (
+      <p data-observation-status="partial" role="alert">
+        Observation partially failed for {lastObservation.partialSourceCount} source
+        {lastObservation.partialSourceCount === 1 ? "" : "s"}. Last-known evidence was retained where needed.
+      </p>
+    );
+  }
+  if (lastObservation && lastObservation.successfulSourceCount > 0) {
+    const zero = lastObservation.sources.every(
+      (source) => source.result !== "success_complete" || source.observedEventCount === 0,
+    );
+    return (
+      <p data-observation-status={zero ? "success-zero" : "success"}>
+        {zero
+          ? "Successfully observed. No events in the observation window."
+          : `Successfully observed ${lastObservation.successfulSourceCount} source${lastObservation.successfulSourceCount === 1 ? "" : "s"}.`}
+      </p>
+    );
+  }
+
+  const neverObserved = sources.every((source) => source.lastSuccessfulObservedAt === null);
+  if (neverObserved) {
+    return <p data-observation-status="never-observed">Never observed.</p>;
+  }
+  const failed = sources.some((source) => source.lastAttemptResult === "failure");
+  if (failed) {
+    return <p data-observation-status="failed-retained">Observation failed. Last-known evidence was retained.</p>;
+  }
+  const latest = sources
+    .map((source) => source.lastSuccessfulObservedAt)
+    .filter((value): value is string => value !== null)
+    .sort()
+    .at(-1);
+  return (
+    <p data-observation-status="last-observed">
+      Last observed{latest ? `: ${new Date(latest).toLocaleString()}` : "."}
+    </p>
+  );
+}
+
+function observationNotice(result: GoogleObservationResponse): string {
+  if (result.selectedSourceCount === 0) return "No calendars selected for observation.";
+  if (result.reconnectRequired) return "Reconnect required.";
+  if (result.failedSourceCount > 0 && result.successfulSourceCount === 0) {
+    return "Observation failed. Last-known evidence was retained.";
+  }
+  if (result.partialSourceCount > 0) {
+    return "Observation partially failed. Last-known evidence was retained where needed.";
+  }
+  if (result.successfulSourceCount > 0) {
+    const zero = result.sources.every(
+      (source) => source.result !== "success_complete" || source.observedEventCount === 0,
+    );
+    return zero
+      ? "Successfully observed. No events in the observation window."
+      : "Observation complete.";
+  }
+  if (result.skippedThrottleCount > 0) return "Observation recently ran; skipped.";
+  return "Observation finished.";
 }

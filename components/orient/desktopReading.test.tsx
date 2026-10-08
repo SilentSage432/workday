@@ -20,6 +20,7 @@ import { experienceLoadWindow } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import { signaturePlacement } from "@/components/orient/phoneSignature";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
+import { EMPTY_EXTERNAL_ORIENT_SOURCES } from "@/components/orient/types";
 
 const ANCHOR = "2026-10-05";
 const LAB_ID = "22222222-2222-4222-8222-222222222222";
@@ -87,6 +88,7 @@ function sources(crossDay = false, workOff = false): OrientSources {
     taskPriorityService: ready([]),
     blockPriorityService: ready([]),
     citedTasks: ready([]),
+    ...EMPTY_EXTERNAL_ORIENT_SOURCES,
   };
 }
 

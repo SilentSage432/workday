@@ -22,6 +22,7 @@ import {
 } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import type { CaptureBridge, OrientActions, OrientSources } from "@/components/orient/types";
+import { EMPTY_EXTERNAL_ORIENT_SOURCES } from "@/components/orient/types";
 
 const PRODUCTION_FILES = [
   "components/orient/OrientInstrument.tsx",
@@ -56,6 +57,7 @@ function sources(): OrientSources {
     taskPriorityService: ready([]),
     blockPriorityService: ready([]),
     citedTasks: ready([]),
+    ...EMPTY_EXTERNAL_ORIENT_SOURCES,
   };
 }
 

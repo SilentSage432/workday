@@ -17,6 +17,7 @@ import type { Task } from "@/domain/task";
 import { experienceLoadWindow } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
+import { EMPTY_EXTERNAL_ORIENT_SOURCES } from "@/components/orient/types";
 import { capacityCoverage } from "@/projections/capacity";
 import { composeDayCanvas } from "@/projections/dayCanvas";
 
@@ -43,6 +44,7 @@ function sources(overrides?: Partial<OrientSources>): OrientSources {
     taskPriorityService: ready([]),
     blockPriorityService: ready([]),
     citedTasks: ready([]),
+    ...EMPTY_EXTERNAL_ORIENT_SOURCES,
     ...overrides,
   };
 }

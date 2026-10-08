@@ -19,6 +19,7 @@ import type { Task } from "@/domain/task";
 import { experienceLoadWindow } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
+import { EMPTY_EXTERNAL_ORIENT_SOURCES } from "@/components/orient/types";
 
 const ANCHOR = "2026-10-05";
 const WORK_ID = "11111111-1111-4111-8111-111111111111";
@@ -68,6 +69,7 @@ function sources(): OrientSources {
     taskPriorityService: ready([]),
     blockPriorityService: ready([]),
     citedTasks: ready([]),
+    ...EMPTY_EXTERNAL_ORIENT_SOURCES,
   };
 }
 

@@ -13,6 +13,14 @@ export const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 export const GOOGLE_OAUTH_REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 export const GOOGLE_CALENDAR_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList";
 
+/** Base Calendar API events collection URL (encode calendarId into the path). */
+export const GOOGLE_CALENDAR_EVENTS_BASE_URL =
+  "https://www.googleapis.com/calendar/v3/calendars";
+
+export function googleCalendarEventsListUrl(calendarId: string): string {
+  return `${GOOGLE_CALENDAR_EVENTS_BASE_URL}/${encodeURIComponent(calendarId)}/events`;
+}
+
 export class GoogleConfigError extends Error {
   readonly code = "google_config_unavailable" as const;
 

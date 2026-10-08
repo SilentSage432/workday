@@ -1,5 +1,10 @@
 import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
+import type {
+  ExternalConnection,
+  ExternalTemporalFact,
+  ObservedTemporalSource,
+} from "@/domain/externalTemporal";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import { formatCivilDate, parseCivilDate } from "@/domain/time/workFiscalWeek";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
@@ -9,7 +14,10 @@ import {
   weekLoadedSpan,
   type WeekShape,
 } from "@/projections/weekShape";
-import type { SourceRead } from "@/components/currentTemporalReading";
+import {
+  externalTemporalContextFromReads,
+  type SourceRead,
+} from "@/components/currentTemporalReading";
 import type { CivilDateRange } from "@/projections/timeline";
 
 /**
@@ -42,6 +50,9 @@ export function composeWeekShapeReading(input: {
   protectedTime: SourceRead<ProtectedTime>;
   blocks: SourceRead<Block>;
   commitments: SourceRead<Commitment>;
+  externalConnections?: SourceRead<ExternalConnection>;
+  externalSources?: SourceRead<ObservedTemporalSource>;
+  externalFacts?: SourceRead<ExternalTemporalFact>;
 }): WeekShapeReading {
   const range = canonicalWeekRange(input.range);
   const failure = failedMessage([input.work, input.protectedTime, input.blocks, input.commitments]);
@@ -62,6 +73,19 @@ export function composeWeekShapeReading(input: {
     return { status: "incomplete", message: `${INCOMPLETE} The read does not cover this range.` };
   }
 
+  const externalFactsRead = input.externalFacts;
+  const externalSourcesRead = input.externalSources;
+  const externalConnectionsRead = input.externalConnections;
+  const externalTemporalFacts =
+    externalFactsRead &&
+    externalSourcesRead &&
+    externalConnectionsRead &&
+    externalFactsRead.status === "ready" &&
+    externalSourcesRead.status === "ready" &&
+    externalConnectionsRead.status === "ready"
+      ? externalFactsRead.rows
+      : [];
+
   const shape = projectWeekShape({
     range,
     timeZone: input.timeZone,
@@ -69,6 +93,11 @@ export function composeWeekShapeReading(input: {
     protectedTime: input.protectedTime.rows,
     blocks: input.blocks.rows,
     commitments: input.commitments.rows,
+    externalTemporalFacts,
+    externalTemporalContext: externalTemporalContextFromReads({
+      externalConnections: externalConnectionsRead,
+      externalSources: externalSourcesRead,
+    }),
   });
   return { status: "complete", range: shape.range, facts: shape.facts };
 }

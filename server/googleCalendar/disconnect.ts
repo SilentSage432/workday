@@ -15,6 +15,7 @@ import {
   revokeGoogleToken,
   type GoogleHttp,
 } from "@/server/googleCalendar/oauth";
+import { clearExternalFactsForConnection } from "@/server/googleCalendar/observationPersistence";
 import { clearGoogleSourceSelection } from "@/server/googleCalendar/sources";
 import { createSupabaseServiceRoleClient } from "@/server/supabaseServiceRoleClient";
 
@@ -78,6 +79,20 @@ export async function disconnectGoogleCalendarForUser(
     if (!(error instanceof ExternalCredentialError && error.code === "credential_missing")) {
       throw error;
     }
+  }
+
+  // Withdraw cached external evidence before/with selection clear.
+  // Remote revoke failure must not prevent local evidence withdrawal.
+  try {
+    await clearExternalFactsForConnection(
+      {
+        userId: input.authenticatedUserId,
+        connectionId: connection.id,
+      },
+      admin,
+    );
+  } catch {
+    // Best-effort clear; selection + disconnect still proceed.
   }
 
   await clearGoogleSourceSelection(

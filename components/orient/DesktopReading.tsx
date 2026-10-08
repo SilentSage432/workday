@@ -69,6 +69,9 @@ export function DesktopReading({
           protectedTime: sources.protectedTime,
           blocks: sources.blocks,
           commitments: sources.commitments,
+          externalConnections: sources.externalConnections,
+          externalSources: sources.externalSources,
+          externalFacts: sources.externalFacts,
         })
       : null;
   const threadText = threadLine({

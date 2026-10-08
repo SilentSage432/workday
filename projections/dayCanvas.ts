@@ -395,7 +395,7 @@ function kindWord(fact: TimelineFact): string {
     case "commitment":
       return "Commitment";
     case "external_temporal":
-      return "External";
+      return fact.sourceDisplayName.trim().length > 0 ? fact.sourceDisplayName : "External";
   }
 }
 

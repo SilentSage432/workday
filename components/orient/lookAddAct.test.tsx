@@ -14,6 +14,7 @@ import { experienceLoadWindow } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import { ActSurface } from "@/components/orient/Surfaces";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
+import { EMPTY_EXTERNAL_ORIENT_SOURCES } from "@/components/orient/types";
 
 const ANCHOR = "2026-10-07";
 const NOW = new Date("2026-10-07T15:30:00.000Z");
@@ -48,6 +49,7 @@ function sources(): OrientSources {
     taskPriorityService: ready([]),
     blockPriorityService: ready([]),
     citedTasks: ready([]),
+    ...EMPTY_EXTERNAL_ORIENT_SOURCES,
   };
 }
 

@@ -4,6 +4,8 @@ import { GoogleConfigError } from "@/server/googleCalendar/config";
 import { GoogleConnectionError } from "@/server/googleCalendar/connections";
 import { GoogleOAuthError } from "@/server/googleCalendar/oauth";
 import { OAuthStateError } from "@/server/googleCalendar/oauthState";
+import { GoogleObservationError } from "@/server/googleCalendar/observe";
+import { ObservationPersistenceError } from "@/server/googleCalendar/observationPersistence";
 import { GoogleSourceError } from "@/server/googleCalendar/sources";
 
 export function jsonOk(body: unknown, init: ResponseInit = {}): Response {
@@ -41,6 +43,14 @@ export function mapRouteError(error: unknown): Response {
   }
   if (error instanceof GoogleSourceError) {
     return jsonError(error.code === "source_injection_rejected" ? 400 : 500, error.message, error.code);
+  }
+  if (error instanceof GoogleObservationError) {
+    if (error.code === "not_connected") return jsonError(409, error.message, error.code);
+    if (error.code === "timezone_unavailable") return jsonError(409, error.message, error.code);
+    return jsonError(500, error.message, error.code);
+  }
+  if (error instanceof ObservationPersistenceError) {
+    return jsonError(500, error.message, error.code);
   }
   return jsonError(500, "Google Calendar connection failed.");
 }

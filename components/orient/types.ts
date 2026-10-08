@@ -5,6 +5,11 @@ import type { Block } from "@/domain/block";
 import type { CitedTaskIdentity } from "@/domain/citedTask";
 import type { Commitment } from "@/domain/commitment";
 import type { Destination } from "@/domain/destination";
+import type {
+  ExternalConnection,
+  ExternalTemporalFact,
+  ObservedTemporalSource,
+} from "@/domain/externalTemporal";
 import type { BlockPriorityService, TaskPriorityService } from "@/domain/executionDirection";
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
@@ -28,7 +33,18 @@ export type OrientSources = {
   taskPriorityService: SourceRead<TaskPriorityService>;
   blockPriorityService: SourceRead<BlockPriorityService>;
   citedTasks: SourceRead<CitedTaskIdentity>;
+  /** Separate external evidence. Failed external read must not erase Orient-owned readiness. */
+  externalConnections: SourceRead<ExternalConnection>;
+  externalSources: SourceRead<ObservedTemporalSource>;
+  externalFacts: SourceRead<ExternalTemporalFact>;
 };
+
+/** Ready empty external reads for tests and fixtures that do not exercise observation. */
+export const EMPTY_EXTERNAL_ORIENT_SOURCES = {
+  externalConnections: { status: "ready" as const, rows: [] as const },
+  externalSources: { status: "ready" as const, rows: [] as const },
+  externalFacts: { status: "ready" as const, rows: [] as const },
+} satisfies Pick<OrientSources, "externalConnections" | "externalSources" | "externalFacts">;
 
 export type CaptureBridge = {
   session: CaptureSession;
@@ -51,6 +67,8 @@ export type OrientActions = {
   onTasksChanged: () => void;
   onLoadWorkWeek: (from: string, to: string) => Promise<WorkScheduleEntry[]>;
   onSaveWorkWeek: (weekStart: string, writes: WeekWrite[]) => Promise<void>;
+  /** Reread external evidence after observation/disconnect without inventing realtime. */
+  onExternalObservationComplete?: () => void;
 };
 
 export type { OpenTaskChoice };

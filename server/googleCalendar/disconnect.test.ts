@@ -47,7 +47,15 @@ function createDisconnectAdmin() {
     ["s1", { id: "s1", selected: true, user_id: "user-1", connection_id: "conn-1" }],
   ]);
 
+  const clearedFacts: string[] = [];
   const admin = {
+    async rpc(name: string, args: { p_user_id: string; p_connection_id: string }) {
+      if (name === "clear_external_facts_for_connection") {
+        clearedFacts.push(`${args.p_user_id}:${args.p_connection_id}`);
+        return { error: null };
+      }
+      return { error: { message: `unexpected rpc ${name}` } };
+    },
     from(table: string) {
       if (table === "external_temporal_connections") {
         return {
@@ -171,6 +179,7 @@ function createDisconnectAdmin() {
     credentials,
     sources,
     connection,
+    clearedFacts,
   };
 }
 
@@ -191,7 +200,7 @@ describe("Google token revoke", () => {
 describe("Google disconnect orchestration", () => {
   it("revokes best-effort, deletes custody, clears selection, marks disconnected", async () => {
     const key = randomKey();
-    const { admin, credentials, sources, connection } = createDisconnectAdmin();
+    const { admin, credentials, sources, connection, clearedFacts } = createDisconnectAdmin();
     const seal = (input: Parameters<typeof sealCredentialPayload>[0]) =>
       sealCredentialPayload({ ...input, keyBytes: key });
     const open = (input: Parameters<typeof openCredentialPayload>[0]) =>
@@ -230,13 +239,14 @@ describe("Google disconnect orchestration", () => {
     expect(credentials.size).toBe(0);
     expect(connection.status).toBe("disconnected");
     expect([...sources.values()].every((row) => row.selected === false)).toBe(true);
+    expect(clearedFacts).toEqual(["user-1:conn-1"]);
     const firstCall = http.mock.calls[0] as unknown as [string];
     expect(String(firstCall[0])).toContain("oauth2.googleapis.com/revoke");
   });
 
   it("ends local relationship when remote revoke fails", async () => {
     const key = randomKey();
-    const { admin, credentials, connection } = createDisconnectAdmin();
+    const { admin, credentials, connection, clearedFacts } = createDisconnectAdmin();
     const seal = (input: Parameters<typeof sealCredentialPayload>[0]) =>
       sealCredentialPayload({ ...input, keyBytes: key });
     const open = (input: Parameters<typeof openCredentialPayload>[0]) =>
@@ -270,5 +280,6 @@ describe("Google disconnect orchestration", () => {
     expect(result.message).toMatch(/Disconnected in Orient/);
     expect(credentials.size).toBe(0);
     expect(connection.status).toBe("disconnected");
+    expect(clearedFacts).toEqual(["user-1:conn-1"]);
   });
 });

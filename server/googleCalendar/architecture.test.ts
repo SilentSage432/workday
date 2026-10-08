@@ -16,53 +16,26 @@ function walkFiles(dir: string, predicate: (name: string) => boolean): string[] 
   return out;
 }
 
-describe("Google Calendar Tranche 3 architectural guards", () => {
-  it("contains no Google events.list or Event observation in the Google integration boundary", () => {
+describe("Google Calendar Tranche 4 architectural guards", () => {
+  it("keeps Google DTOs out of provider-neutral domain and projections", () => {
     const files = [
-      ...walkFiles(join(root, "server/googleCalendar"), (name) => name.endsWith(".ts")),
-      ...walkFiles(join(root, "app/api/external/google"), (name) => name.endsWith(".ts")),
-      join(root, "components/orient/ExternalCalendarsOperation.tsx"),
-      join(root, "components/orient/externalCalendarsApi.ts"),
-    ].filter((file) => !file.endsWith(".test.ts") && !file.endsWith(".test.tsx"));
-
-    for (const file of files) {
-      const source = readFileSync(file, "utf8");
-      expect(source, file).not.toContain("events.list");
-      expect(source, file).not.toMatch(/\/calendars\/[^/]+\/events/);
-      expect(source, file).not.toContain("external_temporal_facts");
-      expect(source, file).not.toMatch(/upsertExternal|insertExternalTemporalFact|GoogleEvent/);
-    }
-  });
-
-  it("does not import Google Calendar adapter into Present/Day/Week/Month production projections", () => {
-    const files = [
-      "projections/presentMomentOrientation.ts",
+      "domain/externalTemporal.ts",
+      "projections/timeline.ts",
+      "projections/currentTemporalOrientation.ts",
       "projections/dayCanvas.ts",
       "projections/weekShape.ts",
       "projections/month.ts",
-      "projections/timeline.ts",
-      "projections/currentTemporalOrientation.ts",
-      "components/orient/OrientView.tsx",
     ];
     for (const relative of files) {
       const source = readFileSync(join(root, relative), "utf8");
-      expect(source).not.toMatch(/server\/googleCalendar|events\.list|enumerateGoogle/);
+      expect(source).not.toMatch(/GoogleEvent|events\.list|googleapis|originalStartTime/);
+      expect(source).not.toMatch(/server\/googleCalendar/);
     }
   });
 
-  it("keeps CalendarList as the only Google Calendar data API URL", () => {
-    const googleFiles = walkFiles(join(root, "server/googleCalendar"), (name) =>
-      name.endsWith(".ts"),
-    ).filter((file) => !file.endsWith(".test.ts"));
-    const joined = googleFiles.map((file) => readFileSync(file, "utf8")).join("\n");
-    const calendarDataUrls =
-      joined.match(/https:\/\/www\.googleapis\.com\/calendar\/[^\s"`']+/g) ?? [];
-    expect(calendarDataUrls.length).toBeGreaterThan(0);
-    expect(
-      calendarDataUrls.every((url) =>
-        url.startsWith("https://www.googleapis.com/calendar/v3/users/me/calendarList"),
-      ),
-    ).toBe(true);
+  it("does not import Google Calendar adapter into production OrientView composition", () => {
+    const source = readFileSync(join(root, "components/orient/OrientView.tsx"), "utf8");
+    expect(source).not.toMatch(/server\/googleCalendar|listGoogleCalendarEvents|mapGoogleEvent/);
   });
 
   it("does not add googleapis dependency", () => {
@@ -74,19 +47,51 @@ describe("Google Calendar Tranche 3 architectural guards", () => {
     expect(pkg.devDependencies?.googleapis).toBeUndefined();
   });
 
-  it("does not put Google DTOs into provider-neutral domain", () => {
-    const domain = readFileSync(join(root, "domain/externalTemporal.ts"), "utf8");
-    expect(domain).not.toMatch(/GoogleToken|CalendarList|google_calendar_id|accessRole/);
+  it("keeps observation writes on the server observe path, not browser persistence writers", () => {
+    const browserPersistence = readFileSync(join(root, "persistence/externalTemporal.ts"), "utf8");
+    expect(browserPersistence).not.toMatch(/persist_external_source_observation|insert\(|upsert\(/);
+    const observe = readFileSync(join(root, "server/googleCalendar/observe.ts"), "utf8");
+    expect(observe).toContain("persistSourceObservation");
+    expect(observe).toContain("listGoogleCalendarEvents");
   });
 
-  it("keeps oauth initiation server-only with RLS and no realtime publication", () => {
-    const sql = readFileSync(
-      join(root, "supabase/migrations/20261007220000_external_oauth_initiations.sql"),
+  it("does not create Task/ActiveThread/Work/Commitment writers in observation modules", () => {
+    const files = walkFiles(join(root, "server/googleCalendar"), (name) => name.endsWith(".ts")).filter(
+      (file) => !file.endsWith(".test.ts"),
+    );
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      expect(source, file).not.toMatch(/createTask|establishActiveThread|saveWorkWeek|createCommitment|createBlock|createProtectedTime/);
+    }
+  });
+
+  it("does not publish external facts/sources to realtime in this tranche", () => {
+    const coherence = readFileSync(join(root, "components/orient/canonicalCoherence.ts"), "utf8");
+    expect(coherence).not.toMatch(/external_temporal_facts|external_temporal_sources/);
+    const migrations = walkFiles(join(root, "supabase/migrations"), (name) => name.endsWith(".sql"));
+    for (const file of migrations) {
+      if (!file.includes("20261008")) continue;
+      const sql = readFileSync(file, "utf8");
+      expect(sql).not.toMatch(/supabase_realtime|alter publication/);
+    }
+  });
+
+  it("keeps authenticated external fact writes closed (SELECT-only grants unchanged)", () => {
+    const sql = readFileSync(join(root, "supabase/migrations/20261007200000_external_temporal.sql"), "utf8");
+    expect(sql).toMatch(/grant select on table public\.external_temporal_facts to authenticated/);
+    expect(sql).not.toMatch(/grant insert on table public\.external_temporal_facts to authenticated/);
+    const observationSql = readFileSync(
+      join(root, "supabase/migrations/20261008010000_persist_external_source_observation.sql"),
       "utf8",
     );
-    expect(sql).toMatch(/enable row level security/);
-    expect(sql).toMatch(/revoke all on table public\.external_oauth_initiations from public, anon, authenticated/);
-    expect(sql).not.toMatch(/create policy/i);
-    expect(sql).toMatch(/Intentionally omitted from realtime publication membership/);
+    expect(observationSql).toMatch(/grant execute on function public\.persist_external_source_observation/);
+    expect(observationSql).toMatch(/to service_role/);
+    expect(observationSql).toMatch(/revoke all on function public\.persist_external_source_observation/);
+  });
+
+  it("avoids Sync language in the Google management surface", () => {
+    const ui = readFileSync(join(root, "components/orient/ExternalCalendarsOperation.tsx"), "utf8");
+    expect(ui).toMatch(/Refresh observed calendars/);
+    expect(ui).not.toMatch(/\bSync\b|\bImported\b|\bCopied into Orient\b/);
   });
 });

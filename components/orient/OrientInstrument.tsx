@@ -9,6 +9,7 @@ import {
   createCanonicalReload,
   subscribeCanonicalChangesFromBrowser,
 } from "@/components/orient/canonicalCoherence";
+import { observeGoogleCalendars } from "@/components/orient/externalCalendarsApi";
 import { experienceLoadWindow, orientCivilDate } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import type { OrientSources, ThreadReading } from "@/components/orient/types";
@@ -18,6 +19,11 @@ import type { CitedTaskIdentity } from "@/domain/citedTask";
 import type { Commitment } from "@/domain/commitment";
 import type { Context } from "@/domain/context";
 import type { Destination } from "@/domain/destination";
+import type {
+  ExternalConnection,
+  ExternalTemporalFact,
+  ObservedTemporalSource,
+} from "@/domain/externalTemporal";
 import type { BlockPriorityService, TaskPriorityService } from "@/domain/executionDirection";
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
@@ -30,6 +36,11 @@ import { loadCitedTaskIdentities } from "@/persistence/citedTaskIdentity";
 import { createCommitment, deleteCommitment, loadCommitments, updateCommitment } from "@/persistence/commitment";
 import { completeTask, loadContexts, loadOpenTasks, reopenTask, updateTask } from "@/persistence/contextsAndTasks";
 import { loadDestinations } from "@/persistence/destination";
+import {
+  loadExternalConnections,
+  loadExternalTemporalFacts,
+  loadObservedTemporalSources,
+} from "@/persistence/externalTemporal";
 import { loadPriorities } from "@/persistence/priority";
 import { createProtectedTime, deleteProtectedTime, loadProtectedTime, updateProtectedTime } from "@/persistence/protectedTime";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
@@ -122,7 +133,22 @@ export function OrientInstrument() {
     });
     let closed = false;
     let unsubscribe: (() => void) | null = null;
-    const detachVisibility = attachCanonicalVisibilityRecovery(document, () => reload.request());
+    const requestThrottledObservation = () => {
+      void observeGoogleCalendars({ force: false })
+        .then((result) => {
+          if (closed) return;
+          if (result.successfulSourceCount > 0 || result.failedSourceCount > 0 || result.partialSourceCount > 0) {
+            reload.request();
+          }
+        })
+        .catch(() => {
+          // Observation is best-effort on visibility; landscape reread stays independent.
+        });
+    };
+    const detachVisibility = attachCanonicalVisibilityRecovery(document, () => {
+      requestThrottledObservation();
+      reload.request();
+    });
     const client = getSupabaseBrowserClient();
     void (async () => {
       try {
@@ -132,6 +158,8 @@ export function OrientInstrument() {
           if (!closed) reload.request();
         });
         if (closed) unsubscribe();
+        // Initial load may observe when selected sources exist and are stale (server throttle).
+        requestThrottledObservation();
       } catch {
         return;
       }
@@ -150,20 +178,37 @@ export function OrientInstrument() {
     const client = getSupabaseBrowserClient();
     const loaded = experienceLoadWindow(anchor);
     void (async () => {
-      const [work, protectedTime, blocks, commitments, contexts, tasks, activeThread, destinations, priorities, taskPriorityService, blockPriorityService] =
-        await Promise.all([
-          readRows<WorkScheduleEntry>(() => loadWorkSchedule(client, loaded.from, loaded.to)),
-          readRows<ProtectedTime>(() => loadProtectedTime(client, loaded)),
-          readRows<Block>(() => loadBlocks(client, loaded)),
-          readRows<Commitment>(() => loadCommitments(client, loaded)),
-          readRows<Context>(() => loadContexts(client)),
-          readRows<Task>(() => loadOpenTasks(client)),
-          readValue<ActiveThread | null>(() => loadActiveThread(client)),
-          readRows<Destination>(() => loadDestinations(client)),
-          readRows<Priority>(() => loadPriorities(client)),
-          readRows<TaskPriorityService>(() => loadTaskPriorityService(client)),
-          readRows<BlockPriorityService>(() => loadBlockPriorityService(client)),
-        ]);
+      const [
+        work,
+        protectedTime,
+        blocks,
+        commitments,
+        contexts,
+        tasks,
+        activeThread,
+        destinations,
+        priorities,
+        taskPriorityService,
+        blockPriorityService,
+        externalConnections,
+        externalSources,
+        externalFacts,
+      ] = await Promise.all([
+        readRows<WorkScheduleEntry>(() => loadWorkSchedule(client, loaded.from, loaded.to)),
+        readRows<ProtectedTime>(() => loadProtectedTime(client, loaded)),
+        readRows<Block>(() => loadBlocks(client, loaded)),
+        readRows<Commitment>(() => loadCommitments(client, loaded)),
+        readRows<Context>(() => loadContexts(client)),
+        readRows<Task>(() => loadOpenTasks(client)),
+        readValue<ActiveThread | null>(() => loadActiveThread(client)),
+        readRows<Destination>(() => loadDestinations(client)),
+        readRows<Priority>(() => loadPriorities(client)),
+        readRows<TaskPriorityService>(() => loadTaskPriorityService(client)),
+        readRows<BlockPriorityService>(() => loadBlockPriorityService(client)),
+        readRows<ExternalConnection>(() => loadExternalConnections(client)),
+        readRows<ObservedTemporalSource>(() => loadObservedTemporalSources(client)),
+        readRows<ExternalTemporalFact>(() => loadExternalTemporalFacts(client)),
+      ]);
       let citedTasks: SourceRead<CitedTaskIdentity>;
       if (taskPriorityService.status === "failed") {
         citedTasks = { status: "failed", message: taskPriorityService.message };
@@ -188,6 +233,9 @@ export function OrientInstrument() {
           taskPriorityService,
           blockPriorityService,
           citedTasks,
+          externalConnections,
+          externalSources,
+          externalFacts,
         },
         contexts,
         tasks,
@@ -292,6 +340,7 @@ export function OrientInstrument() {
             await saveWorkWeek(getSupabaseBrowserClient(), weekStart, writes);
           });
         },
+        onExternalObservationComplete: () => setReloadToken((token) => token + 1),
       }}
     />
   );

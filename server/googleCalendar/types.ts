@@ -50,3 +50,57 @@ export type CalendarListEnumerationResult =
       calendars: SelectableGoogleCalendar[];
       message: string;
     };
+
+/** Google Event DTO. Remains inside the Google integration boundary. */
+export type GoogleEventDate = {
+  date?: string;
+  dateTime?: string;
+  timeZone?: string;
+};
+
+export type GoogleEvent = {
+  id?: string;
+  status?: string;
+  summary?: string;
+  etag?: string;
+  updated?: string;
+  eventType?: string;
+  transparency?: string;
+  visibility?: string;
+  recurringEventId?: string;
+  originalStartTime?: GoogleEventDate;
+  start?: GoogleEventDate;
+  end?: GoogleEventDate;
+  iCalUID?: string;
+};
+
+export type GoogleEventsListResponse = {
+  items?: GoogleEvent[];
+  nextPageToken?: string;
+};
+
+export type GoogleEventsListFailureCode =
+  | "authorization_invalid"
+  | "permission_denied"
+  | "rate_limited"
+  | "transient_provider_failure"
+  | "malformed_provider_response"
+  | "partial_paginated_observation";
+
+export type GoogleEventsListResult =
+  | {
+      status: "complete";
+      events: GoogleEvent[];
+    }
+  | {
+      status: "partial";
+      events: GoogleEvent[];
+      code: GoogleEventsListFailureCode;
+      message: string;
+    }
+  | {
+      status: "failure";
+      events: [];
+      code: GoogleEventsListFailureCode;
+      message: string;
+    };

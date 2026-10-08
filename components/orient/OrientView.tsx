@@ -69,7 +69,13 @@ import {
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
 import type { Context } from "@/domain/context";
 import type { SourceRead } from "@/components/currentTemporalReading";
+import type {
+  ExternalConnectionStatus,
+  ExternalTemporalFact,
+  ObservedTemporalSource,
+} from "@/domain/externalTemporal";
 import type { Task } from "@/domain/task";
+import type { ExternalTemporalTimelineContext } from "@/projections/timeline";
 import "./orient.css";
 
 type ViewpointProvenance = "follows-today" | "moved";
@@ -535,6 +541,23 @@ export function OrientView({
     const protectedTime = sources.protectedTime.rows;
     const blockRows = sources.blocks.rows;
     const commitmentRows = sources.commitments.rows;
+    let externalTemporalFacts: readonly ExternalTemporalFact[] | undefined;
+    let externalTemporalContext: ExternalTemporalTimelineContext | undefined;
+    if (
+      sources.externalFacts.status === "ready" &&
+      sources.externalSources.status === "ready" &&
+      sources.externalConnections.status === "ready"
+    ) {
+      const connectionStatusById: Record<string, ExternalConnectionStatus> = {};
+      for (const connection of sources.externalConnections.rows) {
+        connectionStatusById[connection.id] = connection.status;
+      }
+      externalTemporalFacts = sources.externalFacts.rows;
+      externalTemporalContext = {
+        sources: sources.externalSources.rows as readonly ObservedTemporalSource[],
+        connectionStatusById,
+      };
+    }
     return visibleDates.map((civilDate) =>
       composeDayCanvas({
         selectedDay: civilDate,
@@ -544,9 +567,22 @@ export function OrientView({
         blocks: blockRows,
         commitments: commitmentRows,
         contextNames,
+        externalTemporalFacts,
+        externalTemporalContext,
       }),
     );
-  }, [visibleDates, timeZone, sources.work, sources.protectedTime, sources.blocks, sources.commitments, contextNames]);
+  }, [
+    visibleDates,
+    timeZone,
+    sources.work,
+    sources.protectedTime,
+    sources.blocks,
+    sources.commitments,
+    sources.externalConnections,
+    sources.externalSources,
+    sources.externalFacts,
+    contextNames,
+  ]);
 
   const weekReading =
     question === "week"
@@ -558,6 +594,9 @@ export function OrientView({
           protectedTime: sources.protectedTime,
           blocks: sources.blocks,
           commitments: sources.commitments,
+          externalConnections: sources.externalConnections,
+          externalSources: sources.externalSources,
+          externalFacts: sources.externalFacts,
         })
       : null;
   const monthReading = question === "month"
@@ -574,6 +613,9 @@ export function OrientView({
         taskPriorityService: sources.taskPriorityService,
         blockPriorityService: sources.blockPriorityService,
         citedTasks: sources.citedTasks,
+        externalConnections: sources.externalConnections,
+        externalSources: sources.externalSources,
+        externalFacts: sources.externalFacts,
       })
     : null;
 
@@ -1265,6 +1307,7 @@ export function OrientView({
             <ExternalCalendarsOperation
               initialError={surface.googleError}
               onDismiss={finishClose}
+              onObservationComplete={actions.onExternalObservationComplete}
             />
           ) : null}
           {surface.kind === "direction" ? (

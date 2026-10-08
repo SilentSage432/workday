@@ -659,6 +659,11 @@ function FactDetail({
       <h2>{copy.kindLabel}</h2>
       {copy.primary ? <p>{copy.primary}</p> : null}
       <p>{copy.interval}</p>
+      {fact.sourceKind === "external_temporal" ? (
+        <p data-external-provenance="true" className="orient-note">
+          From an external calendar. Read-only in Orient.
+        </p>
+      ) : null}
       {copy.contextName ? <p>{copy.contextName}</p> : null}
       {blockTaskId ? <p>{taskTitle ? `Cites task · ${taskTitle}` : "Cites a task."}</p> : null}
       {serviceLines(fact, services).map((line) => (
