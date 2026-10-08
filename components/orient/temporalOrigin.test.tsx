@@ -212,7 +212,7 @@ describe("production temporal origin", () => {
         onAnchor: (date) => anchors.push(date),
       });
       await act(async () => {
-        positioned.querySelector<HTMLButtonElement>("[data-position]")?.click();
+        positioned.querySelector<HTMLButtonElement>("[data-look-control]")?.click();
       });
       await act(async () => {
         buttonNamed(positioned, "Today").click();

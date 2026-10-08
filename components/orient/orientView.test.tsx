@@ -258,20 +258,23 @@ describe("production orient instrument", () => {
     expect(view.querySelector("[data-day-inscription]")).toBeNull();
     expect(view.querySelector("[data-time-surface]")).toBeNull();
     expect(view.querySelector("[data-question-control] svg")).not.toBeNull();
-    expect(view.querySelector("[data-capture-control] svg")).not.toBeNull();
+    expect(view.querySelector("[data-look-control]")).not.toBeNull();
+    expect(view.querySelector("[data-add-control]")).not.toBeNull();
+    expect(view.querySelector("[data-act-control]")).not.toBeNull();
+    expect(view.querySelector("[data-capture-control]")).toBeNull();
     expect(view.querySelector("[data-desktop-thread]")?.textContent).toContain("Resume: Cycle counts");
     expect(view.querySelector("[data-active-thread]")).toBeNull();
     const scroller = view.querySelector("[data-field-scroll]") as HTMLElement;
     scroller.scrollTop = 120;
     await act(async () => {
-      buttonNamed(view, "Capture").click();
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
     });
-    expect(view.querySelector("[data-capture-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-add-chooser]")).not.toBeNull();
     expect(scroller.scrollTop).toBe(120);
     await act(async () => {
-      buttonNamed(view, "Close capture").click();
+      buttonNamed(view, "Close").click();
     });
-    expect(view.querySelector("[data-capture-surface]")).toBeNull();
+    expect(view.querySelector("[data-add-chooser]")).toBeNull();
     expect(scroller.scrollTop).toBe(120);
     expect(view.querySelector("[data-field]")).not.toBeNull();
   });
@@ -374,7 +377,7 @@ describe("production orient instrument", () => {
     await openExact(view);
     const before = view.querySelector('[data-source-id="block-1"]')?.getAttribute("data-top");
     await act(async () => {
-      buttonNamed(view, "Focus: Everything").click();
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
     });
     await act(async () => {
       buttonNamed(view, "TeamLab").click();
@@ -711,17 +714,17 @@ describe("production orient instrument", () => {
     expect(scroller.scrollTop).toBe(640);
     expect(anchors).toEqual([]);
     await act(async () => {
-      buttonNamed(view, "Focus: Everything").click();
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
     });
     await act(async () => {
       buttonNamed(view, "TeamLab").click();
     });
     expect(scroller.scrollTop).toBe(640);
     await act(async () => {
-      buttonNamed(view, "Capture").click();
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
     });
     await act(async () => {
-      buttonNamed(view, "Close capture").click();
+      buttonNamed(view, "Close").click();
     });
     expect(scroller.scrollTop).toBe(640);
     const surface = view.querySelector(`[data-civil-day="${ANCHOR}"] [data-time-surface]`) as HTMLElement;
@@ -755,7 +758,7 @@ describe("production orient instrument", () => {
     expect(anchors).toContain("2026-10-05");
     anchors.length = 0;
     await act(async () => {
-      view.querySelector<HTMLButtonElement>("[data-position]")?.click();
+      view.querySelector<HTMLButtonElement>("[data-look-control]")?.click();
     });
     await act(async () => {
       buttonNamed(view, "Today").click();
@@ -900,13 +903,8 @@ describe("work schedule authority", () => {
   }
 
   async function openManage(view: HTMLElement) {
-    const phone = view.querySelector("[data-form]")?.getAttribute("data-form") === "phone";
     await act(async () => {
-      if (phone) {
-        view.querySelector<HTMLButtonElement>("[data-look-control]")?.click();
-      } else {
-        view.querySelector<HTMLButtonElement>("[data-position]")?.click();
-      }
+      view.querySelector<HTMLButtonElement>("[data-look-control]")?.click();
     });
     await act(async () => {
       buttonNamed(view, "Manage Work schedule").click();

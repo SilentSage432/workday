@@ -396,15 +396,15 @@ describe("NOTE-RETURN-001 isolation and writers", () => {
     expect(surfaces).not.toMatch(/updateNote|deleteNote/);
   });
 
-  it("keeps desktop Capture Notes control available beside LOOK Notes", () => {
+  it("reaches retained Notes through LOOK on every form factor without Capture peer", () => {
     const view = readFileSync("components/orient/OrientView.tsx", "utf8");
-    expect(view).toContain("data-capture-control");
-    expect(view).toContain("CaptureSurface");
+    expect(view).toContain("data-look-control");
+    expect(view).toContain("data-reach-grammar");
+    expect(view).not.toContain("data-capture-control");
     expect(view).toContain("NotesSurface");
     expect(view).toContain('kind: "notes"');
     const surfaces = readFileSync("components/orient/Surfaces.tsx", "utf8");
     expect(surfaces).toContain("data-look-notes");
     expect(surfaces).toContain("RetainedNotesCollection");
-    expect(surfaces).toContain("export function CaptureSurface");
   });
 });

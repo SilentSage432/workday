@@ -483,14 +483,14 @@ describe("desktop reading", () => {
     const reading = view.querySelector(".orient-desktop") as HTMLElement;
     reading.dataset.kept = "yes";
     expect(view.querySelector("[data-day-signature]")).toBeNull();
-    const capture = view.querySelector("[data-capture-control]") as HTMLButtonElement;
+    const add = view.querySelector("[data-add-control]") as HTMLButtonElement;
     await act(async () => {
-      capture.click();
+      add.click();
     });
     expect(view.querySelectorAll("[role='dialog']")).toHaveLength(1);
     expect(view.querySelector("[role='dialog']")?.getAttribute("data-borrowed-surface")).toBe("drawer");
     expect(view.querySelector("[role='dialog']")?.getAttribute("aria-modal")).toBe("false");
-    expect(view.querySelector("[data-capture-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-add-chooser]")).not.toBeNull();
     expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
     expect(view.querySelector("[data-day-signature]")).toBeNull();
     expect(document.activeElement).toBe(view.querySelector("[role='dialog']"));
@@ -499,20 +499,21 @@ describe("desktop reading", () => {
       await Promise.resolve();
     });
     expect(view.querySelector("[role='dialog']")).toBeNull();
-    expect(view.querySelector("[data-capture-surface]")).toBeNull();
+    expect(view.querySelector("[data-add-chooser]")).toBeNull();
     expect(view.querySelector(".orient-desktop")?.getAttribute("data-kept")).toBe("yes");
     expect(view.querySelector("[data-day-signature]")).toBeNull();
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
-    expect(document.activeElement).toBe(capture);
+    expect(document.activeElement).toBe(add);
 
     await act(async () => {
-      capture.click();
+      add.click();
     });
     await act(async () => {
-      (view.querySelector("[data-question-control]") as HTMLButtonElement).click();
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
     });
     expect(view.querySelectorAll("[role='dialog']")).toHaveLength(1);
-    expect(view.querySelector("[data-capture-surface]")).toBeNull();
+    expect(view.querySelector("[data-add-chooser]")).toBeNull();
+    expect(view.querySelector("[data-look-surface]")).not.toBeNull();
     expect(view.querySelector("[data-question-list]")).not.toBeNull();
   });
 

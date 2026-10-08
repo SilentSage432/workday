@@ -309,9 +309,9 @@ describe("all-day authority reachability", () => {
     expect(establishes[2]?.input).not.toHaveProperty("endLocal");
   });
 
-  it("reaches all-day establishment on desktop without LOOK · + · ACT", async () => {
+  it("reaches all-day establishment on desktop via standing All day and via ADD", async () => {
     const { view, establishes } = await renderHost(false);
-    expect(view.querySelector("[data-reach-grammar='look-add-act']")).toBeNull();
+    expect(view.querySelector("[data-reach-grammar='look-add-act']")).not.toBeNull();
     expect(view.querySelector("[data-all-day-establish]")).not.toBeNull();
     await act(async () => {
       (view.querySelector("[data-all-day-establish]") as HTMLButtonElement).click();
@@ -324,6 +324,10 @@ describe("all-day authority reachability", () => {
         input: { kind: "all_day", startsOn: ANCHOR, label: "Rest" },
       },
     ]);
+    await act(async () => {
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector('[data-add-choice="all-day"]')).not.toBeNull();
   });
 
   it("edits, civil-date corrects, and removes an all-day fact through same-id update and delete writers", async () => {

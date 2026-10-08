@@ -152,11 +152,13 @@ async function ask(view: HTMLElement, name: string) {
 }
 
 async function openPosition(view: HTMLElement) {
-  const control = view.querySelector("[data-position]") as HTMLButtonElement;
-  if (control.getAttribute("aria-expanded") === "true") return;
-  await act(async () => {
-    control.click();
-  });
+  const look = view.querySelector("[data-look-control]") as HTMLButtonElement;
+  if (look.getAttribute("aria-expanded") !== "true") {
+    await act(async () => {
+      look.click();
+    });
+  }
+  expect(view.querySelector("[data-relocation]")).not.toBeNull();
 }
 
 async function shiftLandscape(view: HTMLElement) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Aperture, ChevronRight, Compass, Crosshair, ListTodo, Locate, PenLine, Plus } from "lucide-react";
+import { ChevronRight, Compass, Crosshair, ListTodo, Plus } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { composeWorkCapacityReading } from "@/components/capacityReading";
 import { initialSelectionSession, reduceSelection, type SelectionSession } from "@/components/daySelection";
@@ -32,7 +32,6 @@ import {
   civilDatesInSpan,
   explicitCivilSpan,
   orientCivilDate,
-  positionWord,
   QUESTION_LABEL,
   questionAllowsCapacityRemainder,
   questionAllowsEstablishment,
@@ -53,19 +52,15 @@ import {
   ActSurface,
   AddChooser,
   AllDayEstablishmentSurface,
-  CaptureSurface,
   DirectNoteSurface,
   DirectStewardshipSurface,
   DirectTaskSurface,
   DirectionInspection,
   DirectionPlane,
   EstablishmentSurface,
-  FocusList,
   InspectionSurface,
   LookSurface,
   NotesSurface,
-  PositionSurface,
-  QuestionList,
   StewardshipDetailSurface,
   StewardshipManageSurface,
   ThreadSurface,
@@ -95,9 +90,6 @@ type Surface =
   | { kind: "none" }
   | { kind: "look" }
   | { kind: "notes" }
-  | { kind: "question" }
-  | { kind: "position" }
-  | { kind: "focus" }
   | { kind: "add" }
   | { kind: "act" }
   | { kind: "create-task"; returnTo?: "act" }
@@ -109,7 +101,6 @@ type Surface =
   | { kind: "recurring-task-detail"; definitionId: string }
   | { kind: "create-note" }
   | { kind: "create-all-day" }
-  | { kind: "capture" }
   | { kind: "thread" }
   | { kind: "facts"; facts: FactAddress[]; chosen: FactAddress | null; proposal: TemporalProposal | null }
   | { kind: "direction"; priorityId: string }
@@ -126,7 +117,7 @@ export function OrientView({
   contexts,
   tasks,
   thread,
-  capture,
+  capture: _capture,
   actions,
 }: {
   timeZone: string;
@@ -138,9 +129,11 @@ export function OrientView({
   contexts: SourceRead<Context>;
   tasks: SourceRead<Task>;
   thread: ThreadReading;
+  /** Retained for instrument bridge; establishment routes through ADD (DirectTask/DirectNote). */
   capture: CaptureBridge;
   actions: OrientActions;
 }) {
+  void _capture;
   const clock = now;
   const bringNow = useRef(true);
   const [question, setQuestion] = useState<OrientQuestion>(() => (readInstrumentForm() === "phone" ? "day" : "present"));
@@ -830,13 +823,6 @@ export function OrientView({
     status: thread.status === "ready" ? "ready" : thread.status,
     active: thread.status === "ready" ? thread.active : false,
   });
-  const focusLabel =
-    contexts.status === "failed"
-      ? "The focus could not be read."
-      : focus.kind === "everything"
-        ? "Focus: Everything"
-        : `Focus: ${focus.name}`;
-
   let field: ReactNode;
   const phoneReading = form === "phone" && depth === "reading" && (question === "present" || question === "day");
   const desktopReading = continuityReading(depth, question) && form === "desktop";
@@ -1038,117 +1024,72 @@ export function OrientView({
             <ChevronRight aria-hidden="true" className="orient-glyph" />
           </button>
         )}
-        {form === "phone" ? (
-          <div className="orient-reach-row" data-reach-grammar="look-add-act">
-            <button
-              type="button"
-              className="orient-control"
-              data-look-control="true"
-              data-question-control="true"
-              aria-label={`LOOK · ${QUESTION_LABEL[question]}`}
-              aria-expanded={
+        <div className="orient-reach-row" data-reach-grammar="look-add-act">
+          <button
+            type="button"
+            className="orient-control"
+            data-look-control="true"
+            data-question-control="true"
+            aria-label={`LOOK · ${QUESTION_LABEL[question]}`}
+            aria-expanded={
+              surface.kind === "look" ||
+              surface.kind === "notes" ||
+              surface.kind === "stewardship-manage" ||
+              surface.kind === "stewardship-detail" ||
+              surface.kind === "recurring-task-manage" ||
+              surface.kind === "recurring-task-detail"
+            }
+            onClick={(event) =>
+              openFrom(
+                event,
                 surface.kind === "look" ||
-                surface.kind === "notes" ||
-                surface.kind === "stewardship-manage" ||
-                surface.kind === "stewardship-detail" ||
-                surface.kind === "recurring-task-manage" ||
-                surface.kind === "recurring-task-detail"
-              }
-              onClick={(event) =>
-                openFrom(
-                  event,
-                  surface.kind === "look" ||
-                    surface.kind === "notes" ||
-                    surface.kind === "stewardship-manage" ||
-                    surface.kind === "stewardship-detail" ||
-                    surface.kind === "recurring-task-manage" ||
-                    surface.kind === "recurring-task-detail"
-                    ? { kind: "none" }
-                    : { kind: "look" },
-                )
-              }
-            >
-              <Compass aria-hidden="true" className="orient-glyph" />
-              <span>LOOK</span>
-            </button>
-            <button
-              type="button"
-              className="orient-control orient-add-control"
-              data-add-control="true"
-              aria-label="Add"
-              aria-expanded={
-                surface.kind === "add" ||
-                surface.kind === "create-task" ||
-                surface.kind === "create-stewardship" ||
-                surface.kind === "create-recurring-task" ||
-                surface.kind === "create-note" ||
-                surface.kind === "create-all-day"
-              }
-              onClick={(event) => openFrom(event, surface.kind === "add" ? { kind: "none" } : { kind: "add" })}
-            >
-              <Plus aria-hidden="true" className="orient-glyph" />
-              <span>+</span>
-            </button>
-            <button
-              type="button"
-              className="orient-control"
-              data-act-control="true"
-              aria-label="ACT · What do I need to do?"
-              aria-expanded={
-                surface.kind === "act" ||
-                (surface.kind === "create-stewardship" && surface.returnTo === "act") ||
-                (surface.kind === "create-task" && surface.returnTo === "act")
-              }
-              onClick={(event) => openFrom(event, surface.kind === "act" ? { kind: "none" } : { kind: "act" })}
-            >
-              <ListTodo aria-hidden="true" className="orient-glyph" />
-              <span>ACT</span>
-            </button>
-          </div>
-        ) : (
-          <div className="orient-reach-row">
-            <button
-              type="button"
-              className="orient-control"
-              data-question-control="true"
-              aria-expanded={surface.kind === "question"}
-              onClick={(event) => openFrom(event, surface.kind === "question" ? { kind: "none" } : { kind: "question" })}
-            >
-              <Compass aria-hidden="true" className="orient-glyph" />
-              <span>{QUESTION_LABEL[question]}</span>
-            </button>
-            <button
-              type="button"
-              className="orient-control"
-              data-position="true"
-              aria-expanded={surface.kind === "position"}
-              onClick={(event) => openFrom(event, surface.kind === "position" ? { kind: "none" } : { kind: "position" })}
-            >
-              <Locate aria-hidden="true" className="orient-glyph" />
-              <span>{positionWord(question, anchor)}</span>
-            </button>
-            <button
-              type="button"
-              className="orient-control"
-              data-focus-control="true"
-              aria-expanded={surface.kind === "focus"}
-              onClick={(event) => openFrom(event, surface.kind === "focus" ? { kind: "none" } : { kind: "focus" })}
-            >
-              <Aperture aria-hidden="true" className="orient-glyph" />
-              <span>{focusLabel}</span>
-            </button>
-            <button
-              type="button"
-              className="orient-control"
-              data-capture-control="true"
-              aria-expanded={surface.kind === "capture"}
-              onClick={(event) => openFrom(event, surface.kind === "capture" ? { kind: "none" } : { kind: "capture" })}
-            >
-              <PenLine aria-hidden="true" className="orient-glyph" />
-              <span>Capture</span>
-            </button>
-          </div>
-        )}
+                  surface.kind === "notes" ||
+                  surface.kind === "stewardship-manage" ||
+                  surface.kind === "stewardship-detail" ||
+                  surface.kind === "recurring-task-manage" ||
+                  surface.kind === "recurring-task-detail"
+                  ? { kind: "none" }
+                  : { kind: "look" },
+              )
+            }
+          >
+            <Compass aria-hidden="true" className="orient-glyph" />
+            <span>LOOK</span>
+          </button>
+          <button
+            type="button"
+            className={form === "phone" ? "orient-control orient-add-control" : "orient-control"}
+            data-add-control="true"
+            aria-label="ADD"
+            aria-expanded={
+              surface.kind === "add" ||
+              surface.kind === "create-task" ||
+              surface.kind === "create-stewardship" ||
+              surface.kind === "create-recurring-task" ||
+              surface.kind === "create-note" ||
+              surface.kind === "create-all-day"
+            }
+            onClick={(event) => openFrom(event, surface.kind === "add" ? { kind: "none" } : { kind: "add" })}
+          >
+            <Plus aria-hidden="true" className="orient-glyph" />
+            <span>{form === "phone" ? "+" : "ADD"}</span>
+          </button>
+          <button
+            type="button"
+            className="orient-control"
+            data-act-control="true"
+            aria-label="ACT · What do I need to do?"
+            aria-expanded={
+              surface.kind === "act" ||
+              (surface.kind === "create-stewardship" && surface.returnTo === "act") ||
+              (surface.kind === "create-task" && surface.returnTo === "act")
+            }
+            onClick={(event) => openFrom(event, surface.kind === "act" ? { kind: "none" } : { kind: "act" })}
+          >
+            <ListTodo aria-hidden="true" className="orient-glyph" />
+            <span>ACT</span>
+          </button>
+        </div>
       </div>
       <div className="orient-stage">
       {desktopBorrowed && depth === "exact" && (question === "present" || question === "day") ? (
@@ -1289,32 +1230,6 @@ export function OrientView({
             />
           ) : null}
 
-          {surface.kind === "question" ? <QuestionList question={question} onChoose={chooseQuestion} /> : null}
-          {surface.kind === "position" ? (
-            <PositionSurface
-              anchor={anchor}
-              today={todayCivil()}
-              onMove={moveViewpoint}
-              onAdoptToday={adoptToday}
-              onSignOut={actions.onSignOut}
-              onManageWork={() => {
-                const today = todayCivil();
-                if (!today) return;
-                openWork(today);
-              }}
-              onManageExternalCalendars={() => openExternalCalendars()}
-              onClose={closeSurface}
-            />
-          ) : null}
-          {surface.kind === "focus" ? (
-            <FocusList
-              contexts={contexts}
-              onChoose={(next) => {
-                setFocus(next);
-                closeSurface();
-              }}
-            />
-          ) : null}
           {surface.kind === "add" ? (
             <AddChooser
               onTask={() => setSurface({ kind: "create-task" })}
@@ -1415,9 +1330,6 @@ export function OrientView({
               }}
               onClose={closeSurface}
             />
-          ) : null}
-          {surface.kind === "capture" ? (
-            <CaptureSurface capture={capture} onChanged={actions.onTasksChanged} onClose={closeSurface} />
           ) : null}
           {surface.kind === "thread" ? (
             <ThreadSurface

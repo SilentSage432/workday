@@ -153,7 +153,14 @@
   gap: 0.45rem;
 }
 
-.orient-add-control {
+.orient[data-form="desktop"] .orient-reach-row[data-reach-grammar="look-add-act"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.15rem;
+}
+
+/* Emphatic ADD hit target is phone continuity chrome only — not desktop density. */
+.orient[data-form="phone"] .orient-add-control {
   min-width: 3.55rem;
   min-height: 3.55rem;
   width: 3.55rem;
@@ -169,13 +176,13 @@
   letter-spacing: 0;
 }
 
-.orient-add-control .orient-glyph {
+.orient[data-form="phone"] .orient-add-control .orient-glyph {
   width: 1.25rem;
   height: 1.25rem;
 }
 
-.orient-add-control[aria-expanded="true"],
-.orient-add-control[aria-expanded="true"]:hover {
+.orient[data-form="phone"] .orient-add-control[aria-expanded="true"],
+.orient[data-form="phone"] .orient-add-control[aria-expanded="true"]:hover {
   background: linear-gradient(180deg, rgb(243 215 176 / 0.38), rgb(243 215 176 / 0.14));
   border-color: rgb(243 215 176 / 0.85);
 }
