@@ -55,6 +55,7 @@ import {
   AllDayEstablishmentSurface,
   CaptureSurface,
   DirectNoteSurface,
+  DirectStewardshipSurface,
   DirectTaskSurface,
   DirectionInspection,
   DirectionPlane,
@@ -65,6 +66,8 @@ import {
   NotesSurface,
   PositionSurface,
   QuestionList,
+  StewardshipDetailSurface,
+  StewardshipManageSurface,
   ThreadSurface,
 } from "@/components/orient/Surfaces";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
@@ -93,6 +96,9 @@ type Surface =
   | { kind: "add" }
   | { kind: "act" }
   | { kind: "create-task"; returnTo?: "act" }
+  | { kind: "create-stewardship"; returnTo?: "act" | "stewardship-manage" }
+  | { kind: "stewardship-manage" }
+  | { kind: "stewardship-detail"; definitionId: string }
   | { kind: "create-note" }
   | { kind: "create-all-day" }
   | { kind: "capture" }
@@ -1032,11 +1038,21 @@ export function OrientView({
               data-look-control="true"
               data-question-control="true"
               aria-label={`LOOK · ${QUESTION_LABEL[question]}`}
-              aria-expanded={surface.kind === "look" || surface.kind === "notes"}
+              aria-expanded={
+                surface.kind === "look" ||
+                surface.kind === "notes" ||
+                surface.kind === "stewardship-manage" ||
+                surface.kind === "stewardship-detail"
+              }
               onClick={(event) =>
                 openFrom(
                   event,
-                  surface.kind === "look" || surface.kind === "notes" ? { kind: "none" } : { kind: "look" },
+                  surface.kind === "look" ||
+                    surface.kind === "notes" ||
+                    surface.kind === "stewardship-manage" ||
+                    surface.kind === "stewardship-detail"
+                    ? { kind: "none" }
+                    : { kind: "look" },
                 )
               }
             >
@@ -1051,6 +1067,7 @@ export function OrientView({
               aria-expanded={
                 surface.kind === "add" ||
                 surface.kind === "create-task" ||
+                surface.kind === "create-stewardship" ||
                 surface.kind === "create-note" ||
                 surface.kind === "create-all-day"
               }
@@ -1064,7 +1081,11 @@ export function OrientView({
               className="orient-control"
               data-act-control="true"
               aria-label="ACT · What do I need to do?"
-              aria-expanded={surface.kind === "act"}
+              aria-expanded={
+                surface.kind === "act" ||
+                (surface.kind === "create-stewardship" && surface.returnTo === "act") ||
+                (surface.kind === "create-task" && surface.returnTo === "act")
+              }
               onClick={(event) => openFrom(event, surface.kind === "act" ? { kind: "none" } : { kind: "act" })}
             >
               <ListTodo aria-hidden="true" className="orient-glyph" />
@@ -1190,6 +1211,7 @@ export function OrientView({
               }}
               onManageExternalCalendars={() => openExternalCalendars()}
               onOpenNotes={() => setSurface({ kind: "notes" })}
+              onOpenStewardship={() => setSurface({ kind: "stewardship-manage" })}
               contexts={contexts}
               onChooseFocus={(next) => {
                 setFocus(next);
@@ -1200,6 +1222,35 @@ export function OrientView({
           ) : null}
           {surface.kind === "notes" ? (
             <NotesSurface onChanged={actions.onTasksChanged} onClose={closeSurface} />
+          ) : null}
+          {surface.kind === "stewardship-manage" ? (
+            <StewardshipManageSurface
+              definitions={sources.stewardshipDefinitions}
+              revisions={sources.stewardshipRevisions}
+              contexts={contexts}
+              onEstablish={() => setSurface({ kind: "create-stewardship", returnTo: "stewardship-manage" })}
+              onOpen={(definitionId) => setSurface({ kind: "stewardship-detail", definitionId })}
+              onClose={closeSurface}
+            />
+          ) : null}
+          {surface.kind === "stewardship-detail" ? (
+            <StewardshipDetailSurface
+              definitionId={surface.definitionId}
+              definitions={sources.stewardshipDefinitions}
+              revisions={sources.stewardshipRevisions}
+              satisfactions={sources.stewardshipSatisfactions}
+              work={sources.work}
+              contexts={contexts}
+              viewpointCivilDate={anchor}
+              now={clock}
+              timeZone={timeZone}
+              onEdit={actions.onEditStewardshipForward}
+              onRetire={async (definitionId) => {
+                await actions.onRetireStewardship(definitionId);
+                setSurface({ kind: "stewardship-manage" });
+              }}
+              onClose={() => setSurface({ kind: "stewardship-manage" })}
+            />
           ) : null}
           {surface.kind === "question" ? <QuestionList question={question} onChoose={chooseQuestion} /> : null}
           {surface.kind === "position" ? (
@@ -1230,6 +1281,7 @@ export function OrientView({
           {surface.kind === "add" ? (
             <AddChooser
               onTask={() => setSurface({ kind: "create-task" })}
+              onStewardship={() => setSurface({ kind: "create-stewardship" })}
               onNote={() => setSurface({ kind: "create-note" })}
               onTimeOnTheDay={routeTimeOnTheDay}
               onAllDay={() => setSurface({ kind: "create-all-day" })}
@@ -1258,7 +1310,10 @@ export function OrientView({
               onUpdate={actions.onUpdateTask}
               onSatisfyStewardship={actions.onSatisfyStewardship}
               onWithdrawStewardship={actions.onWithdrawStewardship}
+              onEditStewardshipForward={actions.onEditStewardshipForward}
+              onRetireStewardship={actions.onRetireStewardship}
               onAddTask={() => setSurface({ kind: "create-task", returnTo: "act" })}
+              onAddStewardship={() => setSurface({ kind: "create-stewardship", returnTo: "act" })}
               onClose={closeSurface}
             />
           ) : null}
@@ -1270,6 +1325,25 @@ export function OrientView({
                 onClose={() => {
                   if (surface.returnTo === "act") {
                     setSurface({ kind: "act" });
+                    return;
+                  }
+                  closeSurface();
+                }}
+              />
+            </div>
+          ) : null}
+          {surface.kind === "create-stewardship" ? (
+            <div data-create-stewardship-return={surface.returnTo ?? "none"}>
+              <DirectStewardshipSurface
+                contexts={contexts}
+                onEstablish={actions.onEstablishStewardship}
+                onClose={() => {
+                  if (surface.returnTo === "act") {
+                    setSurface({ kind: "act" });
+                    return;
+                  }
+                  if (surface.returnTo === "stewardship-manage") {
+                    setSurface({ kind: "stewardship-manage" });
                     return;
                   }
                   closeSurface();

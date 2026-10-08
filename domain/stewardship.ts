@@ -51,6 +51,39 @@ export type StewardshipOccurrenceIdentity = {
   cycleKey: string;
 };
 
+/** Human establishment language for cycle kind. Never expose implementation names. */
+export function stewardshipEstablishmentCycleLabel(
+  cycleKind: StewardshipCycleKind,
+): "Each workday" | "Each work week" {
+  return cycleKind === "workday" ? "Each workday" : "Each work week";
+}
+
+/** Human occurrence-reading language already used in ACT. */
+export function stewardshipOccurrenceCycleLabel(
+  cycleKind: StewardshipCycleKind,
+): "Workday" | "This week" {
+  return cycleKind === "workday" ? "Workday" : "This week";
+}
+
+/** Latest revision content by effectiveAt, then id. */
+export function latestStewardshipWording(
+  revisions: readonly StewardshipDefinitionRevision[],
+): string | null {
+  let best: StewardshipDefinitionRevision | null = null;
+  for (const revision of revisions) {
+    const at = new Date(revision.effectiveAt).getTime();
+    if (Number.isNaN(at)) continue;
+    if (
+      best === null ||
+      at > new Date(best.effectiveAt).getTime() ||
+      (at === new Date(best.effectiveAt).getTime() && revision.id > best.id)
+    ) {
+      best = revision;
+    }
+  }
+  return best?.content ?? null;
+}
+
 export function isStewardshipCycleKind(value: string): value is StewardshipCycleKind {
   return (STEWARDSHIP_CYCLE_KINDS as readonly string[]).includes(value);
 }
@@ -182,6 +215,43 @@ export function wordingAtCycleStart(
     }
   }
   return best?.content ?? null;
+}
+
+/**
+ * Occurrence wording for a cycle.
+ * Prefer wording fixed at cycle start. If the definition was established during
+ * this cycle, use the earliest in-cycle founding revision so mid-cycle
+ * establishment is readable without letting later mid-cycle edits rewrite it.
+ */
+export function wordingForOccurrence(input: {
+  definition: Pick<StewardshipDefinition, "establishedAt">;
+  revisions: readonly StewardshipDefinitionRevision[];
+  cycleStart: Date;
+  cycleEnd: Date;
+}): string | null {
+  const atStart = wordingAtCycleStart(input.revisions, input.cycleStart);
+  if (atStart !== null) return atStart;
+
+  const start = input.cycleStart.getTime();
+  const end = input.cycleEnd.getTime();
+  const established = new Date(input.definition.establishedAt).getTime();
+  if (Number.isNaN(established) || established < start || established >= end) {
+    return null;
+  }
+
+  let founding: StewardshipDefinitionRevision | null = null;
+  for (const revision of input.revisions) {
+    const at = new Date(revision.effectiveAt).getTime();
+    if (Number.isNaN(at) || at < start || at >= end) continue;
+    if (
+      founding === null ||
+      at < new Date(founding.effectiveAt).getTime() ||
+      (at === new Date(founding.effectiveAt).getTime() && revision.id < founding.id)
+    ) {
+      founding = revision;
+    }
+  }
+  return founding?.content ?? null;
 }
 
 export function occurrenceIdentity(input: {

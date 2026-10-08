@@ -4,7 +4,7 @@ import {
   findSatisfaction,
   lowesFiscalWeekCycleKey,
   occurrenceIdentity,
-  wordingAtCycleStart,
+  wordingForOccurrence,
   workdayCycleKeyFromEntry,
   type StewardshipCycleKind,
   type StewardshipDefinition,
@@ -169,7 +169,12 @@ export function readStewardshipOccurrence(input: {
   const satisfied = satisfaction !== null;
   return {
     identity,
-    wording: wordingAtCycleStart(input.revisions, start),
+    wording: wordingForOccurrence({
+      definition: input.definition,
+      revisions: input.revisions,
+      cycleStart: start,
+      cycleEnd: end,
+    }),
     admitted,
     relevant,
     actPrimaryEligible,

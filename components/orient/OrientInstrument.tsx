@@ -50,9 +50,12 @@ import {
 import { loadPriorities } from "@/persistence/priority";
 import { createProtectedTime, deleteProtectedTime, loadProtectedTime, updateProtectedTime } from "@/persistence/protectedTime";
 import {
+  editStewardshipDefinitionForward,
+  establishStewardshipDefinition,
   loadStewardshipDefinitionRevisions,
   loadStewardshipDefinitions,
   loadStewardshipSatisfactions,
+  retireStewardshipDefinition,
   satisfyStewardshipOccurrence,
   withdrawStewardshipSatisfaction,
 } from "@/persistence/stewardship";
@@ -374,6 +377,41 @@ export function OrientInstrument() {
         }) => {
           await persist(async () => {
             await withdrawStewardshipSatisfaction(getSupabaseBrowserClient(), input);
+          });
+        },
+        onEstablishStewardship: async (input: {
+          content: string;
+          cycleKind: StewardshipCycleKind;
+          contextId: string | null;
+        }) => {
+          await persist(async () => {
+            const establishedAt = new Date();
+            await establishStewardshipDefinition(getSupabaseBrowserClient(), {
+              id: crypto.randomUUID(),
+              revisionId: crypto.randomUUID(),
+              content: input.content,
+              cycleKind: input.cycleKind,
+              contextId: input.contextId,
+              establishedAt,
+            });
+          });
+        },
+        onEditStewardshipForward: async (input: { definitionId: string; content: string }) => {
+          await persist(async () => {
+            await editStewardshipDefinitionForward(getSupabaseBrowserClient(), {
+              definitionId: input.definitionId,
+              revisionId: crypto.randomUUID(),
+              content: input.content,
+              effectiveAt: new Date(),
+            });
+          });
+        },
+        onRetireStewardship: async (definitionId: string) => {
+          await persist(async () => {
+            await retireStewardshipDefinition(getSupabaseBrowserClient(), {
+              definitionId,
+              retiredAt: new Date(),
+            });
           });
         },
         onTasksChanged: () => setReloadToken((token) => token + 1),

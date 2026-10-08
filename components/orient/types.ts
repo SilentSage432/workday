@@ -92,6 +92,13 @@ export type OrientActions = {
     cycleKind: StewardshipCycleKind;
     cycleKey: string;
   }) => Promise<void>;
+  onEstablishStewardship: (input: {
+    content: string;
+    cycleKind: StewardshipCycleKind;
+    contextId: string | null;
+  }) => Promise<void>;
+  onEditStewardshipForward: (input: { definitionId: string; content: string }) => Promise<void>;
+  onRetireStewardship: (definitionId: string) => Promise<void>;
   onTasksChanged: () => void;
   onLoadWorkWeek: (from: string, to: string) => Promise<WorkScheduleEntry[]>;
   onSaveWorkWeek: (weekStart: string, writes: WeekWrite[]) => Promise<void>;

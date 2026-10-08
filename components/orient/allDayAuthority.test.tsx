@@ -189,6 +189,9 @@ function Host({
     onCompleteTask: async () => {},
     onSatisfyStewardship: async () => {},
     onWithdrawStewardship: async () => {},
+    onEstablishStewardship: async () => {},
+    onEditStewardshipForward: async () => {},
+    onRetireStewardship: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
@@ -385,6 +388,7 @@ describe("all-day authority reachability", () => {
       (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
     });
     expect(view.querySelector('[data-add-choice="task"]')).not.toBeNull();
+    expect(view.querySelector('[data-add-choice="stewardship"]')).not.toBeNull();
     expect(view.querySelector('[data-add-choice="note"]')).not.toBeNull();
     expect(view.querySelector('[data-add-choice="time-on-the-day"]')).not.toBeNull();
     expect(view.querySelector('[data-add-choice="work"]')).not.toBeNull();

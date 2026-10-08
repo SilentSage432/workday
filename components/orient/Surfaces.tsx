@@ -49,18 +49,25 @@ import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import type { DayCanvasModel, DayCanvasStoredFact } from "@/projections/dayCanvas";
 import {
   actSecondaryTasksDisclosureLabel,
+  actStewardshipWorkContext,
   composeActAttention,
   type ActStewardshipRow,
 } from "@/components/orient/actAttention";
 import type { CaptureBridge, OrientSources, ThreadReading } from "@/components/orient/types";
 import { shiftedAnchor, type OrientQuestion } from "@/components/orient/grammar";
-import type {
-  StewardshipCycleKind,
-  StewardshipDefinition,
-  StewardshipDefinitionRevision,
-  StewardshipSatisfaction,
+import {
+  cycleInterval,
+  latestStewardshipWording,
+  requireStewardshipContent,
+  stewardshipEstablishmentCycleLabel,
+  wordingForOccurrence,
+  type StewardshipCycleKind,
+  type StewardshipDefinition,
+  type StewardshipDefinitionRevision,
+  type StewardshipSatisfaction,
 } from "@/domain/stewardship";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
+import { readStewardshipOccurrence } from "@/projections/stewardship";
 
 function failureMessage(caught: unknown, fallback: string): string {
   return caught instanceof Error && caught.message.trim().length > 0 ? caught.message : fallback;
@@ -867,6 +874,7 @@ export function LookSurface({
   onManageWork,
   onManageExternalCalendars,
   onOpenNotes,
+  onOpenStewardship,
   contexts,
   onChooseFocus,
   onClose,
@@ -881,6 +889,7 @@ export function LookSurface({
   onManageWork: () => void;
   onManageExternalCalendars: () => void;
   onOpenNotes: () => void;
+  onOpenStewardship: () => void;
   contexts: SourceRead<Context>;
   onChooseFocus: (focus: { kind: "everything" } | { kind: "context"; id: string; name: string }) => void;
   onClose: () => void;
@@ -914,6 +923,14 @@ export function LookSurface({
           <button type="button" className="orient-action" data-look-notes="true" onClick={onOpenNotes}>
             Notes
           </button>
+          <button
+            type="button"
+            className="orient-action"
+            data-look-stewardship="true"
+            onClick={onOpenStewardship}
+          >
+            Stewardship
+          </button>
           <button type="button" className="orient-action" data-manage-work="true" onClick={onManageWork}>
             Manage Work schedule
           </button>
@@ -936,6 +953,7 @@ export function LookSurface({
 
 export function AddChooser({
   onTask,
+  onStewardship,
   onNote,
   onTimeOnTheDay,
   onAllDay,
@@ -943,6 +961,7 @@ export function AddChooser({
   onClose,
 }: {
   onTask: () => void;
+  onStewardship: () => void;
   onNote: () => void;
   onTimeOnTheDay: () => void;
   onAllDay: () => void;
@@ -955,6 +974,9 @@ export function AddChooser({
       <div className="orient-actions">
         <button type="button" className="orient-action" data-add-choice="task" onClick={onTask}>
           Task
+        </button>
+        <button type="button" className="orient-action" data-add-choice="stewardship" onClick={onStewardship}>
+          Stewardship
         </button>
         <button type="button" className="orient-action" data-add-choice="note" onClick={onNote}>
           Note
@@ -1128,7 +1150,10 @@ export function ActSurface({
   onUpdate,
   onSatisfyStewardship,
   onWithdrawStewardship,
+  onEditStewardshipForward,
+  onRetireStewardship,
   onAddTask,
+  onAddStewardship,
   onClose,
 }: {
   tasks: SourceRead<Task>;
@@ -1154,10 +1179,14 @@ export function ActSurface({
     cycleKind: StewardshipCycleKind;
     cycleKey: string;
   }) => Promise<void>;
+  onEditStewardshipForward: (input: { definitionId: string; content: string }) => Promise<void>;
+  onRetireStewardship: (definitionId: string) => Promise<void>;
   onAddTask: () => void;
+  onAddStewardship: () => void;
   onClose: () => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedStewardship, setSelectedStewardship] = useState<ActStewardshipRow | null>(null);
   const [correction, setCorrection] = useState<ActCorrection | null>(null);
   const [correctionError, setCorrectionError] = useState<string | null>(null);
   const [correcting, setCorrecting] = useState(false);
@@ -1270,6 +1299,27 @@ export function ActSurface({
             onBack={() => setSelectedId(null)}
           />
         </div>
+      ) : selectedStewardship ? (
+        <div data-act-stewardship-inspect="true">
+          <StewardshipDetail
+            definitionId={selectedStewardship.definitionId}
+            occurrence={selectedStewardship}
+            definitions={stewardshipDefinitions}
+            revisions={stewardshipRevisions}
+            satisfactions={stewardshipSatisfactions}
+            work={work}
+            contexts={contexts}
+            viewpointCivilDate={viewpointCivilDate}
+            now={now}
+            timeZone={timeZone}
+            onEdit={onEditStewardshipForward}
+            onRetire={async (definitionId) => {
+              await onRetireStewardship(definitionId);
+              setSelectedStewardship(null);
+            }}
+            onBack={() => setSelectedStewardship(null)}
+          />
+        </div>
       ) : (
         <ActAttentionList
           tasks={tasks}
@@ -1286,6 +1336,7 @@ export function ActSurface({
           otherOpenExpanded={otherOpenExpanded}
           onToggleOtherOpen={() => setOtherOpenExpanded((value) => !value)}
           onSelect={setSelectedId}
+          onSelectStewardship={setSelectedStewardship}
           onStart={onStart}
           onComplete={completeForCorrection}
           onSatisfy={satisfyForCorrection}
@@ -1300,10 +1351,19 @@ export function ActSurface({
         <button
           type="button"
           className="orient-action"
+          data-act-add-stewardship="true"
+          onClick={onAddStewardship}
+        >
+          Stewardship
+        </button>
+        <button
+          type="button"
+          className="orient-action"
           onClick={() => {
             setCorrection(null);
             setCorrectionError(null);
             setSelectedId(null);
+            setSelectedStewardship(null);
             onClose();
           }}
         >
@@ -1444,6 +1504,7 @@ function ActAttentionList({
   otherOpenExpanded,
   onToggleOtherOpen,
   onSelect,
+  onSelectStewardship,
   onStart,
   onComplete,
   onSatisfy,
@@ -1463,6 +1524,7 @@ function ActAttentionList({
   otherOpenExpanded: boolean;
   onToggleOtherOpen: () => void;
   onSelect: (taskId: string) => void;
+  onSelectStewardship: (row: ActStewardshipRow) => void;
   onStart: (taskId: string) => Promise<void>;
   onComplete: (taskId: string) => Promise<void>;
   onSatisfy: (row: ActStewardshipRow) => Promise<void>;
@@ -1571,6 +1633,7 @@ function ActAttentionList({
                 key={`${row.definitionId}:${row.cycleKind}:${row.cycleKey}`}
                 row={row}
                 contexts={contexts}
+                onSelect={onSelectStewardship}
                 onSatisfy={onSatisfy}
               />
             ))}
@@ -1758,10 +1821,12 @@ function ActAcknowledgedTaskRow({
 function ActStewardshipRowView({
   row,
   contexts,
+  onSelect,
   onSatisfy,
 }: {
   row: ActStewardshipRow;
   contexts: SourceRead<Context>;
+  onSelect: (row: ActStewardshipRow) => void;
   onSatisfy: (row: ActStewardshipRow) => Promise<void>;
 }) {
   const context = contextName(contexts, row.contextId);
@@ -1782,11 +1847,16 @@ function ActStewardshipRowView({
           onChange={() => void onSatisfy(row)}
         />
       </label>
-      <div className="orient-act-select">
+      <button
+        type="button"
+        className="orient-action orient-act-select"
+        data-act-stewardship-select={`${row.definitionId}:${row.cycleKind}:${row.cycleKey}`}
+        onClick={() => onSelect(row)}
+      >
         <span className="orient-act-title">{row.wording}</span>
         <span className="orient-act-meta">{row.cycleLabel}</span>
         {context ? <span className="orient-act-meta">{context}</span> : null}
-      </div>
+      </button>
     </li>
   );
 }
@@ -2031,6 +2101,474 @@ function taskInputFromDraft(draft: {
     dueOn: draft.dueOn.length > 0 ? draft.dueOn : null,
     mustDo: draft.mustDo,
   };
+}
+
+
+export function DirectStewardshipSurface({
+  contexts,
+  onEstablish,
+  onClose,
+}: {
+  contexts: SourceRead<Context>;
+  onEstablish: (input: {
+    content: string;
+    cycleKind: StewardshipCycleKind;
+    contextId: string | null;
+  }) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [content, setContent] = useState("");
+  const [cycleKind, setCycleKind] = useState<StewardshipCycleKind>("workday");
+  const [contextId, setContextId] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    if (saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const wording = requireStewardshipContent(content);
+      await onEstablish({
+        content: wording,
+        cycleKind,
+        contextId: contextId.length > 0 ? contextId : null,
+      });
+      onClose();
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "The write did not happen."));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div data-direct-stewardship="true" className="orient-direct-create">
+      <header className="orient-surface-header">
+        <h2>Stewardship</h2>
+        <SurfaceClose onClose={onClose} label="Close new Stewardship" />
+      </header>
+      <p className="orient-capture-lead">What do I continually steward?</p>
+      <label className="orient-note" htmlFor="orient-direct-stewardship-content">
+        What do I steward?
+        <input
+          id="orient-direct-stewardship-content"
+          aria-label="Stewardship wording"
+          value={content}
+          onChange={(event) => setContent(event.target.value)}
+          autoComplete="off"
+          disabled={saving}
+        />
+      </label>
+      <fieldset className="orient-note" data-stewardship-cycle="true">
+        <legend>Returns</legend>
+        <div className="orient-actions">
+          <button
+            type="button"
+            className="orient-action"
+            data-stewardship-cycle-choice="workday"
+            aria-pressed={cycleKind === "workday"}
+            disabled={saving}
+            onClick={() => setCycleKind("workday")}
+          >
+            Each workday
+          </button>
+          <button
+            type="button"
+            className="orient-action"
+            data-stewardship-cycle-choice="lowes_fiscal_week"
+            aria-pressed={cycleKind === "lowes_fiscal_week"}
+            disabled={saving}
+            onClick={() => setCycleKind("lowes_fiscal_week")}
+          >
+            Each work week
+          </button>
+        </div>
+      </fieldset>
+      <label className="orient-note" htmlFor="orient-direct-stewardship-context">
+        Context
+        <select
+          id="orient-direct-stewardship-context"
+          aria-label="Stewardship context"
+          value={contextId}
+          disabled={saving}
+          onChange={(event) => setContextId(event.target.value)}
+        >
+          <option value="">None</option>
+          {contexts.status === "ready"
+            ? contexts.rows.map((context) => (
+                <option key={context.id} value={context.id}>
+                  {context.name}
+                </option>
+              ))
+            : null}
+        </select>
+      </label>
+      {error ? <p role="alert">{error}</p> : null}
+      <button
+        type="button"
+        className="orient-action"
+        data-emphasis="save"
+        data-establish-stewardship="true"
+        disabled={saving || content.trim().length === 0}
+        onClick={() => void save()}
+      >
+        {saving ? "Saving" : "Save"}
+      </button>
+    </div>
+  );
+}
+
+export function StewardshipManageSurface({
+  definitions,
+  revisions,
+  contexts,
+  onEstablish,
+  onOpen,
+  onClose,
+}: {
+  definitions: SourceRead<StewardshipDefinition>;
+  revisions: SourceRead<StewardshipDefinitionRevision>;
+  contexts: SourceRead<Context>;
+  onEstablish: () => void;
+  onOpen: (definitionId: string) => void;
+  onClose: () => void;
+}) {
+  const active =
+    definitions.status === "ready"
+      ? definitions.rows.filter((definition) => definition.retiredAt === null)
+      : [];
+
+  return (
+    <div data-stewardship-manage="true">
+      <header className="orient-surface-header">
+        <div>
+          <h2>Stewardship</h2>
+          <p className="orient-capture-lead">What I continually steward.</p>
+        </div>
+        <SurfaceClose onClose={onClose} label="Close Stewardship" />
+      </header>
+      {definitions.status === "failed" ? (
+        <p role="alert">Stewardship could not be read. {definitions.message}</p>
+      ) : null}
+      {definitions.status === "ready" && active.length === 0 ? (
+        <p data-stewardship-manage-empty="true">Nothing is established to steward yet.</p>
+      ) : null}
+      {definitions.status === "ready" && active.length > 0 ? (
+        <ul data-stewardship-manage-list="true" data-act-list="true">
+          {active.map((definition) => {
+            const wording =
+              revisions.status === "ready"
+                ? latestStewardshipWording(
+                    revisions.rows.filter((revision) => revision.definitionId === definition.id),
+                  )
+                : null;
+            const context = contextName(contexts, definition.contextId);
+            return (
+              <li key={definition.id}>
+                <button
+                  type="button"
+                  className="orient-action orient-act-select"
+                  data-stewardship-manage-select={definition.id}
+                  onClick={() => onOpen(definition.id)}
+                >
+                  <span className="orient-act-title">{wording ?? "Stewardship"}</span>
+                  <span className="orient-act-meta">
+                    {stewardshipEstablishmentCycleLabel(definition.cycleKind)}
+                  </span>
+                  {context ? <span className="orient-act-meta">{context}</span> : null}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+      <div className="orient-actions">
+        <button
+          type="button"
+          className="orient-action"
+          data-stewardship-manage-establish="true"
+          onClick={onEstablish}
+        >
+          Establish stewardship
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StewardshipDetail({
+  definitionId,
+  occurrence,
+  definitions,
+  revisions,
+  satisfactions,
+  work,
+  contexts,
+  viewpointCivilDate,
+  now,
+  timeZone,
+  onEdit,
+  onRetire,
+  onBack,
+}: {
+  definitionId: string;
+  occurrence: ActStewardshipRow | null;
+  definitions: SourceRead<StewardshipDefinition>;
+  revisions: SourceRead<StewardshipDefinitionRevision>;
+  satisfactions: SourceRead<StewardshipSatisfaction>;
+  work: SourceRead<WorkScheduleEntry>;
+  contexts: SourceRead<Context>;
+  viewpointCivilDate: string;
+  now: Date;
+  timeZone: string;
+  onEdit: (input: { definitionId: string; content: string }) => Promise<void>;
+  onRetire: (definitionId: string) => Promise<void>;
+  onBack: () => void;
+}) {
+  const definition =
+    definitions.status === "ready"
+      ? (definitions.rows.find((item) => item.id === definitionId) ?? null)
+      : null;
+  const definitionRevisions =
+    revisions.status === "ready"
+      ? revisions.rows.filter((revision) => revision.definitionId === definitionId)
+      : [];
+  const latest = latestStewardshipWording(definitionRevisions);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(latest ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  if (definitions.status === "failed") {
+    return <p role="alert">Stewardship could not be read. {definitions.message}</p>;
+  }
+  if (!definition) {
+    return (
+      <div data-stewardship-detail="true">
+        <p>This stewardship is not available.</p>
+        <button type="button" className="orient-action" onClick={onBack}>
+          Back
+        </button>
+      </div>
+    );
+  }
+
+  const context = contextName(contexts, definition.contextId);
+  const cycleLabel = stewardshipEstablishmentCycleLabel(definition.cycleKind);
+
+  let occurrenceState: string | null = null;
+  let cycleWording: string | null = null;
+  if (
+    work.status === "ready" &&
+    revisions.status === "ready" &&
+    satisfactions.status === "ready"
+  ) {
+    const workContext = actStewardshipWorkContext({
+      viewpointCivilDate,
+      now,
+      timeZone,
+      workEntries: work.rows,
+    });
+    const cycleKey =
+      definition.cycleKind === "workday" ? workContext.workdayCycleKey : workContext.weeklyCycleKey;
+    if (cycleKey !== null && workContext.gateEntry) {
+      const interval = cycleInterval({
+        cycleKind: definition.cycleKind,
+        cycleKey,
+        timeZone,
+      });
+      cycleWording = wordingForOccurrence({
+        definition,
+        revisions: definitionRevisions,
+        cycleStart: interval.start,
+        cycleEnd: interval.end,
+      });
+      const reading = readStewardshipOccurrence({
+        definition,
+        revisions: definitionRevisions,
+        satisfactions: satisfactions.rows,
+        cycleKind: definition.cycleKind,
+        cycleKey,
+        timeZone,
+        workEntries: work.rows,
+        viewpointWorkEntry: workContext.gateEntry,
+      });
+      if (occurrence) {
+        occurrenceState = "Not yet this cycle";
+      } else if (reading.satisfied) {
+        occurrenceState = "Satisfied this cycle";
+      } else if (!reading.actPrimaryEligible) {
+        occurrenceState = "Not asked for attention on this day";
+      } else if (reading.notYetSatisfied) {
+        occurrenceState = "Not yet this cycle";
+      }
+    } else {
+      occurrenceState = "Not asked for attention on this day";
+    }
+  }
+
+  const midCycleNote =
+    cycleWording && latest && cycleWording !== latest
+      ? `This cycle still reads “${cycleWording}”. New wording applies from the next cycle.`
+      : null;
+
+  async function saveEdit() {
+    setBusy(true);
+    setError(null);
+    try {
+      await onEdit({ definitionId, content: requireStewardshipContent(draft) });
+      setEditing(false);
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "The write did not happen."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function retire() {
+    setBusy(true);
+    setError(null);
+    try {
+      await onRetire(definitionId);
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "The write did not happen."));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div data-stewardship-detail="true">
+      <p className="orient-capture-lead">Continual stewardship</p>
+      {editing ? (
+        <label className="orient-note">
+          What do I steward?
+          <input
+            aria-label="Stewardship wording"
+            value={draft}
+            disabled={busy}
+            onChange={(event) => setDraft(event.target.value)}
+          />
+        </label>
+      ) : (
+        <p data-stewardship-detail-wording="true" className="orient-act-title">
+          {occurrence?.wording ?? latest ?? "Stewardship"}
+        </p>
+      )}
+      <p data-stewardship-detail-cycle="true" className="orient-act-meta">
+        {cycleLabel}
+      </p>
+      {context ? (
+        <p data-stewardship-detail-context="true" className="orient-act-meta">
+          {context}
+        </p>
+      ) : null}
+      {occurrenceState ? (
+        <p data-stewardship-detail-occurrence="true" className="orient-act-meta">
+          {occurrenceState}
+        </p>
+      ) : null}
+      {midCycleNote ? (
+        <p data-stewardship-mid-cycle="true" className="orient-act-meta">
+          {midCycleNote}
+        </p>
+      ) : null}
+      {error ? <p role="alert">{error}</p> : null}
+      <div className="orient-actions">
+        {editing ? (
+          <button
+            type="button"
+            className="orient-action"
+            data-emphasis="save"
+            data-stewardship-save-edit="true"
+            disabled={busy || draft.trim().length === 0}
+            onClick={() => void saveEdit()}
+          >
+            Save wording
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="orient-action"
+            data-stewardship-edit="true"
+            disabled={busy || definition.retiredAt !== null}
+            onClick={() => {
+              setDraft(latest ?? "");
+              setEditing(true);
+            }}
+          >
+            Edit wording
+          </button>
+        )}
+        {definition.retiredAt === null ? (
+          <button
+            type="button"
+            className="orient-action"
+            data-stewardship-retire="true"
+            disabled={busy}
+            onClick={() => void retire()}
+          >
+            Stop stewarding
+          </button>
+        ) : null}
+        <button type="button" className="orient-action" onClick={onBack} disabled={busy}>
+          Back
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function StewardshipDetailSurface({
+  definitionId,
+  definitions,
+  revisions,
+  satisfactions,
+  work,
+  contexts,
+  viewpointCivilDate,
+  now,
+  timeZone,
+  onEdit,
+  onRetire,
+  onClose,
+}: {
+  definitionId: string;
+  definitions: SourceRead<StewardshipDefinition>;
+  revisions: SourceRead<StewardshipDefinitionRevision>;
+  satisfactions: SourceRead<StewardshipSatisfaction>;
+  work: SourceRead<WorkScheduleEntry>;
+  contexts: SourceRead<Context>;
+  viewpointCivilDate: string;
+  now: Date;
+  timeZone: string;
+  onEdit: (input: { definitionId: string; content: string }) => Promise<void>;
+  onRetire: (definitionId: string) => Promise<void>;
+  onClose: () => void;
+}) {
+  return (
+    <div data-stewardship-detail-surface="true">
+      <header className="orient-surface-header">
+        <h2>Stewardship</h2>
+        <SurfaceClose onClose={onClose} label="Close Stewardship detail" />
+      </header>
+      <StewardshipDetail
+        definitionId={definitionId}
+        occurrence={null}
+        definitions={definitions}
+        revisions={revisions}
+        satisfactions={satisfactions}
+        work={work}
+        contexts={contexts}
+        viewpointCivilDate={viewpointCivilDate}
+        now={now}
+        timeZone={timeZone}
+        onEdit={onEdit}
+        onRetire={onRetire}
+        onBack={onClose}
+      />
+    </div>
+  );
 }
 
 export function DirectTaskSurface({

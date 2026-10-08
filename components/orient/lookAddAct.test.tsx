@@ -101,6 +101,9 @@ function actions(overrides: Partial<OrientActions> = {}): OrientActions {
     onCompleteTask: async () => {},
     onSatisfyStewardship: async () => {},
     onWithdrawStewardship: async () => {},
+    onEstablishStewardship: async () => {},
+    onEditStewardshipForward: async () => {},
+    onRetireStewardship: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onSignOut: () => {},
@@ -487,7 +490,8 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(chooser?.textContent).toContain("What are you adding?");
     expect(chooser?.textContent).toContain("All day");
     expect(chooser?.textContent).toContain("Time on the day");
-    expect(chooser?.textContent).not.toMatch(/Destination|Priority/i);
+    expect(chooser?.textContent).toContain("Stewardship");
+    expect(chooser?.textContent).not.toMatch(/Destination|Priority|lowes_fiscal_week/i);
     await act(async () => {
       (view.querySelector('[data-add-choice="task"]') as HTMLButtonElement).click();
     });
@@ -496,6 +500,19 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(view.textContent).not.toMatch(/General capture|This is a task|Keep as a note/i);
     await act(async () => {
       (view.querySelector('[data-surface-close]') as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector('[data-add-choice="stewardship"]') as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-direct-stewardship]")).not.toBeNull();
+    expect(view.querySelector("[data-direct-task]")).toBeNull();
+    expect(view.textContent).toContain("Each workday");
+    expect(view.textContent).toContain("Each work week");
+    await act(async () => {
+      (view.querySelector("[data-surface-close]") as HTMLButtonElement).click();
     });
     await act(async () => {
       (view.querySelector("[data-add-control]") as HTMLButtonElement).click();
@@ -536,6 +553,7 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(look.querySelector("[data-relocation]")?.textContent).not.toMatch(/\bClose\b/);
     expect(look.querySelector("[data-look-notes]")?.textContent).toBe("Notes");
     expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Notes");
+    expect(look.querySelector("[data-look-stewardship]")?.textContent).toContain("Stewardship");
     expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Manage Work schedule");
     expect(look.querySelector("[data-look-operations]")?.textContent).toContain("Google Calendar");
     expect(look.querySelector("[data-manage-external-calendars]")).not.toBeNull();
@@ -603,7 +621,10 @@ describe("ActSurface acknowledgement", () => {
           onUpdate={async () => {}}
           onSatisfyStewardship={async () => {}}
           onWithdrawStewardship={async () => {}}
+          onEditStewardshipForward={async () => {}}
+          onRetireStewardship={async () => {}}
           onAddTask={() => {}}
+          onAddStewardship={() => {}}
           onClose={() => {}}
         />,
       );
@@ -681,7 +702,10 @@ describe("ActSurface acknowledgement", () => {
           onWithdrawStewardship={async (input) => {
             withdrawn.push(input);
           }}
+          onEditStewardshipForward={async () => {}}
+          onRetireStewardship={async () => {}}
           onAddTask={() => {}}
+          onAddStewardship={() => {}}
           onClose={() => {}}
         />,
       );

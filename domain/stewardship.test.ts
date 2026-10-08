@@ -9,7 +9,10 @@ import {
   occurrenceIdentity,
   requireStewardshipContent,
   requireStewardshipCycleKind,
+  stewardshipEstablishmentCycleLabel,
+  stewardshipOccurrenceCycleLabel,
   wordingAtCycleStart,
+  wordingForOccurrence,
   workdayCycleKeyFromEntry,
   type StewardshipDefinition,
   type StewardshipDefinitionRevision,
@@ -34,6 +37,16 @@ function definition(partial?: Partial<StewardshipDefinition>): StewardshipDefini
 }
 
 describe("stewardship domain", () => {
+  it("maps cycle kinds to human establishment and occurrence language", () => {
+    expect(stewardshipEstablishmentCycleLabel("workday")).toBe("Each workday");
+    expect(stewardshipEstablishmentCycleLabel("lowes_fiscal_week")).toBe("Each work week");
+    expect(stewardshipOccurrenceCycleLabel("workday")).toBe("Workday");
+    expect(stewardshipOccurrenceCycleLabel("lowes_fiscal_week")).toBe("This week");
+    expect(JSON.stringify([stewardshipEstablishmentCycleLabel("workday")])).not.toMatch(
+      /Business|Inventory|People|Environment|lowes_fiscal_week/,
+    );
+  });
+
   it("accepts only closed cycle kinds", () => {
     expect(isStewardshipCycleKind("workday")).toBe(true);
     expect(isStewardshipCycleKind("lowes_fiscal_week")).toBe(true);
@@ -68,7 +81,7 @@ describe("stewardship domain", () => {
   });
 
   it("resolves wording at cycle_start and ignores later mid-cycle revisions", () => {
-    const { start } = cycleInterval({
+    const { start, end } = cycleInterval({
       cycleKind: "lowes_fiscal_week",
       cycleKey: "2026-10-03",
       timeZone: ZONE,
@@ -88,6 +101,14 @@ describe("stewardship domain", () => {
       },
     ];
     expect(wordingAtCycleStart(revisions, start)).toBe("Walk Zone A with owner");
+    expect(
+      wordingForOccurrence({
+        definition: definition({ establishedAt: "2026-10-01T12:00:00.000Z" }),
+        revisions,
+        cycleStart: start,
+        cycleEnd: end,
+      }),
+    ).toBe("Walk Zone A with owner");
     const nextWeek = cycleInterval({
       cycleKind: "lowes_fiscal_week",
       cycleKey: "2026-10-10",
@@ -96,6 +117,37 @@ describe("stewardship domain", () => {
     expect(wordingAtCycleStart(revisions, nextWeek.start)).toBe(
       "Walk Zone A with owner and inventory exceptions",
     );
+  });
+
+  it("makes mid-cycle establishment readable without letting later edits rewrite the cycle", () => {
+    const { start, end } = cycleInterval({
+      cycleKind: "workday",
+      cycleKey: "2026-10-07",
+      timeZone: ZONE,
+    });
+    const revisions: StewardshipDefinitionRevision[] = [
+      {
+        id: "00000000-0000-4000-8000-000000000010",
+        definitionId: DEF_ID,
+        content: "Review pipelines",
+        effectiveAt: "2026-10-07T18:00:00.000Z",
+      },
+      {
+        id: "00000000-0000-4000-8000-000000000011",
+        definitionId: DEF_ID,
+        content: "Review specialty pipelines",
+        effectiveAt: "2026-10-07T20:00:00.000Z",
+      },
+    ];
+    expect(wordingAtCycleStart(revisions, start)).toBeNull();
+    expect(
+      wordingForOccurrence({
+        definition: definition({ establishedAt: "2026-10-07T18:00:00.000Z" }),
+        revisions,
+        cycleStart: start,
+        cycleEnd: end,
+      }),
+    ).toBe("Review pipelines");
   });
 
   it("admits definitions whose active interval overlaps the cycle", () => {
