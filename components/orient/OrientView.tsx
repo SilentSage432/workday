@@ -1245,11 +1245,19 @@ export function OrientView({
             <ActSurface
               tasks={tasks}
               contexts={contexts}
+              work={sources.work}
+              stewardshipDefinitions={sources.stewardshipDefinitions}
+              stewardshipRevisions={sources.stewardshipRevisions}
+              stewardshipSatisfactions={sources.stewardshipSatisfactions}
               viewpointCivilDate={anchor}
+              now={clock}
+              timeZone={timeZone}
               onStart={actions.onStartThread}
               onComplete={actions.onCompleteTask}
               onReopen={actions.onReopenTask}
               onUpdate={actions.onUpdateTask}
+              onSatisfyStewardship={actions.onSatisfyStewardship}
+              onWithdrawStewardship={actions.onWithdrawStewardship}
               onAddTask={() => setSurface({ kind: "create-task" })}
               onClose={closeSurface}
             />

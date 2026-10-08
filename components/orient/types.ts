@@ -13,6 +13,7 @@ import type {
 import type { BlockPriorityService, TaskPriorityService } from "@/domain/executionDirection";
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
+import type { StewardshipCycleKind, StewardshipDefinition, StewardshipDefinitionRevision, StewardshipSatisfaction } from "@/domain/stewardship";
 import type { Task } from "@/domain/task";
 import type { WeekWrite } from "@/components/weekDraft";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
@@ -37,14 +38,31 @@ export type OrientSources = {
   externalConnections: SourceRead<ExternalConnection>;
   externalSources: SourceRead<ObservedTemporalSource>;
   externalFacts: SourceRead<ExternalTemporalFact>;
+  stewardshipDefinitions: SourceRead<StewardshipDefinition>;
+  stewardshipRevisions: SourceRead<StewardshipDefinitionRevision>;
+  stewardshipSatisfactions: SourceRead<StewardshipSatisfaction>;
 };
 
-/** Ready empty external reads for tests and fixtures that do not exercise observation. */
+/**
+ * Ready empty external + stewardship reads for tests and fixtures that do not
+ * exercise observation or stewardship content.
+ */
 export const EMPTY_EXTERNAL_ORIENT_SOURCES = {
   externalConnections: { status: "ready" as const, rows: [] as const },
   externalSources: { status: "ready" as const, rows: [] as const },
   externalFacts: { status: "ready" as const, rows: [] as const },
-} satisfies Pick<OrientSources, "externalConnections" | "externalSources" | "externalFacts">;
+  stewardshipDefinitions: { status: "ready" as const, rows: [] as const },
+  stewardshipRevisions: { status: "ready" as const, rows: [] as const },
+  stewardshipSatisfactions: { status: "ready" as const, rows: [] as const },
+} satisfies Pick<
+  OrientSources,
+  | "externalConnections"
+  | "externalSources"
+  | "externalFacts"
+  | "stewardshipDefinitions"
+  | "stewardshipRevisions"
+  | "stewardshipSatisfactions"
+>;
 
 export type CaptureBridge = {
   session: CaptureSession;
@@ -64,6 +82,16 @@ export type OrientActions = {
   onCompleteTask: (taskId: string) => Promise<void>;
   onReopenTask: (taskId: string) => Promise<void>;
   onUpdateTask: (taskId: string, patch: import("@/domain/task").TaskPatch) => Promise<void>;
+  onSatisfyStewardship: (input: {
+    definitionId: string;
+    cycleKind: StewardshipCycleKind;
+    cycleKey: string;
+  }) => Promise<void>;
+  onWithdrawStewardship: (input: {
+    definitionId: string;
+    cycleKind: StewardshipCycleKind;
+    cycleKey: string;
+  }) => Promise<void>;
   onTasksChanged: () => void;
   onLoadWorkWeek: (from: string, to: string) => Promise<WorkScheduleEntry[]>;
   onSaveWorkWeek: (weekStart: string, writes: WeekWrite[]) => Promise<void>;

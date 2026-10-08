@@ -47,9 +47,19 @@ import { createTask } from "@/persistence/contextsAndTasks";
 import { createNote, loadNotes } from "@/persistence/note";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import type { DayCanvasModel, DayCanvasStoredFact } from "@/projections/dayCanvas";
-import { orderActTasks } from "@/components/orient/actTasks";
+import {
+  composeActAttention,
+  type ActStewardshipRow,
+} from "@/components/orient/actAttention";
 import type { CaptureBridge, OrientSources, ThreadReading } from "@/components/orient/types";
 import { shiftedAnchor, type OrientQuestion } from "@/components/orient/grammar";
+import type {
+  StewardshipCycleKind,
+  StewardshipDefinition,
+  StewardshipDefinitionRevision,
+  StewardshipSatisfaction,
+} from "@/domain/stewardship";
+import type { WorkScheduleEntry } from "@/domain/workSchedule";
 
 function failureMessage(caught: unknown, fallback: string): string {
   return caught instanceof Error && caught.message.trim().length > 0 ? caught.message : fallback;
@@ -1081,77 +1091,170 @@ export function AllDayEstablishmentSurface({
   );
 }
 
+type ActCorrection =
+  | { kind: "task"; id: string; title: string }
+  | {
+      kind: "stewardship";
+      definitionId: string;
+      cycleKind: StewardshipCycleKind;
+      cycleKey: string;
+      title: string;
+    };
+
 export function ActSurface({
   tasks,
   contexts,
+  work,
+  stewardshipDefinitions,
+  stewardshipRevisions,
+  stewardshipSatisfactions,
   viewpointCivilDate,
+  now,
+  timeZone,
   onStart,
   onComplete,
   onReopen,
   onUpdate,
+  onSatisfyStewardship,
+  onWithdrawStewardship,
   onAddTask,
   onClose,
 }: {
   tasks: SourceRead<Task>;
   contexts: SourceRead<Context>;
+  work: SourceRead<WorkScheduleEntry>;
+  stewardshipDefinitions: SourceRead<StewardshipDefinition>;
+  stewardshipRevisions: SourceRead<StewardshipDefinitionRevision>;
+  stewardshipSatisfactions: SourceRead<StewardshipSatisfaction>;
   viewpointCivilDate: string;
+  now: Date;
+  timeZone: string;
   onStart: (taskId: string) => Promise<void>;
   onComplete: (taskId: string) => Promise<void>;
   onReopen: (taskId: string) => Promise<void>;
   onUpdate: (taskId: string, patch: import("@/domain/task").TaskPatch) => Promise<void>;
+  onSatisfyStewardship: (input: {
+    definitionId: string;
+    cycleKind: StewardshipCycleKind;
+    cycleKey: string;
+  }) => Promise<void>;
+  onWithdrawStewardship: (input: {
+    definitionId: string;
+    cycleKind: StewardshipCycleKind;
+    cycleKey: string;
+  }) => Promise<void>;
   onAddTask: () => void;
   onClose: () => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [correction, setCorrection] = useState<{ id: string; title: string } | null>(null);
+  const [correction, setCorrection] = useState<ActCorrection | null>(null);
   const [correctionError, setCorrectionError] = useState<string | null>(null);
-  const [reopening, setReopening] = useState(false);
+  const [correcting, setCorrecting] = useState(false);
+  const [otherOpenExpanded, setOtherOpenExpanded] = useState(false);
 
-  const ordered =
-    tasks.status === "ready" ? orderActTasks({ openTasks: tasks.rows, viewpointCivilDate }) : [];
+  const compositionReady =
+    tasks.status === "ready" &&
+    work.status === "ready" &&
+    stewardshipDefinitions.status === "ready" &&
+    stewardshipRevisions.status === "ready" &&
+    stewardshipSatisfactions.status === "ready";
+
+  const composition = compositionReady
+    ? composeActAttention({
+        openTasks: tasks.rows,
+        viewpointCivilDate,
+        now,
+        timeZone,
+        workEntries: work.rows,
+        definitions: stewardshipDefinitions.rows,
+        revisions: stewardshipRevisions.rows,
+        satisfactions: stewardshipSatisfactions.rows,
+      })
+    : null;
+
   const selected =
     selectedId && tasks.status === "ready" ? (tasks.rows.find((item) => item.id === selectedId) ?? null) : null;
 
   async function completeForCorrection(taskId: string) {
-    const title = selected?.id === taskId ? selected.title : (ordered.find((item) => item.id === taskId)?.title ?? "");
+    const title =
+      selected?.id === taskId
+        ? selected.title
+        : (composition?.mustDo.find((item) => item.id === taskId)?.title ??
+          composition?.today.find((item) => item.id === taskId)?.title ??
+          composition?.otherOpen.find((item) => item.id === taskId)?.title ??
+          "");
     await onComplete(taskId);
     setCorrectionError(null);
-    setCorrection({ id: taskId, title });
+    setCorrection({ kind: "task", id: taskId, title });
     setSelectedId(null);
   }
 
-  async function stillOpen() {
+  async function satisfyForCorrection(row: ActStewardshipRow) {
+    await onSatisfyStewardship({
+      definitionId: row.definitionId,
+      cycleKind: row.cycleKind,
+      cycleKey: row.cycleKey,
+    });
+    setCorrectionError(null);
+    setCorrection({
+      kind: "stewardship",
+      definitionId: row.definitionId,
+      cycleKind: row.cycleKind,
+      cycleKey: row.cycleKey,
+      title: row.wording,
+    });
+  }
+
+  async function correct() {
     if (!correction) return;
-    setReopening(true);
+    setCorrecting(true);
     setCorrectionError(null);
     try {
-      await onReopen(correction.id);
+      if (correction.kind === "task") {
+        await onReopen(correction.id);
+      } else {
+        await onWithdrawStewardship({
+          definitionId: correction.definitionId,
+          cycleKind: correction.cycleKind,
+          cycleKey: correction.cycleKey,
+        });
+      }
       setCorrection(null);
     } catch (caught: unknown) {
       setCorrectionError(failureMessage(caught, "The write did not happen."));
     } finally {
-      setReopening(false);
+      setCorrecting(false);
     }
   }
+
+  const primaryEmpty =
+    composition !== null &&
+    composition.mustDo.length === 0 &&
+    composition.stewardship.length === 0 &&
+    composition.today.length === 0;
 
   return (
     <div data-act-surface="true">
       <h2>ACT</h2>
-      <p className="orient-capture-lead">What do I need to do?</p>
+      <p className="orient-capture-lead">What deserves my attention?</p>
       {correction ? (
-        <div data-completion-correction="true">
+        <div
+          data-completion-correction="true"
+          data-correction-kind={correction.kind}
+        >
           <p>{correction.title}</p>
-          <p>Marked complete.</p>
+          <p>{correction.kind === "task" ? "Marked complete." : "Marked satisfied."}</p>
           {correctionError ? <p role="alert">{correctionError}</p> : null}
           <div className="orient-actions">
             <button
               type="button"
               className="orient-action"
-              data-still-open="true"
-              disabled={reopening}
-              onClick={() => void stillOpen()}
+              data-still-open={correction.kind === "task" ? "true" : undefined}
+              data-stewardship-withdraw={correction.kind === "stewardship" ? "true" : undefined}
+              disabled={correcting}
+              onClick={() => void correct()}
             >
-              Still open
+              {correction.kind === "task" ? "Still open" : "Not yet this cycle"}
             </button>
           </div>
         </div>
@@ -1167,12 +1270,21 @@ export function ActSurface({
           />
         </div>
       ) : (
-        <ActTaskList
+        <ActAttentionList
           tasks={tasks}
-          ordered={ordered}
+          work={work}
+          stewardshipDefinitions={stewardshipDefinitions}
+          stewardshipRevisions={stewardshipRevisions}
+          stewardshipSatisfactions={stewardshipSatisfactions}
+          composition={composition}
+          primaryEmpty={primaryEmpty}
           contexts={contexts}
+          otherOpenExpanded={otherOpenExpanded}
+          onToggleOtherOpen={() => setOtherOpenExpanded((value) => !value)}
           onSelect={setSelectedId}
           onStart={onStart}
+          onComplete={completeForCorrection}
+          onSatisfy={satisfyForCorrection}
         />
       )}
       <div className="orient-actions">
@@ -1311,18 +1423,36 @@ function contextName(contexts: SourceRead<Context>, contextId: string | null): s
   return contexts.rows.find((context) => context.id === contextId)?.name ?? null;
 }
 
-function ActTaskList({
+function ActAttentionList({
   tasks,
-  ordered,
+  work,
+  stewardshipDefinitions,
+  stewardshipRevisions,
+  stewardshipSatisfactions,
+  composition,
+  primaryEmpty,
   contexts,
+  otherOpenExpanded,
+  onToggleOtherOpen,
   onSelect,
   onStart,
+  onComplete,
+  onSatisfy,
 }: {
   tasks: SourceRead<Task>;
-  ordered: Task[];
+  work: SourceRead<WorkScheduleEntry>;
+  stewardshipDefinitions: SourceRead<StewardshipDefinition>;
+  stewardshipRevisions: SourceRead<StewardshipDefinitionRevision>;
+  stewardshipSatisfactions: SourceRead<StewardshipSatisfaction>;
+  composition: ReturnType<typeof composeActAttention> | null;
+  primaryEmpty: boolean;
   contexts: SourceRead<Context>;
+  otherOpenExpanded: boolean;
+  onToggleOtherOpen: () => void;
   onSelect: (taskId: string) => void;
   onStart: (taskId: string) => Promise<void>;
+  onComplete: (taskId: string) => Promise<void>;
+  onSatisfy: (row: ActStewardshipRow) => Promise<void>;
 }) {
   if (tasks.status === "failed") {
     return (
@@ -1331,31 +1461,204 @@ function ActTaskList({
       </p>
     );
   }
-  if (ordered.length === 0) return <p>No open task is established.</p>;
+  if (work.status === "failed") {
+    return (
+      <p role="alert" data-reading="incomplete">
+        Work could not be read. {work.message}
+      </p>
+    );
+  }
+  if (stewardshipDefinitions.status === "failed") {
+    return (
+      <p role="alert" data-reading="incomplete">
+        Stewardship could not be read. {stewardshipDefinitions.message}
+      </p>
+    );
+  }
+  if (stewardshipRevisions.status === "failed") {
+    return (
+      <p role="alert" data-reading="incomplete">
+        Stewardship could not be read. {stewardshipRevisions.message}
+      </p>
+    );
+  }
+  if (stewardshipSatisfactions.status === "failed") {
+    return (
+      <p role="alert" data-reading="incomplete">
+        Stewardship could not be read. {stewardshipSatisfactions.message}
+      </p>
+    );
+  }
+  if (!composition) return <p>Reading attention.</p>;
+
+  const hasOther = composition.otherOpen.length > 0;
+  if (primaryEmpty && !hasOther) {
+    return <p data-act-empty="true">Nothing established needs attention here.</p>;
+  }
+
   return (
-    <ul data-act-list="true">
-      {ordered.map((task) => {
-        const context = contextName(contexts, task.contextId);
-        return (
-          <li key={task.id} data-act-row={task.id}>
-            <button type="button" className="orient-action orient-act-select" data-act-select={task.id} onClick={() => onSelect(task.id)}>
-              <span className="orient-act-title">{task.title}</span>
-              {task.mustDo ? <span className="orient-act-meta">Must do</span> : null}
-              {task.plannedOn ? (
-                <span className="orient-act-meta">
-                  Planned {task.plannedOn}
-                  {task.plannedLocal ? ` at ${task.plannedLocal}` : ""}
-                </span>
-              ) : null}
-              {context ? <span className="orient-act-meta">{context}</span> : null}
-            </button>
-            <button type="button" className="orient-action" data-act-start={task.id} onClick={() => void onStart(task.id)}>
-              Start
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+    <div data-act-attention="true">
+      {composition.mustDo.length > 0 ? (
+        <section data-act-section="must-do">
+          <h3 className="orient-act-section-title">Must do</h3>
+          <ul data-act-list="true">
+            {composition.mustDo.map((task) => (
+              <ActTaskRow
+                key={task.id}
+                task={task}
+                contexts={contexts}
+                onSelect={onSelect}
+                onStart={onStart}
+                onComplete={onComplete}
+              />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {composition.stewardship.length > 0 ? (
+        <section data-act-section="stewardship">
+          <h3 className="orient-act-section-title">Stewardship</h3>
+          <ul data-act-list="true">
+            {composition.stewardship.map((row) => (
+              <ActStewardshipRowView
+                key={`${row.definitionId}:${row.cycleKind}:${row.cycleKey}`}
+                row={row}
+                contexts={contexts}
+                onSatisfy={onSatisfy}
+              />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {composition.today.length > 0 ? (
+        <section data-act-section="today">
+          <h3 className="orient-act-section-title">Today</h3>
+          <ul data-act-list="true">
+            {composition.today.map((task) => (
+              <ActTaskRow
+                key={task.id}
+                task={task}
+                contexts={contexts}
+                onSelect={onSelect}
+                onStart={onStart}
+                onComplete={onComplete}
+              />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {hasOther ? (
+        <section data-act-section="other-open">
+          <button
+            type="button"
+            className="orient-action orient-act-other-toggle"
+            data-act-other-open="true"
+            aria-expanded={otherOpenExpanded}
+            onClick={onToggleOtherOpen}
+          >
+            Other open ({composition.otherOpen.length})
+          </button>
+          {otherOpenExpanded ? (
+            <ul data-act-list="true" data-act-other-list="true">
+              {composition.otherOpen.map((task) => (
+                <ActTaskRow
+                  key={task.id}
+                  task={task}
+                  contexts={contexts}
+                  onSelect={onSelect}
+                  onStart={onStart}
+                  onComplete={onComplete}
+                />
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function ActTaskRow({
+  task,
+  contexts,
+  onSelect,
+  onStart,
+  onComplete,
+}: {
+  task: Task;
+  contexts: SourceRead<Context>;
+  onSelect: (taskId: string) => void;
+  onStart: (taskId: string) => Promise<void>;
+  onComplete: (taskId: string) => Promise<void>;
+}) {
+  const context = contextName(contexts, task.contextId);
+  return (
+    <li data-act-row={task.id} data-act-kind="task">
+      <label className="orient-act-check">
+        <input
+          type="checkbox"
+          aria-label={`Complete ${task.title}`}
+          data-act-complete={task.id}
+          checked={false}
+          onChange={() => void onComplete(task.id)}
+        />
+      </label>
+      <button
+        type="button"
+        className="orient-action orient-act-select"
+        data-act-select={task.id}
+        onClick={() => onSelect(task.id)}
+      >
+        <span className="orient-act-title">{task.title}</span>
+        {task.mustDo ? <span className="orient-act-meta">Must do</span> : null}
+        {task.plannedOn ? (
+          <span className="orient-act-meta">
+            Planned {task.plannedOn}
+            {task.plannedLocal ? ` at ${task.plannedLocal}` : ""}
+          </span>
+        ) : null}
+        {context ? <span className="orient-act-meta">{context}</span> : null}
+      </button>
+      <button type="button" className="orient-action" data-act-start={task.id} onClick={() => void onStart(task.id)}>
+        Start
+      </button>
+    </li>
+  );
+}
+
+function ActStewardshipRowView({
+  row,
+  contexts,
+  onSatisfy,
+}: {
+  row: ActStewardshipRow;
+  contexts: SourceRead<Context>;
+  onSatisfy: (row: ActStewardshipRow) => Promise<void>;
+}) {
+  const context = contextName(contexts, row.contextId);
+  return (
+    <li
+      data-act-row={`${row.definitionId}:${row.cycleKind}:${row.cycleKey}`}
+      data-act-kind="stewardship"
+      data-act-stewardship-definition={row.definitionId}
+      data-act-stewardship-cycle-kind={row.cycleKind}
+      data-act-stewardship-cycle-key={row.cycleKey}
+    >
+      <label className="orient-act-check">
+        <input
+          type="checkbox"
+          aria-label={`Satisfy ${row.wording}`}
+          data-act-satisfy={`${row.definitionId}:${row.cycleKind}:${row.cycleKey}`}
+          checked={false}
+          onChange={() => void onSatisfy(row)}
+        />
+      </label>
+      <div className="orient-act-select">
+        <span className="orient-act-title">{row.wording}</span>
+        <span className="orient-act-meta">{row.cycleLabel}</span>
+        {context ? <span className="orient-act-meta">{context}</span> : null}
+      </div>
+    </li>
   );
 }
 

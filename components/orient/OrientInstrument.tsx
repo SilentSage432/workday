@@ -27,6 +27,12 @@ import type {
 import type { BlockPriorityService, TaskPriorityService } from "@/domain/executionDirection";
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
+import type {
+  StewardshipCycleKind,
+  StewardshipDefinition,
+  StewardshipDefinitionRevision,
+  StewardshipSatisfaction,
+} from "@/domain/stewardship";
 import type { Task, TaskPatch } from "@/domain/task";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
 import { clearActiveThread, establishActiveThread, loadActiveThread } from "@/persistence/activeThread";
@@ -43,6 +49,13 @@ import {
 } from "@/persistence/externalTemporal";
 import { loadPriorities } from "@/persistence/priority";
 import { createProtectedTime, deleteProtectedTime, loadProtectedTime, updateProtectedTime } from "@/persistence/protectedTime";
+import {
+  loadStewardshipDefinitionRevisions,
+  loadStewardshipDefinitions,
+  loadStewardshipSatisfactions,
+  satisfyStewardshipOccurrence,
+  withdrawStewardshipSatisfaction,
+} from "@/persistence/stewardship";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import { loadTaskPriorityService } from "@/persistence/taskPriorityService";
 import { loadTemporalSettings, loadWorkSchedule } from "@/persistence/workSchedule";
@@ -193,6 +206,9 @@ export function OrientInstrument() {
         externalConnections,
         externalSources,
         externalFacts,
+        stewardshipDefinitions,
+        stewardshipRevisions,
+        stewardshipSatisfactions,
       ] = await Promise.all([
         readRows<WorkScheduleEntry>(() => loadWorkSchedule(client, loaded.from, loaded.to)),
         readRows<ProtectedTime>(() => loadProtectedTime(client, loaded)),
@@ -208,6 +224,9 @@ export function OrientInstrument() {
         readRows<ExternalConnection>(() => loadExternalConnections(client)),
         readRows<ObservedTemporalSource>(() => loadObservedTemporalSources(client)),
         readRows<ExternalTemporalFact>(() => loadExternalTemporalFacts(client)),
+        readRows<StewardshipDefinition>(() => loadStewardshipDefinitions(client)),
+        readRows<StewardshipDefinitionRevision>(() => loadStewardshipDefinitionRevisions(client)),
+        readRows<StewardshipSatisfaction>(() => loadStewardshipSatisfactions(client)),
       ]);
       let citedTasks: SourceRead<CitedTaskIdentity>;
       if (taskPriorityService.status === "failed") {
@@ -236,6 +255,9 @@ export function OrientInstrument() {
           externalConnections,
           externalSources,
           externalFacts,
+          stewardshipDefinitions,
+          stewardshipRevisions,
+          stewardshipSatisfactions,
         },
         contexts,
         tasks,
@@ -331,6 +353,27 @@ export function OrientInstrument() {
         onUpdateTask: async (taskId, patch: TaskPatch) => {
           await persist(async () => {
             await updateTask(getSupabaseBrowserClient(), taskId, patch);
+          });
+        },
+        onSatisfyStewardship: async (input: {
+          definitionId: string;
+          cycleKind: StewardshipCycleKind;
+          cycleKey: string;
+        }) => {
+          await persist(async () => {
+            await satisfyStewardshipOccurrence(getSupabaseBrowserClient(), {
+              ...input,
+              satisfiedAt: new Date(),
+            });
+          });
+        },
+        onWithdrawStewardship: async (input: {
+          definitionId: string;
+          cycleKind: StewardshipCycleKind;
+          cycleKey: string;
+        }) => {
+          await persist(async () => {
+            await withdrawStewardshipSatisfaction(getSupabaseBrowserClient(), input);
           });
         },
         onTasksChanged: () => setReloadToken((token) => token + 1),

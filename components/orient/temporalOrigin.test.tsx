@@ -74,6 +74,8 @@ function actions(): OrientActions {
     onStartThread: async () => {},
     onLeaveThread: async () => {},
     onCompleteTask: async () => {},
+    onSatisfyStewardship: async () => {},
+    onWithdrawStewardship: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},

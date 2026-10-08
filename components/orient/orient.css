@@ -209,9 +209,46 @@
 
 [data-act-row] {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.35rem;
   align-items: start;
+}
+
+[data-act-row][data-act-kind="stewardship"] {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.orient-act-section-title {
+  margin: 0.85rem 0 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 560;
+  letter-spacing: 0.02em;
+  color: var(--orient-muted);
+  text-transform: none;
+}
+
+[data-act-attention] > section:first-child .orient-act-section-title {
+  margin-top: 0.2rem;
+}
+
+.orient-act-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4rem;
+  padding: 0.2rem 0.15rem 0;
+}
+
+.orient-act-check input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: rgb(196 149 90);
+}
+
+.orient-act-other-toggle {
+  width: 100%;
+  justify-content: flex-start;
+  color: var(--orient-muted);
 }
 
 .orient-glyph {

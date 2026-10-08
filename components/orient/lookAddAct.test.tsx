@@ -15,6 +15,7 @@ import { OrientView } from "@/components/orient/OrientView";
 import { ActSurface } from "@/components/orient/Surfaces";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
 import { EMPTY_EXTERNAL_ORIENT_SOURCES } from "@/components/orient/types";
+import { scheduledWorkDay } from "@/domain/workSchedule";
 
 const ANCHOR = "2026-10-07";
 const NOW = new Date("2026-10-07T15:30:00.000Z");
@@ -70,6 +71,8 @@ function actions(overrides: Partial<OrientActions> = {}): OrientActions {
     onStartThread: async () => {},
     onLeaveThread: async () => {},
     onCompleteTask: async () => {},
+    onSatisfyStewardship: async () => {},
+    onWithdrawStewardship: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onSignOut: () => {},
@@ -197,7 +200,7 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     expect(view.querySelector("[data-notes-surface]")).toBeNull();
   });
 
-  it("ACT opens without ActiveThread and lists ordered open Tasks", async () => {
+  it("ACT opens without ActiveThread and keeps Other open secondary", async () => {
     const view = await renderPhone({
       tasks: ready([
         task({ id: "remain", title: "Remain", createdAt: "2026-10-02T00:00:00.000Z" }),
@@ -209,8 +212,19 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     await act(async () => {
       (view.querySelector("[data-act-control]") as HTMLButtonElement).click();
     });
-    const rows = [...view.querySelectorAll("[data-act-row]")].map((row) => row.getAttribute("data-act-row"));
-    expect(rows).toEqual(["must", "plan", "remain"]);
+    expect(view.querySelector("[data-act-section='must-do']")).not.toBeNull();
+    expect(view.querySelector("[data-act-section='today']")).not.toBeNull();
+    expect(view.querySelector("[data-act-section='stewardship']")).toBeNull();
+    const primaryRows = [...view.querySelectorAll("[data-act-section='must-do'] [data-act-row], [data-act-section='today'] [data-act-row]")].map(
+      (row) => row.getAttribute("data-act-row"),
+    );
+    expect(primaryRows).toEqual(["must", "plan"]);
+    expect(view.querySelector("[data-act-other-open]")?.textContent).toContain("Other open (1)");
+    expect(view.querySelector("[data-act-other-list]")).toBeNull();
+    await act(async () => {
+      (view.querySelector("[data-act-other-open]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector('[data-act-other-list] [data-act-row="remain"]')).not.toBeNull();
   });
 
   it("ACT inspect edits without Start and Complete offers Still open without restoring thread", async () => {
@@ -219,7 +233,9 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     const reopened: string[] = [];
     const patches: { id: string; patch: unknown }[] = [];
     const view = await renderPhone({
-      tasks: ready([task({ id: "task-1", title: "Call the school", contextId: "context-1" })]),
+      tasks: ready([
+        task({ id: "task-1", title: "Call the school", contextId: "context-1", plannedOn: ANCHOR }),
+      ]),
       actions: {
         onStartThread: async (taskId) => {
           started.push(taskId);
@@ -303,6 +319,63 @@ describe("LOOK · ADD · ACT phone grammar", () => {
       (view.querySelector('[data-act-start="task-1"]') as HTMLButtonElement).click();
     });
     expect(started).toEqual(["task-1"]);
+  });
+
+  it("direct Task checkbox completes without inspect and offers Still open", async () => {
+    const completed: string[] = [];
+    const reopened: string[] = [];
+    const view = await renderPhone({
+      tasks: ready([task({ id: "task-1", title: "Call the school", mustDo: true })]),
+      actions: {
+        onCompleteTask: async (taskId) => {
+          completed.push(taskId);
+        },
+        onReopenTask: async (taskId) => {
+          reopened.push(taskId);
+        },
+      },
+    });
+    await act(async () => {
+      (view.querySelector("[data-act-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector('[data-act-complete="task-1"]') as HTMLInputElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(completed).toEqual(["task-1"]);
+    expect(view.querySelector("[data-still-open]")).not.toBeNull();
+    expect(view.querySelector("[data-act-inspect]")).toBeNull();
+    await act(async () => {
+      (view.querySelector("[data-still-open]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(reopened).toEqual(["task-1"]);
+  });
+
+  it("keeps Resume outside ACT and Task Detail reachable", async () => {
+    const view = await renderPhone({
+      tasks: ready([task({ id: "task-1", title: "Call the school", mustDo: true })]),
+      thread: {
+        status: "ready",
+        active: true,
+        taskId: "task-1",
+        resumeTitle: "Call the school",
+      },
+    });
+    expect(view.querySelector("[data-phone-thread]")?.textContent).toContain("Resume: Call the school");
+    await act(async () => {
+      (view.querySelector("[data-act-control]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-act-surface]")?.textContent).not.toContain("Resume:");
+    await act(async () => {
+      (view.querySelector('[data-act-select="task-1"]') as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-act-inspect]")).not.toBeNull();
+    expect(view.querySelector("[data-task-detail]")).not.toBeNull();
   });
 
   it("ADD routes Task and Note to direct create and Time on the day to Exact", async () => {
@@ -413,15 +486,23 @@ describe("ActSurface Still open", () => {
     await act(async () => {
       root!.render(
         <ActSurface
-          tasks={ready([task({ id: "task-1", title: "Call the school" })])}
+          tasks={ready([task({ id: "task-1", title: "Call the school", mustDo: true })])}
           contexts={contexts()}
+          work={ready([])}
+          stewardshipDefinitions={ready([])}
+          stewardshipRevisions={ready([])}
+          stewardshipSatisfactions={ready([])}
           viewpointCivilDate={ANCHOR}
+          now={NOW}
+          timeZone="America/Denver"
           onStart={async (taskId) => {
             started.push(taskId);
           }}
           onComplete={async () => {}}
           onReopen={async () => {}}
           onUpdate={async () => {}}
+          onSatisfyStewardship={async () => {}}
+          onWithdrawStewardship={async () => {}}
           onAddTask={() => {}}
           onClose={() => {}}
         />,
@@ -443,5 +524,81 @@ describe("ActSurface Still open", () => {
       await Promise.resolve();
     });
     expect(started).toEqual([]);
+  });
+
+  it("direct stewardship checkbox satisfies exact occurrence and withdraw restores", async () => {
+    host = document.createElement("div");
+    document.body.appendChild(host);
+    root = createRoot(host);
+    const satisfied: { definitionId: string; cycleKind: string; cycleKey: string }[] = [];
+    const withdrawn: { definitionId: string; cycleKind: string; cycleKey: string }[] = [];
+    const defId = "00000000-0000-4000-8000-000000000001";
+    await act(async () => {
+      root!.render(
+        <ActSurface
+          tasks={ready([])}
+          contexts={contexts()}
+          work={ready([
+            scheduledWorkDay({
+              workOn: ANCHOR,
+              startLocal: "06:00",
+              endLocal: "15:00",
+              shiftType: "opening",
+            }),
+          ])}
+          stewardshipDefinitions={ready([
+            {
+              id: defId,
+              contextId: null,
+              cycleKind: "workday",
+              establishedAt: "2026-10-01T12:00:00.000Z",
+              retiredAt: null,
+            },
+          ])}
+          stewardshipRevisions={ready([
+            {
+              id: "00000000-0000-4000-8000-000000000010",
+              definitionId: defId,
+              content: "Review pipelines",
+              effectiveAt: "2026-10-01T12:00:00.000Z",
+            },
+          ])}
+          stewardshipSatisfactions={ready([])}
+          viewpointCivilDate={ANCHOR}
+          now={NOW}
+          timeZone="America/Denver"
+          onStart={async () => {}}
+          onComplete={async () => {}}
+          onReopen={async () => {}}
+          onUpdate={async () => {}}
+          onSatisfyStewardship={async (input) => {
+            satisfied.push(input);
+          }}
+          onWithdrawStewardship={async (input) => {
+            withdrawn.push(input);
+          }}
+          onAddTask={() => {}}
+          onClose={() => {}}
+        />,
+      );
+    });
+    expect(host!.querySelector("[data-act-section='stewardship']")?.textContent).toContain("Review pipelines");
+    expect(host!.querySelector("[data-act-section='stewardship']")?.textContent).toContain("Workday");
+    await act(async () => {
+      (host!.querySelector(`[data-act-satisfy="${defId}:workday:${ANCHOR}"]`) as HTMLInputElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(satisfied).toEqual([{ definitionId: defId, cycleKind: "workday", cycleKey: ANCHOR }]);
+    expect(host!.querySelector("[data-stewardship-withdraw]")).not.toBeNull();
+    expect(host!.querySelector("[data-complete-task]")).toBeNull();
+    await act(async () => {
+      (host!.querySelector("[data-stewardship-withdraw]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(withdrawn).toEqual([{ definitionId: defId, cycleKind: "workday", cycleKey: ANCHOR }]);
   });
 });
