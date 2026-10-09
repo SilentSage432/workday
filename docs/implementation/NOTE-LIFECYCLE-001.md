@@ -4,16 +4,32 @@ Date: 2026-10-08.
 
 Baseline: `b69bcf9765e3caadc3c1b283f0a1b6df937ab6b9`.
 
+Implementation commit: `1612b2b848d754953ae2a0fe6e2bc489b091b469`.
+
 Decision: [../decisions/2026-10-08-note-lifecycle.md](../decisions/2026-10-08-note-lifecycle.md).
 
 Discovery: NOTE-LIFECYCLE-DISCOVERY-001 verdict **NOTE-LIFECYCLE-FOUNDATION-CLEAR**.
+
+## Status
+
+**NOTE-LIFECYCLE-001: PHYSICALLY ACCEPTED**
+
+Hosted authority after correction: **NOTE-LIFECYCLE-HOSTED-AUTHORITY-CLEAR** ([NOTE-LIFECYCLE-001A.md](NOTE-LIFECYCLE-001A.md)).
+
+This acceptance was documented late (after later Orient work, including hosted Pulse establishment). It does not reopen or supersede newer accepted Pulse state.
 
 ## What this implements
 
 Human authority over Notes they established:
 
-- **Retire** — leave current operational Notes; preserve the row and any Task provenance.
-- **Delete** — permanently remove an uncited Note from the Orient record.
+- **Retire** — “was valid; leave the current Notes collection; row remains.”
+- **Delete** — “must not exist” (hard removal; only when no Task cites the Note).
+
+Current Notes means: not retired (`retiredAt === null` / `retired_at IS NULL`).
+
+Retire requires no confirmation. Delete requires confirmation.
+
+A provenance-protected Note cited by a Task cannot be deleted; that Note may still be retired.
 
 Edit remains deferred. No Archive browser. No Unretire UI. No Notes Class-A realtime.
 
@@ -37,7 +53,7 @@ Existing SELECT/INSERT authority preserved. Existing rows remain current (`retir
 
 `tasks_originating_note_same_owner` stays `ON DELETE NO ACTION`. No cascade. No SET NULL.
 
-**Hosted migration is not applied by this tranche.** Apply only after review.
+Original tranche did not apply hosted. Later hosted application and authority correction are recorded in [NOTE-LIFECYCLE-001A.md](NOTE-LIFECYCLE-001A.md).
 
 ## Persistence
 
@@ -71,6 +87,43 @@ Notes remain outside Class-A realtime. On-open `loadNotes` plus local state upda
 
 Edit, Unretire UI, Archive browser, search, folders, tags, rich text, attachments, AI interpretation, Pulse, Notes Class-A publication, phone LOOK redesign, center ADD, ACT, desktop foundation.
 
-## Later
+## Hosted authority
 
-Hosted application of this migration exposed surviving table-level UPDATE privilege; [NOTE-LIFECYCLE-001A.md](NOTE-LIFECYCLE-001A.md) converges authority with `REVOKE UPDATE` then `GRANT UPDATE (retired_at)`. Physical acceptance of Retire and Delete follows that correction. Pulse remains the next major exploration after physical acceptance.
+Hosted application of this migration exposed surviving table-level UPDATE privilege; [NOTE-LIFECYCLE-001A.md](NOTE-LIFECYCLE-001A.md) converges authority with `REVOKE UPDATE` then `GRANT UPDATE (retired_at)`.
+
+## Physical acceptance (historical)
+
+Completed on Tyson’s Samsung phone after the corrected production candidate was live.
+
+### Retire
+- Retire worked with no confirmation.
+- Note left Current Notes.
+- Underlying Note row remained.
+
+### Uncited Delete
+- Delete presented confirmation.
+- Cancel path exercised.
+- Confirm path exercised.
+- Confirmed deletion removed the uncited Note.
+
+### Provenance-protected Delete
+- A Note cited by a Task was tested.
+- Delete was refused/protected.
+- Note remained; citing Task remained.
+- Retire remained available and worked.
+
+Acceptance reaction:
+
+> BOOM!!! works so good
+
+**Not accepted / deferred:** Edit, Unretire UI, Archive browser, Notes Class-A realtime, Complete/Dismiss/Hide, new lifecycle states.
+
+## Production evidence (historical)
+
+| Item | Value |
+| --- | --- |
+| Corrected candidate | `92a7a18c0c8c9cbc5d39793f97ebb3fedd047f3c` (`NOTE-LIFECYCLE-001A`) |
+| Deployment | `dpl_5zSfHQNK9dGniZRNjgQRHTrg1hqK` |
+| Surface | Production READY / canonical Orient alias used for physical acceptance |
+
+This records completed historical production evidence. It is not a new deploy or re-verification.

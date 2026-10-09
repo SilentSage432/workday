@@ -51,4 +51,6 @@ Notes remain outside Class-A realtime. Notes load on LOOK → Notes entry. Local
 ## Consequences
 
 - Implementation tranche [../implementation/NOTE-LIFECYCLE-001.md](../implementation/NOTE-LIFECYCLE-001.md) stores `retired_at`, grants owner `UPDATE (retired_at)` and `DELETE`, implements `retireNote` / `deleteNote`, and exposes Retire and Delete on LOOK → Notes.
+- Hosted authority correction: [../implementation/NOTE-LIFECYCLE-001A.md](../implementation/NOTE-LIFECYCLE-001A.md) — **NOTE-LIFECYCLE-HOSTED-AUTHORITY-CLEAR**.
+- Physical acceptance (historical; documented late): **NOTE-LIFECYCLE-001: PHYSICALLY ACCEPTED**. Edit / Unretire / Archive browser remain deferred.
 - Prior representation and revisit decisions remain true for meaning and return. Their unresolved lifecycle statements are superseded here for Retire and Delete.

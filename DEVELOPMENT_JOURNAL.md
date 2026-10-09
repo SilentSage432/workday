@@ -1,5 +1,18 @@
 # Development journal
 
+## 2026-10-08 — NOTE-LIFECYCLE-001 historical physical acceptance (docs repair)
+
+Late documentation of Note Lifecycle physical acceptance that already occurred on Tyson’s Samsung phone after corrected candidate `92a7a18` / deployment `dpl_5zSfHQNK9dGniZRNjgQRHTrg1hqK`.
+
+- Semantics unchanged: Retire = was valid, leave current Notes, row remains; Delete = must not exist (uncited only); Current Notes = not retired.
+- Hosted authority after `20261008220000`: **NOTE-LIFECYCLE-HOSTED-AUTHORITY-CLEAR** (table UPDATE no; UPDATE(`retired_at`) yes; DELETE/SELECT/INSERT yes).
+- Physical: Retire worked; uncited Delete confirm/cancel; cited Delete protected with Retire still available.
+- Tyson: “BOOM!!! works so good”
+- Edit / Unretire / Archive browser remain deferred.
+- Documented after later Pulse hosted-establishment acceptance; does not reopen or supersede Pulse.
+
+Records: [docs/implementation/NOTE-LIFECYCLE-001.md](docs/implementation/NOTE-LIFECYCLE-001.md), [docs/implementation/NOTE-LIFECYCLE-001A.md](docs/implementation/NOTE-LIFECYCLE-001A.md).
+
 ## 2026-10-08 — ORIENT-PULSE-HOSTED-ESTABLISHMENT-001 physical acceptance
 
 Closed-client hosted Pulse establishment physically accepted on production Orient.

@@ -4,7 +4,15 @@ Date: 2026-10-08.
 
 Baseline: `1612b2b848d754953ae2a0fe6e2bc489b091b469`.
 
+Correction commit: `92a7a18c0c8c9cbc5d39793f97ebb3fedd047f3c`.
+
 Parent: [NOTE-LIFECYCLE-001.md](NOTE-LIFECYCLE-001.md).
+
+## Status
+
+Hosted verification verdict: **NOTE-LIFECYCLE-HOSTED-AUTHORITY-CLEAR**
+
+Physical acceptance of Retire/Delete followed this correction and is recorded on the parent document (documented late; does not supersede later Pulse acceptance).
 
 ## What happened
 
@@ -33,6 +41,26 @@ Preserved: DELETE, SELECT, INSERT, `notes_update_own`, `notes_delete_own`, Task 
 
 Edit remains deferred. No production Note data is changed by this SQL.
 
-## Hosted application
+## Verified hosted authority (after correction)
 
-Not applied by this documentation record. Apply only after review/commit authority.
+On canonical `ksmhgaamyheyhefbyglb`, authenticated privileges on `public.notes`:
+
+| Privilege | Result |
+| --- | --- |
+| table-level UPDATE | NO |
+| UPDATE(`retired_at`) | YES |
+| UPDATE(`content`) | NO |
+| UPDATE(`captured_at`) | NO |
+| UPDATE(`id`) | NO |
+| UPDATE(`user_id`) | NO |
+| DELETE | YES |
+| SELECT | YES |
+| INSERT | YES |
+
+Existing owner policies remained intact. Task provenance FK continued to protect cited Notes from deletion.
+
+Verdict: **NOTE-LIFECYCLE-HOSTED-AUTHORITY-CLEAR**
+
+## Production candidate
+
+Correction commit `92a7a18c0c8c9cbc5d39793f97ebb3fedd047f3c` was the production candidate for physical acceptance (deployment `dpl_5zSfHQNK9dGniZRNjgQRHTrg1hqK`). See parent physical-acceptance record.
