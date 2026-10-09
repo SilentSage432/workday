@@ -1,5 +1,16 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-008
+
+Background haptic semantic correction (uncommitted; not installed).
+
+- 007E: autonomous native notification path established; explicit 40ms haptic invoked then ignored (`background` + `TOUCH`).
+- Cause: bare `vibrate(VibrationEffect)` → empty attributes → UNKNOWN→TOUCH.
+- Fix: `VibrationAttributes.USAGE_NOTIFICATION` (not `USAGE_ALARM`); duration/amplitude/silent notification unchanged.
+- Haptic not marked physically accepted.
+
+Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md).
+
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-007B
 
 Native perception semantic observability only (uncommitted; not installed).

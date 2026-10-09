@@ -2,43 +2,29 @@
 
 ## Current state (2026-10-09)
 
-**ORIENT-ANDROID-PULSE-BRIDGE-007B** — perception semantic observability (uncommitted; not installed).
+**ORIENT-ANDROID-PULSE-BRIDGE-008** — background haptic semantic correction (uncommitted; not installed).
 
-S26 endpoint established (`54724f0`). First autonomous Pulse: FCM+WorkManager ran; AUTHORITATIVE_REREAD_FAILED; subtype SilentNoSession vs NotVisible inconclusive until `OrientPulsePerception` logs from next Pulse.
+Native autonomous **notification** path established (007E) on candidate `171c95a`:
+occurrence `8134b3e8-7185-46fb-8c71-c338e2caa3a9` → dispatch → FCM → WM → reread → claim → notify.
 
-Prior: **006** token registration corrected at `54724f0`.
+Haptic subtype: **HAPTIC_INVOKED_BUT_NOT_PERCEIVED** — OS ignored background `TOUCH` usage.
+008 replaces attributes with `VibrationAttributes.USAGE_NOTIFICATION` only.
 
-**006A root cause:** client omitted `platform` on PostgREST INSERT (`encodeDefaults=false` + Kotlin default). Hosted authority correct.
-
-Upstream production dispatcher: `30edfb7` on `main`.
-
-Token table hosted clear: **ORIENT-ANDROID-PULSE-TOKEN-HOSTED-AUTHORITY-CLEAR** (`20261009120000` on `ksmhgaamyheyhefbyglb`).
-
-**ORIENT-ANDROID-PULSE-ZERO-TARGET-AUTONOMY-ACCEPTED** — Database Webhook → authenticated dispatcher → authoritative occurrence reread → token lookup → `no_targets` when the token table is empty.
-
-Prior Pulse acceptance unchanged: **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED**.
+Prior: 007B/C observability committed (`171c95a`); 007D S26 update-install; 006 endpoint; dispatcher `30edfb7`.
 
 ### Proven (Pulse)
 
 - Explicit Interrupt Grant + relative 5-minute Commitment-start authority
 - Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
-- Owner-scoped Android FCM token table live with narrow RLS / service_role SELECT
-- Trusted dispatcher + webhook autonomous path through FCM to S26
-- S26 endpoint established; first autonomous Pulse stopped at authoritative reread (subtype pending observability)
-
-### In-repo native perception
-
-- `/android` package `com.teamlab.orient`: email/password auth, FCM receive, token reconcile, authoritative occurrence reread, SQLite exactly-once local expression claim, one notification + one haptic
-- Rule: no authoritative reread ⇒ no perception claim
-- `google-services.json` is local-only (gitignored)
-- Wear OS deferred
-- 007B: `OrientPulsePerception` semantic logs (session/reread/decision/expression)
+- Owner-scoped Android FCM token table + trusted dispatcher + webhook
+- S26 endpoint + autonomous native notification expression
+- Semantic observability tag `OrientPulsePerception`
 
 ### Next Pulse boundary
 
-1. Review/commit 007B → install observability APK (preserve Tyson session)
-2. One real Pulse → capture `OrientPulsePerception` decision subtype
-3. Correct proven defect → physical notification + haptic acceptance
+1. Review/commit 008 → update-install S26 (preserve session)
+2. One real Pulse → confirm haptic perceived under background delivery
+3. Deferred: Wear OS / perceptual language / channel policy
 
 ### Still deferred elsewhere
 

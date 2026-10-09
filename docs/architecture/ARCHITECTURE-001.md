@@ -232,7 +232,7 @@ Closed-app Android delivery uses FCM over already-established `pulse_occurrences
 - Token registration: `public.orient_device_push_tokens` hosted authority clear ([ORIENT-ANDROID-PULSE-BRIDGE-002](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md)).
 - Trusted dispatcher: `POST /api/pulse/dispatch` re-reads occurrence ownership and sends FCM data `{ pulse_occurrence_id }` ([ORIENT-ANDROID-PULSE-BRIDGE-003](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md)).
 - Database Webhook → dispatch autonomy accepted through zero-target (`no_targets` with empty token table).
-- Native Android perception edge: `android/` package `com.teamlab.orient` — authoritative user-JWT reread, local exactly-once expression claim, one notification + one haptic ([ORIENT-ANDROID-PULSE-BRIDGE-005](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md)). Wear OS remains deferred. S26 endpoint established ([ORIENT-ANDROID-PULSE-BRIDGE-006](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-006.md)); first autonomous delivery failed at authoritative reread with subtype observability added in [ORIENT-ANDROID-PULSE-BRIDGE-007](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-007.md).
+- Native Android perception edge: `android/` package `com.teamlab.orient` — authoritative user-JWT reread, local exactly-once expression claim, one silent notification + one explicit haptic ([ORIENT-ANDROID-PULSE-BRIDGE-005](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md)). Wear OS remains deferred. S26 endpoint + autonomous notification path established ([ORIENT-ANDROID-PULSE-BRIDGE-006](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-006.md), [007](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-007.md)); background haptic requires notification-class `VibrationAttributes` ([ORIENT-ANDROID-PULSE-BRIDGE-008](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md)).
 
 **NO AUTHORITATIVE REREAD = NO PERCEPTION CLAIM.**
 
@@ -246,7 +246,7 @@ Three separate things:
 | --- | --- | --- |
 | Reminder | A stored explicit attention point | Persist it. Show it through projection. |
 | Pulse | A projection that reorients: where, intended block, active thread, next commitment, open interval | In-app expression of established occurrences. |
-| Delivery | Push / native perception of an already-established occurrence | FCM dispatcher + webhook autonomy accepted; Android perception edge in-repo; physical device acceptance pending. |
+| Delivery | Push / native perception of an already-established occurrence | FCM dispatcher + webhook autonomy accepted; autonomous native notification established on S26; background haptic correction pending physical acceptance ([008](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md)). |
 
 No empty adapter framework. Native delivery is not accepted until physical proof.
 

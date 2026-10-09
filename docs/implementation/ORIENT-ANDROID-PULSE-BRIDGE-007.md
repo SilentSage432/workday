@@ -4,9 +4,10 @@ First autonomous native Pulse forensic + perception observability.
 
 ## Status
 
-**007 diagnosed. 007A subtype inconclusive. 007B observability implemented (uncommitted; not installed).**
+**007 diagnosed → 007B/C observability on `171c95a` → 007D installed → 007E second Pulse established native notification path.**
 
-Candidate baseline for the failed physical Pulse: `54724f005a15f5ebc127b3e8e3c3cdcbbcec4c97`
+First failed physical Pulse baseline: `54724f005a15f5ebc127b3e8e3c3cdcbbcec4c97`  
+Observability candidate: `171c95ad1bb7179bd51ba59347067236cde204a8`
 
 ## Physical trace (007)
 
@@ -40,6 +41,11 @@ Stages (enums/booleans/status classes only; occurrence UUID allowed for correlat
 
 **Does not change** session/refresh/retry/reread/claim/notify/haptic/WorkManager/FCM/hosted authority.
 
-## Next
+## 007E — second physical Pulse
 
-Install observability candidate → one real physical Pulse → read `OrientPulsePerception` lines → establish subtype → correct only the proven defect.
+Autonomous path succeeded through native notification for occurrence
+`8134b3e8-7185-46fb-8c71-c338e2caa3a9`. Explicit haptic reached Android but was
+rejected as background + `TOUCH` usage → **HAPTIC_INVOKED_BUT_NOT_PERCEIVED**.
+
+Correction: [ORIENT-ANDROID-PULSE-BRIDGE-008](ORIENT-ANDROID-PULSE-BRIDGE-008.md)
+(notification-class `VibrationAttributes` only; haptic not yet physically accepted).
