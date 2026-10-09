@@ -70,7 +70,14 @@ import {
   RecurringTaskDetailSurface,
   RecurringTaskManageSurface,
 } from "@/components/orient/RecurringTaskSurfaces";
-import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
+import { PulseExpression } from "@/components/orient/PulseExpression";
+import type {
+  CaptureBridge,
+  OrientActions,
+  OrientSources,
+  PulseReading,
+  ThreadReading,
+} from "@/components/orient/types";
 import type { Context } from "@/domain/context";
 import type { SourceRead } from "@/components/currentTemporalReading";
 import type {
@@ -117,6 +124,7 @@ export function OrientView({
   contexts,
   tasks,
   thread,
+  pulse,
   capture: _capture,
   actions,
 }: {
@@ -129,6 +137,7 @@ export function OrientView({
   contexts: SourceRead<Context>;
   tasks: SourceRead<Task>;
   thread: ThreadReading;
+  pulse: PulseReading;
   /** Retained for instrument bridge; establishment routes through ADD (DirectTask/DirectNote). */
   capture: CaptureBridge;
   actions: OrientActions;
@@ -140,6 +149,7 @@ export function OrientView({
   const [focus, setFocus] = useState<ContextFocus>({ kind: "everything" });
   const [surface, setSurface] = useState<Surface>(() => readExternalCalendarsSurfaceFromLocation());
   const workDismissRef = useRef<WorkScheduleDismiss | null>(null);
+  const [dismissedPulseIds, setDismissedPulseIds] = useState<Set<string>>(() => new Set());
   const [session, setSession] = useState<SelectionSession>(initialSelectionSession);
   const [nowEdge, setNowEdge] = useState<"above" | "below" | "before" | "after" | null>(null);
   const [reduced, setReduced] = useState(false);
@@ -1022,6 +1032,17 @@ export function OrientView({
       aria-label="Orient"
     >
       <OrientIdentity />
+      <PulseExpression
+        items={pulse.expressible}
+        dismissedIds={dismissedPulseIds}
+        onDismiss={(occurrenceId) => {
+          setDismissedPulseIds((current) => {
+            const next = new Set(current);
+            next.add(occurrenceId);
+            return next;
+          });
+        }}
+      />
       <div className="orient-reach" data-reach="bezel">
         {desktopReading ? null : (
           <button
@@ -1370,6 +1391,9 @@ export function OrientView({
               openTasks={openTasks}
               timeZone={timeZone}
               services={sources}
+              interruptGrants={pulse.grants.status === "ready" ? pulse.grants.rows : []}
+              onEstablishCommitmentPulseGrant={actions.onEstablishCommitmentPulseGrant}
+              onRevokeCommitmentPulseGrant={actions.onRevokeCommitmentPulseGrant}
               onChoose={(fact) => setSurface({ kind: "facts", facts: surface.facts, chosen: fact, proposal: null })}
               onClose={closeSurface}
               onUpdate={actions.onUpdate}

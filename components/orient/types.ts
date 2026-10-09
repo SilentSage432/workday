@@ -18,10 +18,12 @@ import type {
   RecurringTaskDefinitionPatch,
   RecurringTaskWeekday,
 } from "@/domain/recurringTask";
+import type { InterruptGrant, PulseOccurrence } from "@/domain/pulse";
 import type { StewardshipCycleKind, StewardshipDefinition, StewardshipDefinitionRevision, StewardshipSatisfaction } from "@/domain/stewardship";
 import type { Task } from "@/domain/task";
 import type { WeekWrite } from "@/components/weekDraft";
 import type { WorkScheduleEntry } from "@/domain/workSchedule";
+import type { ExpressiblePulse } from "@/components/orient/PulseExpression";
 
 export type ThreadReading =
   | { status: "loading" }
@@ -120,6 +122,14 @@ export type OrientActions = {
   onSaveWorkWeek: (weekStart: string, writes: WeekWrite[]) => Promise<void>;
   /** Reread external evidence after observation/disconnect without inventing realtime. */
   onExternalObservationComplete?: () => void;
+  onEstablishCommitmentPulseGrant: (commitmentId: string, leadOffsetSeconds: number) => Promise<void>;
+  onRevokeCommitmentPulseGrant: (grantId: string) => Promise<void>;
+};
+
+export type PulseReading = {
+  grants: SourceRead<InterruptGrant>;
+  occurrences: SourceRead<PulseOccurrence>;
+  expressible: readonly ExpressiblePulse[];
 };
 
 export type { OpenTaskChoice };

@@ -2,25 +2,30 @@
 
 ## Current state (2026-10-08)
 
-**NOTE-LIFECYCLE-001** committed/pushed at `1612b2b` and applied to hosted Orient. Hosted verification found surviving table-level UPDATE.
+**ORIENT-PULSE-COMMITMENT-START-001** implemented in working tree (not committed; migration not applied hosted).
 
-Working tree: **NOTE-LIFECYCLE-001A** corrective migration (not committed; not applied).
+HEAD baseline before this work: `92a7a18` (NOTE-LIFECYCLE-001A already on `main`).
 
-### What changed (001A)
+### What changed
 
-- New migration `20261008220000_note_update_authority_correction.sql`: `REVOKE UPDATE` then `GRANT UPDATE (retired_at)`.
-- Docs/tests for the privilege convergence. No app code change. No Note data change.
+- Domain evaluator + Interrupt Grant / Pulse occurrence vocabulary (`domain/pulse.ts`)
+- Migration `20261008230000_pulse_commitment_start.sql` (grants + occurrences, narrow privileges, realtime publication)
+- Persistence establish/revoke/ensure occurrence
+- Timed Commitment inspection: explicit remind / don’t remind
+- Restrained in-app Pulse expression
+- Docs: implementation record + PRODUCT/DOMAIN/roadmap/journal updates
 
 ### Next physical step
 
-1. Commit / push 001A when asked.
-2. Apply corrective migration to `ksmhgaamyheyhefbyglb`.
-3. Re-verify hosted privileges: no table UPDATE; `retired_at` UPDATE only; DELETE intact.
-4. Phone/desktop physical acceptance of Retire/Delete.
+1. Review / commit when asked.
+2. Apply migration to hosted Supabase.
+3. Phone/desktop acceptance: set reminder on timed Commitment, wait for threshold with Orient open, confirm one occurrence + expression; revoke; move start before/after occurrence.
 
 ### Still deferred
 
+- Push / native Android / Wear OS / haptics / watch face / service worker
+- Channel permission policy
+- Other Pulse source kinds (Protected Time, Blocks, Tasks, Work, Google)
 - Note content Edit / Unretire UI / Archive browser
-- Orient Pulse / notifications / Wear OS
 - Recurring-task physical acceptance
 - Google Calendar removal reconciliation

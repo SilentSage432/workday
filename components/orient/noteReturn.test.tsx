@@ -88,6 +88,8 @@ function actions(overrides: Partial<OrientActions> = {}): OrientActions {
     onEstablishRecurringTask: async () => {},
     onUpdateRecurringTask: async () => {},
     onRetireRecurringTask: async () => {},
+    onEstablishCommitmentPulseGrant: async () => {},
+    onRevokeCommitmentPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onSignOut: () => {},
@@ -146,6 +148,7 @@ describe("NOTE-RETURN-001 LOOK → Notes", () => {
           contexts={contexts()}
           tasks={ready([task({ id: "task-1", title: "Call the school" })])}
           thread={{ status: "ready", active: false, taskId: null, resumeTitle: null } satisfies ThreadReading}
+          pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
           capture={captureBridge()}
           actions={actions()}
         />,

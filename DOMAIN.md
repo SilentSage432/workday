@@ -86,6 +86,8 @@ An all-day Commitment is one civil date. A timed Commitment is a local start and
 
 `origin` records where the truth came from. A Commitment entered in this application is `user_created`. That word is provenance, not a kind of Commitment. Google Calendar may later supply an externally sourced Commitment. That source would keep authority over what this application may edit or delete. No external id, sync, or write-back is stored yet.
 
+A timed Commitment may carry an explicit **Interrupt Grant**: human interruption authority for the relative transition `commitment.start` with a positive lead offset. That grant is not a notification, not Must Do, and not created by establishing the Commitment. A **Pulse occurrence** is durable evidence that the authorized condition evaluated true for one grant and one source temporal identity. Expression of a Pulse is not the Pulse. [docs/implementation/ORIENT-PULSE-COMMITMENT-START-001.md](docs/implementation/ORIENT-PULSE-COMMITMENT-START-001.md) stores the first proof.
+
 **Unresolved:** which external events become Commitments, and whether a Shift is stored as a Commitment or only presented beside one. V0-008 does not copy a Work shift into `commitments`. V0-009 presents the shift as Work Schedule truth beside Commitments. It does not store that presentation.
 
 ## Block

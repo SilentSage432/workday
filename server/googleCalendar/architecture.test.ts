@@ -70,9 +70,10 @@ describe("Google Calendar Tranche 4 architectural guards", () => {
     expect(coherence).not.toMatch(/external_temporal_facts|external_temporal_sources/);
     const migrations = walkFiles(join(root, "supabase/migrations"), (name) => name.endsWith(".sql"));
     for (const file of migrations) {
-      if (!file.includes("20261008")) continue;
       const sql = readFileSync(file, "utf8");
-      expect(sql).not.toMatch(/supabase_realtime|alter publication/);
+      expect(sql).not.toMatch(
+        /alter publication supabase_realtime add table public\.external_temporal_(facts|sources|connections)/,
+      );
     }
   });
 

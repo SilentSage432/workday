@@ -100,6 +100,8 @@ function actions(overrides: Partial<OrientActions> = {}): OrientActions {
     onEstablishRecurringTask: async () => {},
     onUpdateRecurringTask: async () => {},
     onRetireRecurringTask: async () => {},
+    onEstablishCommitmentPulseGrant: async () => {},
+    onRevokeCommitmentPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onSignOut: () => {},
@@ -163,6 +165,7 @@ describe("stewardship doorway", () => {
           contexts={contexts()}
           tasks={input?.tasks ?? ready([task({ id: "task-1", title: "Call the school", mustDo: true })])}
           thread={input?.thread ?? { status: "ready", active: false, taskId: null, resumeTitle: null }}
+          pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
           capture={captureBridge()}
           actions={actions(input?.actions)}
         />,

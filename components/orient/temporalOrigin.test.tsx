@@ -82,6 +82,8 @@ function actions(): OrientActions {
     onEstablishRecurringTask: async () => {},
     onUpdateRecurringTask: async () => {},
     onRetireRecurringTask: async () => {},
+    onEstablishCommitmentPulseGrant: async () => {},
+    onRevokeCommitmentPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
@@ -123,6 +125,7 @@ async function renderAt(input: { zone: string; now: string; anchor: string; onAn
         contexts={ready([])}
         tasks={ready([])}
         thread={{ status: "ready", active: false, taskId: null, resumeTitle: null }}
+        pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
         capture={bridge()}
         actions={actions()}
       />,
@@ -258,6 +261,7 @@ describe("production temporal origin", () => {
             contexts={ready([])}
             tasks={ready([])}
             thread={{ status: "ready", active: false, taskId: null, resumeTitle: null }}
+            pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
             capture={bridge()}
             actions={actions()}
           />,

@@ -156,6 +156,8 @@ function actions(): OrientActions {
     onEstablishRecurringTask: async () => {},
     onUpdateRecurringTask: async () => {},
     onRetireRecurringTask: async () => {},
+    onEstablishCommitmentPulseGrant: async () => {},
+    onRevokeCommitmentPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
@@ -231,6 +233,7 @@ async function renderView(options?: {
         contexts={contexts()}
         tasks={ready([task()])}
         thread={options?.thread ?? { status: "ready", active: true, taskId: "task-1", resumeTitle: "Cycle counts" }}
+        pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
         capture={captureBridge()}
         actions={actions()}
       />,

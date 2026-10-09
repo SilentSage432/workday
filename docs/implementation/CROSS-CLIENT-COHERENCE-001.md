@@ -29,6 +29,8 @@ The human applied `supabase/migrations/20261006235000_class_a_realtime_publicati
 `supabase_realtime` contains exactly:
 
 - `public.active_threads`
+- `public.pulse_interrupt_grants` (Pulse reread awareness; not Class-A temporal territory)
+- `public.pulse_occurrences` (Pulse reread awareness; payloads are never authority)
 - `public.blocks`
 - `public.commitments`
 - `public.protected_time`

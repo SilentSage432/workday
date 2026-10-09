@@ -1,5 +1,18 @@
 # Development journal
 
+## 2026-10-08 — ORIENT-PULSE-COMMITMENT-START-001
+
+First human-authorized Pulse proof.
+
+- Domain: Interrupt Grant, Pulse occurrence, deterministic Commitment-start evaluator (`[threshold, start)`).
+- Migration: `pulse_interrupt_grants` + `pulse_occurrences`; narrow privileges (revoke defaults first); same-owner Commitment cascade; occurrence fingerprint retention; realtime reread publication.
+- Persistence: establish/revoke grant; idempotent occurrence ensure.
+- UI: timed Commitment remind / don’t remind; restrained in-app expression; dismiss is expression-only.
+- No push, Wear, haptics, service worker, or channel policy.
+- Hosted migration not applied.
+
+Record: [docs/implementation/ORIENT-PULSE-COMMITMENT-START-001.md](docs/implementation/ORIENT-PULSE-COMMITMENT-START-001.md).
+
 ## 2026-10-08 — NOTE-LIFECYCLE-001A
 
 Corrective forward migration after hosted verification: revoke table-level `UPDATE` on `public.notes` from `authenticated`, then re-grant `UPDATE (retired_at)`. Lifecycle-001 applied and was semantically correct in isolation; additive grants left historical table-level UPDATE in place. Not applied to hosted yet.

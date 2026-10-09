@@ -195,6 +195,8 @@ function Host({
     onEstablishRecurringTask: async () => {},
     onUpdateRecurringTask: async () => {},
     onRetireRecurringTask: async () => {},
+    onEstablishCommitmentPulseGrant: async () => {},
+    onRevokeCommitmentPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
@@ -212,6 +214,7 @@ function Host({
       contexts={contexts()}
       tasks={ready([] as Task[])}
       thread={thread}
+      pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
       capture={captureBridge()}
       actions={actions}
     />

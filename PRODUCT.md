@@ -99,13 +99,13 @@ Today remains the user's intentional commitment of work to the current day. It i
 
 ## Pulse
 
-A Pulse is a moment of temporal orientation. A reminder tells the user about one explicit fact or attention point. A Pulse restores a sense of where the day is.
+A Pulse occurrence is the durable establishment that a deterministic evaluator found an explicitly authorized temporal condition true under a unique occurrence identity. Expression may make that occurrence perceptible. Expression does not create the Pulse. Delivery channels are separate and deferred.
 
-Directional questions a Pulse may serve remain unresolved. They are not the present-moment composition, and they do not authorize that composition to decide importance or a next action. "What currently matters" and "what is next" are not answers present-moment orientation gives. A next temporal boundary, a next temporal fact, a next planned Task, a next due Task, and the next thing the user should do are not the same question.
+The first implemented proof is a timed Orient-native Commitment start with an explicit human interrupt grant (“Remind me N minutes before”). Temporal truth, Must Do, planned time, ACT, Work, and external calendar observation do not authorize interruption by themselves. Relative lead follows Commitment start correction. One grant and one source temporal identity mint at most one occurrence. Non-acknowledgment is not failure. Silence remains valid.
 
-No notification cadence is defined. Repeated nagging is not a Pulse. Productivity pressure is not a Pulse. Opening the app, or a transition in the day, might later be Pulse moments. Exact behavior is to be discovered through use. Pulse is not an input to the first present-moment composition.
+Directional questions a broader Pulse may later serve remain unresolved. They are not the present-moment composition, and they do not authorize that composition to decide importance or a next action. No notification cadence is defined. Repeated nagging is not a Pulse. Productivity pressure is not a Pulse. Push, Wear OS, and native delivery are not required for this proof and are not implemented. Pulse is not an input to the first present-moment composition.
 
-V0 should be capable of an in-app Pulse. It does not require push infrastructure.
+Implementation: [docs/implementation/ORIENT-PULSE-COMMITMENT-START-001.md](docs/implementation/ORIENT-PULSE-COMMITMENT-START-001.md).
 
 ## Resume and Active Thread
 

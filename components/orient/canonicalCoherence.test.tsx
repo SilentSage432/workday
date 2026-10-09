@@ -117,7 +117,7 @@ describe("canonical change notices", () => {
     vi.useRealTimers();
   });
 
-  it("binds the six class-a tables and does not read a row payload", () => {
+  it("binds class-a tables plus Pulse reread tables and does not read a row payload", () => {
     const bindings = canonicalChangeBindings(USER_ID);
     expect(bindings.map((binding) => binding.table)).toEqual([
       "protected_time",
@@ -137,6 +137,12 @@ describe("canonical change notices", () => {
       "active_threads",
       "active_threads",
       "active_threads",
+      "pulse_interrupt_grants",
+      "pulse_interrupt_grants",
+      "pulse_interrupt_grants",
+      "pulse_occurrences",
+      "pulse_occurrences",
+      "pulse_occurrences",
     ]);
     expect(bindings.some((binding) => binding.table === "tasks" && binding.event === "UPDATE")).toBe(true);
     expect(bindings.some((binding) => binding.table === "tasks" && binding.event === "INSERT")).toBe(true);
@@ -290,6 +296,8 @@ function actions(): OrientActions {
     onEstablishRecurringTask: async () => {},
     onUpdateRecurringTask: async () => {},
     onRetireRecurringTask: async () => {},
+    onEstablishCommitmentPulseGrant: async () => {},
+    onRevokeCommitmentPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
@@ -337,6 +345,7 @@ async function renderReading(replace: { current: ((next: OrientSources) => void)
         contexts={contexts()}
         tasks={ready([task()])}
         thread={thread}
+      pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
         capture={captureBridge()}
         actions={actions()}
       />

@@ -52,6 +52,8 @@ function actions(): OrientActions {
     onEstablishRecurringTask: async () => {},
     onUpdateRecurringTask: async () => {},
     onRetireRecurringTask: async () => {},
+    onEstablishCommitmentPulseGrant: async () => {},
+    onRevokeCommitmentPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
@@ -106,6 +108,7 @@ async function paint() {
         contexts={ready([])}
         tasks={ready([])}
         thread={{ status: "ready", active: false, taskId: null, resumeTitle: null }}
+        pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
         capture={captureBridge()}
         actions={actions()}
       />,

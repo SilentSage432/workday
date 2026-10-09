@@ -12,7 +12,8 @@ import {
 import { observeGoogleCalendars } from "@/components/orient/externalCalendarsApi";
 import { experienceLoadWindow, orientCivilDate } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
-import type { OrientSources, ThreadReading } from "@/components/orient/types";
+import type { ExpressiblePulse } from "@/components/orient/PulseExpression";
+import type { OrientSources, PulseReading, ThreadReading } from "@/components/orient/types";
 import type { ActiveThread } from "@/domain/activeThread";
 import type { Block } from "@/domain/block";
 import type { CitedTaskIdentity } from "@/domain/citedTask";
@@ -25,6 +26,8 @@ import type {
   ObservedTemporalSource,
 } from "@/domain/externalTemporal";
 import type { BlockPriorityService, TaskPriorityService } from "@/domain/executionDirection";
+import type { InterruptGrant, PulseOccurrence } from "@/domain/pulse";
+import { isActiveInterruptGrant, pulseOccurrenceStillBeforeStart } from "@/domain/pulse";
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import type {
@@ -55,6 +58,13 @@ import {
 import { loadPriorities } from "@/persistence/priority";
 import { createProtectedTime, deleteProtectedTime, loadProtectedTime, updateProtectedTime } from "@/persistence/protectedTime";
 import {
+  establishCommitmentStartInterruptGrant,
+  establishEligiblePulseOccurrences,
+  loadActiveInterruptGrants,
+  loadPulseOccurrences,
+  revokeInterruptGrant,
+} from "@/persistence/pulse";
+import {
   ensureEligibleRecurringTaskOccurrences,
   ensureRecurringTaskOccurrenceForDefinition,
   establishRecurringTaskDefinition,
@@ -84,7 +94,37 @@ type LoadedTruth = {
   contexts: SourceRead<Context>;
   tasks: SourceRead<Task>;
   activeThread: SourceRead<ActiveThread | null>;
+  pulseGrants: SourceRead<InterruptGrant>;
+  pulseOccurrences: SourceRead<PulseOccurrence>;
 };
+
+function expressiblePulses(input: {
+  occurrences: readonly PulseOccurrence[];
+  grants: readonly InterruptGrant[];
+  commitments: readonly Commitment[];
+  now: Date;
+  timeZone: string;
+}): ExpressiblePulse[] {
+  const activeGrantIds = new Set(
+    input.grants.filter(isActiveInterruptGrant).map((grant) => grant.id),
+  );
+  const items: ExpressiblePulse[] = [];
+  for (const occurrence of input.occurrences) {
+    if (occurrence.grantId === null || !activeGrantIds.has(occurrence.grantId)) continue;
+    if (!pulseOccurrenceStillBeforeStart({ occurrence, now: input.now, timeZone: input.timeZone })) {
+      continue;
+    }
+    const commitment =
+      occurrence.sourceId === null
+        ? null
+        : (input.commitments.find((row) => row.id === occurrence.sourceId) ?? null);
+    items.push({
+      occurrence,
+      title: commitment?.title ?? "Commitment",
+    });
+  }
+  return items;
+}
 
 function failureMessage(caught: unknown, fallback: string): string {
   return caught instanceof Error && caught.message.trim().length > 0 ? caught.message : fallback;
@@ -238,6 +278,8 @@ export function OrientInstrument() {
         stewardshipDefinitions,
         stewardshipRevisions,
         stewardshipSatisfactions,
+        pulseGrants,
+        pulseOccurrences,
       ] = await Promise.all([
         readRows<WorkScheduleEntry>(() => loadWorkSchedule(client, loaded.from, loaded.to)),
         readRows<ProtectedTime>(() => loadProtectedTime(client, loaded)),
@@ -256,6 +298,8 @@ export function OrientInstrument() {
         readRows<StewardshipDefinition>(() => loadStewardshipDefinitions(client)),
         readRows<StewardshipDefinitionRevision>(() => loadStewardshipDefinitionRevisions(client)),
         readRows<StewardshipSatisfaction>(() => loadStewardshipSatisfactions(client)),
+        readRows<InterruptGrant>(() => loadActiveInterruptGrants(client)),
+        readRows<PulseOccurrence>(() => loadPulseOccurrences(client)),
       ]);
       let citedTasks: SourceRead<CitedTaskIdentity>;
       if (taskPriorityService.status === "failed") {
@@ -268,6 +312,7 @@ export function OrientInstrument() {
           ),
         );
       }
+
       if (cancelled) return;
       setTruth({
         loaded,
@@ -292,12 +337,56 @@ export function OrientInstrument() {
         contexts,
         tasks,
         activeThread,
+        pulseGrants,
+        pulseOccurrences,
       });
     })();
     return () => {
       cancelled = true;
     };
   }, [timeZone, anchor, reloadToken]);
+
+  useEffect(() => {
+    if (!timeZone || !now || !truth) return;
+    if (truth.pulseGrants.status !== "ready") return;
+    if (truth.pulseOccurrences.status !== "ready") return;
+    if (truth.sources.commitments.status !== "ready") return;
+    let cancelled = false;
+    const client = getSupabaseBrowserClient();
+    const grants = truth.pulseGrants.rows;
+    const commitments = truth.sources.commitments.rows;
+    const occurrences = truth.pulseOccurrences.rows;
+    void (async () => {
+      try {
+        const minted = await establishEligiblePulseOccurrences(client, {
+          grants,
+          commitments,
+          occurrences,
+          timeZone,
+          now,
+        });
+        if (cancelled || minted.length === 0) return;
+        setTruth((current) => {
+          if (!current || current.pulseOccurrences.status !== "ready") return current;
+          const known = new Set(current.pulseOccurrences.rows.map((row) => row.id));
+          const added = minted.filter((row) => !known.has(row.id));
+          if (added.length === 0) return current;
+          return {
+            ...current,
+            pulseOccurrences: {
+              status: "ready",
+              rows: [...current.pulseOccurrences.rows, ...added],
+            },
+          };
+        });
+      } catch {
+        // Establishment failure must not erase loaded orientation truth.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [timeZone, now, truth]);
 
   async function persist(write: () => Promise<void>) {
     await write();
@@ -343,6 +432,23 @@ export function OrientInstrument() {
     return <p className="p-4">Reading this time.</p>;
   }
 
+  const pulse: PulseReading = {
+    grants: truth.pulseGrants,
+    occurrences: truth.pulseOccurrences,
+    expressible:
+      truth.pulseGrants.status === "ready" &&
+      truth.pulseOccurrences.status === "ready" &&
+      truth.sources.commitments.status === "ready"
+        ? expressiblePulses({
+            occurrences: truth.pulseOccurrences.rows,
+            grants: truth.pulseGrants.rows,
+            commitments: truth.sources.commitments.rows,
+            now,
+            timeZone,
+          })
+        : [],
+  };
+
   return (
     <OrientView
       timeZone={timeZone}
@@ -354,6 +460,7 @@ export function OrientInstrument() {
       contexts={truth.contexts}
       tasks={truth.tasks}
       thread={threadReading(truth.activeThread, truth.tasks)}
+      pulse={pulse}
       capture={capture}
       actions={{
         onEstablish,
@@ -486,6 +593,27 @@ export function OrientInstrument() {
           });
         },
         onExternalObservationComplete: () => setReloadToken((token) => token + 1),
+        onEstablishCommitmentPulseGrant: async (commitmentId, leadOffsetSeconds) => {
+          await persist(async () => {
+            const commitment =
+              truth.sources.commitments.status === "ready"
+                ? (truth.sources.commitments.rows.find((row) => row.id === commitmentId) ?? null)
+                : null;
+            if (!commitment) {
+              throw new Error("That Commitment could not be read.");
+            }
+            await establishCommitmentStartInterruptGrant(getSupabaseBrowserClient(), {
+              commitment,
+              leadOffsetSeconds,
+              establishedAt: new Date(),
+            });
+          });
+        },
+        onRevokeCommitmentPulseGrant: async (grantId) => {
+          await persist(async () => {
+            await revokeInterruptGrant(getSupabaseBrowserClient(), grantId, new Date());
+          });
+        },
       }}
     />
   );

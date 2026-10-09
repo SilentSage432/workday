@@ -2,8 +2,9 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
-- **NOTE-LIFECYCLE-001** — Retire + Delete on LOOK → Notes; hosted applied; privilege convergence pending **001A**.
-- **NOTE-LIFECYCLE-001A** — revoke table-level Note UPDATE; re-grant `UPDATE (retired_at)` only (working tree; not applied).
+- **ORIENT-PULSE-COMMITMENT-START-001** — first human-authorized Pulse (timed Commitment start + interrupt grant + durable occurrence + in-app expression); migration not applied hosted.
+- **NOTE-LIFECYCLE-001** — Retire + Delete on LOOK → Notes; hosted applied.
+- **NOTE-LIFECYCLE-001A** — revoke table-level Note UPDATE; re-grant `UPDATE (retired_at)` only; on `main` at `92a7a18`.
 - **MOBILE-CENTER-PLUS-CORRECTION-001** — phone ADD single Plus glyph; physically accepted.
 
 ## Accepted foundations (closed)
@@ -14,12 +15,13 @@
 - Phone LOOK progressive disclosure (MOBILE-LOOK-PROGRESSIVE-DISCLOSURE-001)
 - Center ADD plus correction (MOBILE-CENTER-PLUS-CORRECTION-001)
 
-## Next evidence-backed items (after Note lifecycle physical acceptance)
+## Next evidence-backed items
 
-1. Orient Pulse (next major exploration)
+1. Physical acceptance of Pulse Commitment-start proof (after hosted migration)
 2. Recurring-task physical acceptance (when ready)
-3. Other deferred items: notifications, Wear OS, Google Calendar removal reconciliation
-4. Note Edit / Unretire only if evidence requires
+3. Deferred delivery: notifications, Wear OS, channel policy
+4. Google Calendar removal reconciliation
+5. Note Edit / Unretire only if evidence requires
 
 ## Standing law
 

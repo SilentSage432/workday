@@ -27,9 +27,11 @@ import {
 } from "@/components/daySelection";
 import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
+import type { InterruptGrant } from "@/domain/pulse";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import { localMinutes, parseLocalTime } from "@/domain/time/localTime";
 import type { FactAddress } from "@/components/factAddress";
+import { CommitmentPulseAuthority } from "@/components/orient/CommitmentPulseAuthority";
 import type { TemporalProposal } from "@/components/orient/temporalProposal";
 import type { Context } from "@/domain/context";
 import {
@@ -431,6 +433,9 @@ export function InspectionSurface({
   openTasks,
   timeZone,
   services,
+  interruptGrants = [],
+  onEstablishCommitmentPulseGrant,
+  onRevokeCommitmentPulseGrant,
   onChoose,
   onClose,
   onUpdate,
@@ -445,6 +450,9 @@ export function InspectionSurface({
   openTasks: SourceRead<OpenTaskChoice>;
   timeZone: string;
   services: OrientSources;
+  interruptGrants?: readonly InterruptGrant[];
+  onEstablishCommitmentPulseGrant?: (commitmentId: string, leadOffsetSeconds: number) => Promise<void>;
+  onRevokeCommitmentPulseGrant?: (grantId: string) => Promise<void>;
   onChoose: (fact: FactAddress) => void;
   onClose: () => void;
   onUpdate: (update: CanvasFactUpdate) => Promise<void>;
@@ -484,6 +492,9 @@ export function InspectionSurface({
       openTasks={openTasks}
       timeZone={timeZone}
       services={services}
+      interruptGrants={interruptGrants}
+      onEstablishCommitmentPulseGrant={onEstablishCommitmentPulseGrant}
+      onRevokeCommitmentPulseGrant={onRevokeCommitmentPulseGrant}
       onClose={onClose}
       onUpdate={onUpdate}
       onRemove={onRemove}
@@ -553,6 +564,9 @@ function FactDetail({
   openTasks,
   timeZone,
   services,
+  interruptGrants,
+  onEstablishCommitmentPulseGrant,
+  onRevokeCommitmentPulseGrant,
   onClose,
   onUpdate,
   onRemove,
@@ -565,6 +579,9 @@ function FactDetail({
   openTasks: SourceRead<OpenTaskChoice>;
   timeZone: string;
   services: OrientSources;
+  interruptGrants: readonly InterruptGrant[];
+  onEstablishCommitmentPulseGrant?: (commitmentId: string, leadOffsetSeconds: number) => Promise<void>;
+  onRevokeCommitmentPulseGrant?: (grantId: string) => Promise<void>;
   onClose: () => void;
   onUpdate: (update: CanvasFactUpdate) => Promise<void>;
   onRemove: (removal: CanvasFactRemoval) => Promise<void>;
@@ -701,6 +718,36 @@ function FactDetail({
       {serviceLines(fact, services).map((line) => (
         <p key={line}>{line}</p>
       ))}
+      {fact.sourceKind === "commitment" &&
+      services.commitments.status === "ready" &&
+      onEstablishCommitmentPulseGrant &&
+      onRevokeCommitmentPulseGrant
+        ? (() => {
+            const commitment = services.commitments.rows.find((entry) => entry.id === fact.sourceId);
+            if (!commitment || commitment.kind !== "timed") return null;
+            const grant =
+              interruptGrants.find(
+                (entry) =>
+                  entry.sourceKind === "commitment" &&
+                  entry.sourceId === commitment.id &&
+                  entry.transitionKind === "start" &&
+                  entry.revokedAt === null,
+              ) ?? null;
+            return (
+              <CommitmentPulseAuthority
+                commitment={commitment}
+                grant={grant}
+                onEstablish={(leadOffsetSeconds) =>
+                  onEstablishCommitmentPulseGrant(commitment.id, leadOffsetSeconds)
+                }
+                onRevoke={() => {
+                  if (!grant) return Promise.resolve();
+                  return onRevokeCommitmentPulseGrant(grant.id);
+                }}
+              />
+            );
+          })()
+        : null}
       {fact.sourceKind === "work_schedule" ? (
         <p>
           <button type="button" className="orient-action" onClick={() => onManageWork(fact.sourceId)}>

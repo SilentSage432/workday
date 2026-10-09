@@ -13,7 +13,9 @@ export type CanonicalTable =
   | "commitments"
   | "work_schedule_days"
   | "tasks"
-  | "active_threads";
+  | "active_threads"
+  | "pulse_interrupt_grants"
+  | "pulse_occurrences";
 
 export type CanonicalBinding = {
   event: CanonicalChangeEvent;
@@ -58,6 +60,8 @@ export function canonicalChangeBindings(userId: string): CanonicalBinding[] {
     ...owned("work_schedule_days", ["INSERT", "UPDATE", "DELETE"]),
     ...owned("tasks", ["INSERT", "UPDATE"]),
     ...owned("active_threads", ["INSERT", "UPDATE", "DELETE"]),
+    ...owned("pulse_interrupt_grants", ["INSERT", "UPDATE", "DELETE"]),
+    ...owned("pulse_occurrences", ["INSERT", "UPDATE", "DELETE"]),
   ];
 }
 

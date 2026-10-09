@@ -123,6 +123,8 @@ function actions(overrides?: Partial<OrientActions>): OrientActions {
     onEstablishRecurringTask: async () => {},
     onUpdateRecurringTask: async () => {},
     onRetireRecurringTask: async () => {},
+    onEstablishCommitmentPulseGrant: async () => {},
+    onRevokeCommitmentPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},
@@ -171,6 +173,7 @@ async function renderView(overrides?: {
         thread={
           overrides?.thread ?? { status: "ready", active: true, taskId: "task-1", resumeTitle: "Cycle counts" }
         }
+        pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
         capture={captureBridge()}
         actions={actions(overrides?.actions)}
       />,
@@ -685,6 +688,7 @@ describe("production orient instrument", () => {
           contexts={contexts()}
           tasks={ready([task()])}
           thread={{ status: "ready", active: true, taskId: "task-1", resumeTitle: "Cycle counts" }}
+          pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
           capture={captureBridge()}
           actions={actions()}
         />,
@@ -718,6 +722,7 @@ describe("production orient instrument", () => {
           contexts={contexts()}
           tasks={ready([task()])}
           thread={{ status: "ready", active: true, taskId: "task-1", resumeTitle: "Cycle counts" }}
+          pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
           capture={captureBridge()}
           actions={actions()}
         />,
@@ -844,6 +849,7 @@ describe("production orient instrument", () => {
           contexts={contexts()}
           tasks={ready([task()])}
           thread={{ status: "ready", active: true, taskId: "task-1", resumeTitle: "Cycle counts" }}
+          pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
           capture={captureBridge()}
           actions={actions()}
         />,
