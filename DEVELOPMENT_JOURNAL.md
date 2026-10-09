@@ -1,5 +1,18 @@
 # Development journal
 
+## 2026-10-08 — ORIENT-PULSE-HOSTED-ESTABLISHMENT-001
+
+Sovereign hosted Pulse occurrence establishment without an open Orient client.
+
+- Mechanism: Postgres `pg_cron` + SECURITY DEFINER SQL evaluator (Edge Function / Vercel cron rejected as larger).
+- Semantic correction: establishment due when `now >= threshold` (`eligible | elapsed`); expression window remains `[threshold, start)`.
+- Migration: `20261008240000_pulse_hosted_establishment.sql` — evaluator, run log, minute cron job.
+- Browser evaluator retained as opportunistic convergence under uniqueness.
+- Delivery / Kotlin / push / Wear deferred. Hosted apply and closed-client physical acceptance pending.
+- No commit/push/deploy in this tranche.
+
+Record: [docs/implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](docs/implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
+
 ## 2026-10-08 — ORIENT-PULSE-COMMITMENT-START-001
 
 First human-authorized Pulse proof.

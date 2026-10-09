@@ -2,30 +2,29 @@
 
 ## Current state (2026-10-08)
 
-**ORIENT-PULSE-COMMITMENT-START-001** implemented in working tree (not committed; migration not applied hosted).
+**ORIENT-PULSE-HOSTED-ESTABLISHMENT-001** implemented in working tree (not committed; hosted migrations not applied; not deployed).
 
-HEAD baseline before this work: `92a7a18` (NOTE-LIFECYCLE-001A already on `main`).
+HEAD baseline for this work: `63be8c86ad5807bcac16fb617119d9e41ecaae72` (`ORIENT-PULSE-COMMITMENT-START-001` already on `main`).
 
 ### What changed
 
-- Domain evaluator + Interrupt Grant / Pulse occurrence vocabulary (`domain/pulse.ts`)
-- Migration `20261008230000_pulse_commitment_start.sql` (grants + occurrences, narrow privileges, realtime publication)
-- Persistence establish/revoke/ensure occurrence
-- Timed Commitment inspection: explicit remind / don’t remind
-- Restrained in-app Pulse expression
-- Docs: implementation record + PRODUCT/DOMAIN/roadmap/journal updates
+- Establishment due predicate: `now >= threshold` (`eligible | elapsed`) in `domain/pulse.ts`; client persistence uses it.
+- Migration `20261008240000_pulse_hosted_establishment.sql`: `pg_cron` job, SECURITY DEFINER evaluator, `pulse_hosted_evaluator_runs`.
+- Browser evaluator kept as opportunistic convergence.
+- Docs: hosted establishment record + journal/roadmap/handoff updates.
 
 ### Next physical step
 
 1. Review / commit when asked.
-2. Apply migration to hosted Supabase.
-3. Phone/desktop acceptance: set reminder on timed Commitment, wait for threshold with Orient open, confirm one occurrence + expression; revoke; move start before/after occurrence.
+2. Apply Pulse migrations in order to canonical Supabase `ksmhgaamyheyhefbyglb` (`20261008230000` then `20261008240000`).
+3. Inspect hosted privileges/cron job/reality vs migration text.
+4. Closed-client acceptance: grant → close Orient → threshold passes → reopen → occurrence exists (no notification expected).
 
 ### Still deferred
 
 - Push / native Android / Wear OS / haptics / watch face / service worker
 - Channel permission policy
-- Other Pulse source kinds (Protected Time, Blocks, Tasks, Work, Google)
+- Other Pulse source kinds
 - Note content Edit / Unretire UI / Archive browser
 - Recurring-task physical acceptance
 - Google Calendar removal reconciliation

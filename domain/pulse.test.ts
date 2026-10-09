@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defineCommitment, type Commitment } from "@/domain/commitment";
 import {
+  commitmentStartPulseIsDueForEstablishment,
   deriveCommitmentStartThreshold,
   evaluateCommitmentStartPulseCondition,
   occurrenceMatchesIdentity,
@@ -142,6 +143,15 @@ describe("evaluateCommitmentStartPulseCondition", () => {
         readsComplete: true,
       }),
     ).toBe("elapsed");
+  });
+
+  it("treats eligible and elapsed as due for establishment, not not_yet", () => {
+    expect(commitmentStartPulseIsDueForEstablishment("not_yet")).toBe(false);
+    expect(commitmentStartPulseIsDueForEstablishment("eligible")).toBe(true);
+    expect(commitmentStartPulseIsDueForEstablishment("elapsed")).toBe(true);
+    expect(commitmentStartPulseIsDueForEstablishment("satisfied")).toBe(false);
+    expect(commitmentStartPulseIsDueForEstablishment("inactive")).toBe(false);
+    expect(commitmentStartPulseIsDueForEstablishment("withhold")).toBe(false);
   });
 
   it("returns inactive when grant is revoked", () => {

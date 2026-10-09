@@ -139,6 +139,24 @@ export function evaluateCommitmentStartPulseCondition(input: {
   return "elapsed";
 }
 
+/**
+ * Establishment due predicate for Commitment-start Pulse.
+ *
+ * Condition evaluation still distinguishes `eligible` `[threshold, start)` from
+ * `elapsed` `now >= start` for expression clarity. Hosted evaluation cannot rely
+ * on a live client remaining open inside that half-open window, so establishment
+ * is due whenever the authorized threshold has been reached and the identity is
+ * not yet satisfied: `eligible | elapsed`.
+ *
+ * This does not invent authority. The human already authorized the relative lead.
+ * It records that the authorized condition became true under current source truth.
+ */
+export function commitmentStartPulseIsDueForEstablishment(
+  result: PulseConditionResult,
+): boolean {
+  return result === "eligible" || result === "elapsed";
+}
+
 export function deriveCommitmentStartThreshold(input: {
   commitment: TimedCommitment;
   leadOffsetSeconds: number;

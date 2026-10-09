@@ -49,9 +49,11 @@ Realtime publication added for reread awareness. Payloads are never authority.
 
 `evaluateCommitmentStartPulseCondition` in `domain/pulse.ts`.
 
-Window: `[threshold, start)` where `threshold = start − lead`.
+Expression window: `[threshold, start)` where `threshold = start − lead`.
 
 Results: `withhold | inactive | not_yet | eligible | satisfied | elapsed`.
+
+Establishment due predicate (`commitmentStartPulseIsDueForEstablishment`): `eligible | elapsed` — i.e. `now >= threshold` under an active grant and current timed identity. Hosted establishment requires that correction so a closed client cannot permanently miss an authorized threshold. See [ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
 
 No approaching / overdue / missed / urgent vocabulary.
 
@@ -80,4 +82,4 @@ No approaching / overdue / missed / urgent vocabulary.
 
 ## Hosted
 
-Migration not applied in this tranche.
+Pulse table migration was authored here. Sovereign hosted occurrence establishment without an open client is [ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md). Neither migration is applied by this record's original tranche; apply status follows the hosted-establishment record.

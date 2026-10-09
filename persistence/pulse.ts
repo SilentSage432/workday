@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Commitment } from "@/domain/commitment";
 import {
+  commitmentStartPulseIsDueForEstablishment,
   deriveCommitmentStartThreshold,
   evaluateCommitmentStartPulseCondition,
   PULSE_SOURCE_KIND_COMMITMENT,
@@ -241,7 +242,7 @@ export async function ensurePulseOccurrenceForEligibleGrant(
     occurrences: input.occurrences,
     readsComplete: true,
   });
-  if (result !== "eligible") {
+  if (!commitmentStartPulseIsDueForEstablishment(result)) {
     return null;
   }
 

@@ -221,6 +221,10 @@ If the snapshot is already loaded, projection continues during a blip without a 
 
 FOUNDATION-003 did not authorize PWA behavior. This tranche does, and only at the manifest level above.
 
+## Pulse hosted establishment
+
+Hosted Orient may establish an authorized Commitment-start Pulse occurrence without an open client (`pg_cron` + database evaluator). Delivery channels remain separate. Record: [../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
+
 ## Pulse, reminders, and notification delivery
 
 Three separate things:

@@ -2,6 +2,7 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
+- **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001** — hosted `pg_cron` establishment of authorized Pulse occurrences without an open client; delivery deferred; migrations not applied hosted.
 - **ORIENT-PULSE-COMMITMENT-START-001** — first human-authorized Pulse (timed Commitment start + interrupt grant + durable occurrence + in-app expression); migration not applied hosted.
 - **NOTE-LIFECYCLE-001** — Retire + Delete on LOOK → Notes; hosted applied.
 - **NOTE-LIFECYCLE-001A** — revoke table-level Note UPDATE; re-grant `UPDATE (retired_at)` only; on `main` at `92a7a18`.
@@ -17,9 +18,9 @@
 
 ## Next evidence-backed items
 
-1. Physical acceptance of Pulse Commitment-start proof (after hosted migration)
+1. Apply Pulse migrations hosted; closed-client Pulse occurrence acceptance (no delivery expected)
 2. Recurring-task physical acceptance (when ready)
-3. Deferred delivery: notifications, Wear OS, channel policy
+3. Deferred delivery: Kotlin Android / notifications / Wear OS / channel policy
 4. Google Calendar removal reconciliation
 5. Note Edit / Unretire only if evidence requires
 

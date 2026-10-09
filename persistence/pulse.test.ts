@@ -315,6 +315,66 @@ describe("pulse persistence mapping", () => {
     expect(upsertCalls).toBe(1);
   });
 
+  it("establishes after Commitment start when the half-open expression window was missed", async () => {
+    const grant: InterruptGrant = rowToInterruptGrant(grantRow());
+    const commitment = timedCommitment();
+    if (commitment.kind !== "timed") throw new Error("timed");
+    const now = new Date(Date.UTC(2026, 9, 8, 21, 10, 0, 0)); // 15:10 Denver — elapsed
+    const occurrence: PulseOccurrence = {
+      id: "55555555-5555-5555-5555-555555555555",
+      userId: USER,
+      grantId: GRANT,
+      sourceKind: "commitment",
+      sourceId: COMMITMENT,
+      sourceStartsOn: "2026-10-08",
+      sourceStartLocal: "15:00",
+      thresholdAt: "2026-10-08T20:45:00.000Z",
+      sourceStartAt: "2026-10-08T21:00:00.000Z",
+      establishedAt: now.toISOString(),
+    };
+    const client = {
+      auth: { getUser: async () => ({ data: { user: { id: USER } }, error: null }) },
+      from(table: string) {
+        expect(table).toBe("pulse_occurrences");
+        return {
+          upsert() {
+            return {
+              select() {
+                return {
+                  maybeSingle: async () => ({
+                    data: {
+                      id: occurrence.id,
+                      user_id: USER,
+                      grant_id: GRANT,
+                      source_kind: "commitment",
+                      source_id: COMMITMENT,
+                      source_starts_on: "2026-10-08",
+                      source_start_local: "15:00:00",
+                      threshold_at: occurrence.thresholdAt,
+                      source_start_at: occurrence.sourceStartAt,
+                      established_at: occurrence.establishedAt,
+                    },
+                    error: null,
+                  }),
+                };
+              },
+            };
+          },
+        };
+      },
+    };
+
+    const minted = await establishEligiblePulseOccurrences(client as never, {
+      grants: [grant],
+      commitments: [commitment],
+      occurrences: [],
+      timeZone: "America/Denver",
+      now,
+    });
+    expect(minted).toHaveLength(1);
+    expect(minted[0]?.id).toBe(occurrence.id);
+  });
+
   it("loads only active grants when requested", async () => {
     const range = vi.fn(async () => ({ data: [grantRow()], error: null, count: 1 }));
     const client = {
