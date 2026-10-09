@@ -187,6 +187,7 @@ describe("direct Task and Note creation", () => {
               id: input.id,
               content: input.content,
               capturedAt: input.capturedAt.toISOString(),
+              retiredAt: null,
             } satisfies Note;
           }}
           onClose={() => {}}

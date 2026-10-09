@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { SourceRead } from "@/components/currentTemporalReading";
 import { readyCaptureSession } from "@/domain/capture";
 import type { Context } from "@/domain/context";
-import type { Note } from "@/domain/note";
+import { NoteCitedError, type Note } from "@/domain/note";
 import type { NewTask, Task } from "@/domain/task";
 import { experienceLoadWindow } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
@@ -45,7 +45,7 @@ function task(overrides: Partial<Task> & Pick<Task, "id" | "title">): Task {
 }
 
 function note(id: string, content: string, capturedAt: string): Note {
-  return { id, content, capturedAt };
+  return { id, content, capturedAt, retiredAt: null };
 }
 
 function sources(): OrientSources {
@@ -204,6 +204,8 @@ describe("NotesSurface on-demand return", () => {
   async function renderNotes(input: {
     readNotes: () => Promise<Note[]>;
     establishTask?: (input: NewTask) => Promise<Task>;
+    retire?: (id: string) => Promise<Note>;
+    remove?: (id: string) => Promise<void>;
   }) {
     host = document.createElement("div");
     document.body.appendChild(host);
@@ -213,6 +215,8 @@ describe("NotesSurface on-demand return", () => {
         <NotesSurface
           readNotes={input.readNotes}
           establishTask={input.establishTask}
+          retire={input.retire}
+          remove={input.remove}
           onClose={() => {}}
         />,
       );
@@ -302,13 +306,113 @@ describe("NotesSurface on-demand return", () => {
     });
   });
 
-  it("does not introduce edit or delete controls", async () => {
+  it("exposes Retire and Delete without Edit or Archive browsing", async () => {
     const surface = await renderNotes({
       readNotes: async () => [note(NOTE_A, "aisle 12", EARLIER)],
     });
-    expect(surface.textContent).not.toMatch(/\bEdit\b|\bDelete\b|\bArchive\b/i);
-    expect(surface.querySelector("[data-edit-note]")).toBeNull();
-    expect(surface.querySelector("[data-delete-note]")).toBeNull();
+    expect(surface.querySelector("[data-note-retire]")?.textContent).toBe("Retire");
+    expect(surface.querySelector("[data-note-delete]")?.textContent).toBe("Delete");
+    expect(surface.textContent).toContain("Establish a task from this");
+    expect(surface.textContent).not.toMatch(/\bEdit\b|\bArchive\b|\bUnretire\b/i);
+    expect(surface.querySelector("[data-note-delete-confirm]")).toBeNull();
+  });
+
+  it("retires without confirmation and removes the Note from the current collection", async () => {
+    const retired: string[] = [];
+    const surface = await renderNotes({
+      readNotes: async () => [note(NOTE_A, "aisle 12", EARLIER), note(NOTE_B, "bay check", LATER)],
+      retire: async (id) => {
+        retired.push(id);
+        return { ...note(id, "aisle 12", EARLIER), retiredAt: "2026-10-08T18:00:00.000Z" };
+      },
+    });
+    await act(async () => {
+      (surface.querySelector(`[data-retained-note="${NOTE_A}"] [data-note-retire]`) as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(retired).toEqual([NOTE_A]);
+    expect(surface.querySelector(`[data-retained-note="${NOTE_A}"]`)).toBeNull();
+    expect(surface.querySelector(`[data-retained-note="${NOTE_B}"]`)).not.toBeNull();
+    expect(surface.querySelector("[data-note-delete-confirm]")).toBeNull();
+    expect(surface.querySelector("[data-notes-surface]")).not.toBeNull();
+  });
+
+  it("requires Delete confirmation and Cancel preserves the Note", async () => {
+    const removed: string[] = [];
+    const surface = await renderNotes({
+      readNotes: async () => [note(NOTE_A, "aisle 12", EARLIER)],
+      remove: async (id) => {
+        removed.push(id);
+      },
+    });
+    await act(async () => {
+      (surface.querySelector("[data-note-delete]") as HTMLButtonElement).click();
+    });
+    expect(surface.querySelector("[data-note-delete-confirm]")).not.toBeNull();
+    expect(surface.textContent).toContain("This permanently deletes the Note.");
+    await act(async () => {
+      (surface.querySelector("[data-note-delete-cancel]") as HTMLButtonElement).click();
+    });
+    expect(removed).toEqual([]);
+    expect(surface.querySelector(`[data-retained-note="${NOTE_A}"]`)).not.toBeNull();
+    expect(surface.querySelector("[data-note-delete-confirm]")).toBeNull();
+  });
+
+  it("deletes an uncited Note after confirmation", async () => {
+    const removed: string[] = [];
+    const surface = await renderNotes({
+      readNotes: async () => [note(NOTE_A, "aisle 12", EARLIER)],
+      remove: async (id) => {
+        removed.push(id);
+      },
+    });
+    await act(async () => {
+      (surface.querySelector("[data-note-delete]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (surface.querySelector("[data-note-delete-confirm-action]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(removed).toEqual([NOTE_A]);
+    expect(surface.querySelector(`[data-retained-note="${NOTE_A}"]`)).toBeNull();
+    expect(surface.querySelector("[data-notes-empty]")?.textContent).toBe("No notes have been retained.");
+  });
+
+  it("keeps a cited Note and explains why Delete failed without retiring", async () => {
+    const removed: string[] = [];
+    const retired: string[] = [];
+    const surface = await renderNotes({
+      readNotes: async () => [note(NOTE_A, "aisle 12", EARLIER)],
+      remove: async (id) => {
+        removed.push(id);
+        throw new NoteCitedError();
+      },
+      retire: async (id) => {
+        retired.push(id);
+        return { ...note(id, "aisle 12", EARLIER), retiredAt: "2026-10-08T18:00:00.000Z" };
+      },
+    });
+    await act(async () => {
+      (surface.querySelector("[data-note-delete]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (surface.querySelector("[data-note-delete-confirm-action]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(removed).toEqual([NOTE_A]);
+    expect(retired).toEqual([]);
+    expect(surface.querySelector(`[data-retained-note="${NOTE_A}"]`)).not.toBeNull();
+    expect(surface.querySelector("[data-note-lifecycle-error]")?.textContent).toMatch(
+      /Task was established from it/,
+    );
+    expect(surface.querySelector("[data-note-lifecycle-error]")?.textContent).toMatch(/Retire it instead/);
+    expect(surface.querySelector("[data-note-retire]")).not.toBeNull();
   });
 });
 
@@ -326,6 +430,7 @@ describe("NOTE-RETURN-001 isolation and writers", () => {
               id: input.id,
               content: input.content,
               capturedAt: input.capturedAt.toISOString(),
+              retiredAt: null,
             } satisfies Note;
             created.push(retained);
             return retained;
@@ -387,13 +492,19 @@ describe("NOTE-RETURN-001 isolation and writers", () => {
     expect(actBlock).not.toContain("RetainedNotesCollection");
   });
 
-  it("does not add Note update or delete writers", () => {
+  it("keeps lifecycle writers on NotesSurface without content editing", () => {
     const persistence = readFileSync("persistence/note.ts", "utf8");
     expect(persistence).toContain("export async function loadNotes");
     expect(persistence).toContain("export async function createNote");
-    expect(persistence).not.toMatch(/updateNote|deleteNote|\.update\(|\.delete\(/);
+    expect(persistence).toContain("export async function retireNote");
+    expect(persistence).toContain("export async function deleteNote");
+    expect(persistence).not.toMatch(/updateNote|archiveNote|unretire/);
     const surfaces = readFileSync("components/orient/Surfaces.tsx", "utf8");
-    expect(surfaces).not.toMatch(/updateNote|deleteNote/);
+    expect(surfaces).toContain("retireNote");
+    expect(surfaces).toContain("deleteNote");
+    expect(surfaces).toContain("data-note-retire");
+    expect(surfaces).toContain("data-note-delete");
+    expect(surfaces).not.toMatch(/updateNote|Edit note|editNote/i);
   });
 
   it("reaches retained Notes through LOOK on every form factor without Capture peer", () => {

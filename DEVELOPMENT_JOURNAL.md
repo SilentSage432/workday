@@ -1,5 +1,18 @@
 # Development journal
 
+## 2026-10-08 — NOTE-LIFECYCLE-001
+
+Implemented Retire + Delete for retained Notes from NOTE-LIFECYCLE-DISCOVERY-001.
+
+- Domain: `retiredAt` on `Note`; `NoteCitedError` for cited Delete.
+- Migration: `retired_at`, owner `UPDATE (retired_at)` + `DELETE` grants and policies (not applied to hosted project in this tranche).
+- Persistence: operational `loadNotes` filters `retired_at IS NULL`; `retireNote`; `deleteNote`.
+- UI: LOOK → Notes exposes Retire (no confirm) and Delete (confirm). Provenance FK unchanged.
+- Edit, Unretire UI, Archive browser, Notes Class-A realtime deferred.
+- Pulse remains next major exploration after physical acceptance.
+
+Record: [docs/implementation/NOTE-LIFECYCLE-001.md](docs/implementation/NOTE-LIFECYCLE-001.md). Decision: [docs/decisions/2026-10-08-note-lifecycle.md](docs/decisions/2026-10-08-note-lifecycle.md).
+
 ## 2026-10-08 — MOBILE-CENTER-PLUS-CORRECTION-001
 
 Phone center ADD showed Lucide Plus stacked above a redundant text `+`. Removed the phone text sibling; kept one Plus glyph, `aria-label="ADD"`, and desktop Plus+ADD. No CSS. Physical phone verification still required after deploy.

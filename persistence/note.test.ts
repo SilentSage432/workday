@@ -1,8 +1,17 @@
 import { readFileSync } from "node:fs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
+import { NoteCitedError } from "@/domain/note";
 import { TEMPORAL_PAGE_SIZE } from "@/persistence/completeRead";
-import { createNote, loadNotes, rowToNote, toNoteInsert, type NoteRow } from "@/persistence/note";
+import {
+  createNote,
+  deleteNote,
+  loadNotes,
+  retireNote,
+  rowToNote,
+  toNoteInsert,
+  type NoteRow,
+} from "@/persistence/note";
 
 const USER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
@@ -12,8 +21,13 @@ function noteId(index: number): string {
   return `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`;
 }
 
-function noteRow(id: string, capturedAt: string, content = "retained"): NoteRow {
-  return { id, content, captured_at: capturedAt };
+function noteRow(
+  id: string,
+  capturedAt: string,
+  content = "retained",
+  retiredAt: string | null = null,
+): NoteRow {
+  return { id, content, captured_at: capturedAt, retired_at: retiredAt };
 }
 
 function compare(left: NoteRow, right: NoteRow, orders: readonly Order[]): number {
@@ -32,8 +46,9 @@ function noteClient(input: {
   failMessage?: string;
   shortFirstPage?: boolean;
   returnedCount?: number;
-}): { client: SupabaseClient; orders: () => readonly Order[] } {
+}): { client: SupabaseClient; orders: () => readonly Order[]; filters: () => readonly string[] } {
   let recorded: Order[] = [];
+  let filters: string[] = [];
 
   function pageTotal(page: number, count: number): number | null {
     if (typeof input.total === "function") return input.total(page);
@@ -45,20 +60,26 @@ function noteClient(input: {
     if (table !== "notes") throw new Error(`Unexpected table ${table}.`);
     return {
       select(columns: string, options?: { count?: string }) {
-        if (columns !== "id, content, captured_at") {
+        if (columns !== "id, content, captured_at, retired_at") {
           throw new Error("The note read must select the note columns.");
         }
         if (options?.count !== "exact") {
           throw new Error("The note read must ask for an exact count.");
         }
         const orders: Order[] = [];
+        const localFilters: string[] = [];
         const builder = {
+          is(column: string, value: null) {
+            localFilters.push(`${column}:${value}`);
+            return builder;
+          },
           order(column: string, options: { ascending: boolean }) {
             orders.push({ column, ascending: options.ascending });
             return builder;
           },
           async range(start: number, end: number) {
             recorded = orders;
+            filters = localFilters;
             const page = Math.floor(start / TEMPORAL_PAGE_SIZE) + 1;
             if (input.failOnPage === page) {
               return {
@@ -67,7 +88,8 @@ function noteClient(input: {
                 count: null,
               };
             }
-            const ordered = [...input.rows].sort((left, right) => compare(left, right, orders));
+            const current = input.rows.filter((row) => row.retired_at === null);
+            const ordered = [...current].sort((left, right) => compare(left, right, orders));
             const pageSize = end - start + 1;
             if (pageSize !== TEMPORAL_PAGE_SIZE) {
               throw new Error(`Expected page size ${TEMPORAL_PAGE_SIZE}, received ${pageSize}.`);
@@ -86,7 +108,11 @@ function noteClient(input: {
     };
   };
 
-  return { client: { from } as unknown as SupabaseClient, orders: () => recorded };
+  return {
+    client: { from } as unknown as SupabaseClient,
+    orders: () => recorded,
+    filters: () => filters,
+  };
 }
 
 function earlyRows(count: number): NoteRow[] {
@@ -113,7 +139,17 @@ describe("note persistence", () => {
       id: noteId(1),
       content: "  aisle 12  ",
       capturedAt: "2026-10-04T18:30:00.000Z",
+      retiredAt: null,
     });
+  });
+
+  it("maps a retired note honestly", () => {
+    const note = rowToNote(
+      noteRow(noteId(1), "2026-10-04T18:30:00.000Z", "aisle 12", "2026-10-08T12:00:00.000Z"),
+    );
+    expect(note.retiredAt).toBe("2026-10-08T12:00:00.000Z");
+    expect(note.content).toBe("aisle 12");
+    expect(note.capturedAt).toBe("2026-10-04T18:30:00.000Z");
   });
 
   it("rejects a malformed stored note", () => {
@@ -150,6 +186,7 @@ describe("note persistence", () => {
                   id: row.id,
                   content: row.content,
                   captured_at: row.captured_at,
+                  retired_at: null,
                 },
                 error: null,
               }),
@@ -169,6 +206,7 @@ describe("note persistence", () => {
     expect(created.id).toBe(noteId(1));
     expect(created.capturedAt).toBe("2026-01-15T08:00:00.000Z");
     expect(created.content).toBe("  aisle 12  ");
+    expect(created.retiredAt).toBeNull();
   });
 
   it("rejects blank content before writing", async () => {
@@ -189,7 +227,20 @@ describe("note persistence", () => {
     await expect(loadNotes(client)).resolves.toEqual([]);
   });
 
-  it("reads every note when the collection is larger than one page", async () => {
+  it("excludes retired notes from the current operational collection", async () => {
+    const rows = [
+      noteRow(noteId(1), "2026-10-01T00:00:00.000Z", "current"),
+      noteRow(noteId(2), "2026-10-02T00:00:00.000Z", "retired", "2026-10-08T00:00:00.000Z"),
+    ];
+    const { client, filters } = noteClient({ rows });
+    const notes = await loadNotes(client);
+    expect(filters()).toEqual(["retired_at:null"]);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]?.id).toBe(noteId(1));
+    expect(notes[0]?.retiredAt).toBeNull();
+  });
+
+  it("reads every current note when the collection is larger than one page", async () => {
     const rows = [...earlyRows(TEMPORAL_PAGE_SIZE), noteRow(noteId(5000), "2026-10-02T00:00:00.000Z")];
     const { client } = noteClient({ rows });
     const notes = await loadNotes(client);
@@ -259,35 +310,168 @@ describe("note persistence", () => {
     expect(resolved).toBe("unset");
   });
 
-  it("limits notes to the signed-in user for select and insert", () => {
-    const sql = readFileSync(
+  it("retires a current note without altering content or capture instant", async () => {
+    const retiredAt = new Date("2026-10-08T18:00:00.000Z");
+    let updated: unknown;
+    let filterRetired: unknown;
+    const client = signedInClient(((table: string) => {
+      if (table !== "notes") throw new Error(`Unexpected table ${table}.`);
+      return {
+        update(patch: { retired_at: string }) {
+          updated = patch;
+          return {
+            eq(column: string, value: string) {
+              expect(column).toBe("id");
+              expect(value).toBe(noteId(1));
+              return {
+                is(column: string, value: null) {
+                  filterRetired = `${column}:${value}`;
+                  return {
+                    select: () => ({
+                      single: async () => ({
+                        data: {
+                          id: noteId(1),
+                          content: "aisle 12",
+                          captured_at: "2026-10-04T18:30:00.000Z",
+                          retired_at: patch.retired_at,
+                        },
+                        error: null,
+                      }),
+                    }),
+                  };
+                },
+              };
+            },
+          };
+        },
+      };
+    }) as unknown as SupabaseClient["from"]);
+
+    const retired = await retireNote(client, { id: noteId(1), retiredAt });
+    expect(updated).toEqual({ retired_at: "2026-10-08T18:00:00.000Z" });
+    expect(filterRetired).toBe("retired_at:null");
+    expect(retired).toEqual({
+      id: noteId(1),
+      content: "aisle 12",
+      capturedAt: "2026-10-04T18:30:00.000Z",
+      retiredAt: "2026-10-08T18:00:00.000Z",
+    });
+  });
+
+  it("fails honestly when retirement finds no current row", async () => {
+    const client = signedInClient(((table: string) => {
+      if (table !== "notes") throw new Error(`Unexpected table ${table}.`);
+      return {
+        update() {
+          return {
+            eq() {
+              return {
+                is() {
+                  return {
+                    select: () => ({
+                      single: async () => ({
+                        data: null,
+                        error: { message: "JSON object requested, multiple (or no) rows returned" },
+                      }),
+                    }),
+                  };
+                },
+              };
+            },
+          };
+        },
+      };
+    }) as unknown as SupabaseClient["from"]);
+
+    await expect(
+      retireNote(client, { id: noteId(1), retiredAt: new Date("2026-10-08T18:00:00.000Z") }),
+    ).rejects.toThrow(/multiple \(or no\) rows returned/);
+  });
+
+  it("deletes an uncited note", async () => {
+    let deletedId: string | null = null;
+    const client = signedInClient(((table: string) => {
+      if (table !== "notes") throw new Error(`Unexpected table ${table}.`);
+      return {
+        delete() {
+          return {
+            eq(column: string, value: string) {
+              expect(column).toBe("id");
+              deletedId = value;
+              return Promise.resolve({ error: null });
+            },
+          };
+        },
+      };
+    }) as unknown as SupabaseClient["from"]);
+
+    await deleteNote(client, noteId(1));
+    expect(deletedId).toBe(noteId(1));
+  });
+
+  it("maps a provenance foreign-key failure to NoteCitedError", async () => {
+    const client = signedInClient(((table: string) => {
+      if (table !== "notes") throw new Error(`Unexpected table ${table}.`);
+      return {
+        delete() {
+          return {
+            eq() {
+              return Promise.resolve({
+                error: {
+                  code: "23503",
+                  message: 'update or delete on table "notes" violates foreign key constraint "tasks_originating_note_same_owner"',
+                },
+              });
+            },
+          };
+        },
+      };
+    }) as unknown as SupabaseClient["from"]);
+
+    await expect(deleteNote(client, noteId(1))).rejects.toBeInstanceOf(NoteCitedError);
+    await expect(deleteNote(client, noteId(1))).rejects.toThrow(/Task was established from it/);
+  });
+
+  it("keeps select and insert ownership and adds update and delete ownership", () => {
+    const createSql = readFileSync(
       new URL("../supabase/migrations/20261004180000_notes.sql", import.meta.url),
       "utf8",
     );
-    expect(sql).toContain("enable row level security");
-    expect(sql).toContain("notes_select_own");
-    expect(sql).toContain("notes_insert_own");
-    expect(sql).not.toContain("notes_update_own");
-    expect(sql).not.toContain("notes_delete_own");
-    expect(sql).toContain("user_id = (select auth.uid())");
-    expect(sql).toContain("revoke all on table public.notes from public, anon");
-    expect(sql).toContain("grant select, insert on table public.notes to authenticated");
-    expect(sql).not.toMatch(/grant select, insert, update, delete/);
-    expect(sql).toContain("constraint notes_id_user_key unique (id, user_id)");
-    expect(sql).toContain("constraint notes_content_not_blank check (char_length(btrim(content)) > 0)");
-    expect(sql).toContain("captured_at timestamptz not null");
-    expect(sql).not.toMatch(/captured_at timestamptz not null default/);
-    const table = sql.slice(sql.indexOf("create table"), sql.indexOf(");"));
-    expect(table).not.toMatch(/created_at|updated_at|deleted_at|origin|context_id|note_id/);
-    expect(sql).not.toMatch(/alter table public\.(tasks|protected_time|blocks|commitments)/);
+    const lifecycleSql = readFileSync(
+      new URL("../supabase/migrations/20261008210000_note_lifecycle.sql", import.meta.url),
+      "utf8",
+    );
+    expect(createSql).toContain("enable row level security");
+    expect(createSql).toContain("notes_select_own");
+    expect(createSql).toContain("notes_insert_own");
+    expect(createSql).toContain("grant select, insert on table public.notes to authenticated");
+    expect(lifecycleSql).toContain("add column retired_at timestamptz");
+    expect(lifecycleSql).toContain("grant update (retired_at) on table public.notes to authenticated");
+    expect(lifecycleSql).toContain("grant delete on table public.notes to authenticated");
+    expect(lifecycleSql).not.toMatch(/grant update, delete on table public\.notes/);
+    expect(lifecycleSql).not.toMatch(/grant update on table public\.notes/);
+    expect(lifecycleSql).toContain("notes_update_own");
+    expect(lifecycleSql).toContain("notes_delete_own");
+    expect(lifecycleSql).toContain("user_id = (select auth.uid())");
+    expect(lifecycleSql).not.toMatch(/on delete cascade|on delete set null/i);
+    expect(lifecycleSql).not.toMatch(/alter table public\.tasks/);
+    expect(lifecycleSql).not.toMatch(/grant .+ on table public\.notes to (anon|public)/);
+    const provenance = readFileSync(
+      new URL("../supabase/migrations/20261005020600_task_originating_note.sql", import.meta.url),
+      "utf8",
+    );
+    expect(provenance).toContain("on delete no action");
   });
 
-  it("exposes create and complete read without a note lifecycle", () => {
+  it("exposes create, current read, retire, and delete", () => {
     const source = readFileSync(new URL("./note.ts", import.meta.url), "utf8");
     expect(source).toContain("export async function createNote");
     expect(source).toContain("export async function loadNotes");
-    expect(source).toContain("readCompleteDateRows");
-    expect(source).not.toMatch(/\.update\(|\.delete\(|updateNote|deleteNote|archiveNote|created_at|new Date\(/);
+    expect(source).toContain("export async function retireNote");
+    expect(source).toContain("export async function deleteNote");
+    expect(source).toContain('.is("retired_at", null)');
+    expect(source).toContain("NoteCitedError");
+    expect(source).not.toMatch(/archiveNote|unretire|updateNote\b/);
   });
 
   it("leaves quick capture creating a task", () => {

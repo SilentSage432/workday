@@ -2,27 +2,34 @@
 
 ## Current state (2026-10-08)
 
-Implemented **MOBILE-CENTER-PLUS-CORRECTION-001** (working tree; commit/push when asked).
+Implemented **NOTE-LIFECYCLE-001** (working tree; commit/push when asked). Hosted migration **not** applied.
 
-Baseline before work: `830e5f8e6b3b94097d182b9943809a4d5ce92c0f`.
+Baseline before work: `b69bcf9765e3caadc3c1b283f0a1b6df937ab6b9`.
 
 ### What changed
 
-Phone standing ADD: Lucide Plus only — redundant text `+` removed. Desktop ADD unchanged (Plus + `ADD`). No CSS. No LOOK/ACT/chooser changes.
+- Notes gain `retired_at` / `retiredAt`.
+- Owner `UPDATE (retired_at)` + DELETE grants and RLS for Notes.
+- `retireNote` / `deleteNote`; operational `loadNotes` = current only.
+- LOOK → Notes: Retire (no confirm), Delete (confirm). Cited Delete fails honestly; Retire remains.
+- Docs: lifecycle decision + implementation; DOMAIN and related Note docs updated.
 
 ### Accepted foundations (do not reopen)
 
 - Desktop Day territory / LOOK / ADD / ACT / lateral borrow / material
 - Phone Day temporal continuity
 - Phone LOOK progressive disclosure (physically accepted)
+- Center ADD plus correction (physically accepted)
 
 ### Next physical step
 
-Commit / push / deploy when asked, then verify on phone: one centered plus in the circular ADD control; ADD chooser still opens.
+1. Review and apply migration `20261008210000_note_lifecycle.sql` to hosted Supabase.
+2. Commit / push / deploy when asked.
+3. Verify on phone/desktop: Retire removes from LOOK → Notes; Delete confirms and removes uncited; cited Delete explains and keeps Note.
 
 ### Still deferred
 
-- Note lifecycle / deletion
+- Note content Edit / Unretire UI / Archive browser
 - Orient Pulse / notifications / Wear OS
 - Recurring-task physical acceptance
 - Google Calendar removal reconciliation

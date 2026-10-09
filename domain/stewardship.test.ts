@@ -229,6 +229,7 @@ describe("stewardship domain", () => {
       id: "00000000-0000-4000-8000-000000000098",
       content: "Showroom observation",
       capturedAt: "2026-10-07T14:00:00.000Z",
+      retiredAt: null,
     };
     expect(task.mustDo).toBe(true);
     expect(thread.taskId).toBe(task.id);

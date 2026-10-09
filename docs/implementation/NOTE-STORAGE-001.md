@@ -10,7 +10,7 @@ Baseline: `0431ba0cb4bb8260cff8ea98b15a30efd6b84579`.
 
 ## Domain
 
-`domain/note.ts` defines a Note as `id`, `content`, and `capturedAt`.
+`domain/note.ts` defined a Note as `id`, `content`, and `capturedAt`. Later [NOTE-LIFECYCLE-001.md](NOTE-LIFECYCLE-001.md) adds `retiredAt`.
 
 `content` is one text. Blank and whitespace-only text are rejected. Text that contains a non-whitespace character is kept, including surrounding spaces.
 
@@ -30,11 +30,9 @@ Baseline: `0431ba0cb4bb8260cff8ea98b15a30efd6b84579`.
 
 Row level security is enabled. `public` and `anon` have no privileges.
 
-`authenticated` is granted `select` and `insert`. Policies `notes_select_own` and `notes_insert_own` require `user_id = (select auth.uid())`.
+`authenticated` is granted `select` and `insert` in this migration. Policies `notes_select_own` and `notes_insert_own` require `user_id = (select auth.uid())`.
 
-Other application tables also grant `update` and `delete` because those product operations exist, and they add matching owner policies. Note editing and deletion are unresolved, so Notes do not receive those grants or policies. The application exposes `createNote` and `loadNotes` only.
-
-Account deletion still cascades through `user_id`. That is not a Note-delete operation.
+Later, [NOTE-LIFECYCLE-001.md](NOTE-LIFECYCLE-001.md) adds `retired_at` and owner `update (retired_at)` / `delete` grants and policies. Content editing remains deferred. Account deletion still cascades through `user_id`. That is not a Note-delete operation.
 
 ## Complete read
 
@@ -60,8 +58,8 @@ Invalid content throws before the insert.
 
 ## Exclusions
 
-No Note surface. No edit, delete, archive, or revision. No Quick Capture change. No interpretation, voice, transcript, or provider. No Context. No provenance column on a later fact. No Task lifecycle change.
+No Note surface in this tranche. No edit, delete, archive, or revision in this tranche. No Quick Capture change. No interpretation, voice, transcript, or provider. No Context. No provenance column on a later fact. No Task lifecycle change.
 
 ## Later
 
-[NOTE-STORAGE-001A.md](NOTE-STORAGE-001A.md) corrects the constraint comment in this same migration file. Production rejected a schema-qualified constraint name, and `public.notes` was absent afterward. The storage decision is unchanged. [../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) uses this complete read, and this retrieval order, as the return to retained experience. [NOTE-REVISIT-001.md](NOTE-REVISIT-001.md) calls this read from General Capture and does not change the order or add a write.
+[NOTE-STORAGE-001A.md](NOTE-STORAGE-001A.md) corrects the constraint comment in this same migration file. Production rejected a schema-qualified constraint name, and `public.notes` was absent afterward. The storage decision is unchanged. [../decisions/2026-10-04-note-revisit.md](../decisions/2026-10-04-note-revisit.md) uses this complete read, and this retrieval order, as the return to retained experience. [NOTE-REVISIT-001.md](NOTE-REVISIT-001.md) calls this read from General Capture and does not change the order or add a write. [../decisions/2026-10-08-note-lifecycle.md](../decisions/2026-10-08-note-lifecycle.md) and [NOTE-LIFECYCLE-001.md](NOTE-LIFECYCLE-001.md) later authorize Retire and Delete; operational `loadNotes` then filters `retired_at IS NULL`.

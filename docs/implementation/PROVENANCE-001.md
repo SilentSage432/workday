@@ -24,9 +24,11 @@ The migration is `supabase/migrations/20261005020600_task_originating_note.sql`.
 
 ## Note deletion
 
-Note deletion remains undecided. The foreign key is `on delete no action`, deferred until transaction commit.
+The foreign key is `on delete no action`, deferred until transaction commit.
 
-That action does not delete the Task, does not clear `originating_note_id`, and does not grant delete on `notes`. A committed delete of a cited Note fails, and the Task row is left as it was. The deferral lets account removal delete that user's tasks and notes in the one transaction `auth.users` already uses. Account removal is not a Note-deletion operation.
+That action does not delete the Task and does not clear `originating_note_id`. A committed delete of a cited Note fails, and the Task row is left as it was. The deferral lets account removal delete that user's tasks and notes in the one transaction `auth.users` already uses. Account removal is not a Note-deletion operation.
+
+Later current state: [../decisions/2026-10-08-note-lifecycle.md](../decisions/2026-10-08-note-lifecycle.md) and [NOTE-LIFECYCLE-001.md](NOTE-LIFECYCLE-001.md) authorize owner Delete for uncited Notes and Retire for leaving current operational Notes. The provenance FK remains authoritative; cited Delete maps to honest application failure and does not clear citations.
 
 ## Atomic establishment
 
@@ -44,7 +46,7 @@ The words are scaffold copy.
 
 ## Excluded
 
-No provenance on Protected Time, Block, Commitment, Active Thread, Today, Current Temporal Orientation, present-moment orientation, Timeline, Capacity, Pulse, Priority, Destination, Context, or Cadence. No Note edit, delete, or archive. No conversion wording. No prefill. No generic provenance table.
+No provenance on Protected Time, Block, Commitment, Active Thread, Today, Current Temporal Orientation, present-moment orientation, Timeline, Capacity, Pulse, Priority, Destination, Context, or Cadence. No Note content edit. No conversion wording. No prefill. No generic provenance table. Note Retire/Delete arrive later in [NOTE-LIFECYCLE-001.md](NOTE-LIFECYCLE-001.md) without weakening this FK.
 
 ## Tests
 

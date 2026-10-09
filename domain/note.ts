@@ -4,6 +4,8 @@ export type Note = {
   id: string;
   content: string;
   capturedAt: string;
+  /** Null means current operational Notes. Set when the Note is retired. */
+  retiredAt: string | null;
 };
 
 export type NewNote = {
@@ -11,6 +13,18 @@ export type NewNote = {
   content: string;
   capturedAt: Date;
 };
+
+/** Cited Note deletion failed under Task provenance. Not a generic write failure. */
+export class NoteCitedError extends Error {
+  readonly code = "note_cited" as const;
+
+  constructor(
+    message = "This Note is retained because a Task was established from it. Retire it instead.",
+  ) {
+    super(message);
+    this.name = "NoteCitedError";
+  }
+}
 
 export function requireNoteContent(content: string): string {
   if (content.trim().length === 0) {
@@ -42,4 +56,20 @@ export function requireCapturedAt(value: string): string {
     throw new Error("A note records when it was retained.");
   }
   return instant.toISOString();
+}
+
+export function retiredAtFromRetirement(retiredAt: Date): string {
+  if (Number.isNaN(retiredAt.getTime())) {
+    throw new Error("A note records when it left current Notes.");
+  }
+  return retiredAt.toISOString();
+}
+
+export function requireRetiredAt(value: string | null): string | null {
+  if (value == null) return null;
+  return requireCapturedAt(value);
+}
+
+export function isCurrentNote(note: Pick<Note, "retiredAt">): boolean {
+  return note.retiredAt === null;
 }

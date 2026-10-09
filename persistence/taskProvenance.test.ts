@@ -62,11 +62,15 @@ describe("task provenance storage", () => {
     expect(source).toContain("originating_note_id");
   });
 
-  it("does not give a note a derived-fact collection or a lifecycle", () => {
+  it("does not give a note a derived-fact collection or weaken provenance on lifecycle", () => {
     const note = readFileSync(new URL("../domain/note.ts", import.meta.url), "utf8");
     const noteStore = readFileSync(new URL("./note.ts", import.meta.url), "utf8");
     expect(note).not.toMatch(/tasks|derived|originatingNoteId/);
-    expect(noteStore).not.toMatch(/\.update\(|\.delete\(|updateNote|deleteNote|archiveNote/);
+    expect(noteStore).toContain("export async function retireNote");
+    expect(noteStore).toContain("export async function deleteNote");
+    expect(noteStore).toContain("NoteCitedError");
+    expect(noteStore).not.toMatch(/archiveNote|originating_note_id\s*=\s*null|set null/i);
+    expect(migration).toContain("on delete no action");
     const block = readFileSync(new URL("../domain/block.ts", import.meta.url), "utf8");
     const commitment = readFileSync(new URL("../domain/commitment.ts", import.meta.url), "utf8");
     const protectedTime = readFileSync(new URL("../domain/protectedTime.ts", import.meta.url), "utf8");

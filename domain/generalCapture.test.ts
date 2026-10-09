@@ -176,8 +176,11 @@ describe("general capture establishment", () => {
     expect(schedule).toContain("<QuickCapture");
     expect(schedule).not.toContain("GeneralCapture");
     expect(notes).toContain("export async function loadNotes");
-    expect(notes).toContain("readCompleteDateRows");
-    expect(notes).not.toMatch(/\.update\(|\.delete\(|updateNote|deleteNote/);
+    expect(notes).toContain("readCompleteCollection");
+    expect(notes).toContain('.is("retired_at", null)');
+    expect(notes).toContain("export async function retireNote");
+    expect(notes).toContain("export async function deleteNote");
+    expect(notes).not.toMatch(/updateNote|archiveNote/);
     expect(taskStore).toContain("readCompleteCollection");
     expect(taskStore).toContain('.is("completed_at", null)');
     expect(taskStore).not.toContain("notes");

@@ -40,11 +40,11 @@ import {
   taskFromRetainedNote,
   type GeneralCaptureState,
 } from "@/domain/generalCapture";
-import { requireNoteContent, type NewNote, type Note } from "@/domain/note";
+import { NoteCitedError, requireNoteContent, type NewNote, type Note } from "@/domain/note";
 import { taskEditDraftFromTask, taskPatchFromEditDraft, type TaskEditDraft } from "@/domain/taskEdit";
 import type { NewTask, Task } from "@/domain/task";
 import { createTask } from "@/persistence/contextsAndTasks";
-import { createNote, loadNotes } from "@/persistence/note";
+import { createNote, deleteNote, loadNotes, retireNote } from "@/persistence/note";
 import { getSupabaseBrowserClient } from "@/persistence/supabaseBrowserClient";
 import type { DayCanvasModel, DayCanvasStoredFact } from "@/projections/dayCanvas";
 import {
@@ -2801,16 +2801,26 @@ function RetainedNotesCollection({
   reading,
   sourced,
   pending,
+  confirmingDeleteId,
   onBeginSource,
   onSourceTitle,
   onSaveSourced,
+  onRetire,
+  onBeginDelete,
+  onCancelDelete,
+  onConfirmDelete,
 }: {
   reading: RetainedNotesReading | null;
   sourced: { noteId: string; title: string } | null;
   pending: boolean;
+  confirmingDeleteId: string | null;
   onBeginSource: (noteId: string) => void;
   onSourceTitle: (noteId: string, title: string) => void;
   onSaveSourced: () => void;
+  onRetire: ((noteId: string) => void) | null;
+  onBeginDelete: ((noteId: string) => void) | null;
+  onCancelDelete: (() => void) | null;
+  onConfirmDelete: ((noteId: string) => void) | null;
 }) {
   if (reading == null) return null;
   if (reading.status === "loading") {
@@ -2830,6 +2840,7 @@ function RetainedNotesCollection({
   if (reading.rows.length === 0) {
     return <p data-notes-empty="true">No notes have been retained.</p>;
   }
+  const lifecycle = onRetire != null && onBeginDelete != null && onCancelDelete != null && onConfirmDelete != null;
   return (
     <div data-notes-collection="true">
       {reading.rows.map((note) => (
@@ -2861,6 +2872,53 @@ function RetainedNotesCollection({
               </button>
             </div>
           ) : null}
+          {lifecycle ? (
+            confirmingDeleteId === note.id ? (
+              <div data-note-delete-confirm={note.id} className="orient-actions">
+                <p className="orient-note">This permanently deletes the Note.</p>
+                <button
+                  type="button"
+                  className="orient-action"
+                  data-note-delete="true"
+                  data-note-delete-confirm-action="true"
+                  disabled={pending}
+                  onClick={() => onConfirmDelete(note.id)}
+                >
+                  Delete
+                </button>
+                <button
+                  type="button"
+                  className="orient-action"
+                  data-note-delete-cancel="true"
+                  disabled={pending}
+                  onClick={() => onCancelDelete()}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="orient-actions">
+                <button
+                  type="button"
+                  className="orient-action"
+                  data-note-retire="true"
+                  disabled={pending}
+                  onClick={() => onRetire(note.id)}
+                >
+                  Retire
+                </button>
+                <button
+                  type="button"
+                  className="orient-action"
+                  data-note-delete="true"
+                  disabled={pending}
+                  onClick={() => onBeginDelete(note.id)}
+                >
+                  Delete
+                </button>
+              </div>
+            )
+          ) : null}
         </article>
       ))}
     </div>
@@ -2876,14 +2934,19 @@ export function NotesSurface({
   onClose,
   readNotes,
   establishTask,
+  retire,
+  remove,
 }: {
   onChanged?: () => void;
   onClose: () => void;
   readNotes?: () => Promise<Note[]>;
   establishTask?: (input: NewTask) => Promise<Task>;
+  retire?: (id: string) => Promise<Note>;
+  remove?: (id: string) => Promise<void>;
 }) {
   const [reading, setReading] = useState<RetainedNotesReading>({ status: "loading" });
   const [sourced, setSourced] = useState<{ noteId: string; title: string } | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -2924,6 +2987,54 @@ export function NotesSurface({
     }
   }
 
+  async function retireCurrent(noteId: string) {
+    if (pending) return;
+    setPending(true);
+    setError(null);
+    setConfirmingDeleteId(null);
+    try {
+      const writer =
+        retire ?? ((id: string) => retireNote(getSupabaseBrowserClient(), { id, retiredAt: new Date() }));
+      await writer(noteId);
+      setReading((current) =>
+        current.status === "ready"
+          ? { status: "ready", rows: current.rows.filter((note) => note.id !== noteId) }
+          : current,
+      );
+      if (sourced?.noteId === noteId) setSourced(null);
+    } catch (caught: unknown) {
+      setError(failureMessage(caught, "The Note could not be retired."));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function deleteCurrent(noteId: string) {
+    if (pending) return;
+    setPending(true);
+    setError(null);
+    try {
+      const writer = remove ?? ((id: string) => deleteNote(getSupabaseBrowserClient(), id));
+      await writer(noteId);
+      setConfirmingDeleteId(null);
+      setReading((current) =>
+        current.status === "ready"
+          ? { status: "ready", rows: current.rows.filter((note) => note.id !== noteId) }
+          : current,
+      );
+      if (sourced?.noteId === noteId) setSourced(null);
+    } catch (caught: unknown) {
+      if (caught instanceof NoteCitedError) {
+        setError(caught.message);
+      } else {
+        setError(failureMessage(caught, "The Note could not be deleted."));
+      }
+      setConfirmingDeleteId(null);
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <div data-notes-surface="true" className="orient-capture">
       <header className="orient-surface-header">
@@ -2933,14 +3044,26 @@ export function NotesSurface({
         </div>
         <SurfaceClose onClose={onClose} label="Close Notes" />
       </header>
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? (
+        <p role="alert" data-note-lifecycle-error="true">
+          {error}
+        </p>
+      ) : null}
       <RetainedNotesCollection
         reading={reading}
         sourced={sourced}
         pending={pending}
+        confirmingDeleteId={confirmingDeleteId}
         onBeginSource={(noteId) => setSourced({ noteId, title: "" })}
         onSourceTitle={(noteId, title) => setSourced({ noteId, title })}
         onSaveSourced={() => void saveSourced()}
+        onRetire={(noteId) => void retireCurrent(noteId)}
+        onBeginDelete={(noteId) => {
+          setError(null);
+          setConfirmingDeleteId(noteId);
+        }}
+        onCancelDelete={() => setConfirmingDeleteId(null)}
+        onConfirmDelete={(noteId) => void deleteCurrent(noteId)}
       />
     </div>
   );
@@ -3165,9 +3288,14 @@ export function CaptureSurface({
         reading={notes}
         sourced={sourced}
         pending={pending !== null}
+        confirmingDeleteId={null}
         onBeginSource={(noteId) => setSourced({ noteId, title: "" })}
         onSourceTitle={(noteId, title) => setSourced({ noteId, title })}
         onSaveSourced={() => void saveSourced()}
+        onRetire={null}
+        onBeginDelete={null}
+        onCancelDelete={null}
+        onConfirmDelete={null}
       />
     </div>
   );

@@ -1,20 +1,28 @@
 import { describe, expect, it } from "vitest";
 import {
   capturedAtFromEstablishment,
+  isCurrentNote,
+  NoteCitedError,
   requireCapturedAt,
   requireNoteContent,
   requireNoteId,
+  requireRetiredAt,
+  retiredAtFromRetirement,
 } from "@/domain/note";
 
 const NOTE_ID = "00000000-0000-4000-8000-000000000001";
 
 describe("note domain", () => {
-  it("keeps a retained note as identity, content, and capture instant", () => {
+  it("keeps a retained note as identity, content, capture instant, and retirement", () => {
     expect(requireNoteId(NOTE_ID)).toBe(NOTE_ID);
     expect(requireNoteContent("  aisle 12  ")).toBe("  aisle 12  ");
     expect(capturedAtFromEstablishment(new Date("2026-10-04T18:30:00.000Z"))).toBe(
       "2026-10-04T18:30:00.000Z",
     );
+    expect(requireRetiredAt(null)).toBeNull();
+    expect(requireRetiredAt("2026-10-08T12:00:00.000Z")).toBe("2026-10-08T12:00:00.000Z");
+    expect(isCurrentNote({ retiredAt: null })).toBe(true);
+    expect(isCurrentNote({ retiredAt: "2026-10-08T12:00:00.000Z" })).toBe(false);
   });
 
   it("rejects blank content", () => {
@@ -37,8 +45,23 @@ describe("note domain", () => {
     expect(() => capturedAtFromEstablishment(new Date("nope"))).toThrow(/when it was retained/);
   });
 
+  it("records retirement as an instant", () => {
+    expect(retiredAtFromRetirement(new Date("2026-10-08T18:00:00.000Z"))).toBe(
+      "2026-10-08T18:00:00.000Z",
+    );
+    expect(() => retiredAtFromRetirement(new Date("nope"))).toThrow(/left current Notes/);
+  });
+
   it("rejects a malformed identity", () => {
     expect(() => requireNoteId("")).toThrow(/stable identity/);
     expect(() => requireNoteId("note-1")).toThrow(/stable identity/);
+  });
+
+  it("names cited-note deletion without database jargon", () => {
+    const error = new NoteCitedError();
+    expect(error.code).toBe("note_cited");
+    expect(error.message).toMatch(/Task was established from it/);
+    expect(error.message).toMatch(/Retire it instead/);
+    expect(error.message).not.toMatch(/foreign key|23503|constraint/i);
   });
 });

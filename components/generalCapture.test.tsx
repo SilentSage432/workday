@@ -34,7 +34,7 @@ vi.mock("@/persistence/supabaseBrowserClient", () => ({
 import { GeneralCapture } from "@/components/GeneralCapture";
 
 function retainedNote(id: string, content: string, capturedAt: string): Note {
-  return { id, content, capturedAt };
+  return { id, content, capturedAt, retiredAt: null };
 }
 
 function noteItems(container: ParentNode): HTMLLIElement[] {

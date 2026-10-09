@@ -46,7 +46,7 @@ Human establishment remains the authority boundary. The new Task is authorized o
 
 The new Task is independently canonical. Its identity and meaning come from Task establishment. The source Note does not become the Task. The source Note does not lose its identity. The source Note remains revisitable after the Task is established. The Task's lifecycle is independent of the Note's lifecycle.
 
-This record does not decide Note edit, delete, or archive. It does not decide what a future Note deletion would do to a citing Task.
+This record does not decide Note edit, delete, or archive. It does not decide what a future Note deletion would do to a citing Task. Later, [2026-10-08-note-lifecycle.md](2026-10-08-note-lifecycle.md) decides Retire and Delete while keeping the citing Task and `originating_note_id` intact under `ON DELETE NO ACTION`.
 
 ## Direction
 

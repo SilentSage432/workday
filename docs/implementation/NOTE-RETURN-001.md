@@ -51,9 +51,11 @@ Unchanged. The human must choose establishment. The Note remains a Note. The Tas
 
 Desktop Capture → Notes remains through `CaptureSurface` and the shared `RetainedNotesCollection`. No desktop navigation redesign. LOOK → Notes is available wherever `LookSurface` is shown (phone LOOK · ADD · ACT).
 
-## Explicit non-goals
+## Explicit non-goals (this tranche)
 
-No Note edit/delete, folders, tags, notebooks, search, filtering, sorting controls, pinning, favorites, markdown editor, AI summarization/classification, automatic Task extraction, temporal assignment, Note → ActiveThread/Context/Shift automation, realtime Note subscription, new Note schema, new Note lifecycle/status, or new provenance model. No schema migration.
+No Note edit, folders, tags, notebooks, search, sorting controls, pinning, favorites, markdown editor, AI summarization/classification, automatic Task extraction, temporal assignment, Note → ActiveThread/Context/Shift automation, realtime Note subscription, or new provenance model. No schema migration in this tranche.
+
+Later: [../decisions/2026-10-08-note-lifecycle.md](../decisions/2026-10-08-note-lifecycle.md) and [NOTE-LIFECYCLE-001.md](NOTE-LIFECYCLE-001.md) add Retire and Delete on this LOOK → Notes surface without changing the return path.
 
 ## Tests
 
