@@ -1,5 +1,19 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-003
+
+Trusted Pulse dispatcher (server-only).
+
+- Route: `POST /api/pulse/dispatch` with header `X-Orient-Pulse-Dispatch-Secret`.
+- Re-reads `pulse_occurrences` under service_role; ownership from hosted row only.
+- Loads owner `orient_device_push_tokens`; FCM data payload `{ pulse_occurrence_id }` only; Android priority high.
+- `firebase-admin` server dependency; `FIREBASE_SERVICE_ACCOUNT_JSON` + dispatch secret from env (never logged/committed).
+- No delivery ledger; no stale-token DELETE (service_role remains SELECT-only on tokens).
+- No Database Webhook, Android/Kotlin, or physical native delivery acceptance.
+- Prerequisite: `SUPABASE_SERVICE_ROLE_KEY` must be present on the host serving the route.
+
+Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md).
+
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-002
 
 Hosted device push token authority for future Android Pulse delivery.

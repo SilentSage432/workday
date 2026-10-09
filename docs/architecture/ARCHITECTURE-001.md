@@ -227,7 +227,12 @@ Hosted Orient establishes that an explicitly authorized temporal condition becam
 
 ## Pulse delivery transport (in progress)
 
-Closed-app Android delivery uses FCM over already-established `pulse_occurrences`. Android is perception/delivery only. Owner-scoped Android FCM token registration is expressed as `public.orient_device_push_tokens` ([ORIENT-ANDROID-PULSE-BRIDGE-002](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md)); migration is in-repo and **not yet applied** hosted. Dispatcher, webhook, FCM send, and Kotlin remain deferred. Token rows are not Pulse authority, acknowledgment, urgency, or perception evidence.
+Closed-app Android delivery uses FCM over already-established `pulse_occurrences`. Android is perception/delivery only.
+
+- Token registration: `public.orient_device_push_tokens` hosted authority clear ([ORIENT-ANDROID-PULSE-BRIDGE-002](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md)).
+- Trusted dispatcher: `POST /api/pulse/dispatch` re-reads occurrence ownership and sends FCM data `{ pulse_occurrence_id }` ([ORIENT-ANDROID-PULSE-BRIDGE-003](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md)). Database Webhook and Kotlin perception remain deferred.
+
+Token rows and dispatch transport are not Pulse authority, acknowledgment, urgency, or perception evidence.
 
 ## Pulse, reminders, and notification delivery
 

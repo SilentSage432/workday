@@ -2,39 +2,31 @@
 
 ## Current state (2026-10-09)
 
-**ORIENT-ANDROID-PULSE-BRIDGE-002** — hosted device push token authority implemented in-repo (uncommitted candidate). Migration `20261009120000_orient_device_push_tokens.sql` **not applied** hosted.
+**ORIENT-ANDROID-PULSE-BRIDGE-003** — trusted Pulse dispatcher implemented in-repo (uncommitted candidate): `POST /api/pulse/dispatch`.
 
-Prior Pulse acceptance unchanged: **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED** on `ksmhgaamyheyhefbyglb` (`b8ba8b8`).
+Token table hosted clear: **ORIENT-ANDROID-PULSE-TOKEN-HOSTED-AUTHORITY-CLEAR** (`20261009120000` on `ksmhgaamyheyhefbyglb`).
 
-Discovery/contracts accepted: **ORIENT-ANDROID-PULSE-NATIVE-PATH-CLEAR**, **ORIENT-ANDROID-PULSE-TRANSPORT-CONTRACT-CLEAR**.
+Prior Pulse acceptance unchanged: **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED**.
 
-Human Firebase/Vercel secret setup exists outside repo authority (do not inspect values).
+Human Firebase/Vercel secrets exist outside repo authority (do not inspect values). Confirm `SUPABASE_SERVICE_ROLE_KEY` is available to the deploy that serves the dispatch route.
 
 ### Proven (Pulse)
 
 - Explicit Interrupt Grant + relative 5-minute Commitment-start authority
 - Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
-- Post-start due-establishment works; reopen shows in-app expression of the already-established occurrence
+- Owner-scoped Android FCM token table live with narrow RLS / service_role SELECT
 
 ### In-repo delivery progress (not native delivery)
 
-- Owner-scoped `orient_device_push_tokens` schema + RLS + domain registration contract
-- No dispatcher, webhook, FCM send, Kotlin, or phone mutation in this tranche
-
-### Not started / not accepted (Pulse delivery)
-
-- Hosted apply + privilege inspection of token table
-- Dispatcher route / Database Webhook / FCM send
-- Kotlin companion / native Android notification / haptic
-- Wear OS / Watch6 / watch face
-- Final in-app Pulse visual treatment
-- Broader Pulse source kinds
+- Trusted dispatcher: secret header → re-read occurrence → owner token lookup → FCM data `{ pulse_occurrence_id }`
+- No Database Webhook yet; no Kotlin/Android; no physical native delivery acceptance
 
 ### Next Pulse boundary
 
-1. Commit/push candidate when requested → hosted apply + inspect `service_role` on token table  
-2. Hosted dispatcher + webhook  
-3. `/android` auth + token registration + FCM receive + notification/haptic
+1. Commit/push dispatcher candidate when requested  
+2. Confirm Vercel `SUPABASE_SERVICE_ROLE_KEY` for dispatch  
+3. Create Database Webhook `AFTER INSERT` on `pulse_occurrences` → dispatch route  
+4. `/android` auth + token registration + FCM receive + notification/haptic  
 
 ### Still deferred elsewhere
 

@@ -8,7 +8,7 @@ Register owner-scoped Android FCM tokens as delivery infrastructure only — nev
 
 ## Status
 
-**Implemented in repository. Migration not applied to hosted Supabase.**
+**Implemented and hosted-applied.** Hosted verdict: `ORIENT-ANDROID-PULSE-TOKEN-HOSTED-AUTHORITY-CLEAR`.
 
 Prior discovery/contracts:
 

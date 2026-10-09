@@ -16,8 +16,8 @@
 
 ## Next evidence-backed items
 
-1. ORIENT-ANDROID-PULSE-BRIDGE-002 token authority — in-repo; hosted apply pending (`20261009120000`)
-2. Hosted Pulse dispatch (webhook → Vercel → FCM) after token table is live
+1. ORIENT-ANDROID-PULSE-BRIDGE-003 trusted dispatcher — in-repo; webhook + deploy confirmation pending
+2. Database Webhook `pulse_occurrences` INSERT → `/api/pulse/dispatch`
 3. `/android` perception edge (auth, token reg, notification + one haptic)
 4. Recurring-task physical acceptance (when ready)
 5. Deferred: Wear OS / channel policy / in-app Pulse visual refinement
