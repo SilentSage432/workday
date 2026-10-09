@@ -17,7 +17,7 @@ Phone permanent bezel (`data-form="phone"`):
 | Seat | Label | Icon | Control |
 | --- | --- | --- | --- |
 | Left | LOOK | Compass | `data-look-control` |
-| Center | + | Plus | `data-add-control` (emphasized hit target) |
+| Center | + (Plus glyph only; no text sibling) | Plus | `data-add-control` (emphasized hit target) |
 | Right | ACT | ListTodo | `data-act-control` |
 
 Row marker: `data-reach-grammar="look-add-act"`.

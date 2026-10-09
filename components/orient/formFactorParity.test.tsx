@@ -397,8 +397,37 @@ describe("cross-form-factor semantic parity", () => {
     restoreMedia?.();
 
     const phone = await renderForm(true);
-    expect(phone.querySelector("[data-add-control]")?.classList.contains("orient-add-control")).toBe(true);
-    expect(phone.querySelector("[data-add-control]")?.textContent).toContain("+");
+    const phoneAdd = phone.querySelector("[data-add-control]") as HTMLButtonElement;
+    expect(phoneAdd.classList.contains("orient-add-control")).toBe(true);
+    expect(phoneAdd.getAttribute("aria-label")).toBe("ADD");
+    expect(phoneAdd.querySelector(".orient-glyph")).not.toBeNull();
+    expect(phoneAdd.querySelector("span")).toBeNull();
+    expect(phoneAdd.textContent?.includes("+")).toBe(false);
+    expect(phone.querySelectorAll("[data-add-control]")).toHaveLength(1);
     expect(specializedCapabilities()[0]?.id).toBe("desktop-week-dtm");
+  });
+
+  it("desktop ADD keeps Plus icon with visible ADD label; phone ADD keeps glyph only", async () => {
+    const desktop = await renderForm(false);
+    const desktopAdd = desktop.querySelector("[data-add-control]") as HTMLButtonElement;
+    expect(desktopAdd.getAttribute("aria-label")).toBe("ADD");
+    expect(desktopAdd.querySelector(".orient-glyph")).not.toBeNull();
+    expect(desktopAdd.querySelector("span")?.textContent).toBe("ADD");
+    expect(desktopAdd.classList.contains("orient-add-control")).toBe(false);
+
+    act(() => {
+      root?.unmount();
+    });
+    container?.remove();
+    root = null;
+    container = null;
+    restoreMedia?.();
+
+    const phone = await renderForm(true);
+    const phoneAdd = phone.querySelector("[data-add-control]") as HTMLButtonElement;
+    expect(phoneAdd.getAttribute("aria-label")).toBe("ADD");
+    expect(phoneAdd.querySelector(".orient-glyph")).not.toBeNull();
+    expect(phoneAdd.querySelector("span")).toBeNull();
+    expect(phoneAdd.classList.contains("orient-add-control")).toBe(true);
   });
 });

@@ -1085,7 +1085,7 @@ export function OrientView({
             onClick={(event) => openFrom(event, surface.kind === "add" ? { kind: "none" } : { kind: "add" })}
           >
             <Plus aria-hidden="true" className="orient-glyph" />
-            <span>{form === "phone" ? "+" : "ADD"}</span>
+            {form === "desktop" ? <span>ADD</span> : null}
           </button>
           <button
             type="button"

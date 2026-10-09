@@ -187,11 +187,37 @@ describe("LOOK · ADD · ACT phone grammar", () => {
     const view = await renderPhone();
     expect(view.querySelector("[data-reach-grammar='look-add-act']")).not.toBeNull();
     expect(view.querySelector("[data-look-control]")?.textContent).toContain("LOOK");
-    expect(view.querySelector("[data-add-control]")?.textContent).toContain("+");
+    const add = view.querySelector("[data-add-control]") as HTMLButtonElement;
+    expect(add).not.toBeNull();
+    expect(add.getAttribute("aria-label")).toBe("ADD");
+    expect(add.classList.contains("orient-add-control")).toBe(true);
+    expect(add.querySelector(".orient-glyph")).not.toBeNull();
+    expect(add.querySelector("span")).toBeNull();
+    expect(add.textContent?.includes("+")).toBe(false);
+    expect(view.querySelectorAll("[data-add-control]")).toHaveLength(1);
     expect(view.querySelector("[data-act-control]")?.textContent).toContain("ACT");
     expect(view.querySelector("[data-capture-control]")).toBeNull();
     expect(view.querySelector("[data-focus-control]")).toBeNull();
     expect(view.querySelector("[data-position]")).toBeNull();
+  });
+
+  it("phone ADD uses one Plus glyph and opens the existing chooser", async () => {
+    const view = await renderPhone();
+    const add = view.querySelector("[data-add-control]") as HTMLButtonElement;
+    expect(add.getAttribute("aria-label")).toBe("ADD");
+    expect(add.getAttribute("aria-expanded")).not.toBe("true");
+    expect(add.querySelectorAll(".orient-glyph")).toHaveLength(1);
+    expect(add.querySelector("span")).toBeNull();
+    await act(async () => {
+      add.click();
+    });
+    expect(add.getAttribute("aria-expanded")).toBe("true");
+    expect(view.querySelector("[data-add-chooser]")).not.toBeNull();
+    await act(async () => {
+      add.click();
+    });
+    expect(add.getAttribute("aria-expanded")).not.toBe("true");
+    expect(view.querySelector("[data-add-chooser]")).toBeNull();
   });
 
   it("LOOK reaches Present Day Week Month and Position Focus", async () => {
