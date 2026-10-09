@@ -223,7 +223,7 @@ FOUNDATION-003 did not authorize PWA behavior. This tranche does, and only at th
 
 ## Pulse hosted establishment
 
-Hosted Orient may establish an authorized Commitment-start Pulse occurrence without an open client (`pg_cron` + database evaluator). Delivery channels remain separate. Record: [../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
+Hosted Orient establishes that an explicitly authorized temporal condition became true (`pg_cron` + database evaluator on `ksmhgaamyheyhefbyglb`). Delivery surfaces only make that established occurrence perceptible. Physically accepted closed-client: Orient fully closed through threshold; reopen expressed the already-established occurrence. Future Android/Kotlin must not become the source of temporal truth, Interrupt Grant authority, Pulse eligibility, urgency, or recommendation. Kotlin discovery has not started. Record: [../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
 
 ## Pulse, reminders, and notification delivery
 

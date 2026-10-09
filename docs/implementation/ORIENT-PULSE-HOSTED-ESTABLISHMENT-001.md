@@ -6,12 +6,20 @@ Sovereign hosted establishment of authorized Commitment-start Pulse occurrences 
 
 Hosted Orient establishes that an authorized temporal condition became true; delivery surfaces only make that established occurrence perceptible.
 
+## Status
+
+**ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED**
+
+Hosted verification verdict: **ORIENT-PULSE-HOSTED-AUTHORITY-CLEAR**
+
+Implementation commit: `b8ba8b8cfb8dc58891f26417428e074719606bb2`
+
 ## Baseline
 
 | Item | Value |
 | --- | --- |
 | Branch | `main` |
-| HEAD | `63be8c86ad5807bcac16fb617119d9e41ecaae72` |
+| Implementation HEAD | `b8ba8b8cfb8dc58891f26417428e074719606bb2` |
 | Canonical Supabase | `ksmhgaamyheyhefbyglb` |
 | Prior proof | [ORIENT-PULSE-COMMITMENT-START-001.md](ORIENT-PULSE-COMMITMENT-START-001.md) |
 | Discovery | ORIENT-PHONE-PULSE-DELIVERY-DISCOVERY-001 → `ORIENT-PHONE-PULSE-HYBRID-PATH-CLEAR` |
@@ -20,7 +28,7 @@ Hosted Orient establishes that an authorized temporal condition became true; del
 
 TEMPORAL TRUTH → TEMPORAL CONDITION → INTERRUPTION AUTHORITY → PULSE OCCURRENCE → DELIVERY
 
-This tranche implements hosted occurrence establishment only. Delivery (Kotlin Android, push, haptics, Wear) remains deferred.
+This tranche proves hosted occurrence establishment. Delivery (Kotlin Android, push, haptics, Wear) remains deferred and is **not** accepted here.
 
 ## Selected mechanism
 
@@ -80,13 +88,17 @@ Uniqueness prevents duplicates. An open client can still establish during the wi
 
 ## Security / privilege model
 
-- Evaluator functions: `SECURITY DEFINER`, `REVOKE` from `public` / `anon` / `authenticated`, `EXECUTE` only to `postgres` (cron path).
-- Run log: RLS on; no authenticated grants; `service_role` SELECT for console inspection.
+- Evaluator functions: `SECURITY DEFINER`, `REVOKE` from `public` / `anon` / `authenticated`; cron path executes as `postgres`.
+- Run log: RLS on; no authenticated grants.
 - No service-role secret on browser/phone/watch.
 - Authenticated occurrence authority unchanged: `SELECT` + `INSERT` own rows only.
 - No public HTTP path that manufactures arbitrary occurrences.
 
-## Schema / jobs added
+### Hosted privilege finding (non-blocking)
+
+On canonical `ksmhgaamyheyhefbyglb`, `service_role` retains Supabase platform-default surplus authority on the new hosted functions and `pulse_hosted_evaluator_runs` beyond the migration’s narrower explicit grants. Authenticated / anon / public client paths remain closed as designed. This did **not** block hosted verification or physical acceptance. Future hardening may narrow privileged surplus if justified.
+
+## Schema / jobs
 
 Migration: `supabase/migrations/20261008240000_pulse_hosted_establishment.sql`
 
@@ -97,30 +109,85 @@ Migration: `supabase/migrations/20261008240000_pulse_hosted_establishment.sql`
 
 Depends on prior Pulse tables migration `20261008230000_pulse_commitment_start.sql`.
 
-## Hosted / physical status
+## Hosted verification (live)
 
-| Surface | Status |
+Canonical project: `ksmhgaamyheyhefbyglb`
+
+| Evidence | Hosted reality |
 | --- | --- |
-| Repository implementation | This tranche |
-| Canonical Supabase apply | **Not applied** (stop before deploy) |
-| Production data mutation | None |
-| Vercel | Untouched |
-| Phone / Kotlin | Untouched |
-| Closed-client physical acceptance | Pending after hosted apply |
+| `20261008230000` | Present remotely exactly once |
+| `20261008240000` | Applied successfully exactly once |
+| `pg_cron` | 1.6.4 active |
+| Job | `orient-pulse-hosted-establishment` (job id `1`) |
+| Schedule | `* * * * *` |
+| Active | `true` |
+| Command | `select public.run_pulse_hosted_establishment();` |
+| Normal cron | Succeeding runs observed in `cron.job_run_details` |
+| Run log | `pulse_hosted_evaluator_runs` recorded successful executions |
+| Authenticated Pulse authority | Remained narrow (grants SELECT/INSERT + UPDATE(`revoked_at`); occurrences SELECT/INSERT) |
+| Delivery behavior | None in this path |
 
-## Closed-client physical acceptance (after hosted apply)
+Verdict: **ORIENT-PULSE-HOSTED-AUTHORITY-CLEAR**
 
-1. Create a timed Commitment.
-2. Explicitly choose a 5-minute Pulse; confirm grant.
-3. Completely close Orient on phone and desktop.
-4. Let threshold pass with no Orient client alive.
-5. Reopen Orient later.
-6. Confirm durable `pulse_occurrences` row exists for the grant + source identity.
-7. Do **not** expect notification or haptic — delivery is deferred.
+## Physical acceptance
+
+Performed on Tyson’s real production environment after hosted verification.
+
+1. Created a new timed Commitment.
+2. Explicitly selected the 5-minute Pulse; Interrupt Grant established.
+3. Before threshold, Orient was completely closed on phone and desktop.
+4. No Orient client remained alive through the threshold.
+5. Threshold passed while Orient was closed.
+6. Commitment start also passed while Orient remained closed.
+7. Later reopen of Orient showed the Pulse expression already present.
+
+Acceptance evidence (journal-style quote):
+
+> it fucking worked. when i opened it back up, that notification was there already
+
+Interpretation preserved:
+
+- the open browser evaluator was not required
+- hosted evaluation established the durable Pulse occurrence
+- post-start due-establishment semantics worked
+- re-entry expression observed the already-established occurrence
+- Tyson’s attention was not required for temporal establishment
+
+**This is not full Pulse delivery acceptance.** In-app re-entry expression of an already-established occurrence is not closed-app Android notification, haptic, Kotlin, or Wear.
+
+## Proven vs deferred
+
+### Proven
+
+- Explicit human Interrupt Grant
+- Relative 5-minute authority
+- Deterministic threshold
+- Hosted evaluation
+- Durable occurrence establishment with all Orient clients closed
+- Later expression of that established occurrence on re-entry
+
+### Not implemented / not accepted
+
+- Closed-app Android notification
+- Haptic Pulse
+- Native Android delivery
+- Kotlin companion
+- Wear OS delivery / Watch6 / watch face
+- Final in-app Pulse visual treatment (still needs refinement)
+- Broader Pulse source kinds
+
+## Architectural consequence
+
+Hosted Orient establishes that an explicitly authorized temporal condition became true.
+
+Delivery surfaces make that established occurrence perceptible.
+
+A future Android layer must **not** become the source of temporal truth, Interrupt Grant authority, Pulse eligibility authority, urgency, or recommendation. Kotlin discovery/implementation has **not** started; next Pulse boundary is occurrence → native phone perception/delivery.
 
 ## Deferred
 
-- Kotlin Android expression/delivery
+- Kotlin Android perception/delivery edge (not started)
 - Push / Wear / haptics / service worker
 - Additional Pulse source kinds
 - Expanding beyond Commitment-start
+- In-app Pulse visual refinement

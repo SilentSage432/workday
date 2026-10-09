@@ -103,7 +103,7 @@ A Pulse occurrence is the durable establishment that a deterministic evaluator f
 
 The first implemented proof is a timed Orient-native Commitment start with an explicit human interrupt grant (“Remind me N minutes before”). Temporal truth, Must Do, planned time, ACT, Work, and external calendar observation do not authorize interruption by themselves. Relative lead follows Commitment start correction. One grant and one source temporal identity mint at most one occurrence. Non-acknowledgment is not failure. Silence remains valid.
 
-Hosted Orient may establish that authorized condition without an open client. Delivery surfaces only make an established occurrence perceptible. Push, Wear OS, and native delivery remain deferred.
+Hosted Orient establishes that authorized condition without an open client; closed-client establishment is physically accepted. Delivery surfaces only make an established occurrence perceptible. Push, Wear OS, Kotlin, and native delivery remain deferred and are not accepted by that proof.
 
 Directional questions a broader Pulse may later serve remain unresolved. They are not the present-moment composition, and they do not authorize that composition to decide importance or a next action. No notification cadence is defined. Repeated nagging is not a Pulse. Productivity pressure is not a Pulse. Pulse is not an input to the first present-moment composition.
 

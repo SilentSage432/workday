@@ -2,29 +2,32 @@
 
 ## Current state (2026-10-08)
 
-**ORIENT-PULSE-HOSTED-ESTABLISHMENT-001** implemented in working tree (not committed; hosted migrations not applied; not deployed).
+**ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED**
 
-HEAD baseline for this work: `63be8c86ad5807bcac16fb617119d9e41ecaae72` (`ORIENT-PULSE-COMMITMENT-START-001` already on `main`).
+Implementation HEAD: `b8ba8b8cfb8dc58891f26417428e074719606bb2`
 
-### What changed
+Hosted verification: **ORIENT-PULSE-HOSTED-AUTHORITY-CLEAR** on canonical `ksmhgaamyheyhefbyglb` (`20261008240000` applied; cron live).
 
-- Establishment due predicate: `now >= threshold` (`eligible | elapsed`) in `domain/pulse.ts`; client persistence uses it.
-- Migration `20261008240000_pulse_hosted_establishment.sql`: `pg_cron` job, SECURITY DEFINER evaluator, `pulse_hosted_evaluator_runs`.
-- Browser evaluator kept as opportunistic convergence.
-- Docs: hosted establishment record + journal/roadmap/handoff updates.
+### Proven
 
-### Next physical step
+- Explicit Interrupt Grant + relative 5-minute Commitment-start authority
+- Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
+- Post-start due-establishment works; reopen shows in-app expression of the already-established occurrence
 
-1. Review / commit when asked.
-2. Apply Pulse migrations in order to canonical Supabase `ksmhgaamyheyhefbyglb` (`20261008230000` then `20261008240000`).
-3. Inspect hosted privileges/cron job/reality vs migration text.
-4. Closed-client acceptance: grant → close Orient → threshold passes → reopen → occurrence exists (no notification expected).
+### Not started / not accepted
 
-### Still deferred
+- Kotlin companion / native Android notification / haptic
+- Wear OS / Watch6 / watch face
+- Final in-app Pulse visual treatment
+- Broader Pulse source kinds
 
-- Push / native Android / Wear OS / haptics / watch face / service worker
-- Channel permission policy
-- Other Pulse source kinds
-- Note content Edit / Unretire UI / Archive browser
+### Next Pulse boundary
+
+Pulse occurrence → native phone perception/delivery (Kotlin discovery not started).
+
+### Still deferred elsewhere
+
+- Note Lifecycle documentation repair (separate docs-only tranche; do not mix)
 - Recurring-task physical acceptance
 - Google Calendar removal reconciliation
+- Note Edit / Unretire UI / Archive browser

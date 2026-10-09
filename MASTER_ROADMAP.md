@@ -2,14 +2,13 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
-- **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001** — hosted `pg_cron` establishment of authorized Pulse occurrences without an open client; delivery deferred; migrations not applied hosted.
-- **ORIENT-PULSE-COMMITMENT-START-001** — first human-authorized Pulse (timed Commitment start + interrupt grant + durable occurrence + in-app expression); migration not applied hosted.
+- **ORIENT-PULSE-COMMITMENT-START-001** — first human-authorized Pulse (timed Commitment start + interrupt grant + durable occurrence + in-app expression); tables live on hosted with hosted-establishment.
 - **NOTE-LIFECYCLE-001** — Retire + Delete on LOOK → Notes; hosted applied.
 - **NOTE-LIFECYCLE-001A** — revoke table-level Note UPDATE; re-grant `UPDATE (retired_at)` only; on `main` at `92a7a18`.
-- **MOBILE-CENTER-PLUS-CORRECTION-001** — phone ADD single Plus glyph; physically accepted.
 
 ## Accepted foundations (closed)
 
+- **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001** — hosted `pg_cron` establishes authorized Pulse occurrences with Orient fully closed; physically accepted; delivery/Kotlin not started (`b8ba8b8`)
 - Desktop Day territory + LOOK / ADD / ACT operational borrowing
 - Phone Day / temporal continuity foundation
 - Day as canonical fresh startup (phone + desktop); Present via LOOK
@@ -18,11 +17,12 @@
 
 ## Next evidence-backed items
 
-1. Apply Pulse migrations hosted; closed-client Pulse occurrence acceptance (no delivery expected)
+1. Pulse occurrence → native phone perception/delivery (Kotlin discovery not started)
 2. Recurring-task physical acceptance (when ready)
-3. Deferred delivery: Kotlin Android / notifications / Wear OS / channel policy
+3. Deferred: Wear OS / channel policy / in-app Pulse visual refinement
 4. Google Calendar removal reconciliation
 5. Note Edit / Unretire only if evidence requires
+6. Note Lifecycle documentation repair (separate docs-only; do not mix with Pulse)
 
 ## Standing law
 

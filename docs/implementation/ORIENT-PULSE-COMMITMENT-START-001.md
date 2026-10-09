@@ -82,4 +82,4 @@ No approaching / overdue / missed / urgent vocabulary.
 
 ## Hosted
 
-Pulse table migration was authored here. Sovereign hosted occurrence establishment without an open client is [ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md). Neither migration is applied by this record's original tranche; apply status follows the hosted-establishment record.
+Pulse table migration was authored here. Sovereign hosted occurrence establishment without an open client is [ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md): live on `ksmhgaamyheyhefbyglb`, hosted authority clear, closed-client physically accepted. Delivery/Kotlin remain deferred.

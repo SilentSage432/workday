@@ -1,5 +1,19 @@
 # Development journal
 
+## 2026-10-08 — ORIENT-PULSE-HOSTED-ESTABLISHMENT-001 physical acceptance
+
+Closed-client hosted Pulse establishment physically accepted on production Orient.
+
+- Hosted apply on `ksmhgaamyheyhefbyglb`: `20261008240000` live; `20261008230000` present once; verdict `ORIENT-PULSE-HOSTED-AUTHORITY-CLEAR`.
+- Cron job `orient-pulse-hosted-establishment` (`* * * * *`) observed succeeding; run log recorded success.
+- Physical proof: timed Commitment + explicit 5-minute grant → Orient fully closed on phone and desktop through threshold and start → reopen already showed the Pulse expression.
+- Tyson: “it fucking worked. when i opened it back up, that notification was there already”
+- Meaning preserved: hosted evaluation established the occurrence without an open client; re-entry expression is not native delivery.
+- Non-blocking finding retained: `service_role` platform-default surplus on new functions/run-log; authenticated/anon/public remain closed.
+- Kotlin / Android notification / haptic / Wear not started and not accepted.
+
+Record: [docs/implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](docs/implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
+
 ## 2026-10-08 — ORIENT-PULSE-HOSTED-ESTABLISHMENT-001
 
 Sovereign hosted Pulse occurrence establishment without an open Orient client.
@@ -8,8 +22,7 @@ Sovereign hosted Pulse occurrence establishment without an open Orient client.
 - Semantic correction: establishment due when `now >= threshold` (`eligible | elapsed`); expression window remains `[threshold, start)`.
 - Migration: `20261008240000_pulse_hosted_establishment.sql` — evaluator, run log, minute cron job.
 - Browser evaluator retained as opportunistic convergence under uniqueness.
-- Delivery / Kotlin / push / Wear deferred. Hosted apply and closed-client physical acceptance pending.
-- No commit/push/deploy in this tranche.
+- Delivery / Kotlin / push / Wear deferred.
 
 Record: [docs/implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](docs/implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
 
