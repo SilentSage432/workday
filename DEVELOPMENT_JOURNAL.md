@@ -1,5 +1,16 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-006B
+
+Client serialization correction for native token registration (uncommitted).
+
+- S26 physical state: auth/notifications/fcm_token yes; token_registered no.
+- Root cause: `TokenRow.platform` Kotlin default omitted under PostgREST `encodeDefaults=false`; hosted `platform` NOT NULL — authority correct.
+- Fix: required `platform` on write model; always `"android"`; wire-contract unit test; safe failure class/status logs (no secrets).
+- No schema/RLS/service_role change. No APK install yet.
+
+Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-006.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-006.md).
+
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-005
 
 Native Android Pulse perception edge under `android/` (package `com.teamlab.orient`).

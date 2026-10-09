@@ -2,7 +2,9 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
-- **ORIENT-ANDROID-PULSE-BRIDGE-005** — native Android perception edge (`android/`); unit tests green; device build awaits local `google-services.json`
+- **ORIENT-ANDROID-PULSE-BRIDGE-006B** — client fix so token INSERT always serializes `platform=android` (uncommitted; not installed)
+- **ORIENT-ANDROID-PULSE-BRIDGE-006A** — S26 registration failure diagnosed: wire omitted `platform`; hosted authority correct
+- **ORIENT-ANDROID-PULSE-BRIDGE-005** — native Android perception edge (`android/`) at `699c01f`; S26 auth/notifications/FCM established
 - **ORIENT-ANDROID-PULSE-BRIDGE-003** — trusted dispatcher on `main` (`30edfb7`); zero-target autonomy accepted via Database Webhook
 - **ORIENT-PULSE-COMMITMENT-START-001** — first human-authorized Pulse (timed Commitment start + interrupt grant + durable occurrence + in-app expression); tables live on hosted with hosted-establishment.
 
@@ -20,11 +22,12 @@
 
 ## Next evidence-backed items
 
-1. Human Firebase client config handoff → device APK → S26 physical Pulse perception acceptance
-2. Deferred: Wear OS / channel policy / in-app Pulse visual refinement
-3. Recurring-task physical acceptance (when ready)
-4. Google Calendar removal reconciliation
-5. Note Edit / Unretire only if evidence requires
+1. Review/commit 006B → install corrected APK on S26 → confirm hosted token row under Tyson RLS
+2. Physical Pulse perception acceptance (FCM → one notification + one haptic)
+3. Deferred: Wear OS / channel policy / in-app Pulse visual refinement
+4. Recurring-task physical acceptance (when ready)
+5. Google Calendar removal reconciliation
+6. Note Edit / Unretire only if evidence requires
 
 ## Standing law
 
