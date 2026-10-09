@@ -8,9 +8,9 @@ After a durable `pulse_occurrence` exists, a secret-authenticated server route r
 
 ## Status
 
-**Implemented in repository. Not physically accepted as native delivery.**
+**Implemented in repository and on production dispatcher SHA `30edfb7`.**
 
-Database Webhook not created. Android/Kotlin not implemented. No real FCM traffic from automated tests.
+Database Webhook path accepted through **ORIENT-ANDROID-PULSE-ZERO-TARGET-AUTONOMY-ACCEPTED** (`no_targets` with empty token table). Native Android perception is [ORIENT-ANDROID-PULSE-BRIDGE-005](ORIENT-ANDROID-PULSE-BRIDGE-005.md). Physical native delivery on device remains pending that edge + token registration.
 
 Prior:
 
@@ -104,17 +104,15 @@ Hosted `service_role` on `orient_device_push_tokens` is **SELECT-only**. This tr
 
 Values are outside repository authority.
 
-## Explicitly not in this tranche
+## Explicitly not in this tranche (at implementation time)
 
-- Database Webhook creation/configuration  
-- Android/Kotlin / notification / haptic  
-- Phone / Firebase console / Supabase schema mutation  
+- Android/Kotlin / notification / haptic (see BRIDGE-005)  
 - Delivery ledger / retry orchestration  
 - Native delivery physical acceptance  
 
-## Next
+## Follow-on (status)
 
-1. Review → commit/push candidate when requested  
-2. Confirm `SUPABASE_SERVICE_ROLE_KEY` on Vercel for the dispatch route  
-3. Create Database Webhook `AFTER INSERT` on `pulse_occurrences` → this route + secret header  
-4. `/android` auth, token registration, FCM receive, notification + haptic  
+1. Database Webhook → dispatch: accepted via zero-target autonomy  
+2. `/android` perception edge: [ORIENT-ANDROID-PULSE-BRIDGE-005](ORIENT-ANDROID-PULSE-BRIDGE-005.md)  
+3. Physical S26 acceptance after `google-services.json` handoff + token registration  
+

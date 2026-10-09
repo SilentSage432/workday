@@ -230,7 +230,11 @@ Hosted Orient establishes that an explicitly authorized temporal condition becam
 Closed-app Android delivery uses FCM over already-established `pulse_occurrences`. Android is perception/delivery only.
 
 - Token registration: `public.orient_device_push_tokens` hosted authority clear ([ORIENT-ANDROID-PULSE-BRIDGE-002](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md)).
-- Trusted dispatcher: `POST /api/pulse/dispatch` re-reads occurrence ownership and sends FCM data `{ pulse_occurrence_id }` ([ORIENT-ANDROID-PULSE-BRIDGE-003](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md)). Database Webhook and Kotlin perception remain deferred.
+- Trusted dispatcher: `POST /api/pulse/dispatch` re-reads occurrence ownership and sends FCM data `{ pulse_occurrence_id }` ([ORIENT-ANDROID-PULSE-BRIDGE-003](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md)).
+- Database Webhook → dispatch autonomy accepted through zero-target (`no_targets` with empty token table).
+- Native Android perception edge: `android/` package `com.teamlab.orient` — authoritative user-JWT reread, local exactly-once expression claim, one notification + one haptic ([ORIENT-ANDROID-PULSE-BRIDGE-005](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md)). Wear OS remains deferred. Physical device acceptance pending local Firebase client config handoff.
+
+**NO AUTHORITATIVE REREAD = NO PERCEPTION CLAIM.**
 
 Token rows and dispatch transport are not Pulse authority, acknowledgment, urgency, or perception evidence.
 
@@ -242,7 +246,7 @@ Three separate things:
 | --- | --- | --- |
 | Reminder | A stored explicit attention point | Persist it. Show it through projection. |
 | Pulse | A projection that reorients: where, intended block, active thread, next commitment, open interval | In-app expression of established occurrences. |
-| Delivery | Push / native perception of an already-established occurrence | FCM path selected by discovery; token authority in-repo; send/dispatch/Android not implemented. |
+| Delivery | Push / native perception of an already-established occurrence | FCM dispatcher + webhook autonomy accepted; Android perception edge in-repo; physical device acceptance pending. |
 
 No empty adapter framework. Native delivery is not accepted until physical proof.
 

@@ -1,0 +1,7 @@
+## Copy to android/local.properties (gitignored).
+## sdk.dir is usually written by Android Studio.
+sdk.dir=/ABS/PATH/TO/Android/sdk
+
+## Public-class Orient credentials only. Never put service_role or dispatch secrets here.
+ORIENT_SUPABASE_URL=https://ksmhgaamyheyhefbyglb.supabase.co
+ORIENT_SUPABASE_PUBLISHABLE_KEY=

@@ -1,5 +1,19 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-005
+
+Native Android Pulse perception edge under `android/` (package `com.teamlab.orient`).
+
+- Auth: supabase-kt email/password; session in EncryptedSharedPreferences; publishable key only.
+- FCM data `{ pulse_occurrence_id }` → WorkManager → session load/refresh → SELECT `pulse_occurrences.id` under user JWT → SQLite INSERT OR IGNORE claim → one notification + one 40ms haptic.
+- Token reconcile against `orient_device_push_tokens` when session + token both exist; logout best-effort DELETE then signOut.
+- Readiness: authenticated + POST_NOTIFICATIONS + FCM token + registration success.
+- `google-services.json` gitignored (public repo local-only). Unit tests 22/22 without that file; device assemble awaits human handoff.
+- Wear OS deferred. No service_role / dispatch secret / Firebase Admin on device.
+- Upstream zero-target autonomy already accepted (webhook path live).
+
+Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md).
+
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-003
 
 Trusted Pulse dispatcher (server-only).
@@ -9,7 +23,7 @@ Trusted Pulse dispatcher (server-only).
 - Loads owner `orient_device_push_tokens`; FCM data payload `{ pulse_occurrence_id }` only; Android priority high.
 - `firebase-admin` server dependency; `FIREBASE_SERVICE_ACCOUNT_JSON` + dispatch secret from env (never logged/committed).
 - No delivery ledger; no stale-token DELETE (service_role remains SELECT-only on tokens).
-- No Database Webhook, Android/Kotlin, or physical native delivery acceptance.
+- Database Webhook later accepted through **ORIENT-ANDROID-PULSE-ZERO-TARGET-AUTONOMY-ACCEPTED**; Android perception is BRIDGE-005.
 - Prerequisite: `SUPABASE_SERVICE_ROLE_KEY` must be present on the host serving the route.
 
 Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md).

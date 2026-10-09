@@ -44,3 +44,15 @@ supabase/.branches/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Android native perception edge (ORIENT-ANDROID-PULSE-BRIDGE-005)
+# Production Firebase client config stays local-only on this public repo.
+android/app/google-services.json
+android/local.properties
+android/.gradle/
+android/**/build/
+android/.idea/
+android/*.iml
+android/**/*.iml
+android/.cxx/
+android/captures/

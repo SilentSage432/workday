@@ -2,34 +2,40 @@
 
 ## Current state (2026-10-09)
 
-**ORIENT-ANDROID-PULSE-BRIDGE-003** — trusted Pulse dispatcher implemented in-repo (uncommitted candidate): `POST /api/pulse/dispatch`.
+**ORIENT-ANDROID-PULSE-BRIDGE-005** — native Android Pulse perception edge implemented under `android/` (uncommitted candidate).
+
+Upstream production dispatcher: `30edfb7` on `main`.
 
 Token table hosted clear: **ORIENT-ANDROID-PULSE-TOKEN-HOSTED-AUTHORITY-CLEAR** (`20261009120000` on `ksmhgaamyheyhefbyglb`).
 
-Prior Pulse acceptance unchanged: **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED**.
+**ORIENT-ANDROID-PULSE-ZERO-TARGET-AUTONOMY-ACCEPTED** — Database Webhook → authenticated dispatcher → authoritative occurrence reread → token lookup → `no_targets` when the token table is empty.
 
-Human Firebase/Vercel secrets exist outside repo authority (do not inspect values). Confirm `SUPABASE_SERVICE_ROLE_KEY` is available to the deploy that serves the dispatch route.
+Prior Pulse acceptance unchanged: **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED**.
 
 ### Proven (Pulse)
 
 - Explicit Interrupt Grant + relative 5-minute Commitment-start authority
 - Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
 - Owner-scoped Android FCM token table live with narrow RLS / service_role SELECT
+- Trusted dispatcher + webhook autonomous path through zero-target acceptance
 
-### In-repo delivery progress (not native delivery)
+### In-repo native perception (not physical device acceptance)
 
-- Trusted dispatcher: secret header → re-read occurrence → owner token lookup → FCM data `{ pulse_occurrence_id }`
-- No Database Webhook yet; no Kotlin/Android; no physical native delivery acceptance
+- `/android` package `com.teamlab.orient`: email/password auth, FCM receive, token reconcile, authoritative occurrence reread, SQLite exactly-once local expression claim, one notification + one haptic
+- Rule: no authoritative reread ⇒ no perception claim
+- `google-services.json` is local-only (gitignored); device APK build waits on human file handoff at `android/app/google-services.json`
+- Wear OS deferred
 
 ### Next Pulse boundary
 
-1. Commit/push dispatcher candidate when requested  
-2. Confirm Vercel `SUPABASE_SERVICE_ROLE_KEY` for dispatch  
-3. Create Database Webhook `AFTER INSERT` on `pulse_occurrences` → dispatch route  
-4. `/android` auth + token registration + FCM receive + notification/haptic  
+1. Place `android/app/google-services.json` + publishable key in `android/local.properties`
+2. `assembleDebug` / install on S26 Ultra
+3. Physical acceptance: signed-in target → FCM → one notification + one haptic; duplicates silent
+4. Commit/push Android candidate when requested
 
 ### Still deferred elsewhere
 
+- Wear OS / Watch6
 - Recurring-task physical acceptance
 - Google Calendar removal reconciliation
 - Note Edit / Unretire UI / Archive browser

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Orient</string>
+    <string name="setup_subtitle">Native Pulse perception edge. Sign in with your Orient account.</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_out">Sign out</string>
+    <string name="grant_notifications">Allow notifications</string>
+    <string name="status_starting">Starting…</string>
+    <string name="status_signing_in">Signing in…</string>
+    <string name="status_sign_in_failed">Sign-in failed. Check credentials and try again.</string>
+    <string name="status_ready">Native Pulse readiness: ready</string>
+    <string name="status_not_ready">Native Pulse readiness: not ready\nauth=%1$s\nnotifications=%2$s\nfcm_token=%3$s\ntoken_registered=%4$s</string>
+    <string name="pulse_channel_name">Orient Pulse</string>
+    <string name="pulse_channel_description">Established Pulse perception</string>
+    <string name="pulse_notification_title">Orient Pulse</string>
+    <string name="pulse_notification_body">An established Pulse is present.</string>
+</resources>
