@@ -1,18 +1,14 @@
 # Chat handoff
 
-## Current state (2026-10-08)
+## Current state (2026-10-09)
 
-**ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED** (newest Pulse acceptance)
+**ORIENT-ANDROID-PULSE-BRIDGE-002** — hosted device push token authority implemented in-repo (uncommitted candidate). Migration `20261009120000_orient_device_push_tokens.sql` **not applied** hosted.
 
-Documentation HEAD after Pulse acceptance record: `33308e2322d5d960455d461dc8f02277733d0c4a`
+Prior Pulse acceptance unchanged: **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSICALLY ACCEPTED** on `ksmhgaamyheyhefbyglb` (`b8ba8b8`).
 
-Implementation Pulse HEAD: `b8ba8b8cfb8dc58891f26417428e074719606bb2`
+Discovery/contracts accepted: **ORIENT-ANDROID-PULSE-NATIVE-PATH-CLEAR**, **ORIENT-ANDROID-PULSE-TRANSPORT-CONTRACT-CLEAR**.
 
-Hosted Pulse verification: **ORIENT-PULSE-HOSTED-AUTHORITY-CLEAR** on canonical `ksmhgaamyheyhefbyglb`.
-
-### Also closed (historical; documented late)
-
-**NOTE-LIFECYCLE-001: PHYSICALLY ACCEPTED** — Retire + Delete on LOOK → Notes; hosted authority **NOTE-LIFECYCLE-HOSTED-AUTHORITY-CLEAR** after `92a7a18` / `dpl_5zSfHQNK9dGniZRNjgQRHTrg1hqK`. Edit / Unretire / Archive browser deferred.
+Human Firebase/Vercel secret setup exists outside repo authority (do not inspect values).
 
 ### Proven (Pulse)
 
@@ -20,8 +16,15 @@ Hosted Pulse verification: **ORIENT-PULSE-HOSTED-AUTHORITY-CLEAR** on canonical 
 - Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
 - Post-start due-establishment works; reopen shows in-app expression of the already-established occurrence
 
+### In-repo delivery progress (not native delivery)
+
+- Owner-scoped `orient_device_push_tokens` schema + RLS + domain registration contract
+- No dispatcher, webhook, FCM send, Kotlin, or phone mutation in this tranche
+
 ### Not started / not accepted (Pulse delivery)
 
+- Hosted apply + privilege inspection of token table
+- Dispatcher route / Database Webhook / FCM send
 - Kotlin companion / native Android notification / haptic
 - Wear OS / Watch6 / watch face
 - Final in-app Pulse visual treatment
@@ -29,7 +32,9 @@ Hosted Pulse verification: **ORIENT-PULSE-HOSTED-AUTHORITY-CLEAR** on canonical 
 
 ### Next Pulse boundary
 
-Pulse occurrence → native phone perception/delivery (Kotlin discovery not started).
+1. Commit/push candidate when requested → hosted apply + inspect `service_role` on token table  
+2. Hosted dispatcher + webhook  
+3. `/android` auth + token registration + FCM receive + notification/haptic
 
 ### Still deferred elsewhere
 

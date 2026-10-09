@@ -1,5 +1,18 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-002
+
+Hosted device push token authority for future Android Pulse delivery.
+
+- Table: `public.orient_device_push_tokens` (android-only platform, globally unique `fcm_token`, owner-scoped RLS).
+- Migration: `20261009120000_orient_device_push_tokens.sql` — revoke-first privileges; authenticated own CRUD; intended `service_role` SELECT only; DB-controlled `updated_at` trigger.
+- Domain contract: `domain/devicePushToken.ts` (registration/refresh semantics; no web writer; cross-user reassignment rejected).
+- Explicitly not included: dispatcher, webhook, FCM send, Kotlin/Android project, hosted apply.
+- Pulse grant/occurrence/evaluator tables untouched.
+- Human Firebase/Vercel secrets exist outside repo; values not inspected.
+
+Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md).
+
 ## 2026-10-08 — NOTE-LIFECYCLE-001 historical physical acceptance (docs repair)
 
 Late documentation of Note Lifecycle physical acceptance that already occurred on Tyson’s Samsung phone after corrected candidate `92a7a18` / deployment `dpl_5zSfHQNK9dGniZRNjgQRHTrg1hqK`.

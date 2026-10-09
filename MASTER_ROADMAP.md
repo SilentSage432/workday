@@ -16,11 +16,13 @@
 
 ## Next evidence-backed items
 
-1. Pulse occurrence → native phone perception/delivery (Kotlin discovery not started)
-2. Recurring-task physical acceptance (when ready)
-3. Deferred: Wear OS / channel policy / in-app Pulse visual refinement
-4. Google Calendar removal reconciliation
-5. Note Edit / Unretire only if evidence requires
+1. ORIENT-ANDROID-PULSE-BRIDGE-002 token authority — in-repo; hosted apply pending (`20261009120000`)
+2. Hosted Pulse dispatch (webhook → Vercel → FCM) after token table is live
+3. `/android` perception edge (auth, token reg, notification + one haptic)
+4. Recurring-task physical acceptance (when ready)
+5. Deferred: Wear OS / channel policy / in-app Pulse visual refinement
+6. Google Calendar removal reconciliation
+7. Note Edit / Unretire only if evidence requires
 
 ## Standing law
 

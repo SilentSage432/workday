@@ -223,7 +223,11 @@ FOUNDATION-003 did not authorize PWA behavior. This tranche does, and only at th
 
 ## Pulse hosted establishment
 
-Hosted Orient establishes that an explicitly authorized temporal condition became true (`pg_cron` + database evaluator on `ksmhgaamyheyhefbyglb`). Delivery surfaces only make that established occurrence perceptible. Physically accepted closed-client: Orient fully closed through threshold; reopen expressed the already-established occurrence. Future Android/Kotlin must not become the source of temporal truth, Interrupt Grant authority, Pulse eligibility, urgency, or recommendation. Kotlin discovery has not started. Record: [../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
+Hosted Orient establishes that an explicitly authorized temporal condition became true (`pg_cron` + database evaluator on `ksmhgaamyheyhefbyglb`). Delivery surfaces only make that established occurrence perceptible. Physically accepted closed-client: Orient fully closed through threshold; reopen expressed the already-established occurrence. Future Android/Kotlin must not become the source of temporal truth, Interrupt Grant authority, Pulse eligibility, urgency, or recommendation. Record: [../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
+
+## Pulse delivery transport (in progress)
+
+Closed-app Android delivery uses FCM over already-established `pulse_occurrences`. Android is perception/delivery only. Owner-scoped Android FCM token registration is expressed as `public.orient_device_push_tokens` ([ORIENT-ANDROID-PULSE-BRIDGE-002](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md)); migration is in-repo and **not yet applied** hosted. Dispatcher, webhook, FCM send, and Kotlin remain deferred. Token rows are not Pulse authority, acknowledgment, urgency, or perception evidence.
 
 ## Pulse, reminders, and notification delivery
 
@@ -232,10 +236,10 @@ Three separate things:
 | Thing | Role | V0 |
 | --- | --- | --- |
 | Reminder | A stored explicit attention point | Persist it. Show it through projection. |
-| Pulse | A projection that reorients: where, intended block, active thread, next commitment, open interval | In-app only. Pure function. |
-| Delivery | Push, email, watch, or any provider | Not chosen. Not required to deploy. |
+| Pulse | A projection that reorients: where, intended block, active thread, next commitment, open interval | In-app expression of established occurrences. |
+| Delivery | Push / native perception of an already-established occurrence | FCM path selected by discovery; token authority in-repo; send/dispatch/Android not implemented. |
 
-No provider SDK is added. A delivery interface is not added until a provider is chosen. An empty adapter framework is not useful yet.
+No empty adapter framework. Native delivery is not accepted until physical proof.
 
 ## Voice
 
