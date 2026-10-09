@@ -441,6 +441,10 @@ describe("note persistence", () => {
       new URL("../supabase/migrations/20261008210000_note_lifecycle.sql", import.meta.url),
       "utf8",
     );
+    const correctionSql = readFileSync(
+      new URL("../supabase/migrations/20261008220000_note_update_authority_correction.sql", import.meta.url),
+      "utf8",
+    );
     expect(createSql).toContain("enable row level security");
     expect(createSql).toContain("notes_select_own");
     expect(createSql).toContain("notes_insert_own");
@@ -456,6 +460,13 @@ describe("note persistence", () => {
     expect(lifecycleSql).not.toMatch(/on delete cascade|on delete set null/i);
     expect(lifecycleSql).not.toMatch(/alter table public\.tasks/);
     expect(lifecycleSql).not.toMatch(/grant .+ on table public\.notes to (anon|public)/);
+    expect(correctionSql).toContain("revoke update on table public.notes from authenticated");
+    expect(correctionSql).toContain("grant update (retired_at) on table public.notes to authenticated");
+    expect(correctionSql).not.toMatch(/revoke delete|revoke select|revoke insert/i);
+    expect(correctionSql).not.toMatch(/grant update on table public\.notes to authenticated/);
+    expect(correctionSql).not.toMatch(/grant update,|grant select, insert, update/);
+    expect(correctionSql).not.toMatch(/create policy|drop policy|alter table|update public\.notes|delete from/i);
+    expect(correctionSql).not.toMatch(/alter table public\.tasks|originating_note/);
     const provenance = readFileSync(
       new URL("../supabase/migrations/20261005020600_task_originating_note.sql", import.meta.url),
       "utf8",

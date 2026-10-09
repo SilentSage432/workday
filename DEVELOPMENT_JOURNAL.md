@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-08 — NOTE-LIFECYCLE-001A
+
+Corrective forward migration after hosted verification: revoke table-level `UPDATE` on `public.notes` from `authenticated`, then re-grant `UPDATE (retired_at)`. Lifecycle-001 applied and was semantically correct in isolation; additive grants left historical table-level UPDATE in place. Not applied to hosted yet.
+
+Record: [docs/implementation/NOTE-LIFECYCLE-001A.md](docs/implementation/NOTE-LIFECYCLE-001A.md).
+
 ## 2026-10-08 — NOTE-LIFECYCLE-001
 
 Implemented Retire + Delete for retained Notes from NOTE-LIFECYCLE-DISCOVERY-001.

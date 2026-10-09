@@ -2,30 +2,21 @@
 
 ## Current state (2026-10-08)
 
-Implemented **NOTE-LIFECYCLE-001** (working tree; commit/push when asked). Hosted migration **not** applied.
+**NOTE-LIFECYCLE-001** committed/pushed at `1612b2b` and applied to hosted Orient. Hosted verification found surviving table-level UPDATE.
 
-Baseline before work: `b69bcf9765e3caadc3c1b283f0a1b6df937ab6b9`.
+Working tree: **NOTE-LIFECYCLE-001A** corrective migration (not committed; not applied).
 
-### What changed
+### What changed (001A)
 
-- Notes gain `retired_at` / `retiredAt`.
-- Owner `UPDATE (retired_at)` + DELETE grants and RLS for Notes.
-- `retireNote` / `deleteNote`; operational `loadNotes` = current only.
-- LOOK → Notes: Retire (no confirm), Delete (confirm). Cited Delete fails honestly; Retire remains.
-- Docs: lifecycle decision + implementation; DOMAIN and related Note docs updated.
-
-### Accepted foundations (do not reopen)
-
-- Desktop Day territory / LOOK / ADD / ACT / lateral borrow / material
-- Phone Day temporal continuity
-- Phone LOOK progressive disclosure (physically accepted)
-- Center ADD plus correction (physically accepted)
+- New migration `20261008220000_note_update_authority_correction.sql`: `REVOKE UPDATE` then `GRANT UPDATE (retired_at)`.
+- Docs/tests for the privilege convergence. No app code change. No Note data change.
 
 ### Next physical step
 
-1. Review and apply migration `20261008210000_note_lifecycle.sql` to hosted Supabase.
-2. Commit / push / deploy when asked.
-3. Verify on phone/desktop: Retire removes from LOOK → Notes; Delete confirms and removes uncited; cited Delete explains and keeps Note.
+1. Commit / push 001A when asked.
+2. Apply corrective migration to `ksmhgaamyheyhefbyglb`.
+3. Re-verify hosted privileges: no table UPDATE; `retired_at` UPDATE only; DELETE intact.
+4. Phone/desktop physical acceptance of Retire/Delete.
 
 ### Still deferred
 

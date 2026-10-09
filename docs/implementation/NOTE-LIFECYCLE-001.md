@@ -73,4 +73,4 @@ Edit, Unretire UI, Archive browser, search, folders, tags, rich text, attachment
 
 ## Later
 
-Physical acceptance after hosted migration application and phone/desktop exercise of Retire and Delete. Pulse remains the next major exploration after that acceptance.
+Hosted application of this migration exposed surviving table-level UPDATE privilege; [NOTE-LIFECYCLE-001A.md](NOTE-LIFECYCLE-001A.md) converges authority with `REVOKE UPDATE` then `GRANT UPDATE (retired_at)`. Physical acceptance of Retire and Delete follows that correction. Pulse remains the next major exploration after physical acceptance.

@@ -2,7 +2,8 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
-- **NOTE-LIFECYCLE-001** — Retire + Delete on LOOK → Notes; hosted migration pending review/application; physical acceptance after deploy.
+- **NOTE-LIFECYCLE-001** — Retire + Delete on LOOK → Notes; hosted applied; privilege convergence pending **001A**.
+- **NOTE-LIFECYCLE-001A** — revoke table-level Note UPDATE; re-grant `UPDATE (retired_at)` only (working tree; not applied).
 - **MOBILE-CENTER-PLUS-CORRECTION-001** — phone ADD single Plus glyph; physically accepted.
 
 ## Accepted foundations (closed)
