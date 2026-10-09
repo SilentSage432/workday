@@ -187,6 +187,67 @@
   border-color: rgb(243 215 176 / 0.85);
 }
 
+/* Phone LOOK progressive disclosure — orientation first; Position/Focus/Operations secondary. */
+.orient[data-form="phone"] .orient-look-orientation {
+  margin: 0.2rem 0 0;
+  color: var(--orient-muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+}
+
+.orient[data-form="phone"] .orient-look-lens-disclosure,
+.orient[data-form="phone"] .orient-look-operations-disclosure {
+  margin: 0.55rem 0 0;
+  border-top: 1px solid rgb(244 239 230 / 0.1);
+  padding-top: 0.35rem;
+}
+
+.orient[data-form="phone"] .orient-look-lens-disclosure > summary,
+.orient[data-form="phone"] .orient-look-operations-disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.15rem;
+  color: var(--orient-ink);
+  font-size: 0.95rem;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+}
+
+.orient[data-form="phone"] .orient-look-lens-disclosure > summary::-webkit-details-marker,
+.orient[data-form="phone"] .orient-look-operations-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.orient[data-form="phone"] .orient-look-disclosure-kind {
+  color: var(--orient-muted);
+  font-weight: 520;
+}
+
+.orient[data-form="phone"] .orient-look-disclosure-value {
+  color: var(--orient-ink);
+  font-weight: 600;
+  text-align: right;
+}
+
+.orient[data-form="phone"] .orient-look-lens-disclosure[open] > summary,
+.orient[data-form="phone"] .orient-look-operations-disclosure[open] > summary {
+  color: var(--orient-ink);
+}
+
+.orient[data-form="phone"] .orient-look-lens-disclosure[open] > summary .orient-look-disclosure-kind {
+  color: var(--orient-ink);
+}
+
+.orient[data-form="phone"] [data-look-position-disclosure] [data-relocation] > h2,
+.orient[data-form="phone"] [data-look-focus-disclosure] [aria-label="Context focus"] > h2 {
+  margin-top: 0.35rem;
+}
+
 .orient-act-select {
   display: flex;
   flex-direction: column;

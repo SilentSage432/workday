@@ -200,7 +200,11 @@ describe("LOOK · ADD · ACT phone grammar", () => {
       (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
     });
     expect(view.querySelector("[data-look-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-look-role]")?.getAttribute("data-look-role")).toBe("phone-calm");
+    expect(view.querySelector("[data-look-orientation]")?.textContent).toMatch(/Day/);
     expect(view.querySelector("[data-question-list]")).not.toBeNull();
+    expect(view.querySelector("[data-look-position-disclosure]")).not.toBeNull();
+    expect(view.querySelector("[data-look-focus-disclosure]")).not.toBeNull();
     expect(view.querySelector("[data-relocation]")).not.toBeNull();
     expect(view.querySelector('[aria-label="Context focus"]')).not.toBeNull();
     expect(view.querySelector("[data-look-notes]")?.textContent).toBe("Notes");
@@ -208,6 +212,110 @@ describe("LOOK · ADD · ACT phone grammar", () => {
       buttonNamed(view.querySelector("[data-question-list]") as HTMLElement, "Present").click();
     });
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("present");
+  });
+
+  it("phone LOOK initially discloses orientation calmly and keeps Question immediate", async () => {
+    const view = await renderPhone();
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+    const look = view.querySelector("[data-look-surface]") as HTMLElement;
+    expect(look.querySelector("[data-look-orientation]")?.textContent).toContain("Day");
+    expect(look.querySelector("[data-look-orientation]")?.textContent).toContain("Focus Everything");
+    expect(look.querySelector("[data-question-list]")).not.toBeNull();
+    const dayKey = [...look.querySelectorAll("[data-question-list] button")].find(
+      (item) => item.textContent?.trim() === "Day",
+    );
+    expect(dayKey?.getAttribute("aria-current")).toBe("true");
+    expect(look.querySelector("[data-look-position-disclosure]")?.hasAttribute("open")).toBe(false);
+    expect(look.querySelector("[data-look-position-current]")?.textContent?.trim().length).toBeGreaterThan(0);
+    expect(look.querySelector("[data-look-focus-disclosure]")?.hasAttribute("open")).toBe(false);
+    expect(look.querySelector("[data-look-focus-current]")?.textContent).toBe("Everything");
+    expect(look.querySelector("[data-look-operations-disclosure]")?.hasAttribute("open")).toBe(false);
+  });
+
+  it("phone LOOK Position Focus and Operations disclosures expand with existing behavior", async () => {
+    const view = await renderPhone();
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+
+    const positionDisclosure = view.querySelector("[data-look-position-disclosure]") as HTMLDetailsElement;
+    await act(async () => {
+      positionDisclosure.open = true;
+      positionDisclosure.dispatchEvent(new Event("toggle"));
+    });
+    expect(positionDisclosure.open).toBe(true);
+    expect(view.querySelector("[data-relocation]")?.textContent).toMatch(/Previous civil day/);
+    expect(view.querySelector("#orient-civil-date")).not.toBeNull();
+    await act(async () => {
+      buttonNamed(view.querySelector("[data-relocation]") as HTMLElement, "Next civil day").click();
+    });
+    expect(view.querySelector("[data-look-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-look-position-current]")?.textContent).toMatch(/Oct/);
+
+    const focusDisclosure = view.querySelector("[data-look-focus-disclosure]") as HTMLDetailsElement;
+    await act(async () => {
+      focusDisclosure.open = true;
+      focusDisclosure.dispatchEvent(new Event("toggle"));
+    });
+    expect(focusDisclosure.open).toBe(true);
+    await act(async () => {
+      buttonNamed(view.querySelector('[aria-label="Context focus"]') as HTMLElement, "Family").click();
+    });
+    expect(view.querySelector("[data-look-surface]")).toBeNull();
+
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-look-focus-current]")?.textContent).toBe("Family");
+    expect(view.querySelector("[data-look-orientation]")?.textContent).toContain("Focus Family");
+
+    const ops = view.querySelector("[data-look-operations-disclosure]") as HTMLDetailsElement;
+    await act(async () => {
+      ops.open = true;
+      ops.dispatchEvent(new Event("toggle"));
+    });
+    expect(ops.open).toBe(true);
+    expect(view.querySelector("[data-look-notes]")?.textContent).toBe("Notes");
+    expect(view.querySelector("[data-look-stewardship]")?.textContent).toContain("Stewardship");
+    expect(view.querySelector("[data-look-recurring-tasks]")?.textContent).toContain("Recurring Tasks");
+    expect(view.querySelector("[data-manage-work]")?.textContent).toContain("Manage Work");
+    expect(view.querySelector("[data-manage-external-calendars]")?.textContent).toContain("Google Calendar");
+    expect(view.querySelector("[data-look-operations]")?.textContent).toContain("Sign out");
+  });
+
+  it("closing phone LOOK without changes preserves Question anchor and Focus", async () => {
+    const view = await renderPhone();
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+    await act(async () => {
+      (view.querySelector("[data-surface-close]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-look-surface]")).toBeNull();
+    expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
+    await act(async () => {
+      (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+    });
+    expect(view.querySelector("[data-look-focus-current]")?.textContent).toBe("Everything");
+    expect(view.querySelector("[data-look-orientation]")?.textContent).toContain("Day");
+  });
+
+  it("phone LOOK keeps one-tap Question selection for Present Day Week Month", async () => {
+    const view = await renderPhone();
+    for (const name of ["Present", "Day", "Week", "Month"] as const) {
+      await act(async () => {
+        (view.querySelector("[data-look-control]") as HTMLButtonElement).click();
+      });
+      expect(view.querySelector("[data-look-position-disclosure]")?.hasAttribute("open")).toBe(false);
+      await act(async () => {
+        buttonNamed(view.querySelector("[data-question-list]") as HTMLElement, name).click();
+      });
+      expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe(name.toLowerCase());
+      expect(view.querySelector("[data-look-surface]")).toBeNull();
+    }
   });
 
   it("LOOK → Notes opens Notes inspection without changing ADD → Note", async () => {

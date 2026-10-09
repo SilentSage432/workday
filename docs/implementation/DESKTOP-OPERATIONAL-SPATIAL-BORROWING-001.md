@@ -70,7 +70,7 @@ Secondary (progressive disclosure via `<details data-look-operations-disclosure>
 
 Current orientation is summarized in `data-look-orientation` (question · position · Focus). Capabilities are unchanged.
 
-Phone LOOK remains the full always-visible list (no disclosure redesign).
+Phone LOOK composition was later specialized in MOBILE-LOOK-PROGRESSIVE-DISCLOSURE-001 (orientation summary + immediate Question + Position/Focus/Operations disclosures). Desktop LOOK in this record remains navigator/lens as described above.
 
 ### ADD — chooser first
 

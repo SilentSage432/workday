@@ -877,6 +877,9 @@ function TaskSelect({
   );
 }
 
+/** LOOK composition by form factor. Semantics stay shared; disclosure differs. */
+export type LookComposition = "navigator-lens" | "phone-calm";
+
 export function LookSurface({
   question,
   onChooseQuestion,
@@ -892,7 +895,7 @@ export function LookSurface({
   onOpenRecurringTasks,
   contexts,
   focus = { kind: "everything" },
-  operationsDisclosure = false,
+  lookComposition = "navigator-lens",
   onChooseFocus,
   onClose,
 }: {
@@ -910,12 +913,18 @@ export function LookSurface({
   onOpenRecurringTasks: () => void;
   contexts: SourceRead<Context>;
   focus?: ContextFocus;
-  /** Desktop-only progressive disclosure for management/config operations. */
-  operationsDisclosure?: boolean;
+  /**
+   * Form-factor LOOK composition.
+   * - navigator-lens: desktop — orientation + full Q/P/F + Operations disclosure
+   * - phone-calm: phone — orientation + Q immediate + Position/Focus/Operations disclosures
+   */
+  lookComposition?: LookComposition;
   onChooseFocus: (focus: { kind: "everything" } | { kind: "context"; id: string; name: string }) => void;
   onClose: () => void;
 }) {
   const focusLabel = focus.kind === "everything" ? "Everything" : focus.name;
+  const placeLabel = positionWord(question, anchor);
+  const phoneCalm = lookComposition === "phone-calm";
   const operations = (
     <div className="orient-actions">
       <button type="button" className="orient-action" data-look-notes="true" onClick={onOpenNotes}>
@@ -949,52 +958,69 @@ export function LookSurface({
     </div>
   );
 
+  const position = (
+    <PositionSurface
+      anchor={anchor}
+      today={today}
+      onMove={onMove}
+      onAdoptToday={onAdoptToday}
+      onSignOut={onSignOut}
+      onManageWork={onManageWork}
+      onManageExternalCalendars={onManageExternalCalendars}
+      onClose={onClose}
+      includeDismiss={false}
+      includeOperations={false}
+    />
+  );
+
+  const focusList = <FocusList contexts={contexts} focus={focus} onChoose={onChooseFocus} />;
+
   return (
-    <div data-look-surface="true" data-look-role={operationsDisclosure ? "navigator-lens" : "full"}>
+    <div data-look-surface="true" data-look-role={lookComposition}>
       <header className="orient-surface-header">
         <div>
           <h2>LOOK</h2>
           <p className="orient-capture-lead">Where am I in time?</p>
-          {operationsDisclosure ? (
-            <p className="orient-look-orientation" data-look-orientation="true">
-              {QUESTION_LABEL[question]} · {positionWord(question, anchor)} · Focus {focusLabel}
-            </p>
-          ) : null}
+          <p className="orient-look-orientation" data-look-orientation="true">
+            {QUESTION_LABEL[question]} · {placeLabel} · Focus {focusLabel}
+          </p>
         </div>
         <SurfaceClose onClose={onClose} label="Close LOOK" />
       </header>
       <div data-look-lens="true">
         <QuestionList question={question} onChoose={onChooseQuestion} />
-        <PositionSurface
-          anchor={anchor}
-          today={today}
-          onMove={onMove}
-          onAdoptToday={onAdoptToday}
-          onSignOut={onSignOut}
-          onManageWork={onManageWork}
-          onManageExternalCalendars={onManageExternalCalendars}
-          onClose={onClose}
-          includeDismiss={false}
-          includeOperations={false}
-        />
-        <FocusList contexts={contexts} focus={focus} onChoose={onChooseFocus} />
-      </div>
-      <section
-        data-look-operations="true"
-        data-look-operations-secondary={operationsDisclosure ? "true" : undefined}
-        aria-label="Operations"
-      >
-        {operationsDisclosure ? (
-          <details className="orient-look-operations-disclosure" data-look-operations-disclosure="true">
-            <summary>Operations</summary>
-            {operations}
+        {phoneCalm ? (
+          <details className="orient-look-lens-disclosure" data-look-position-disclosure="true">
+            <summary>
+              <span className="orient-look-disclosure-kind">Where in time</span>
+              <span className="orient-look-disclosure-value" data-look-position-current="true">
+                {placeLabel}
+              </span>
+            </summary>
+            {position}
           </details>
         ) : (
-          <>
-            <h2>Operations</h2>
-            {operations}
-          </>
+          position
         )}
+        {phoneCalm ? (
+          <details className="orient-look-lens-disclosure" data-look-focus-disclosure="true">
+            <summary>
+              <span className="orient-look-disclosure-kind">Focus</span>
+              <span className="orient-look-disclosure-value" data-look-focus-current="true">
+                {focusLabel}
+              </span>
+            </summary>
+            {focusList}
+          </details>
+        ) : (
+          focusList
+        )}
+      </div>
+      <section data-look-operations="true" data-look-operations-secondary="true" aria-label="Operations">
+        <details className="orient-look-operations-disclosure" data-look-operations-disclosure="true">
+          <summary>Operations</summary>
+          {operations}
+        </details>
       </section>
     </div>
   );

@@ -314,17 +314,42 @@ describe("cross-form-factor semantic parity", () => {
     expect(view.querySelector("[data-recurring-task-manage]")).not.toBeNull();
   });
 
-  it("phone LOOK keeps full operations list and does not use desktop lateral borrow", async () => {
+  it("phone LOOK uses calm progressive disclosure without desktop lateral borrow", async () => {
     const view = await renderForm(true);
     expect(view.querySelector("[data-question]")?.getAttribute("data-question")).toBe("day");
     await openLook(view);
     expect(view.querySelector("[data-look-surface]")).not.toBeNull();
+    expect(view.querySelector("[data-look-role]")?.getAttribute("data-look-role")).toBe("phone-calm");
     expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("false");
     expect(view.querySelector("[data-borrow-mode]")).toBeNull();
-    expect(view.querySelector("[data-look-operations-disclosure]")).toBeNull();
-    expect(view.querySelector("[data-look-orientation]")).toBeNull();
+    expect(view.querySelector("[data-look-orientation]")?.textContent).toContain("Day");
+    expect(view.querySelector("[data-look-orientation]")?.textContent).toMatch(/Focus/);
+    expect(view.querySelector("[data-question-list]")).not.toBeNull();
+    expect(view.querySelector("[data-look-position-disclosure]")).not.toBeNull();
+    expect(view.querySelector("[data-look-position-disclosure]")?.hasAttribute("open")).toBe(false);
+    expect(view.querySelector("[data-look-position-current]")?.textContent?.trim().length).toBeGreaterThan(0);
+    expect(view.querySelector("[data-look-focus-disclosure]")).not.toBeNull();
+    expect(view.querySelector("[data-look-focus-disclosure]")?.hasAttribute("open")).toBe(false);
+    expect(view.querySelector("[data-look-focus-current]")?.textContent).toContain("Everything");
+    expect(view.querySelector("[data-look-operations-disclosure]")).not.toBeNull();
+    expect(view.querySelector("[data-look-operations-disclosure]")?.hasAttribute("open")).toBe(false);
     expect(view.querySelector("[data-look-notes]")?.textContent).toBe("Notes");
     expect(view.querySelector("[role='dialog']")?.getAttribute("data-borrowed-surface")).toBe("sheet");
+  });
+
+  it("desktop LOOK composition stays navigator-lens with full Position and Focus", async () => {
+    const view = await renderForm(false);
+    await openLook(view);
+    expect(view.querySelector("[data-look-role]")?.getAttribute("data-look-role")).toBe("navigator-lens");
+    expect(view.querySelector("[data-look-orientation]")).not.toBeNull();
+    expect(view.querySelector("[data-question-list]")).not.toBeNull();
+    expect(view.querySelector("[data-look-position-disclosure]")).toBeNull();
+    expect(view.querySelector("[data-look-focus-disclosure]")).toBeNull();
+    expect(view.querySelector("[data-relocation]")).not.toBeNull();
+    expect(view.querySelector('[aria-label="Context focus"]')).not.toBeNull();
+    expect(view.querySelector("[data-look-operations-disclosure]")).not.toBeNull();
+    expect(view.querySelector("[data-spatial-borrow]")?.getAttribute("data-spatial-borrow")).toBe("true");
+    expect(view.querySelector("[data-borrow-mode]")?.getAttribute("data-borrow-mode")).toBe("lateral");
   });
 
   it("desktop and phone fresh startups ask Day, and LOOK still reaches Present", async () => {

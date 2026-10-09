@@ -1182,7 +1182,7 @@ export function OrientView({
               onOpenRecurringTasks={() => setSurface({ kind: "recurring-task-manage" })}
               contexts={contexts}
               focus={focus}
-              operationsDisclosure={form === "desktop"}
+              lookComposition={form === "desktop" ? "navigator-lens" : "phone-calm"}
               onChooseFocus={(next) => {
                 setFocus(next);
                 closeSurface();
