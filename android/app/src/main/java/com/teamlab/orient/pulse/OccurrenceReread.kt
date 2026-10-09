@@ -22,6 +22,7 @@ class OccurrenceReread(
             return OccurrenceRereadResult.NotVisible
         }
 
+        PerceptionTrace.selectAttempted(occurrenceId.value)
         return try {
             val rows =
                 supabase.client
@@ -35,11 +36,26 @@ class OccurrenceReread(
 
             val visible = rows.firstOrNull()?.id?.let { PulseOccurrenceId.parse(it) }
             if (visible != null) {
+                PerceptionTrace.selectResult(
+                    occurrenceId = occurrenceId.value,
+                    visible = true,
+                    error = null,
+                )
                 OccurrenceRereadResult.Visible(visible)
             } else {
+                PerceptionTrace.selectResult(
+                    occurrenceId = occurrenceId.value,
+                    visible = false,
+                    error = null,
+                )
                 OccurrenceRereadResult.NotVisible
             }
-        } catch (_: Throwable) {
+        } catch (error: Throwable) {
+            PerceptionTrace.selectResult(
+                occurrenceId = occurrenceId.value,
+                visible = false,
+                error = error,
+            )
             OccurrenceRereadResult.TransientFailure
         }
     }

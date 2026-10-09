@@ -2,6 +2,7 @@ package com.teamlab.orient.auth
 
 import android.content.Context
 import com.teamlab.orient.BuildConfig
+import com.teamlab.orient.pulse.PerceptionTrace
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.SettingsSessionManager
@@ -35,7 +36,9 @@ class OrientSupabase private constructor(
 
     suspend fun hasAuthenticatedSession(): Boolean {
         ensureSessionLoaded()
-        return currentUserId() != null
+        val available = currentUserId() != null
+        PerceptionTrace.authenticatedUserAvailable(available)
+        return available
     }
 
     suspend fun currentUserId(): String? {
@@ -44,6 +47,10 @@ class OrientSupabase private constructor(
     }
 
     suspend fun ensureSessionLoaded() {
+        PerceptionTrace.sessionRestoreEntered()
+        PerceptionTrace.sessionStatusClass(
+            PerceptionTrace.sessionStatusClassName(auth.sessionStatus.value),
+        )
         when (auth.sessionStatus.value) {
             is SessionStatus.Authenticated,
             is SessionStatus.NotAuthenticated,
@@ -57,7 +64,9 @@ class OrientSupabase private constructor(
             }
         }
         // Refresh when a persisted session may be stale.
-        runCatching { auth.refreshCurrentSession() }
+        PerceptionTrace.refreshAttempted()
+        val refresh = runCatching { auth.refreshCurrentSession() }
+        PerceptionTrace.refreshResult(refresh.isSuccess, refresh.exceptionOrNull())
     }
 
     companion object {

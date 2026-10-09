@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-007B
+
+Native perception semantic observability only (uncommitted; not installed).
+
+- First autonomous Pulse reached FCM/WorkManager; worker success collapsed Silent subtypes — 007A inconclusive.
+- Tag `OrientPulsePerception`: session/refresh/user, SELECT visibility, decision enums, claim/notify/haptic — no secrets.
+- Runtime semantics unchanged vs `54724f0`.
+
+Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-007.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-007.md).
+
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-006B
 
 Client serialization correction for native token registration (uncommitted).

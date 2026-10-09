@@ -2,9 +2,11 @@
 
 ## Current state (2026-10-09)
 
-**ORIENT-ANDROID-PULSE-BRIDGE-006B** — token registration serialization correction implemented (uncommitted; not installed).
+**ORIENT-ANDROID-PULSE-BRIDGE-007B** — perception semantic observability (uncommitted; not installed).
 
-Canonical candidate baseline: `699c01f`. S26 physical: auth/notifications/fcm_token yes; token_registered no until corrected APK.
+S26 endpoint established (`54724f0`). First autonomous Pulse: FCM+WorkManager ran; AUTHORITATIVE_REREAD_FAILED; subtype SilentNoSession vs NotVisible inconclusive until `OrientPulsePerception` logs from next Pulse.
+
+Prior: **006** token registration corrected at `54724f0`.
 
 **006A root cause:** client omitted `platform` on PostgREST INSERT (`encodeDefaults=false` + Kotlin default). Hosted authority correct.
 
@@ -21,8 +23,8 @@ Prior Pulse acceptance unchanged: **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSI
 - Explicit Interrupt Grant + relative 5-minute Commitment-start authority
 - Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
 - Owner-scoped Android FCM token table live with narrow RLS / service_role SELECT
-- Trusted dispatcher + webhook autonomous path through zero-target acceptance
-- Native perception edge on S26 through FCM token presence; registration blocked by client serialization (diagnosed)
+- Trusted dispatcher + webhook autonomous path through FCM to S26
+- S26 endpoint established; first autonomous Pulse stopped at authoritative reread (subtype pending observability)
 
 ### In-repo native perception
 
@@ -30,13 +32,13 @@ Prior Pulse acceptance unchanged: **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001: PHYSI
 - Rule: no authoritative reread ⇒ no perception claim
 - `google-services.json` is local-only (gitignored)
 - Wear OS deferred
-- 006B: required `platform=android` on wire + safe registration failure logs
+- 007B: `OrientPulsePerception` semantic logs (session/reread/decision/expression)
 
 ### Next Pulse boundary
 
-1. Review 006B → commit/push when requested
-2. Install corrected APK on S26 (keep Tyson session) → confirm `token_registered` + one hosted row
-3. Physical Pulse acceptance: FCM → one notification + one haptic; duplicates silent
+1. Review/commit 007B → install observability APK (preserve Tyson session)
+2. One real Pulse → capture `OrientPulsePerception` decision subtype
+3. Correct proven defect → physical notification + haptic acceptance
 
 ### Still deferred elsewhere
 

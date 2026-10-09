@@ -232,7 +232,7 @@ Closed-app Android delivery uses FCM over already-established `pulse_occurrences
 - Token registration: `public.orient_device_push_tokens` hosted authority clear ([ORIENT-ANDROID-PULSE-BRIDGE-002](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md)).
 - Trusted dispatcher: `POST /api/pulse/dispatch` re-reads occurrence ownership and sends FCM data `{ pulse_occurrence_id }` ([ORIENT-ANDROID-PULSE-BRIDGE-003](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md)).
 - Database Webhook → dispatch autonomy accepted through zero-target (`no_targets` with empty token table).
-- Native Android perception edge: `android/` package `com.teamlab.orient` — authoritative user-JWT reread, local exactly-once expression claim, one notification + one haptic ([ORIENT-ANDROID-PULSE-BRIDGE-005](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md)). Wear OS remains deferred. S26 auth/notifications/FCM established; token registration client serialization corrected in [ORIENT-ANDROID-PULSE-BRIDGE-006](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-006.md) (reinstall pending).
+- Native Android perception edge: `android/` package `com.teamlab.orient` — authoritative user-JWT reread, local exactly-once expression claim, one notification + one haptic ([ORIENT-ANDROID-PULSE-BRIDGE-005](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md)). Wear OS remains deferred. S26 endpoint established ([ORIENT-ANDROID-PULSE-BRIDGE-006](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-006.md)); first autonomous delivery failed at authoritative reread with subtype observability added in [ORIENT-ANDROID-PULSE-BRIDGE-007](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-007.md).
 
 **NO AUTHORITATIVE REREAD = NO PERCEPTION CLAIM.**
 

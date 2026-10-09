@@ -17,7 +17,11 @@ class PulsePerceptionWorker(
 ) : CoroutineWorker(appContext, params) {
     override suspend fun doWork(): Result {
         val raw = inputData.getString(KEY_OCCURRENCE_ID)
-        val occurrenceId = PulseOccurrenceId.parse(raw) ?: return Result.success()
+        val occurrenceId =
+            PulseOccurrenceId.parse(raw) ?: run {
+                PerceptionTrace.invalidOccurrenceId()
+                return Result.success()
+            }
 
         val supabase = OrientSupabase.get(applicationContext)
         val claimStore =
@@ -28,8 +32,22 @@ class PulsePerceptionWorker(
                 reread = { id -> OccurrenceReread(supabase).reread(id) },
                 tryClaim = { id -> claimStore.tryClaim(id) },
                 express = { id ->
-                    PulseNotification.post(applicationContext, id)
-                    PulseHaptic.expressOnce(applicationContext)
+                    PerceptionTrace.notificationAttempted(id.value)
+                    try {
+                        PulseNotification.post(applicationContext, id)
+                        PerceptionTrace.notificationPosted(id.value)
+                    } catch (error: Throwable) {
+                        PerceptionTrace.notificationFailed(id.value, error)
+                        throw error
+                    }
+                    PerceptionTrace.hapticAttempted(id.value)
+                    try {
+                        PulseHaptic.expressOnce(applicationContext)
+                        PerceptionTrace.hapticInvoked(id.value)
+                    } catch (error: Throwable) {
+                        PerceptionTrace.hapticFailed(id.value, error)
+                        throw error
+                    }
                 },
             )
 

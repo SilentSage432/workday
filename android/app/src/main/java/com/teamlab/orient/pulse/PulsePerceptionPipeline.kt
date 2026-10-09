@@ -36,25 +36,37 @@ class PulsePerceptionPipeline(
                 reread = if (session) reread(occurrenceId) else OccurrenceRereadResult.NotVisible,
             )
 
-        return when (decision) {
-            PerceptionDecision.SilenceNoSession,
-            PerceptionDecision.SilenceOccurrenceNotVisible,
-            -> Outcome.Silent
-            PerceptionDecision.RetryTransientFailure -> {
-                if (PerceptionAuthority.shouldRetryTransient(attemptCount)) {
-                    Outcome.Retry
-                } else {
-                    Outcome.Silent
+        val outcome =
+            when (decision) {
+                PerceptionDecision.SilenceNoSession,
+                PerceptionDecision.SilenceOccurrenceNotVisible,
+                -> Outcome.Silent
+                PerceptionDecision.RetryTransientFailure -> {
+                    if (PerceptionAuthority.shouldRetryTransient(attemptCount)) {
+                        Outcome.Retry
+                    } else {
+                        Outcome.Silent
+                    }
+                }
+                is PerceptionDecision.Express -> {
+                    PerceptionTrace.claimAttempted(decision.occurrenceId.value)
+                    val claim =
+                        try {
+                            tryClaim(decision.occurrenceId)
+                        } catch (error: Throwable) {
+                            PerceptionTrace.claimFailed(decision.occurrenceId.value, error)
+                            throw error
+                        }
+                    PerceptionTrace.claimResult(decision.occurrenceId.value, claim)
+                    if (!ExpressionClaimGate.mayExpress(claim)) {
+                        Outcome.Silent
+                    } else {
+                        express(decision.occurrenceId)
+                        Outcome.Expressed
+                    }
                 }
             }
-            is PerceptionDecision.Express -> {
-                val claim = tryClaim(decision.occurrenceId)
-                if (!ExpressionClaimGate.mayExpress(claim)) {
-                    return Outcome.Silent
-                }
-                express(decision.occurrenceId)
-                Outcome.Expressed
-            }
-        }
+        PerceptionTrace.decision(occurrenceId.value, decision, outcome)
+        return outcome
     }
 }
