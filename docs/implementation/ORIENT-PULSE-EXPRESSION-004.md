@@ -546,13 +546,7 @@ EXPRESSION-001–003 principles remain intact.
 
 **ORIENT-PULSE-EXPRESSION-005 — ARRIVAL AUTHORITY IMPLEMENTATION DESIGN**
 
-Discovery / design only. Design the smallest safe evolution from the accepted production authority model to explicit relationship identity supporting `relative_before` and `arrival`.
-
-Must cover as one coherent migration/runtime plan: grant relationship identity; existing-grant backfill; active-grant uniqueness; relationship/parameter constraints; occurrence relationship provenance; existing-occurrence compatibility; evaluator branching; occurrence identity; source rescheduling; source deletion lifecycle; RLS/security preservation; human grant/revoke behavior; expression eligibility inputs; dispatcher implications; Android authoritative reread implications; Wear implications; regression coverage; migration ordering; rollback/correction strategy; physical acceptance sequence.
-
-Do **not** implement during EXPRESSION-005.  
-Do **not** choose ARRIVAL haptic morphology.  
-Do **not** choose numeric ARRIVAL expression eligibility duration unless required for design coherence.
+Completed as design and published: [ORIENT-PULSE-EXPRESSION-005.md](ORIENT-PULSE-EXPRESSION-005.md) (`ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-PUBLISHED`). Canonical order: 005-I foundation → 005-II native silence → 005-III human ARRIVAL UI → 005-IV eligibility+morphology.
 
 ---
 

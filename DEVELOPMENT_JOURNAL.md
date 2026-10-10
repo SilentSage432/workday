@@ -1,5 +1,28 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005A
+
+Arrival authority implementation design published (docs only).
+
+- Baseline `c76a97b`; project `ksmhgaamyheyhefbyglb`.
+- Accepted: `relationship` text+CHECK; relative_before/arrival; lead rules; uniqueness; occurrence provenance; id-only transport; LIFECYCLE-003/RLS preserved.
+- Corrected order: 005-I foundation → 005-II native silence → 005-III human ARRIVAL UI → 005-IV eligibility+morphology.
+- 005-I must not expose ARRIVAL UI or change physical pronunciation; numeric eligibility deferred; not blocking.
+- Verdict: `ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-PUBLISHED`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-005.md](docs/implementation/ORIENT-PULSE-EXPRESSION-005.md).
+
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005
+
+Arrival authority implementation design (docs only).
+
+- Baseline `c76a97b` = `origin/main`, clean tree; project `ksmhgaamyheyhefbyglb`.
+- Design: grant/occurrence `relationship` text CHECK; relative_before lead>0; arrival lead NULL; uniqueness includes relationship; backfill all existing → relative_before.
+- Evaluator branches T−L vs T; ARRIVAL physical pronunciation disabled until eligibility+morphology.
+- Design verdict: `ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-CLEAR` (published in 005A with corrected tranche order).
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-005.md](docs/implementation/ORIENT-PULSE-EXPRESSION-005.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-004A
 
 Authorized temporal relationships design decision published (docs only).

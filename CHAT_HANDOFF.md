@@ -2,44 +2,49 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED**
+**ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-PUBLISHED**
 
-Published from baseline `8107f8e688b74e0decbd7982fb0b54062d57d952`  
+Published from baseline `c76a97b8443338628c17df9a79ae56bf5eb8dca7`  
 Project: `ksmhgaamyheyhefbyglb`
 
-Record: [ORIENT-PULSE-EXPRESSION-004](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md)
+Design record: [ORIENT-PULSE-EXPRESSION-005](docs/implementation/ORIENT-PULSE-EXPRESSION-005.md)
 
-### Accepted authority grammar (design only — not implemented)
+### Accepted design (not implemented)
+
+- `relationship` text + CHECK: `relative_before` / `arrival`
+- Lead: relative_before `> 0` NOT NULL; arrival NULL
+- Uniqueness includes relationship; occurrence provenance survives grant deletion
+- Backfill existing rows → relative_before only; no silent expansion
+- One evaluator: relative_before `T−L`, arrival `T`
+- FCM + Wear remain id-only
+- ARRIVAL may exist before physical pronunciation; must never reuse relative_before haptic; unknown fail closed
+- LIFECYCLE-003 / RLS preserved
+- Numeric eligibility **not** blocking 005-I; not chosen
+
+### Canonical implementation order
 
 ```text
-source + source transition + authorized temporal relationship
-+ relationship parameters + human Interrupt Grant
+005-I   SCHEMA / PROVENANCE / EVALUATOR FOUNDATION
+005-II  NATIVE RELATIONSHIP-AWARE SILENCE GATE
+005-III HUMAN ARRIVAL AUTHORITY SURFACE
+005-IV  ARRIVAL EXPRESSION ELIGIBILITY + PHYSICAL MORPHOLOGY
 ```
 
-One grant = one temporal relationship.
-
-| Token | Meaning |
-| --- | --- |
-| `relative_before` | Pulse when selected point N before source transition becomes true; positive lead required; maps current accepted authority |
-| `arrival` | Pulse when source transition itself becomes present; no lead parameter; not implemented |
-
-**APPROACH** not accepted. Magic zero rejected as identity. NULL lead does **not** mean ARRIVAL.
-
-Same `start` transition may have independently active `relative_before` and `arrival` grants. Independent revocation. Occurrence provenance must identify relationship even if `grant_id` becomes NULL. Existing grants map to `relative_before`; existing occurrences must not be reclassified as ARRIVAL; no silent authority expansion.
+**005-I must NOT** expose ARRIVAL UI, change phone/Watch pronunciation, teach a second haptic, or choose numeric eligibility. ARRIVAL remains unavailable as normal human-grantable production authority after 005-I.
 
 ### Still true (do not conflate)
 
+**ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED** — [EXPRESSION-004](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md)
+
 **ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED** — [EXPRESSION-003](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md)
 
-**ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED** — [EXPRESSION-002](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md)
-
-**ORIENT-PULSE-EXPRESSION-SEMANTICS-PUBLISHED** — [EXPRESSION-001](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md)
+**ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED** / **EXPRESSION-SEMANTICS-PUBLISHED**
 
 **ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** / **GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED**
 
-### Next tranche
+### Next implementation tranche
 
-**ORIENT-PULSE-EXPRESSION-005 — ARRIVAL AUTHORITY IMPLEMENTATION DESIGN** (discovery/design only — no implementation; no haptic; no numeric eligibility window unless required for coherence)
+**ORIENT-PULSE-EXPRESSION-005-I** — when explicitly authorized. Inspect production migration state before writing SQL.
 
 ### Still deferred elsewhere
 
