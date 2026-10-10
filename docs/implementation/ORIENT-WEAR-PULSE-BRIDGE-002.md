@@ -8,7 +8,7 @@ After the phone authoritatively rereads and newly claims a Pulse occurrence, it 
 
 ## Status
 
-**Transport + claim edge implemented. Actuator corrected in BRIDGE-006 (NotificationManager). Not physically accepted. Not installed on Watch6.**
+**Transport + claim edge implemented. Actuator corrected in BRIDGE-006 (NotificationManager). Physically accepted in BRIDGE-007 (`c76b982`); Phase 3 finalized in BRIDGE-008.**
 
 Prior:
 

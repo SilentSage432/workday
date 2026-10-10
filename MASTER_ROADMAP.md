@@ -1,24 +1,19 @@
 # Master roadmap (working)
 
-## Recently completed (candidate / pending physical acceptance)
-
-- **ORIENT-WEAR-PULSE-BRIDGE-006** — Watch6 Pulse actuator = local NotificationManager (`orient_pulse` channel); direct Vibrator removed; not physically accepted
-- **ORIENT-WEAR-PULSE-BRIDGE-002** — native Watch6 Pulse transport/claim edge implemented (`:wear` + phone MessageClient forward after claim); actuator corrected in 006
-- **ORIENT-ANDROID-PULSE-BRIDGE-007** — observability on `main` (`171c95a`); first Pulse reread failure diagnosed
-- **ORIENT-ANDROID-PULSE-BRIDGE-006** — token registration serialization fix on `main` (`54724f0`); S26 endpoint established
-- **ORIENT-ANDROID-PULSE-BRIDGE-005** — native Android perception edge (`android/`)
-- **ORIENT-ANDROID-PULSE-BRIDGE-003** — trusted dispatcher on `main` (`30edfb7`); zero-target autonomy accepted via Database Webhook
-- **ORIENT-PULSE-COMMITMENT-START-001** — first human-authorized Pulse (timed Commitment start + interrupt grant + durable occurrence + in-app expression); tables live on hosted with hosted-establishment.
-
 ## Accepted foundations (closed)
 
-- **ORIENT-ANDROID-PULSE-NATIVE-HAPTIC-PHYSICALLY-ACCEPTED** — autonomous native sight + touch on S26 (`52a8ed8`; occurrence `76c91159`); FCM transport only; cold-start path; Freecess/thaw variants not fully proven
+- **ORIENT-WEAR-PULSE-NATIVE-WRIST-PERCEPTION-ACCEPTANCE-FINALIZED** — Phase 3 closed; Watch6 notification-class wrist perception on `c76b982` (occurrence `24aad0ab`; [007](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-007.md) / [008](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-008.md))
+- **ORIENT-WEAR-PULSE-NOTIFICATION-ACTUATOR-PHYSICALLY-ACCEPTED** — NM actuator + OS `USAGE_NOTIFICATION` FINISHED + human WATCH HAPTIC FELT
+- **ORIENT-WEAR-PULSE-BRIDGE-006** — Watch6 NotificationManager actuator published (`c76b982`); direct Vibrator removed
+- **ORIENT-ANDROID-PULSE-NATIVE-HAPTIC-PHYSICALLY-ACCEPTED** — Phase 2 closed; autonomous native sight + touch on S26 (`52a8ed8`; occurrence `76c91159`)
 - **ORIENT-ANDROID-PULSE-BRIDGE-008 / 008E** — `USAGE_NOTIFICATION` haptic + auth-kt initialization ordering; physically accepted on `52a8ed8`
 - **ORIENT-ANDROID-PULSE-NATIVE-NOTIFICATION-PATH-ESTABLISHED** — autonomous notify on S26 (007E); haptic later accepted in 008
 - **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001** — hosted `pg_cron` establishes authorized Pulse occurrences with Orient fully closed; physically accepted (`b8ba8b8`)
 - **ORIENT-ANDROID-PULSE-TOKEN-HOSTED-AUTHORITY-CLEAR** — `orient_device_push_tokens` live
 - **ORIENT-ANDROID-PULSE-ZERO-TARGET-AUTONOMY-ACCEPTED** — webhook → dispatch → `no_targets` with empty token table
 - **ORIENT-ANDROID-PULSE-S26-ENDPOINT-ESTABLISHED** — authenticated token registration on S26
+- **ORIENT-ANDROID-PULSE-BRIDGE-003** — trusted dispatcher on `main` (`30edfb7`)
+- **ORIENT-PULSE-COMMITMENT-START-001** — first human-authorized Pulse (timed Commitment start + interrupt grant + durable occurrence + in-app expression)
 - **NOTE-LIFECYCLE-001** / **001A** — Retire + Delete physically accepted; hosted authority clear after `92a7a18` (historical acceptance documented late; does not supersede Pulse)
 - Desktop Day territory + LOOK / ADD / ACT operational borrowing
 - Phone Day / temporal continuity foundation
@@ -28,12 +23,15 @@
 
 ## Next evidence-backed items
 
-1. Physical acceptance: ORIENT-WEAR-PULSE-BRIDGE-006 Watch6 local Pulse notification + channel haptic (implemented, not installed)
-2. Deferred: generic notification icon / identity visual refinement
-3. Deferred: Orient Watch companion / exclusive watch-face / channel policy / in-app Pulse visual refinement
-4. Recurring-task physical acceptance (when ready)
-5. Google Calendar removal reconciliation
-6. Note Edit / Unretire only if evidence requires
+1. Deferred: generalized Pulse-source Interrupt Grants beyond Commitment-start (architecture direction only; not every object gets reminders)
+2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
+3. Deferred: Orient Watch face / visual Pulse expression (observer of local claim; no interruption authority)
+4. Deferred: richer Orient Watch companion
+5. Deferred: generic notification icon / identity visual refinement
+6. Freecess/thaw lifecycle variants (when ready)
+7. Recurring-task physical acceptance (when ready)
+8. Google Calendar removal reconciliation
+9. Note Edit / Unretire only if evidence requires
 
 ## Standing law
 
@@ -41,4 +39,6 @@
 - Form-factor composition may differ; semantic capabilities stay parity unless specialization is declared
 - Do not reopen accepted desktop or phone LOOK foundations while correcting chrome
 - Propagate awareness; re-read authority — Notes remain outside Class-A realtime for now
-- Android is perception only: no authoritative reread ⇒ no perception claim
+- Android / Wear are perception only: no authoritative reread ⇒ no perception claim
+- Wrist Presence ≠ Wrist Attention ≠ Pulse Authority
+- importance ≠ interruption authority; MustDo ≠ automatic Pulse authority

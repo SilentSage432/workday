@@ -1,14 +1,36 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-WEAR-PULSE-BRIDGE-008
+
+Watch6 Pulse transport / native wrist perception primitive finalized.
+
+- Verdict: `ORIENT-WEAR-PULSE-NATIVE-WRIST-PERCEPTION-ACCEPTANCE-FINALIZED`
+- Phase 2 (phone native perception) and Phase 3 (Watch6 wrist perception primitive) both closed.
+- Authorities separated: Wrist Presence ≠ Wrist Attention ≠ Pulse Authority.
+- Watch remains perception edge (`pulse_occurrence_id` only); face remains future observer; generalized sources and preferred-surface routing remain unimplemented direction.
+
+Record: [docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-008.md](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-008.md).
+
+## 2026-10-10 — ORIENT-WEAR-PULSE-BRIDGE-007
+
+Watch6 NotificationManager Pulse actuator physically accepted (`c76b982`).
+
+- Occurrence `24aad0ab-fe60-4d2f-8ab3-55e1ab240e72` on SM-S948U + SM-R955U: full production chain → watch claim once → local Orient/Pulse notification → OS `USAGE_NOTIFICATION` haptic `FINISHED` → human WATCH HAPTIC FELT + notification visible.
+- Direct Orient watch `Vibrator` count = 0; SysUI/notification infrastructure mediated vibration.
+- `orient_pulse` channel may pre-exist from permission Activity `ensureChannel` (factual; not a defect).
+- Perception observation is not durable acknowledgement.
+
+Record: [docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-007.md](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-007.md).
+
 ## 2026-10-09 — ORIENT-WEAR-PULSE-BRIDGE-006
 
-Watch Pulse actuator corrected to NotificationManager (not physically accepted).
+Watch Pulse actuator corrected to NotificationManager (later physically accepted in 007).
 
 - Direct Watch6 `USAGE_NOTIFICATION` vibrator was API-valid but physically suppressed (`IGNORED_APP_OPS` / `audio=ignore`; on-wrist 004C falsified off-body-only hypothesis).
 - Watch expression path: authority check → SQLite claim → local `orient_pulse` channel notification (`IMPORTANCE_DEFAULT`, sound none, vibration `[0,40]`); OS owns haptic.
 - Minimal `WearPulsePermissionActivity` requests `POST_NOTIFICATIONS`. `WearPulseHaptic` removed.
 - Claim ordering: do not consume exactly-once claim when notification authority already unavailable. Face remains observer of local claim.
-- Automated tests/assemble/lint green. Not installed. No physical acceptance claimed.
+- Automated tests/assemble/lint green on publication candidate `c76b982`.
 
 Record: [docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-006.md](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-006.md).
 

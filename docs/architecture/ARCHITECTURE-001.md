@@ -225,19 +225,23 @@ FOUNDATION-003 did not authorize PWA behavior. This tranche does, and only at th
 
 Hosted Orient establishes that an explicitly authorized temporal condition became true (`pg_cron` + database evaluator on `ksmhgaamyheyhefbyglb`). Delivery surfaces only make that established occurrence perceptible. Physically accepted closed-client: Orient fully closed through threshold; reopen expressed the already-established occurrence. Future Android/Kotlin must not become the source of temporal truth, Interrupt Grant authority, Pulse eligibility, urgency, or recommendation. Record: [../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md](../implementation/ORIENT-PULSE-HOSTED-ESTABLISHMENT-001.md).
 
-## Pulse delivery transport (in progress)
+## Pulse delivery transport
 
-Closed-app Android delivery uses FCM over already-established `pulse_occurrences`. Android is perception/delivery only.
+Closed-app Android delivery uses FCM over already-established `pulse_occurrences`. Android and Watch are perception/delivery edges only.
 
 - Token registration: `public.orient_device_push_tokens` hosted authority clear ([ORIENT-ANDROID-PULSE-BRIDGE-002](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-002.md)).
 - Trusted dispatcher: `POST /api/pulse/dispatch` re-reads occurrence ownership and sends FCM data `{ pulse_occurrence_id }` ([ORIENT-ANDROID-PULSE-BRIDGE-003](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-003.md)).
 - Database Webhook → dispatch autonomy accepted through zero-target (`no_targets` with empty token table).
-- Native Android perception edge: `android/` package `com.teamlab.orient` — authoritative user-JWT reread, local exactly-once expression claim, one silent notification + one explicit haptic ([ORIENT-ANDROID-PULSE-BRIDGE-005](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md)). S26 autonomous native sight + touch physically accepted on cold FCM path (`52a8ed8`; [ORIENT-ANDROID-PULSE-BRIDGE-008](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md)); FCM transports occurrence identity only; native client does not establish or re-evaluate Pulse authority.
-- Native Wear OS perception edge: `android/:wear` (same `applicationId` `com.teamlab.orient`) — after phone claim only, MessageClient forwards `pulse_occurrence_id`; watch local SQLite dedupe + local NotificationManager Pulse notification (channel-mediated haptic; [ORIENT-WEAR-PULSE-BRIDGE-006](../implementation/ORIENT-WEAR-PULSE-BRIDGE-006.md); transport edge [002](../implementation/ORIENT-WEAR-PULSE-BRIDGE-002.md)). Direct watch `Vibrator` was API-valid but Watch6-suppressed (`IGNORED_APP_OPS`). Notification permission is explicit human wrist-interruption authority. Watch does not use Supabase/FCM or evaluate temporal authority. Local claim remains the exactly-once seam; future watch face remains observer. Physical wrist acceptance remains deferred.
+- Native Android perception edge: `android/` package `com.teamlab.orient` — authoritative user-JWT reread, local exactly-once expression claim, one silent notification + one explicit haptic ([ORIENT-ANDROID-PULSE-BRIDGE-005](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-005.md)). S26 autonomous native sight + touch physically accepted on cold FCM path (`52a8ed8`; [ORIENT-ANDROID-PULSE-BRIDGE-008](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md)); FCM transports occurrence identity only; native client does not establish or re-evaluate Pulse authority. **Phase 2 closed.**
+- Native Wear OS perception edge: `android/:wear` (same `applicationId` `com.teamlab.orient`) — after phone claim only, MessageClient forwards `pulse_occurrence_id`; watch notification-authority gate + local SQLite claim + local NotificationManager Pulse notification; OS/Samsung notification infrastructure mediates `USAGE_NOTIFICATION` wrist haptic ([ORIENT-WEAR-PULSE-BRIDGE-006](../implementation/ORIENT-WEAR-PULSE-BRIDGE-006.md); physical acceptance [007](../implementation/ORIENT-WEAR-PULSE-BRIDGE-007.md); finalization [008](../implementation/ORIENT-WEAR-PULSE-BRIDGE-008.md); candidate `c76b982`, occurrence `24aad0ab-…`). Direct watch `Vibrator` was API-valid but Watch6-suppressed (`IGNORED_APP_OPS`; on-wrist 004C). Watch does not use Supabase/FCM or evaluate temporal authority. **Phase 3 primitive closed.**
+
+**Wrist authorities (distinct):** Wrist Presence (inhabit) ≠ Wrist Attention (`POST_NOTIFICATIONS`) ≠ Pulse Authority (Interrupt Grant). Orient may inhabit the wrist without possessing the authority to interrupt it. Notification permission allows the system to express an otherwise-authorized Pulse through the wrist; it does not authorize the Pulse itself.
 
 **NO AUTHORITATIVE REREAD = NO PERCEPTION CLAIM.**
 
-Token rows and dispatch transport are not Pulse authority, acknowledgment, urgency, or perception evidence.
+Token rows and dispatch transport are not Pulse authority, acknowledgment, urgency, or perception evidence. Physical perception observation does not become durable acknowledgement.
+
+Commitment-start is the first accepted Pulse source relationship; Pulse is not semantically limited to Commitments. Future sources require their own explicit Interrupt Grants. importance ≠ interruption authority. Preferred-surface routing is not accepted. Future watch face remains an observer of local claim state.
 
 ## Pulse, reminders, and notification delivery
 
@@ -247,9 +251,9 @@ Three separate things:
 | --- | --- | --- |
 | Reminder | A stored explicit attention point | Persist it. Show it through projection. |
 | Pulse | A projection that reorients: where, intended block, active thread, next commitment, open interval | In-app expression of established occurrences. |
-| Delivery | Push / native perception of an already-established occurrence | FCM dispatcher + webhook autonomy accepted (transport only); autonomous native notification + haptic physically accepted on S26 ([008](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md)). |
+| Delivery | Push / native perception of an already-established occurrence | FCM dispatcher + webhook autonomy accepted (transport only); autonomous native phone perception accepted on S26 ([Android 008](../implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md)); Watch6 notification-class wrist perception accepted ([Wear 007](../implementation/ORIENT-WEAR-PULSE-BRIDGE-007.md)). |
 
-No empty adapter framework. Native delivery is not accepted until physical proof.
+No empty adapter framework. First-proof may express on both phone and watch; preferred-surface policy is not accepted.
 
 ## Voice
 

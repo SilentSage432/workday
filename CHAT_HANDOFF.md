@@ -1,21 +1,17 @@
 # Chat handoff
 
-## Current state (2026-10-09)
+## Current state (2026-10-10)
 
-**ORIENT-WEAR-PULSE-BRIDGE-006** — Watch6 Pulse actuator is **NotificationManager**
-(implemented; automated validation green; **not installed; not physically accepted**).
+**ORIENT-WEAR-PULSE-NATIVE-WRIST-PERCEPTION-ACCEPTANCE-FINALIZED**
 
-Phone authority gate unchanged (BRIDGE-008 physically accepted). After phone
-claim CLAIMED: MessageClient `/orient/pulse/express` + UUID → watch authority
-check → SQLite dedupe → one local Pulse notification (channel vibration
-`[0,40]`). Capability `orient_pulse_perception`. Modules `:app` + `:wear`
-(`applicationId` `com.teamlab.orient`).
+Phase 2 (native phone perception) and Phase 3 (Watch6 Pulse transport /
+notification-class wrist perception primitive) are **CLOSED**.
 
-Direct watch `Vibrator` / `USAGE_NOTIFICATION` reached the device but was
-suppressed (`IGNORED_APP_OPS`); on-wrist counterfactual failed (BRIDGE-004C).
-Notification permission is the human wrist-interruption boundary.
+Accepted Wear candidate: `c76b982cb62a00ccb6c6bc01a540030abca445c9`  
+Accepted Wear occurrence: `24aad0ab-fe60-4d2f-8ab3-55e1ab240e72`  
+(SM-S948U API 37 + SM-R955U API 36; WATCH HAPTIC FELT; Orient/Pulse visible)
 
-Prior phone acceptance: occurrence `76c91159` on `52a8ed8` (cold FCM path).
+Phone acceptance remains: occurrence `76c91159` on `52a8ed8`.
 
 ### Proven (Pulse)
 
@@ -23,20 +19,22 @@ Prior phone acceptance: occurrence `76c91159` on `52a8ed8` (cold FCM path).
 - Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
 - Owner-scoped Android FCM token table + trusted dispatcher + webhook (transport)
 - S26 native autonomous notification + haptic perception (`76c91159`)
-- Session restore ordering vs auth-kt `Initializing` (008E) exercised on cold start
-- Semantic observability tag `OrientPulsePerception`
-- Watch6 environment clear (SM-R955U API 36); Wear transport + NM actuator in repo
+- Watch6 NotificationManager-mediated wrist perception (`24aad0ab` on `c76b982`)
+- Direct watch Vibrator path rejected by device policy; NM correction accepted
+- Distinct authorities: Wrist Presence ≠ Wrist Attention ≠ Pulse Authority
+- Watch is perception edge only (`pulse_occurrence_id`); local claim = expression boundary
 
-### Next Pulse boundary
+### Next (not the closed primitive)
 
-1. Physical Watch6 Pulse acceptance (install + grant watch notification permission + one real occurrence)
-2. Deferred visual: generic notification icon / identity refinement
-3. Deferred: Orient Watch companion / exclusive watch-face (face observes local claim; no interruption authority)
-4. Freecess/thawed lifecycle variants not fully proven (cold-start acceptance only)
+1. Generalized Pulse-source authorization beyond Commitment-start (direction only)
+2. Preferred perception-surface routing (unimplemented)
+3. Orient Watch face / visual Pulse expression (face = observer of local claim)
+4. Richer Orient Watch companion
+5. Freecess/thaw lifecycle variants (phone path incompletely proven)
+6. Deferred visual: generic notification icon / identity refinement
 
 ### Still deferred elsewhere
 
-- Orient Watch face / Watch section UI
 - Recurring-task physical acceptance
 - Google Calendar removal reconciliation
 - Note Edit / Unretire UI / Archive browser

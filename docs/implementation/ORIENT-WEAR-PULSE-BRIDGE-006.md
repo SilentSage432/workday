@@ -8,7 +8,12 @@ After watch-local exactly-once claim, Orient posts one local Pulse notification;
 
 ## Status
 
-**Implemented in repository. Automated validation green. Not installed. Not physically accepted.**
+**Implemented and physically accepted** on candidate `c76b982cb62a00ccb6c6bc01a540030abca445c9`.
+
+Physical acceptance: [ORIENT-WEAR-PULSE-BRIDGE-007](ORIENT-WEAR-PULSE-BRIDGE-007.md)  
+Phase finalization: [ORIENT-WEAR-PULSE-BRIDGE-008](ORIENT-WEAR-PULSE-BRIDGE-008.md)  
+Verdict: `ORIENT-WEAR-PULSE-NOTIFICATION-ACTUATOR-PHYSICALLY-ACCEPTED`  
+Accepted occurrence: `24aad0ab-fe60-4d2f-8ab3-55e1ab240e72` (SM-S948U + SM-R955U)
 
 Prior:
 
@@ -27,7 +32,7 @@ Prior:
       → notification authority available?
       → SQLite claim
       → NotificationManager local Pulse notification
-      → OS channel vibration
+      → OS channel / notification infrastructure vibration
 ```
 
 Watch does **not** establish Pulse truth, evaluate grants/timing, use Supabase/FCM, or hold secrets.
@@ -54,6 +59,8 @@ Rationale: claim means “won the watch-local expression boundary,” not “hum
 | Vibration | enabled, pattern `[0, 40]` |
 | Bypass DND | false |
 
+**Accepted fact:** the permission Activity also ensures this channel when opened; the accepted Pulse may therefore reuse a channel already created at the human permission boundary rather than creating it for the first time at Pulse time.
+
 ## Notification contract
 
 | Field | Value |
@@ -68,10 +75,12 @@ Rationale: claim means “won the watch-local expression boundary,” not “hum
 
 Minimal `WearPulsePermissionActivity` (launcher): explains wrist interruption and requests `POST_NOTIFICATIONS`. Ready / unavailable states only. Not a full companion. Not a watch face.
 
+Wrist Attention (notification permission) is distinct from Pulse Authority (Interrupt Grant) and from Wrist Presence (install/inhabit). See [008](ORIENT-WEAR-PULSE-BRIDGE-008.md).
+
 ## Explicitly rejected
 
 - Direct `Vibrator` / `WearPulseHaptic` as Pulse actuator  
-- `FLAG_BYPASS_INTERRUPTION_POLICY`  
+- `FLAG_BYPASS_INTERRUPTION_POLICY` from Orient  
 - `USAGE_ALARM` / `USAGE_TOUCH` masquerade  
 - Privileged / accessibility / notification-listener paths  
 - Mirrored phone notification as watch authority  
@@ -81,10 +90,8 @@ Minimal `WearPulsePermissionActivity` (launcher): explains wrist interruption an
 
 Local SQLite claim row remains the seam for future gold visual bloom. Face observes established perception identity; it does not gain interruption authority. NotificationManager is the actuator, not temporal truth.
 
-## Validation (this tranche)
+## Validation (implementation tranche)
 
 - `:app:testDebugUnitTest` / `:wear:testDebugUnitTest`  
 - `:app:assembleDebug` / `:wear:assembleDebug`  
 - `:wear:lintDebug` (warnings only; no errors)  
-
-Physical acceptance deferred until install + worn wrist + granted notification permission + one real occurrence.
