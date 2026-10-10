@@ -6,12 +6,13 @@ import androidx.work.WorkerParameters
 import com.teamlab.orient.auth.OrientSupabase
 import com.teamlab.orient.contract.PerceptionAuthority
 import com.teamlab.orient.contract.PulseOccurrenceId
+import com.teamlab.orient.contract.PulsePronunciationGate
 import com.teamlab.orient.wear.WearPulseForwarder
 
 /**
- * Continues FCM reception: session → authoritative reread → claim → express.
+ * Continues FCM reception: session → authoritative reread → relationship gate → claim → express.
  * Retries only retrieval of already-established truth.
- * Wear MessageClient forward runs only inside express (after phone claim).
+ * Wear MessageClient forward runs only inside express after pronunciation-available claim.
  */
 class PulsePerceptionWorker(
     appContext: Context,
@@ -33,7 +34,11 @@ class PulsePerceptionWorker(
                 hasSession = { supabase.hasAuthenticatedSession() },
                 reread = { id -> OccurrenceReread(supabase).reread(id) },
                 tryClaim = { id -> claimStore.tryClaim(id) },
-                express = { id ->
+                express = { id, relationship ->
+                    // Defense in depth: ARRIVAL / unknown never reach this lambda.
+                    check(PulsePronunciationGate.isPronunciationAvailable(relationship)) {
+                        "express requires pronunciation-available relationship"
+                    }
                     PerceptionTrace.notificationAttempted(id.value)
                     try {
                         PulseNotification.post(applicationContext, id)
@@ -51,6 +56,7 @@ class PulsePerceptionWorker(
                         throw error
                     }
                     // Best-effort wrist transport. Must not fail phone perception.
+                    // Id-only payload; relationship already gated on phone.
                     WearPulseForwarder.forwardAfterClaim(applicationContext, id)
                 },
             )

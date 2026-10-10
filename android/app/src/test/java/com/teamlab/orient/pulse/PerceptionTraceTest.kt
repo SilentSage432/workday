@@ -5,13 +5,22 @@ import com.teamlab.orient.contract.ExpressionClaimResult
 import com.teamlab.orient.contract.OccurrenceRereadResult
 import com.teamlab.orient.contract.PerceptionDecision
 import com.teamlab.orient.contract.PulseOccurrenceId
+import com.teamlab.orient.contract.PulseRelationship
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Test
 
 class PerceptionTraceTest {
     private val id = PulseOccurrenceId.parse("550e8400-e29b-41d4-a716-446655440000")!!
+    private val sourceStart = "2026-10-10T21:00:00+00:00"
     private val lines = mutableListOf<String>()
+
+    private fun visibleRelativeBefore() =
+        OccurrenceRereadResult.Visible(
+            id,
+            PulseRelationship.RELATIVE_BEFORE,
+            sourceStart,
+        )
 
     @After
     fun resetSink() {
@@ -25,9 +34,9 @@ class PerceptionTraceTest {
             val pipeline =
                 PulsePerceptionPipeline(
                     hasSession = { false },
-                    reread = { OccurrenceRereadResult.Visible(id) },
+                    reread = { visibleRelativeBefore() },
                     tryClaim = { ExpressionClaimResult.Claimed },
-                    express = { error("must not express") },
+                    express = { _, _ -> error("must not express") },
                 )
             assertThat(pipeline.run(id, 0)).isEqualTo(PulsePerceptionPipeline.Outcome.Silent)
             assertThat(captured.any { it.contains("decision=silent_no_session") }).isTrue()
@@ -44,7 +53,7 @@ class PerceptionTraceTest {
                     hasSession = { true },
                     reread = { OccurrenceRereadResult.NotVisible },
                     tryClaim = { ExpressionClaimResult.Claimed },
-                    express = { error("must not express") },
+                    express = { _, _ -> error("must not express") },
                 )
             assertThat(pipeline.run(id, 0)).isEqualTo(PulsePerceptionPipeline.Outcome.Silent)
             assertThat(captured.any { it.contains("decision=silent_occurrence_not_visible") })
@@ -61,7 +70,7 @@ class PerceptionTraceTest {
                     hasSession = { true },
                     reread = { OccurrenceRereadResult.TransientFailure },
                     tryClaim = { ExpressionClaimResult.Claimed },
-                    express = { error("must not express") },
+                    express = { _, _ -> error("must not express") },
                 )
             assertThat(pipeline.run(id, 0)).isEqualTo(PulsePerceptionPipeline.Outcome.Retry)
             assertThat(captured.any { it.contains("decision=retry_transient") }).isTrue()
@@ -75,13 +84,40 @@ class PerceptionTraceTest {
             val pipeline =
                 PulsePerceptionPipeline(
                     hasSession = { true },
-                    reread = { OccurrenceRereadResult.Visible(id) },
+                    reread = { visibleRelativeBefore() },
                     tryClaim = { ExpressionClaimResult.Claimed },
-                    express = { },
+                    express = { _, _ -> },
                 )
             assertThat(pipeline.run(id, 0)).isEqualTo(PulsePerceptionPipeline.Outcome.Expressed)
             assertThat(captured.any { it.contains("decision=expressed") }).isTrue()
             assertThat(captured.any { it.contains("result=claimed") }).isTrue()
+            assertThat(captured.any { it.contains("event=available") }).isTrue()
+            assertNoSecrets(captured)
+        }
+
+    @Test
+    fun mapsArrivalToTerminalSilenceWithoutExpression() =
+        runTest {
+            val captured = installCaptureSink()
+            val pipeline =
+                PulsePerceptionPipeline(
+                    hasSession = { true },
+                    reread = {
+                        OccurrenceRereadResult.Visible(
+                            id,
+                            PulseRelationship.ARRIVAL,
+                            sourceStart,
+                        )
+                    },
+                    tryClaim = { ExpressionClaimResult.Claimed },
+                    express = { _, _ -> error("must not express") },
+                )
+            assertThat(pipeline.run(id, 0)).isEqualTo(PulsePerceptionPipeline.Outcome.Silent)
+            assertThat(captured.any { it.contains("decision=silent_arrival_no_pronunciation") })
+                .isTrue()
+            assertThat(captured.any { it.contains("event=unavailable") }).isTrue()
+            assertThat(captured.any { it.contains("event=terminal_silence") }).isTrue()
+            assertThat(captured.none { it.contains("event=notification_attempted") }).isTrue()
             assertNoSecrets(captured)
         }
 
@@ -92,9 +128,9 @@ class PerceptionTraceTest {
             val pipeline =
                 PulsePerceptionPipeline(
                     hasSession = { true },
-                    reread = { OccurrenceRereadResult.Visible(id) },
+                    reread = { visibleRelativeBefore() },
                     tryClaim = { ExpressionClaimResult.AlreadyClaimed },
-                    express = { error("must not express") },
+                    express = { _, _ -> error("must not express") },
                 )
             assertThat(pipeline.run(id, 0)).isEqualTo(PulsePerceptionPipeline.Outcome.Silent)
             assertThat(captured.any { it.contains("decision=silent_already_claimed") }).isTrue()
@@ -124,16 +160,40 @@ class PerceptionTraceTest {
         ).isEqualTo("retry_transient")
         assertThat(
             PerceptionTrace.formatDecision(
-                PerceptionDecision.Express(id),
+                PerceptionDecision.Express(
+                    id,
+                    PulseRelationship.RELATIVE_BEFORE,
+                    sourceStart,
+                ),
                 PulsePerceptionPipeline.Outcome.Expressed,
             ),
         ).isEqualTo("expressed")
         assertThat(
             PerceptionTrace.formatDecision(
-                PerceptionDecision.Express(id),
+                PerceptionDecision.Express(
+                    id,
+                    PulseRelationship.RELATIVE_BEFORE,
+                    sourceStart,
+                ),
                 PulsePerceptionPipeline.Outcome.Silent,
             ),
         ).isEqualTo("silent_already_claimed")
+        assertThat(
+            PerceptionTrace.formatDecision(
+                PerceptionDecision.SuppressWithoutPronunciation(
+                    id,
+                    PulseRelationship.ARRIVAL,
+                    sourceStart,
+                ),
+                PulsePerceptionPipeline.Outcome.Silent,
+            ),
+        ).isEqualTo("silent_arrival_no_pronunciation")
+        assertThat(
+            PerceptionTrace.formatDecision(
+                PerceptionDecision.SuppressUnrecognizedRelationship(id),
+                PulsePerceptionPipeline.Outcome.Silent,
+            ),
+        ).isEqualTo("silent_unrecognized_relationship")
     }
 
     @Test
@@ -151,13 +211,18 @@ class PerceptionTraceTest {
 
     @Test
     fun rereadVisibilityFormatter() {
-        assertThat(PerceptionTrace.formatRereadVisibility(OccurrenceRereadResult.Visible(id)))
+        assertThat(PerceptionTrace.formatRereadVisibility(visibleRelativeBefore()))
             .isEqualTo("yes")
         assertThat(PerceptionTrace.formatRereadVisibility(OccurrenceRereadResult.NotVisible))
             .isEqualTo("no")
         assertThat(
             PerceptionTrace.formatRereadVisibility(OccurrenceRereadResult.TransientFailure),
         ).isEqualTo("transient_failure")
+        assertThat(
+            PerceptionTrace.formatRereadVisibility(
+                OccurrenceRereadResult.VisibleUnrecognizedRelationship(id),
+            ),
+        ).isEqualTo("unrecognized_relationship")
     }
 
     private fun installCaptureSink(): List<String> {

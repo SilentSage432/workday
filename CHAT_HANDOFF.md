@@ -2,55 +2,39 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-ARRIVAL-RELATIONSHIP-FOUNDATION-CANDIDATE** (EXPRESSION-005-I)
+**ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-GATE-CANDIDATE** (EXPRESSION-005-II)
 
-Baseline was `832dc2a94f58f8e1cddf33f8bc13111dc5ca87ce`.  
+Baseline: `95f5464d6153532838d737f2a18044c22a507a50`  
 Project: `ksmhgaamyheyhefbyglb`  
-Wealth Engine untouched: `nklmgzxxdhuvqayhcigp`
+Production foundation: `ORIENT-PULSE-ARRIVAL-RELATIONSHIP-FOUNDATION-PRODUCTION-ESTABLISHED`
 
-Implementation record: [ORIENT-PULSE-EXPRESSION-005-I](docs/implementation/ORIENT-PULSE-EXPRESSION-005-I.md)  
-Design: [ORIENT-PULSE-EXPRESSION-005](docs/implementation/ORIENT-PULSE-EXPRESSION-005.md)
+Implementation: [ORIENT-PULSE-EXPRESSION-005-II](docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md)
 
 ### Implemented in candidate
 
-- Grant/occurrence `relationship` (`relative_before` / `arrival`)
-- Lead invariants; active uniqueness includes relationship
-- Hosted evaluator: relative_before `T−L`, arrival `T`
-- Human Reach-me / Reminder still writes **relative_before only**
-- ARRIVAL human UI **not** exposed
-- Android / Wear **unchanged**
-- Production migration **not** applied
+- Phone authoritative reread: `id`, `relationship`, `source_start_at`
+- Closed native `PulseRelationship` (`relative_before` / `arrival`)
+- Pronunciation gate: relative_before expresses; ARRIVAL terminal silence; unknown fail-closed
+- FCM + Wear remain occurrence-id-only
+- ARRIVAL never phone-notifies, haptics, or Wear-forwards
+- Human ARRIVAL authority still unavailable
+- Physical acceptance not performed
 
 ### Canonical remaining order
 
 ```text
-005-II  NATIVE RELATIONSHIP-AWARE SILENCE GATE
 005-III HUMAN ARRIVAL AUTHORITY SURFACE
 005-IV  ARRIVAL EXPRESSION ELIGIBILITY + PHYSICAL MORPHOLOGY
 ```
 
-### Still true (do not conflate)
+Do **not** expose ARRIVAL UI until native silence candidate is installed/accepted as required by the acceptance plan.
 
-**ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-PUBLISHED** — EXPRESSION-005/005A
+### Still true
 
+**ORIENT-PULSE-ARRIVAL-RELATIONSHIP-FOUNDATION-PRODUCTION-ESTABLISHED** — 005-IB  
+**ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-PUBLISHED** — EXPRESSION-005/005A  
 **ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED** — EXPRESSION-004
 
-**ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED** — EXPRESSION-003
+### Next
 
-**ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** / **GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED**
-
-### Next implementation tranche
-
-**ORIENT-PULSE-EXPRESSION-005-II** — native relationship-aware silence (after reviewed migration application of 005-I if required by that tranche’s gate).
-
-Do **not** expose ARRIVAL UI before native silence is accepted.
-
-### Still deferred elsewhere
-
-- Preferred perception-surface routing
-- Orient Watch face / visual Pulse / ambient Presence
-- Richer Orient Watch companion
-- Freecess/thaw lifecycle variants
-- Recurring-task physical acceptance
-- Google Calendar removal reconciliation
-- Note Edit / Unretire UI / Archive browser
+Physical acceptance of 005-II silence gate (install candidate; controlled ARRIVAL under test auth; prove silence + relative_before unchanged), then **005-III** human ARRIVAL authority when authorized.

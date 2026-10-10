@@ -6,16 +6,19 @@ import com.teamlab.orient.contract.OccurrenceRereadResult
 import com.teamlab.orient.contract.PerceptionAuthority
 import com.teamlab.orient.contract.PerceptionDecision
 import com.teamlab.orient.contract.PulseOccurrenceId
+import com.teamlab.orient.contract.PulseRelationship
 
 /**
  * Pure orchestration after dependencies are injected.
- * Claim precedes notify/haptic.
+ *
+ * Ordering:
+ * reread → relationship / pronunciation gate → terminal claim → express only when pronunciation exists.
  */
 class PulsePerceptionPipeline(
     private val hasSession: suspend () -> Boolean,
     private val reread: suspend (PulseOccurrenceId) -> OccurrenceRereadResult,
     private val tryClaim: suspend (PulseOccurrenceId) -> ExpressionClaimResult,
-    private val express: suspend (PulseOccurrenceId) -> Unit,
+    private val express: suspend (PulseOccurrenceId, PulseRelationship) -> Unit,
 ) {
     sealed class Outcome {
         data object Silent : Outcome()
@@ -49,24 +52,56 @@ class PulsePerceptionPipeline(
                     }
                 }
                 is PerceptionDecision.Express -> {
-                    PerceptionTrace.claimAttempted(decision.occurrenceId.value)
-                    val claim =
-                        try {
-                            tryClaim(decision.occurrenceId)
-                        } catch (error: Throwable) {
-                            PerceptionTrace.claimFailed(decision.occurrenceId.value, error)
-                            throw error
-                        }
-                    PerceptionTrace.claimResult(decision.occurrenceId.value, claim)
-                    if (!ExpressionClaimGate.mayExpress(claim)) {
-                        Outcome.Silent
-                    } else {
-                        express(decision.occurrenceId)
-                        Outcome.Expressed
-                    }
+                    claimThenMaybeExpress(decision.occurrenceId, decision.relationship)
+                }
+                is PerceptionDecision.SuppressWithoutPronunciation -> {
+                    PerceptionTrace.pronunciationUnavailable(
+                        decision.occurrenceId.value,
+                        decision.relationship.wireToken,
+                    )
+                    claimThenSilence(decision.occurrenceId)
+                }
+                is PerceptionDecision.SuppressUnrecognizedRelationship -> {
+                    PerceptionTrace.relationshipUnrecognized(decision.occurrenceId.value, null)
+                    claimThenSilence(decision.occurrenceId)
                 }
             }
         PerceptionTrace.decision(occurrenceId.value, decision, outcome)
         return outcome
+    }
+
+    private suspend fun claimThenMaybeExpress(
+        occurrenceId: PulseOccurrenceId,
+        relationship: PulseRelationship,
+    ): Outcome {
+        PerceptionTrace.claimAttempted(occurrenceId.value)
+        val claim =
+            try {
+                tryClaim(occurrenceId)
+            } catch (error: Throwable) {
+                PerceptionTrace.claimFailed(occurrenceId.value, error)
+                throw error
+            }
+        PerceptionTrace.claimResult(occurrenceId.value, claim)
+        if (!ExpressionClaimGate.mayExpress(claim)) {
+            return Outcome.Silent
+        }
+        PerceptionTrace.pronunciationAvailable(occurrenceId.value, relationship.wireToken)
+        express(occurrenceId, relationship)
+        return Outcome.Expressed
+    }
+
+    private suspend fun claimThenSilence(occurrenceId: PulseOccurrenceId): Outcome {
+        PerceptionTrace.claimAttempted(occurrenceId.value)
+        val claim =
+            try {
+                tryClaim(occurrenceId)
+            } catch (error: Throwable) {
+                PerceptionTrace.claimFailed(occurrenceId.value, error)
+                throw error
+            }
+        PerceptionTrace.claimResult(occurrenceId.value, claim)
+        PerceptionTrace.terminalSilence(occurrenceId.value, claim)
+        return Outcome.Silent
     }
 }

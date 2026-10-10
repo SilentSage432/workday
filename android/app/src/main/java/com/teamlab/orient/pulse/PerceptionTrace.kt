@@ -68,19 +68,66 @@ object PerceptionTrace {
     fun selectResult(
         occurrenceId: String,
         visible: Boolean,
+        relationshipToken: String?,
         error: Throwable?,
     ) {
+        val relationshipField =
+            if (relationshipToken.isNullOrBlank()) {
+                "relationship=none"
+            } else {
+                "relationship=${sanitizeRelationshipToken(relationshipToken)}"
+            }
         if (error != null) {
             emit(
                 "stage=reread event=select_result occ=$occurrenceId ok=no " +
-                    "visible=no ${safeErrorFields(error)}",
+                    "visible=no $relationshipField ${safeErrorFields(error)}",
             )
         } else {
             emit(
                 "stage=reread event=select_result occ=$occurrenceId ok=yes " +
-                    "visible=${yesNo(visible)}",
+                    "visible=${yesNo(visible)} $relationshipField",
             )
         }
+    }
+
+    fun pronunciationAvailable(
+        occurrenceId: String,
+        relationshipToken: String,
+    ) {
+        emit(
+            "stage=pronunciation event=available occ=$occurrenceId " +
+                "relationship=${sanitizeRelationshipToken(relationshipToken)}",
+        )
+    }
+
+    fun pronunciationUnavailable(
+        occurrenceId: String,
+        relationshipToken: String,
+    ) {
+        emit(
+            "stage=pronunciation event=unavailable occ=$occurrenceId " +
+                "relationship=${sanitizeRelationshipToken(relationshipToken)}",
+        )
+    }
+
+    fun relationshipUnrecognized(
+        occurrenceId: String,
+        relationshipToken: String?,
+    ) {
+        emit(
+            "stage=pronunciation event=unrecognized occ=$occurrenceId " +
+                "relationship=${sanitizeRelationshipToken(relationshipToken ?: "missing")}",
+        )
+    }
+
+    fun terminalSilence(
+        occurrenceId: String,
+        claim: ExpressionClaimResult,
+    ) {
+        emit(
+            "stage=expression event=terminal_silence occ=$occurrenceId " +
+                "claim=${formatClaim(claim)}",
+        )
     }
 
     fun decision(
@@ -179,15 +226,36 @@ object PerceptionTrace {
                     PulsePerceptionPipeline.Outcome.Silent -> "silent_already_claimed"
                     PulsePerceptionPipeline.Outcome.Retry -> "expressed"
                 }
+            is PerceptionDecision.SuppressWithoutPronunciation ->
+                when (outcome) {
+                    PulsePerceptionPipeline.Outcome.Silent ->
+                        "silent_${decision.relationship.wireToken}_no_pronunciation"
+                    PulsePerceptionPipeline.Outcome.Expressed ->
+                        "silent_${decision.relationship.wireToken}_no_pronunciation"
+                    PulsePerceptionPipeline.Outcome.Retry ->
+                        "silent_${decision.relationship.wireToken}_no_pronunciation"
+                }
+            is PerceptionDecision.SuppressUnrecognizedRelationship ->
+                "silent_unrecognized_relationship"
         }
     }
 
     fun formatRereadVisibility(result: OccurrenceRereadResult): String =
         when (result) {
             is OccurrenceRereadResult.Visible -> "yes"
+            is OccurrenceRereadResult.VisibleUnrecognizedRelationship -> "unrecognized_relationship"
             OccurrenceRereadResult.NotVisible -> "no"
             OccurrenceRereadResult.TransientFailure -> "transient_failure"
         }
+
+    private fun sanitizeRelationshipToken(token: String): String {
+        val trimmed = token.trim()
+        if (trimmed == "relative_before" || trimmed == "arrival" || trimmed == "missing" || trimmed == "none") {
+            return trimmed
+        }
+        // Closed labels only in logs; unknown tokens collapse to a stable class.
+        return "unrecognized"
+    }
 
     fun formatClaim(result: ExpressionClaimResult): String =
         when (result) {

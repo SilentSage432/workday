@@ -5,6 +5,9 @@ package com.teamlab.orient.contract
  *
  * WorkManager may retry retrieval of already-established truth.
  * It must never evaluate timing, grants, or create occurrences.
+ *
+ * Ordering (EXPRESSION-005-II):
+ * reread → validate relationship → pronunciation gate → terminal claim → express iff pronunciation exists.
  */
 sealed class PerceptionDecision {
     data object SilenceNoSession : PerceptionDecision()
@@ -13,7 +16,28 @@ sealed class PerceptionDecision {
 
     data object RetryTransientFailure : PerceptionDecision()
 
+    /** Recognized relationship with accepted physical pronunciation. */
     data class Express(
+        val occurrenceId: PulseOccurrenceId,
+        val relationship: PulseRelationship,
+        val sourceStartAt: String,
+    ) : PerceptionDecision()
+
+    /**
+     * Recognized relationship without accepted physical pronunciation (ARRIVAL).
+     * Terminal: claim/consume, then silence. Do not notify, haptic, or Wear-forward.
+     */
+    data class SuppressWithoutPronunciation(
+        val occurrenceId: PulseOccurrenceId,
+        val relationship: PulseRelationship,
+        val sourceStartAt: String,
+    ) : PerceptionDecision()
+
+    /**
+     * Authoritative row visible but relationship token is not in the closed set.
+     * Terminal fail-closed: claim/consume, then silence. Never teach relative_before by default.
+     */
+    data class SuppressUnrecognizedRelationship(
         val occurrenceId: PulseOccurrenceId,
     ) : PerceptionDecision()
 }
@@ -28,7 +52,21 @@ object PerceptionAuthority {
         if (!hasSession) return PerceptionDecision.SilenceNoSession
         return when (reread) {
             is OccurrenceRereadResult.Visible ->
-                PerceptionDecision.Express(reread.occurrenceId)
+                if (PulsePronunciationGate.isPronunciationAvailable(reread.relationship)) {
+                    PerceptionDecision.Express(
+                        occurrenceId = reread.occurrenceId,
+                        relationship = reread.relationship,
+                        sourceStartAt = reread.sourceStartAt,
+                    )
+                } else {
+                    PerceptionDecision.SuppressWithoutPronunciation(
+                        occurrenceId = reread.occurrenceId,
+                        relationship = reread.relationship,
+                        sourceStartAt = reread.sourceStartAt,
+                    )
+                }
+            is OccurrenceRereadResult.VisibleUnrecognizedRelationship ->
+                PerceptionDecision.SuppressUnrecognizedRelationship(reread.occurrenceId)
             OccurrenceRereadResult.NotVisible ->
                 PerceptionDecision.SilenceOccurrenceNotVisible
             OccurrenceRereadResult.TransientFailure ->
@@ -41,7 +79,15 @@ object PerceptionAuthority {
 }
 
 sealed class OccurrenceRereadResult {
-    data class Visible(val occurrenceId: PulseOccurrenceId) : OccurrenceRereadResult()
+    data class Visible(
+        val occurrenceId: PulseOccurrenceId,
+        val relationship: PulseRelationship,
+        val sourceStartAt: String,
+    ) : OccurrenceRereadResult()
+
+    data class VisibleUnrecognizedRelationship(
+        val occurrenceId: PulseOccurrenceId,
+    ) : OccurrenceRereadResult()
 
     data object NotVisible : OccurrenceRereadResult()
 

@@ -17,6 +17,11 @@ import com.teamlab.orient.wear.contract.PulseOccurrenceId
  * does not consume the expression boundary. Claim remains "won the local
  * expression boundary," not "human perceived." Post failure after claim does
  * not retry and does not fall back to direct Vibrator.
+ *
+ * EXPRESSION-005-II: Wear receives occurrence-id-only. Relationship authority
+ * and ARRIVAL silence are enforced on the phone before MessageClient forward.
+ * Watch has no Supabase / relationship reread and must not invent one.
+ * A normal ARRIVAL occurrence must never be forwarded by the phone gate.
  */
 class WearPulsePerceptionPipeline(
     private val notificationAuthority: () -> WearPulseNotificationAuthority.Snapshot,

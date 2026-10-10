@@ -1,5 +1,18 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005-II
+
+Native relationship-aware silence gate candidate.
+
+- Baseline `95f5464`; Orient production foundation already established (005-IB).
+- Phone reread loads `id`/`relationship`/`source_start_at`; FCM remains id-only.
+- Pronunciation gate: relative_before continues; ARRIVAL terminal claim+silence; unknown fail-closed; transient reread does not consume.
+- Wear id-only transport preserved; ARRIVAL never forwarded from phone express path.
+- Human ARRIVAL authority still unavailable; no morphology/freshness; no production mutation; no device install.
+- Verdict target: `ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-GATE-CANDIDATE-READY`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md](docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005-I
 
 Arrival relationship foundation candidate (schema / provenance / evaluator).
