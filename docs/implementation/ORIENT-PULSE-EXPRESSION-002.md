@@ -461,22 +461,7 @@ Narrow note: EXPRESSION-001’s optional single-word adequacy trial remains opti
 
 **ORIENT-PULSE-EXPRESSION-003 — ARRIVAL EXPRESSION TIMELINESS DISCOVERY**
 
-Core question:
-
-> Once an authoritative temporal boundary arrives at `T`, for how long can Orient truthfully and usefully physically express ARRIVAL?
-
-Distinguish:
-
-- durable historical truth
-- occurrence establishment latency
-- dispatch latency
-- device delivery latency
-- physical expression timeliness
-
-Determine whether ARRIVAL requires a bounded expression window and where that policy belongs.
-
-Do **not** design the haptic during that discovery.  
-Do **not** implement lead=0, schema, Arrival Interrupt Grant, or a second haptic pattern as part of 003 unless that discovery itself requires a docs-only policy conclusion.
+Completed as discovery: [ORIENT-PULSE-EXPRESSION-003.md](ORIENT-PULSE-EXPRESSION-003.md) (`ORIENT-PULSE-ARRIVAL-TIMELINESS-CLEAR`). Durable ARRIVAL truth may outlive physical expression; expression eligibility is a separate shared deterministic policy; exact numeric window deferred; no ARRIVAL implementation.
 
 ---
 

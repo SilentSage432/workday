@@ -1,5 +1,30 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-003A
+
+Arrival expression timeliness published (docs only).
+
+- Baseline `c33538a`; project `ksmhgaamyheyhefbyglb`.
+- Durable truth lifetime ≠ physical expression lifetime; expression eligibility canonized; shared policy / local evaluation; unauthorized vs stale silence distinct.
+- Numeric eligibility duration not chosen; no ARRIVAL/haptic/schema/runtime/Presence impl.
+- Next boundary: ORIENT-PULSE-EXPRESSION-004 Arrival authority form discovery.
+- Verdict: `ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-003.md](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md).
+
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-003
+
+Arrival expression timeliness discovery (docs only).
+
+- Baseline `c33538a` = `origin/main`, clean tree; project `ksmhgaamyheyhefbyglb`.
+- Durable ARRIVAL truth may outlive physical expression usefulness; expression eligibility is separate.
+- Late establishment may preserve evidence; late physical speech may remain silent; eventually-deliver-all rejected for ARRIVAL.
+- Shared deterministic expression-eligibility policy; surface-specific evaluation OK; one occurrence remains one truth.
+- Timeliness ≠ urgency; exact numeric window deferred; no haptic/schema/runtime/ARRIVAL impl.
+- Discovery verdict: `ORIENT-PULSE-ARRIVAL-TIMELINESS-CLEAR` (published in 003A).
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-003.md](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-002A
 
 Arrival semantic discovery published + product decision (docs only).

@@ -2,53 +2,49 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED**
+**ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED**
 
-Published from baseline `fb5cf0fb3e126a71449495e637104df1ac82ff74`  
+Published from baseline `c33538a8c2d3380d5bf9b7b6402d0621bd2987a5`  
 Project: `ksmhgaamyheyhefbyglb`
 
-Discovery record: [ORIENT-PULSE-EXPRESSION-002](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md)
+Discovery record: [ORIENT-PULSE-EXPRESSION-003](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md)
 
-### Product decision (002A)
+### Published timeliness law (not implemented)
 
-Tyson accepts **ARRIVAL** as a valid Pulse **semantic relationship** for continued development.
+```text
+DURABLE TRUTH LIFETIME ≠ PHYSICAL EXPRESSION LIFETIME
+```
 
-> The authoritative temporal boundary itself has become present.
+Physical meaning: “The boundary has become present recently enough to orient to this transition.”
 
-| Layer | Status |
-| --- | --- |
-| Semantic relationship | Accepted for development |
-| Interruption authority form | Not yet implemented |
-| Physical word | Candidate only |
-| Haptic morphology | Not designed |
-| Physical acceptance | Not performed |
+**Expression eligibility** — whether an already-established occurrence may still be physically expressed without misleading present-oriented speech. Does not create/erase truth, change authority, or imply urgency/importance/MustDo.
 
-Independent authority both directions. Commitment/Block share the same ARRIVAL meaning when independently authorized. Source type is not part of the word. Silence when unauthorized is correct. Magic zero is **not** the preferred representation.
+- One shared deterministic eligibility policy; surfaces may evaluate it at different times
+- Phone timely / Watch later-stale → one occurrence, one truth
+- Late establishment may preserve durable truth; late delivery does not auto-justify speech
+- Unauthorized silence ≠ stale silence; silence may preserve truth better than late speech
+- Numeric eligibility duration **not** chosen; haptic/visual morphology **not** designed
 
-**Not authorized / not done:** `lead_offset_seconds = 0` impl, schema/runtime/evaluator, Arrival Interrupt Grant, second haptic, Android/Wear, production mutation.
+**Not done:** ARRIVAL Interrupt Grant, occurrence form, haptic, schema/runtime, lead=0, Presence.
 
 ### Still true (do not conflate)
 
+**ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED** — [EXPRESSION-002](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md)
+
 **ORIENT-PULSE-EXPRESSION-SEMANTICS-PUBLISHED** — [EXPRESSION-001](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md)
 
-Current physical word: already-established human-authorized Pulse occurrence requesting perception. Positive-lead pre-boundary relationship remains the only implemented grant form (unnamed; APPROACH not accepted vocabulary).
-
-**ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** — [003](docs/implementation/ORIENT-PULSE-LIFECYCLE-003.md)
-
-**ORIENT-PULSE-GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED** (005 / 005A) on `e3ec23c`
+**ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** / **GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED**
 
 ### Next discovery boundary
 
-**ORIENT-PULSE-EXPRESSION-003 — ARRIVAL EXPRESSION TIMELINESS DISCOVERY**
+**ORIENT-PULSE-EXPRESSION-004 — ARRIVAL AUTHORITY FORM DISCOVERY**
 
-Core question: once an authoritative temporal boundary arrives at `T`, for how long can Orient truthfully and usefully physically express ARRIVAL? Distinguish durable historical truth vs establishment/dispatch/delivery/expression latency; whether a bounded expression window is required and where that policy belongs. Do **not** design the haptic.
-
-Do **not** implement lead=0. Do **not** implement a second haptic pattern. Do **not** implement an Arrival Interrupt Grant yet.
+How should “Reach me when this begins” be represented alongside “Reach me N before this begins” without magic zero, duplicated source semantics, or authority inheritance? Smallest truthful relationship identity and grant model before any ARRIVAL implementation. Do **not** choose a numeric eligibility window unless authority semantics genuinely require it.
 
 ### Still deferred elsewhere
 
 - Preferred perception-surface routing
-- Orient Watch face / visual Pulse expression
+- Orient Watch face / visual Pulse expression / ambient Presence
 - Richer Orient Watch companion
 - Freecess/thaw lifecycle variants
 - Recurring-task physical acceptance
