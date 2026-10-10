@@ -1,5 +1,30 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-001A
+
+Semantic expression discovery published (docs only).
+
+- Baseline `c3b8ce4`; project `ksmhgaamyheyhefbyglb`.
+- Current word: already-established human-authorized Pulse occurrence requesting perception; “worthy of perception” rejected.
+- Commitment timed-start positive-lead ≡ Block timed-start positive-lead (same perceptual meaning).
+- Durable principles canonized; touch/light direction only; APPROACH/ARRIVAL/END/vocabulary-size/timings not canonized.
+- Next boundary: ORIENT-PULSE-EXPRESSION-002 Arrival semantic authority discovery (not lead=0 approval; not second haptic).
+- Verdict: `ORIENT-PULSE-EXPRESSION-SEMANTICS-PUBLISHED`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-001.md](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md).
+
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-001
+
+Pulse semantic expression language discovery (docs only).
+
+- Baseline `c3b8ce4` = `origin/main`, clean tree; project `ksmhgaamyheyhefbyglb`.
+- Narrowest current haptic meaning: already-established authorized Pulse occurrence requesting perception — not “worthy of,” not source-kind, not urgency.
+- Commitment-start and Block-start: same perceptual meaning from different sovereign sources; source-kind-as-language rejected.
+- Minimum model: one semantic expression; no new schema/authority; vocabulary not accepted.
+- Discovery verdict: `ORIENT-PULSE-EXPRESSION-SEMANTICS-CLEAR` (published in 001A).
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-001.md](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md).
+
 ## 2026-10-10 — ORIENT-PULSE-LIFECYCLE-003 / 003A
 
 Pulse source-deletion lifecycle physically accepted and finalized.
