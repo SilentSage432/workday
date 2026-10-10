@@ -442,7 +442,10 @@ describe("pulse Block-start authority migration", () => {
 
   it("widens source kinds with kind-aware ownership and delete cascade", () => {
     expect(sql).toContain("ORIENT-PULSE-AUTHORITY-002");
-    expect(sql).toContain("blocks_id_user_key");
+    // Depends on predecessor blocks_id_user_key from execution_direction; must not re-ADD it.
+    expect(sql).toContain("20261005170800_execution_direction.sql");
+    expect(sql).toContain("blocks_id_user_key UNIQUE (id, user_id)");
+    expect(sql).not.toMatch(/add constraint blocks_id_user_key/i);
     expect(sql).toContain("drop constraint pulse_interrupt_grants_commitment_same_owner");
     expect(sql).toContain("source_kind in ('commitment', 'block')");
     expect(sql).toContain("pulse_interrupt_grant_requires_timed_source");

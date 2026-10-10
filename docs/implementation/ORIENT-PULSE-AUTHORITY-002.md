@@ -8,7 +8,7 @@ Implements the smallest bounded proof that Pulse interrupt authority can operate
 
 **Discovery basis:** [ORIENT-PULSE-AUTHORITY-001.md](ORIENT-PULSE-AUTHORITY-001.md) (`ORIENT-PULSE-GENERAL-AUTHORITY-MODEL-CLEAR`).
 
-**Status:** Implementation complete locally. Migration authored, **not** applied to production. Physical acceptance **not** declared.
+**Status:** Implementation published as candidate `86be59f`. Production establishment (**002B**) correctly **stopped** before mutation: the reviewed migration re-added `blocks_id_user_key`, which already exists from `20261005170800_execution_direction.sql`. **002C** corrects the migration artifact to depend on that predecessor constraint (no duplicate ADD). Corrected migration still **not** applied to production. Physical acceptance **not** declared.
 
 ---
 
@@ -43,14 +43,14 @@ Migration: `supabase/migrations/20261010093000_pulse_block_start_authority.sql`
 
 - Widen `source_kind` CHECK on grants and occurrences to `('commitment', 'block')`
 - Drop Commitment-only same-owner FK
-- Add `blocks_id_user_key`
+- **Depends on** existing `blocks_id_user_key UNIQUE (id, user_id)` from `20261005170800_execution_direction.sql` — does **not** re-ADD it (002C correction)
 - Kind-aware BEFORE INSERT trigger validates same-owner timed source
 - AFTER DELETE cascade triggers on `commitments` and `blocks` remove grants (Commitment CASCADE parity)
 - Hosted evaluator body extended for Block-start; function name retained for cron continuity
 - Occurrence uniqueness unchanged
 - No delivery / FCM / device tables touched
 
-**Not applied to hosted production in this tranche.**
+**Not applied to hosted production.** 002B left production pre-002; 002C corrects the migration source only.
 
 ---
 

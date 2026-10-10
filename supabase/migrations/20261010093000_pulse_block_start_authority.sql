@@ -7,12 +7,11 @@
 -- Ownership: drop Commitment-only FK; enforce same-owner timed source via
 -- kind-aware BEFORE INSERT trigger. Cascade grant removal on source DELETE
 -- to preserve Commitment cascade semantics and add the same for Blocks.
-
-alter table public.blocks
-  add constraint blocks_id_user_key unique (id, user_id);
-
-comment on constraint blocks_id_user_key on public.blocks is
-  'Same-owner identity for Interrupt Grant ownership validation. id is already the primary key.';
+--
+-- Depends on predecessor same-owner uniqueness already established by
+-- 20261005170800_execution_direction.sql:
+--   blocks_id_user_key UNIQUE (id, user_id)
+-- Do not re-ADD that constraint here (ORIENT-PULSE-AUTHORITY-002C).
 
 alter table public.pulse_interrupt_grants
   drop constraint pulse_interrupt_grants_commitment_same_owner;

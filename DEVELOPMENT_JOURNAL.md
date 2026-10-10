@@ -1,11 +1,20 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-AUTHORITY-002C
+
+Live-history migration correction after 002B production establishment blocked.
+
+- Production remained pre-002; `20261010093000` never applied.
+- Canonical predecessor already owns `blocks_id_user_key` via `20261005170800_execution_direction.sql` (`UNIQUE (id, user_id)`).
+- Corrected migration removes duplicate `ADD CONSTRAINT blocks_id_user_key` and documents the dependency.
+- No production schema mutation; no physical acceptance.
+
 ## 2026-10-10 — ORIENT-PULSE-AUTHORITY-002
 
 Timed Block-start Interrupt Grant implemented as second authorized Pulse source relationship (source generalization proof).
 
-- Baseline `4197d471f78fd8a74bfabab02c56791f770b8265`.
-- Migration `20261010093000_pulse_block_start_authority.sql` authored; **not** applied to production.
+- Baseline `4197d471f78fd8a74bfabab02c56791f770b8265`; published candidate `86be59f`.
+- Migration `20261010093000_pulse_block_start_authority.sql` authored; **not** applied to production (002B blocked on duplicate constraint).
 - Positive relative lead before timed Block start only; Commitment-start unchanged; delivery/device untouched.
 - Physical acceptance not declared.
 

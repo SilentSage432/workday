@@ -2,7 +2,7 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-BLOCK-START-IMPLEMENTATION-CLEAR** (local; not committed/pushed; migration not applied)
+**ORIENT-PULSE-BLOCK-START-MIGRATION-CORRECTION-CLEAR** (002C; uncommitted; production still pre-002)
 
 Phase 2 (native phone perception) and Phase 3 (Watch6 Pulse transport /
 notification-class wrist perception primitive) remain **CLOSED**.
@@ -27,12 +27,11 @@ Phone acceptance remains: occurrence `76c91159` on `52a8ed8`.
 
 ### Next
 
-1. Publish ORIENT-PULSE-AUTHORITY-002 + apply hosted migration when ready
-2. Physical acceptance of Block-start grant → occurrence → phone/watch perception
-3. Preferred perception-surface routing (unimplemented)
-4. Orient Watch face / visual Pulse expression (face = observer of local claim)
-5. Richer Orient Watch companion
-6. Freecess/thaw lifecycle variants (phone path incompletely proven)
+1. Publish 002C corrected migration; apply hosted `20261010093000`; then physical Block-start acceptance
+2. Preferred perception-surface routing (unimplemented)
+3. Orient Watch face / visual Pulse expression (face = observer of local claim)
+4. Richer Orient Watch companion
+5. Freecess/thaw lifecycle variants (phone path incompletely proven)
 
 ### Still deferred elsewhere
 

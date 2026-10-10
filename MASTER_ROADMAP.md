@@ -24,11 +24,12 @@
 ## Discovery / local implementation (awaiting publish + hosted apply + physical acceptance)
 
 - **ORIENT-PULSE-AUTHORITY-001** — general Interrupt Authority model clear. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-001.md](docs/implementation/ORIENT-PULSE-AUTHORITY-001.md).
-- **ORIENT-PULSE-AUTHORITY-002** — timed Block-start Interrupt Grant implemented locally; migration not applied; physical acceptance not declared. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-002.md](docs/implementation/ORIENT-PULSE-AUTHORITY-002.md).
+- **ORIENT-PULSE-AUTHORITY-002** — timed Block-start Interrupt Grant candidate `86be59f`; 002B production apply correctly blocked (duplicate `blocks_id_user_key`).
+- **ORIENT-PULSE-AUTHORITY-002C** — migration corrected to depend on predecessor `blocks_id_user_key`; production still pre-002; uncommitted. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-002.md](docs/implementation/ORIENT-PULSE-AUTHORITY-002.md).
 
 ## Next evidence-backed items
 
-1. Publish ORIENT-PULSE-AUTHORITY-002; apply hosted Block-start migration; physical acceptance
+1. Publish 002C; apply hosted Block-start migration; physical acceptance
 2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
 3. Deferred: Orient Watch face / visual Pulse expression (observer of local claim; no interruption authority)
 4. Deferred: richer Orient Watch companion
