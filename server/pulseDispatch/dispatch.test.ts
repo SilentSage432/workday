@@ -334,6 +334,7 @@ describe("firebase config + isolation", () => {
       "utf8",
     );
     expect(pulse).toContain("establish_due_commitment_start_pulse_occurrences");
+    // Dispatch remains occurrence-id transport only; Block-start does not branch here.
     expect(tokens).toContain("grant select on table public.orient_device_push_tokens to service_role;");
     expect(tokens).not.toMatch(
       /grant (insert|update|delete).* on table public\.orient_device_push_tokens to service_role/i,

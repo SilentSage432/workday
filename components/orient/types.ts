@@ -124,6 +124,8 @@ export type OrientActions = {
   onExternalObservationComplete?: () => void;
   onEstablishCommitmentPulseGrant: (commitmentId: string, leadOffsetSeconds: number) => Promise<void>;
   onRevokeCommitmentPulseGrant: (grantId: string) => Promise<void>;
+  onEstablishBlockPulseGrant: (blockId: string, leadOffsetSeconds: number) => Promise<void>;
+  onRevokeBlockPulseGrant: (grantId: string) => Promise<void>;
 };
 
 export type PulseReading = {

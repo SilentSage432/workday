@@ -241,7 +241,7 @@ Closed-app Android delivery uses FCM over already-established `pulse_occurrences
 
 Token rows and dispatch transport are not Pulse authority, acknowledgment, urgency, or perception evidence. Physical perception observation does not become durable acknowledgement.
 
-Commitment-start is the first accepted Pulse source relationship; Pulse is not semantically limited to Commitments. Future sources require their own explicit Interrupt Grants. importance ≠ interruption authority. Preferred-surface routing is not accepted. Future watch face remains an observer of local claim state.
+Commitment-start is the first accepted Pulse source relationship; timed Block-start is the second authorized relationship ([ORIENT-PULSE-AUTHORITY-002](../implementation/ORIENT-PULSE-AUTHORITY-002.md)). Pulse is not semantically limited to those two. Further sources require their own explicit Interrupt Grants. Delivery remains source-agnostic over `pulse_occurrence` identity. importance ≠ interruption authority. Preferred-surface routing is not accepted. Future watch face remains an observer of local claim state.
 
 ## Pulse, reminders, and notification delivery
 

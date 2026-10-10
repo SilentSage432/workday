@@ -31,6 +31,7 @@ import type { InterruptGrant } from "@/domain/pulse";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import { localMinutes, parseLocalTime } from "@/domain/time/localTime";
 import type { FactAddress } from "@/components/factAddress";
+import { BlockPulseAuthority } from "@/components/orient/BlockPulseAuthority";
 import { CommitmentPulseAuthority } from "@/components/orient/CommitmentPulseAuthority";
 import type { TemporalProposal } from "@/components/orient/temporalProposal";
 import type { Context } from "@/domain/context";
@@ -436,6 +437,8 @@ export function InspectionSurface({
   interruptGrants = [],
   onEstablishCommitmentPulseGrant,
   onRevokeCommitmentPulseGrant,
+  onEstablishBlockPulseGrant,
+  onRevokeBlockPulseGrant,
   onChoose,
   onClose,
   onUpdate,
@@ -453,6 +456,8 @@ export function InspectionSurface({
   interruptGrants?: readonly InterruptGrant[];
   onEstablishCommitmentPulseGrant?: (commitmentId: string, leadOffsetSeconds: number) => Promise<void>;
   onRevokeCommitmentPulseGrant?: (grantId: string) => Promise<void>;
+  onEstablishBlockPulseGrant?: (blockId: string, leadOffsetSeconds: number) => Promise<void>;
+  onRevokeBlockPulseGrant?: (grantId: string) => Promise<void>;
   onChoose: (fact: FactAddress) => void;
   onClose: () => void;
   onUpdate: (update: CanvasFactUpdate) => Promise<void>;
@@ -495,6 +500,8 @@ export function InspectionSurface({
       interruptGrants={interruptGrants}
       onEstablishCommitmentPulseGrant={onEstablishCommitmentPulseGrant}
       onRevokeCommitmentPulseGrant={onRevokeCommitmentPulseGrant}
+      onEstablishBlockPulseGrant={onEstablishBlockPulseGrant}
+      onRevokeBlockPulseGrant={onRevokeBlockPulseGrant}
       onClose={onClose}
       onUpdate={onUpdate}
       onRemove={onRemove}
@@ -567,6 +574,8 @@ function FactDetail({
   interruptGrants,
   onEstablishCommitmentPulseGrant,
   onRevokeCommitmentPulseGrant,
+  onEstablishBlockPulseGrant,
+  onRevokeBlockPulseGrant,
   onClose,
   onUpdate,
   onRemove,
@@ -582,6 +591,8 @@ function FactDetail({
   interruptGrants: readonly InterruptGrant[];
   onEstablishCommitmentPulseGrant?: (commitmentId: string, leadOffsetSeconds: number) => Promise<void>;
   onRevokeCommitmentPulseGrant?: (grantId: string) => Promise<void>;
+  onEstablishBlockPulseGrant?: (blockId: string, leadOffsetSeconds: number) => Promise<void>;
+  onRevokeBlockPulseGrant?: (grantId: string) => Promise<void>;
   onClose: () => void;
   onUpdate: (update: CanvasFactUpdate) => Promise<void>;
   onRemove: (removal: CanvasFactRemoval) => Promise<void>;
@@ -743,6 +754,36 @@ function FactDetail({
                 onRevoke={() => {
                   if (!grant) return Promise.resolve();
                   return onRevokeCommitmentPulseGrant(grant.id);
+                }}
+              />
+            );
+          })()
+        : null}
+      {fact.sourceKind === "block" &&
+      services.blocks.status === "ready" &&
+      onEstablishBlockPulseGrant &&
+      onRevokeBlockPulseGrant
+        ? (() => {
+            const block = services.blocks.rows.find((entry) => entry.id === fact.sourceId);
+            if (!block || block.kind !== "timed") return null;
+            const grant =
+              interruptGrants.find(
+                (entry) =>
+                  entry.sourceKind === "block" &&
+                  entry.sourceId === block.id &&
+                  entry.transitionKind === "start" &&
+                  entry.revokedAt === null,
+              ) ?? null;
+            return (
+              <BlockPulseAuthority
+                block={block}
+                grant={grant}
+                onEstablish={(leadOffsetSeconds) =>
+                  onEstablishBlockPulseGrant(block.id, leadOffsetSeconds)
+                }
+                onRevoke={() => {
+                  if (!grant) return Promise.resolve();
+                  return onRevokeBlockPulseGrant(grant.id);
                 }}
               />
             );

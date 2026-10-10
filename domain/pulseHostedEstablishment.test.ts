@@ -214,3 +214,21 @@ describe("hosted SQL evaluator contract correspondence", () => {
     expect(sql).not.toMatch(/add column.*fire_at|fire_at\s+timestamptz/i);
   });
 });
+
+describe("hosted Block-start extension contract", () => {
+  const blockSql = readFileSync(
+    "supabase/migrations/20261010093000_pulse_block_start_authority.sql",
+    "utf8",
+  );
+
+  it("extends hosted evaluator for Block-start without client or delivery coupling", () => {
+    expect(blockSql).toContain("ORIENT-PULSE-AUTHORITY-002");
+    expect(blockSql).toContain("source_kind in ('commitment', 'block')");
+    expect(blockSql).toContain("g.source_kind = 'block'");
+    expect(blockSql).toContain("from public.blocks bl");
+    expect(blockSql).toContain("startPulseIsDueForEstablishment");
+    expect(blockSql).toContain("on conflict (grant_id, source_starts_on, source_start_local) do nothing");
+    expect(blockSql).not.toMatch(/notification|vibrate|wear|push|kotlin|fcm/i);
+    expect(blockSql).not.toMatch(/grant execute[\s\S]*to authenticated/);
+  });
+});

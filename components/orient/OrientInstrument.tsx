@@ -58,6 +58,7 @@ import {
 import { loadPriorities } from "@/persistence/priority";
 import { createProtectedTime, deleteProtectedTime, loadProtectedTime, updateProtectedTime } from "@/persistence/protectedTime";
 import {
+  establishBlockStartInterruptGrant,
   establishCommitmentStartInterruptGrant,
   establishEligiblePulseOccurrences,
   loadActiveInterruptGrants,
@@ -102,6 +103,7 @@ function expressiblePulses(input: {
   occurrences: readonly PulseOccurrence[];
   grants: readonly InterruptGrant[];
   commitments: readonly Commitment[];
+  blocks: readonly Block[];
   now: Date;
   timeZone: string;
 }): ExpressiblePulse[] {
@@ -112,6 +114,17 @@ function expressiblePulses(input: {
   for (const occurrence of input.occurrences) {
     if (occurrence.grantId === null || !activeGrantIds.has(occurrence.grantId)) continue;
     if (!pulseOccurrenceStillBeforeStart({ occurrence, now: input.now, timeZone: input.timeZone })) {
+      continue;
+    }
+    if (occurrence.sourceKind === "block") {
+      const block =
+        occurrence.sourceId === null
+          ? null
+          : (input.blocks.find((row) => row.id === occurrence.sourceId) ?? null);
+      items.push({
+        occurrence,
+        title: block?.purpose ?? "Block",
+      });
       continue;
     }
     const commitment =
@@ -351,16 +364,19 @@ export function OrientInstrument() {
     if (truth.pulseGrants.status !== "ready") return;
     if (truth.pulseOccurrences.status !== "ready") return;
     if (truth.sources.commitments.status !== "ready") return;
+    if (truth.sources.blocks.status !== "ready") return;
     let cancelled = false;
     const client = getSupabaseBrowserClient();
     const grants = truth.pulseGrants.rows;
     const commitments = truth.sources.commitments.rows;
+    const blocks = truth.sources.blocks.rows;
     const occurrences = truth.pulseOccurrences.rows;
     void (async () => {
       try {
         const minted = await establishEligiblePulseOccurrences(client, {
           grants,
           commitments,
+          blocks,
           occurrences,
           timeZone,
           now,
@@ -438,11 +454,13 @@ export function OrientInstrument() {
     expressible:
       truth.pulseGrants.status === "ready" &&
       truth.pulseOccurrences.status === "ready" &&
-      truth.sources.commitments.status === "ready"
+      truth.sources.commitments.status === "ready" &&
+      truth.sources.blocks.status === "ready"
         ? expressiblePulses({
             occurrences: truth.pulseOccurrences.rows,
             grants: truth.pulseGrants.rows,
             commitments: truth.sources.commitments.rows,
+            blocks: truth.sources.blocks.rows,
             now,
             timeZone,
           })
@@ -610,6 +628,27 @@ export function OrientInstrument() {
           });
         },
         onRevokeCommitmentPulseGrant: async (grantId) => {
+          await persist(async () => {
+            await revokeInterruptGrant(getSupabaseBrowserClient(), grantId, new Date());
+          });
+        },
+        onEstablishBlockPulseGrant: async (blockId, leadOffsetSeconds) => {
+          await persist(async () => {
+            const block =
+              truth.sources.blocks.status === "ready"
+                ? (truth.sources.blocks.rows.find((row) => row.id === blockId) ?? null)
+                : null;
+            if (!block) {
+              throw new Error("That Block could not be read.");
+            }
+            await establishBlockStartInterruptGrant(getSupabaseBrowserClient(), {
+              block,
+              leadOffsetSeconds,
+              establishedAt: new Date(),
+            });
+          });
+        },
+        onRevokeBlockPulseGrant: async (grantId) => {
           await persist(async () => {
             await revokeInterruptGrant(getSupabaseBrowserClient(), grantId, new Date());
           });

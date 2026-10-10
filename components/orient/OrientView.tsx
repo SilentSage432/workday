@@ -1394,6 +1394,8 @@ export function OrientView({
               interruptGrants={pulse.grants.status === "ready" ? pulse.grants.rows : []}
               onEstablishCommitmentPulseGrant={actions.onEstablishCommitmentPulseGrant}
               onRevokeCommitmentPulseGrant={actions.onRevokeCommitmentPulseGrant}
+              onEstablishBlockPulseGrant={actions.onEstablishBlockPulseGrant}
+              onRevokeBlockPulseGrant={actions.onRevokeBlockPulseGrant}
               onChoose={(fact) => setSurface({ kind: "facts", facts: surface.facts, chosen: fact, proposal: null })}
               onClose={closeSurface}
               onUpdate={actions.onUpdate}

@@ -1,15 +1,21 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Block } from "@/domain/block";
 import type { Commitment } from "@/domain/commitment";
 import {
-  commitmentStartPulseIsDueForEstablishment,
+  deriveBlockStartThreshold,
   deriveCommitmentStartThreshold,
+  evaluateBlockStartPulseCondition,
   evaluateCommitmentStartPulseCondition,
+  PULSE_SOURCE_KIND_BLOCK,
   PULSE_SOURCE_KIND_COMMITMENT,
   PULSE_TRANSITION_KIND_START,
   requirePulseLeadChoice,
   requirePulseLeadOffsetSeconds,
+  requirePulseSourceKind,
+  startPulseIsDueForEstablishment,
   type InterruptGrant,
   type PulseOccurrence,
+  type PulseSourceKind,
 } from "@/domain/pulse";
 import { formatLocalTime, parseLocalTime } from "@/domain/time/localTime";
 import { readCompleteCollection, TEMPORAL_PAGE_SIZE } from "@/persistence/completeRead";
@@ -74,16 +80,14 @@ function unwrap<T>(data: T | null, error: { message: string } | null): T {
 }
 
 export function rowToInterruptGrant(row: PulseInterruptGrantRow): InterruptGrant {
-  if (row.source_kind !== PULSE_SOURCE_KIND_COMMITMENT) {
-    throw new Error("This interrupt grant has an unsupported source kind.");
-  }
+  const sourceKind = requirePulseSourceKind(row.source_kind);
   if (row.transition_kind !== PULSE_TRANSITION_KIND_START) {
     throw new Error("This interrupt grant has an unsupported transition.");
   }
   return {
     id: row.id,
     userId: row.user_id,
-    sourceKind: PULSE_SOURCE_KIND_COMMITMENT,
+    sourceKind,
     sourceId: row.source_id,
     transitionKind: PULSE_TRANSITION_KIND_START,
     leadOffsetSeconds: requirePulseLeadOffsetSeconds(row.lead_offset_seconds),
@@ -93,14 +97,12 @@ export function rowToInterruptGrant(row: PulseInterruptGrantRow): InterruptGrant
 }
 
 export function rowToPulseOccurrence(row: PulseOccurrenceRow): PulseOccurrence {
-  if (row.source_kind !== PULSE_SOURCE_KIND_COMMITMENT) {
-    throw new Error("This Pulse occurrence has an unsupported source kind.");
-  }
+  const sourceKind = requirePulseSourceKind(row.source_kind);
   return {
     id: row.id,
     userId: row.user_id,
     grantId: row.grant_id,
-    sourceKind: PULSE_SOURCE_KIND_COMMITMENT,
+    sourceKind,
     sourceId: row.source_id,
     sourceStartsOn: row.source_starts_on,
     sourceStartLocal: localFromDatabase(row.source_start_local),
@@ -162,6 +164,51 @@ export async function loadPulseOccurrences(client: SupabaseClient): Promise<Puls
   return rows.map(rowToPulseOccurrence);
 }
 
+async function establishStartInterruptGrant(
+  client: SupabaseClient,
+  input: {
+    sourceKind: PulseSourceKind;
+    sourceId: string;
+    leadOffsetSeconds: number;
+    establishedAt: Date;
+    alreadyActiveMessage: string;
+  },
+): Promise<InterruptGrant> {
+  const leadOffsetSeconds = requirePulseLeadChoice(input.leadOffsetSeconds);
+  const userId = await requireUserId(client);
+
+  const { data: existing, error: existingError } = await client
+    .from("pulse_interrupt_grants")
+    .select(PULSE_INTERRUPT_GRANT_COLUMNS)
+    .eq("source_kind", input.sourceKind)
+    .eq("source_id", input.sourceId)
+    .eq("transition_kind", PULSE_TRANSITION_KIND_START)
+    .is("revoked_at", null)
+    .maybeSingle();
+  if (existingError) {
+    throw new Error(existingError.message);
+  }
+  if (existing) {
+    throw new Error(input.alreadyActiveMessage);
+  }
+
+  const { data, error } = await client
+    .from("pulse_interrupt_grants")
+    .insert({
+      user_id: userId,
+      source_kind: input.sourceKind,
+      source_id: input.sourceId,
+      transition_kind: PULSE_TRANSITION_KIND_START,
+      lead_offset_seconds: leadOffsetSeconds,
+      established_at: input.establishedAt.toISOString(),
+      revoked_at: null,
+    })
+    .select(PULSE_INTERRUPT_GRANT_COLUMNS)
+    .single();
+
+  return rowToInterruptGrant(unwrap(data, error));
+}
+
 export async function establishCommitmentStartInterruptGrant(
   client: SupabaseClient,
   input: {
@@ -173,39 +220,33 @@ export async function establishCommitmentStartInterruptGrant(
   if (input.commitment.kind !== "timed") {
     throw new Error("Reminders before a Commitment start need a timed Commitment.");
   }
-  const leadOffsetSeconds = requirePulseLeadChoice(input.leadOffsetSeconds);
-  const userId = await requireUserId(client);
+  return establishStartInterruptGrant(client, {
+    sourceKind: PULSE_SOURCE_KIND_COMMITMENT,
+    sourceId: input.commitment.id,
+    leadOffsetSeconds: input.leadOffsetSeconds,
+    establishedAt: input.establishedAt,
+    alreadyActiveMessage: "A reminder is already set for this Commitment.",
+  });
+}
 
-  const { data: existing, error: existingError } = await client
-    .from("pulse_interrupt_grants")
-    .select(PULSE_INTERRUPT_GRANT_COLUMNS)
-    .eq("source_kind", PULSE_SOURCE_KIND_COMMITMENT)
-    .eq("source_id", input.commitment.id)
-    .eq("transition_kind", PULSE_TRANSITION_KIND_START)
-    .is("revoked_at", null)
-    .maybeSingle();
-  if (existingError) {
-    throw new Error(existingError.message);
+export async function establishBlockStartInterruptGrant(
+  client: SupabaseClient,
+  input: {
+    block: Block;
+    leadOffsetSeconds: number;
+    establishedAt: Date;
+  },
+): Promise<InterruptGrant> {
+  if (input.block.kind !== "timed") {
+    throw new Error("Reach me before a Block start needs a timed Block.");
   }
-  if (existing) {
-    throw new Error("A reminder is already set for this Commitment.");
-  }
-
-  const { data, error } = await client
-    .from("pulse_interrupt_grants")
-    .insert({
-      user_id: userId,
-      source_kind: PULSE_SOURCE_KIND_COMMITMENT,
-      source_id: input.commitment.id,
-      transition_kind: PULSE_TRANSITION_KIND_START,
-      lead_offset_seconds: leadOffsetSeconds,
-      established_at: input.establishedAt.toISOString(),
-      revoked_at: null,
-    })
-    .select(PULSE_INTERRUPT_GRANT_COLUMNS)
-    .single();
-
-  return rowToInterruptGrant(unwrap(data, error));
+  return establishStartInterruptGrant(client, {
+    sourceKind: PULSE_SOURCE_KIND_BLOCK,
+    sourceId: input.block.id,
+    leadOffsetSeconds: input.leadOffsetSeconds,
+    establishedAt: input.establishedAt,
+    alreadyActiveMessage: "Reach me is already set for this Block.",
+  });
 }
 
 export async function revokeInterruptGrant(
@@ -224,43 +265,36 @@ export async function revokeInterruptGrant(
   return rowToInterruptGrant(unwrap(data, error));
 }
 
-export async function ensurePulseOccurrenceForEligibleGrant(
+async function upsertPulseOccurrence(
   client: SupabaseClient,
   input: {
     grant: InterruptGrant;
-    commitment: Extract<Commitment, { kind: "timed" }>;
-    timeZone: string;
+    sourceKind: PulseSourceKind;
+    sourceId: string;
+    identity: { sourceStartsOn: string; sourceStartLocal: string };
+    thresholdAt: Date;
+    sourceStartAt: Date;
     now: Date;
     occurrences: readonly PulseOccurrence[];
   },
 ): Promise<PulseOccurrence | null> {
-  const result = evaluateCommitmentStartPulseCondition({
-    grant: input.grant,
-    commitment: input.commitment,
-    timeZone: input.timeZone,
-    now: input.now,
-    occurrences: input.occurrences,
-    readsComplete: true,
-  });
-  if (!commitmentStartPulseIsDueForEstablishment(result)) {
-    return null;
-  }
+  const matching = input.occurrences.some((occurrence) =>
+    occurrence.grantId === input.grant.id &&
+    occurrence.sourceStartsOn === input.identity.sourceStartsOn &&
+    occurrence.sourceStartLocal === input.identity.sourceStartLocal,
+  );
+  if (matching) return null;
 
-  const derived = deriveCommitmentStartThreshold({
-    commitment: input.commitment,
-    leadOffsetSeconds: input.grant.leadOffsetSeconds,
-    timeZone: input.timeZone,
-  });
   const userId = await requireUserId(client);
   const insertRow = {
     user_id: userId,
     grant_id: input.grant.id,
-    source_kind: PULSE_SOURCE_KIND_COMMITMENT,
-    source_id: input.commitment.id,
-    source_starts_on: derived.identity.sourceStartsOn,
-    source_start_local: localForDatabase(derived.identity.sourceStartLocal),
-    threshold_at: derived.thresholdAt.toISOString(),
-    source_start_at: derived.sourceStartAt.toISOString(),
+    source_kind: input.sourceKind,
+    source_id: input.sourceId,
+    source_starts_on: input.identity.sourceStartsOn,
+    source_start_local: localForDatabase(input.identity.sourceStartLocal),
+    threshold_at: input.thresholdAt.toISOString(),
+    source_start_at: input.sourceStartAt.toISOString(),
     established_at: input.now.toISOString(),
   };
 
@@ -284,8 +318,8 @@ export async function ensurePulseOccurrenceForEligibleGrant(
     .from("pulse_occurrences")
     .select(PULSE_OCCURRENCE_COLUMNS)
     .eq("grant_id", input.grant.id)
-    .eq("source_starts_on", derived.identity.sourceStartsOn)
-    .eq("source_start_local", localForDatabase(derived.identity.sourceStartLocal))
+    .eq("source_starts_on", input.identity.sourceStartsOn)
+    .eq("source_start_local", localForDatabase(input.identity.sourceStartLocal))
     .maybeSingle();
   if (readError) {
     throw new Error(readError.message);
@@ -296,11 +330,90 @@ export async function ensurePulseOccurrenceForEligibleGrant(
   return rowToPulseOccurrence(existing);
 }
 
+export async function ensurePulseOccurrenceForEligibleGrant(
+  client: SupabaseClient,
+  input: {
+    grant: InterruptGrant;
+    commitment: Extract<Commitment, { kind: "timed" }>;
+    timeZone: string;
+    now: Date;
+    occurrences: readonly PulseOccurrence[];
+  },
+): Promise<PulseOccurrence | null> {
+  const result = evaluateCommitmentStartPulseCondition({
+    grant: input.grant,
+    commitment: input.commitment,
+    timeZone: input.timeZone,
+    now: input.now,
+    occurrences: input.occurrences,
+    readsComplete: true,
+  });
+  if (!startPulseIsDueForEstablishment(result)) {
+    return null;
+  }
+
+  const derived = deriveCommitmentStartThreshold({
+    commitment: input.commitment,
+    leadOffsetSeconds: input.grant.leadOffsetSeconds,
+    timeZone: input.timeZone,
+  });
+  return upsertPulseOccurrence(client, {
+    grant: input.grant,
+    sourceKind: PULSE_SOURCE_KIND_COMMITMENT,
+    sourceId: input.commitment.id,
+    identity: derived.identity,
+    thresholdAt: derived.thresholdAt,
+    sourceStartAt: derived.sourceStartAt,
+    now: input.now,
+    occurrences: input.occurrences,
+  });
+}
+
+export async function ensurePulseOccurrenceForEligibleBlockGrant(
+  client: SupabaseClient,
+  input: {
+    grant: InterruptGrant;
+    block: Extract<Block, { kind: "timed" }>;
+    timeZone: string;
+    now: Date;
+    occurrences: readonly PulseOccurrence[];
+  },
+): Promise<PulseOccurrence | null> {
+  const result = evaluateBlockStartPulseCondition({
+    grant: input.grant,
+    block: input.block,
+    timeZone: input.timeZone,
+    now: input.now,
+    occurrences: input.occurrences,
+    readsComplete: true,
+  });
+  if (!startPulseIsDueForEstablishment(result)) {
+    return null;
+  }
+
+  const derived = deriveBlockStartThreshold({
+    block: input.block,
+    leadOffsetSeconds: input.grant.leadOffsetSeconds,
+    timeZone: input.timeZone,
+  });
+  return upsertPulseOccurrence(client, {
+    grant: input.grant,
+    sourceKind: PULSE_SOURCE_KIND_BLOCK,
+    sourceId: input.block.id,
+    identity: derived.identity,
+    thresholdAt: derived.thresholdAt,
+    sourceStartAt: derived.sourceStartAt,
+    now: input.now,
+    occurrences: input.occurrences,
+  });
+}
+
 export async function establishEligiblePulseOccurrences(
   client: SupabaseClient,
   input: {
     grants: readonly InterruptGrant[];
     commitments: readonly Commitment[];
+    blocks?: readonly Block[];
     occurrences: readonly PulseOccurrence[];
     timeZone: string;
     now: Date;
@@ -308,21 +421,42 @@ export async function establishEligiblePulseOccurrences(
 ): Promise<PulseOccurrence[]> {
   const established: PulseOccurrence[] = [];
   let known = [...input.occurrences];
+  const blocks = input.blocks ?? [];
+
   for (const grant of input.grants) {
     if (grant.revokedAt !== null) continue;
-    if (grant.sourceKind !== PULSE_SOURCE_KIND_COMMITMENT) continue;
-    const commitment = input.commitments.find((row) => row.id === grant.sourceId) ?? null;
-    if (!commitment || commitment.kind !== "timed") continue;
-    const occurrence = await ensurePulseOccurrenceForEligibleGrant(client, {
-      grant,
-      commitment,
-      timeZone: input.timeZone,
-      now: input.now,
-      occurrences: known,
-    });
-    if (occurrence) {
-      established.push(occurrence);
-      known = [...known, occurrence];
+
+    if (grant.sourceKind === PULSE_SOURCE_KIND_COMMITMENT) {
+      const commitment = input.commitments.find((row) => row.id === grant.sourceId) ?? null;
+      if (!commitment || commitment.kind !== "timed") continue;
+      const occurrence = await ensurePulseOccurrenceForEligibleGrant(client, {
+        grant,
+        commitment,
+        timeZone: input.timeZone,
+        now: input.now,
+        occurrences: known,
+      });
+      if (occurrence) {
+        established.push(occurrence);
+        known = [...known, occurrence];
+      }
+      continue;
+    }
+
+    if (grant.sourceKind === PULSE_SOURCE_KIND_BLOCK) {
+      const block = blocks.find((row) => row.id === grant.sourceId) ?? null;
+      if (!block || block.kind !== "timed") continue;
+      const occurrence = await ensurePulseOccurrenceForEligibleBlockGrant(client, {
+        grant,
+        block,
+        timeZone: input.timeZone,
+        now: input.now,
+        occurrences: known,
+      });
+      if (occurrence) {
+        established.push(occurrence);
+        known = [...known, occurrence];
+      }
     }
   }
   return established;

@@ -298,6 +298,8 @@ function actions(): OrientActions {
     onRetireRecurringTask: async () => {},
     onEstablishCommitmentPulseGrant: async () => {},
     onRevokeCommitmentPulseGrant: async () => {},
+    onEstablishBlockPulseGrant: async () => {},
+    onRevokeBlockPulseGrant: async () => {},
     onReopenTask: async () => {},
     onUpdateTask: async () => {},
     onTasksChanged: () => {},

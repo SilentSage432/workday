@@ -1,5 +1,16 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-AUTHORITY-002
+
+Timed Block-start Interrupt Grant implemented as second authorized Pulse source relationship (source generalization proof).
+
+- Baseline `4197d471f78fd8a74bfabab02c56791f770b8265`.
+- Migration `20261010093000_pulse_block_start_authority.sql` authored; **not** applied to production.
+- Positive relative lead before timed Block start only; Commitment-start unchanged; delivery/device untouched.
+- Physical acceptance not declared.
+
+Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-002.md](docs/implementation/ORIENT-PULSE-AUTHORITY-002.md).
+
 ## 2026-10-10 — ORIENT-PULSE-AUTHORITY-001
 
 General Interrupt Authority domain discovery (no runtime/schema/device mutation).

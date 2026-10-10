@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
+import { defineBlock, type Block } from "@/domain/block";
 import { defineCommitment, type Commitment } from "@/domain/commitment";
 import type { InterruptGrant, PulseOccurrence } from "@/domain/pulse";
 import {
+  establishBlockStartInterruptGrant,
   establishCommitmentStartInterruptGrant,
   establishEligiblePulseOccurrences,
   loadActiveInterruptGrants,
@@ -17,9 +19,14 @@ import {
 const USER = "11111111-1111-1111-1111-111111111111";
 const GRANT = "22222222-2222-2222-2222-222222222222";
 const COMMITMENT = "33333333-3333-3333-3333-333333333333";
+const BLOCK = "55555555-5555-5555-5555-555555555555";
 const MIGRATION = join(
   process.cwd(),
   "supabase/migrations/20261008230000_pulse_commitment_start.sql",
+);
+const BLOCK_MIGRATION = join(
+  process.cwd(),
+  "supabase/migrations/20261010093000_pulse_block_start_authority.sql",
 );
 
 function timedCommitment(): Commitment {
@@ -399,5 +406,281 @@ describe("pulse persistence mapping", () => {
     const rows = await loadActiveInterruptGrants(client as never);
     expect(rows).toHaveLength(1);
     expect(range).toHaveBeenCalled();
+  });
+});
+
+function timedBlock(): Block {
+  return {
+    ...defineBlock({
+      kind: "timed",
+      startsOn: "2026-10-08",
+      startLocal: "15:00",
+      endLocal: "16:00",
+      purpose: "Deep work",
+    }),
+    id: BLOCK,
+    createdAt: "2026-10-01T12:00:00.000Z",
+  };
+}
+
+function blockGrantRow(overrides: Partial<PulseInterruptGrantRow> = {}): PulseInterruptGrantRow {
+  return {
+    id: GRANT,
+    user_id: USER,
+    source_kind: "block",
+    source_id: BLOCK,
+    transition_kind: "start",
+    lead_offset_seconds: 900,
+    established_at: "2026-10-08T12:00:00.000Z",
+    revoked_at: null,
+    ...overrides,
+  };
+}
+
+describe("pulse Block-start authority migration", () => {
+  const sql = readFileSync(BLOCK_MIGRATION, "utf8");
+
+  it("widens source kinds with kind-aware ownership and delete cascade", () => {
+    expect(sql).toContain("ORIENT-PULSE-AUTHORITY-002");
+    expect(sql).toContain("blocks_id_user_key");
+    expect(sql).toContain("drop constraint pulse_interrupt_grants_commitment_same_owner");
+    expect(sql).toContain("source_kind in ('commitment', 'block')");
+    expect(sql).toContain("pulse_interrupt_grant_requires_timed_source");
+    expect(sql).toContain("Interrupt grant requires an owned Block");
+    expect(sql).toContain("Interrupt grant requires a timed Block start");
+    expect(sql).toContain("pulse_interrupt_grants_cascade_source_delete");
+    expect(sql).toContain("pulse_interrupt_grants_cascade_block_delete");
+    expect(sql).toContain("pulse_interrupt_grants_cascade_commitment_delete");
+    expect(sql).toContain("source_kind in ('commitment', 'block')");
+    expect(sql).toContain("g.source_kind = 'block'");
+    expect(sql).toContain("on conflict (grant_id, source_starts_on, source_start_local) do nothing");
+    expect(sql).not.toMatch(/lead_offset_seconds\s*=\s*0|lead_offset_seconds\s*>=\s*0/);
+    expect(sql).not.toMatch(/transition_kind.*end|'end'/);
+    expect(sql).not.toMatch(/notification|vibrate|wear|fcm|kotlin/i);
+  });
+});
+
+describe("pulse Block-start persistence", () => {
+  it("maps Block grants and refuses all-day / duplicate active grants / lead=0", async () => {
+    expect(rowToInterruptGrant(blockGrantRow())).toMatchObject({
+      sourceKind: "block",
+      sourceId: BLOCK,
+      leadOffsetSeconds: 900,
+    });
+    expect(() => rowToInterruptGrant(blockGrantRow({ source_kind: "task" }))).toThrow(
+      /unsupported source kind/i,
+    );
+    expect(() => rowToInterruptGrant(blockGrantRow({ lead_offset_seconds: 0 }))).toThrow(/positive/i);
+    expect(() => rowToInterruptGrant(blockGrantRow({ lead_offset_seconds: -1 }))).toThrow(/positive/i);
+
+    const allDay: Block = {
+      ...defineBlock({ kind: "all_day", startsOn: "2026-10-08", purpose: "Focus day" }),
+      id: BLOCK,
+      createdAt: "2026-10-01T12:00:00.000Z",
+    };
+    await expect(
+      establishBlockStartInterruptGrant(
+        { auth: { getUser: async () => ({ data: { user: { id: USER } }, error: null }) } } as never,
+        { block: allDay, leadOffsetSeconds: 900, establishedAt: new Date() },
+      ),
+    ).rejects.toThrow(/timed Block/i);
+
+    let inserts = 0;
+    const client = {
+      auth: { getUser: async () => ({ data: { user: { id: USER } }, error: null }) },
+      from(table: string) {
+        if (table !== "pulse_interrupt_grants") throw new Error(table);
+        return {
+          select() {
+            return this;
+          },
+          eq() {
+            return this;
+          },
+          is() {
+            return this;
+          },
+          maybeSingle: async () =>
+            inserts === 0 ? { data: null, error: null } : { data: blockGrantRow(), error: null },
+          insert(row: Record<string, unknown>) {
+            inserts += 1;
+            expect(row.source_kind).toBe("block");
+            expect(row.source_id).toBe(BLOCK);
+            expect(row.lead_offset_seconds).toBe(900);
+            return {
+              select() {
+                return {
+                  single: async () => ({ data: blockGrantRow(), error: null }),
+                };
+              },
+            };
+          },
+        };
+      },
+    };
+
+    const first = await establishBlockStartInterruptGrant(client as never, {
+      block: timedBlock(),
+      leadOffsetSeconds: 900,
+      establishedAt: new Date("2026-10-08T12:00:00.000Z"),
+    });
+    expect(first.sourceKind).toBe("block");
+    await expect(
+      establishBlockStartInterruptGrant(client as never, {
+        block: timedBlock(),
+        leadOffsetSeconds: 1800,
+        establishedAt: new Date("2026-10-08T12:05:00.000Z"),
+      }),
+    ).rejects.toThrow(/already set/i);
+  });
+
+  it("establishes one Block occurrence for a fingerprint and converges on conflict", async () => {
+    const grant: InterruptGrant = rowToInterruptGrant(blockGrantRow());
+    const block = timedBlock();
+    if (block.kind !== "timed") throw new Error("timed");
+    const now = new Date(Date.UTC(2026, 9, 8, 20, 50, 0, 0));
+    let upsertCalls = 0;
+    const occurrence: PulseOccurrence = {
+      id: "66666666-6666-6666-6666-666666666666",
+      userId: USER,
+      grantId: GRANT,
+      sourceKind: "block",
+      sourceId: BLOCK,
+      sourceStartsOn: "2026-10-08",
+      sourceStartLocal: "15:00",
+      thresholdAt: "2026-10-08T20:45:00.000Z",
+      sourceStartAt: "2026-10-08T21:00:00.000Z",
+      establishedAt: now.toISOString(),
+    };
+    const client = {
+      auth: { getUser: async () => ({ data: { user: { id: USER } }, error: null }) },
+      from(table: string) {
+        expect(table).toBe("pulse_occurrences");
+        return {
+          upsert(row: Record<string, unknown>) {
+            upsertCalls += 1;
+            expect(row.source_kind).toBe("block");
+            expect(row.source_starts_on).toBe("2026-10-08");
+            return {
+              select() {
+                return {
+                  maybeSingle: async () =>
+                    upsertCalls === 1
+                      ? {
+                          data: {
+                            id: occurrence.id,
+                            user_id: USER,
+                            grant_id: GRANT,
+                            source_kind: "block",
+                            source_id: BLOCK,
+                            source_starts_on: "2026-10-08",
+                            source_start_local: "15:00:00",
+                            threshold_at: occurrence.thresholdAt,
+                            source_start_at: occurrence.sourceStartAt,
+                            established_at: occurrence.establishedAt,
+                          },
+                          error: null,
+                        }
+                      : { data: null, error: null },
+                };
+              },
+            };
+          },
+          select() {
+            return this;
+          },
+          eq() {
+            return this;
+          },
+          maybeSingle: async () => ({
+            data: {
+              id: occurrence.id,
+              user_id: USER,
+              grant_id: GRANT,
+              source_kind: "block",
+              source_id: BLOCK,
+              source_starts_on: "2026-10-08",
+              source_start_local: "15:00:00",
+              threshold_at: occurrence.thresholdAt,
+              source_start_at: occurrence.sourceStartAt,
+              established_at: occurrence.establishedAt,
+            },
+            error: null,
+          }),
+        };
+      },
+    };
+
+    const first = await establishEligiblePulseOccurrences(client as never, {
+      grants: [grant],
+      commitments: [],
+      blocks: [block],
+      occurrences: [],
+      timeZone: "America/Denver",
+      now,
+    });
+    expect(first).toHaveLength(1);
+    expect(first[0]?.sourceKind).toBe("block");
+    expect(first[0]?.sourceStartLocal).toBe("15:00");
+
+    const second = await establishEligiblePulseOccurrences(client as never, {
+      grants: [grant],
+      commitments: [],
+      blocks: [block],
+      occurrences: first,
+      timeZone: "America/Denver",
+      now,
+    });
+    expect(second).toHaveLength(0);
+    expect(upsertCalls).toBe(1);
+  });
+
+  it("keeps Commitment establishment path unchanged beside Block grants", async () => {
+    const grant: InterruptGrant = rowToInterruptGrant(grantRow());
+    const commitment = timedCommitment();
+    if (commitment.kind !== "timed") throw new Error("timed");
+    const now = new Date(Date.UTC(2026, 9, 8, 20, 50, 0, 0));
+    const client = {
+      auth: { getUser: async () => ({ data: { user: { id: USER } }, error: null }) },
+      from(table: string) {
+        expect(table).toBe("pulse_occurrences");
+        return {
+          upsert(row: Record<string, unknown>) {
+            expect(row.source_kind).toBe("commitment");
+            return {
+              select() {
+                return {
+                  maybeSingle: async () => ({
+                    data: {
+                      id: "44444444-4444-4444-4444-444444444444",
+                      user_id: USER,
+                      grant_id: GRANT,
+                      source_kind: "commitment",
+                      source_id: COMMITMENT,
+                      source_starts_on: "2026-10-08",
+                      source_start_local: "15:00:00",
+                      threshold_at: "2026-10-08T20:45:00.000Z",
+                      source_start_at: "2026-10-08T21:00:00.000Z",
+                      established_at: now.toISOString(),
+                    },
+                    error: null,
+                  }),
+                };
+              },
+            };
+          },
+        };
+      },
+    };
+    const minted = await establishEligiblePulseOccurrences(client as never, {
+      grants: [grant],
+      commitments: [commitment],
+      blocks: [timedBlock()],
+      occurrences: [],
+      timeZone: "America/Denver",
+      now,
+    });
+    expect(minted).toHaveLength(1);
+    expect(minted[0]?.sourceKind).toBe("commitment");
   });
 });
