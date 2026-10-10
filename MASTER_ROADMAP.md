@@ -21,9 +21,13 @@
 - Phone LOOK progressive disclosure (MOBILE-LOOK-PROGRESSIVE-DISCLOSURE-001)
 - Center ADD plus correction (MOBILE-CENTER-PLUS-CORRECTION-001)
 
+## Discovery (not accepted architecture)
+
+- **ORIENT-PULSE-AUTHORITY-001** — general Interrupt Authority model clear (`ORIENT-PULSE-GENERAL-AUTHORITY-MODEL-CLEAR`). Smallest recommended next source relationship: timed Block start with relative lead. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-001.md](docs/implementation/ORIENT-PULSE-AUTHORITY-001.md).
+
 ## Next evidence-backed items
 
-1. Deferred: generalized Pulse-source Interrupt Grants beyond Commitment-start (architecture direction only; not every object gets reminders)
+1. Deferred: first non-Commitment Interrupt Grant implementation (discovery recommends timed Block start; not yet accepted)
 2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
 3. Deferred: Orient Watch face / visual Pulse expression (observer of local claim; no interruption authority)
 4. Deferred: richer Orient Watch companion

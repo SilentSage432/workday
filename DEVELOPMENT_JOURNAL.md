@@ -1,5 +1,17 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-AUTHORITY-001
+
+General Interrupt Authority domain discovery (no runtime/schema/device mutation).
+
+- Baseline `885782989a8371b276aaef4605ec517ff50ee910`; grant schema classified **C** (general columns, Commitment-start hard constraints).
+- Grammar retained: authoritative source → temporal relationship → explicit Interrupt Grant → deterministic threshold → Pulse occurrence.
+- Class A in principle beyond Commitment-start includes timed Block/PT start and Task `planned_on`+`planned_local`; MustDo/Note/ActiveThread/work schedule/external-without-grant remain non-sources or deferred.
+- Smallest recommended first generalization (discovery only, not accepted architecture): timed Block start with relative lead.
+- Verdict: `ORIENT-PULSE-GENERAL-AUTHORITY-MODEL-CLEAR`.
+
+Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-001.md](docs/implementation/ORIENT-PULSE-AUTHORITY-001.md).
+
 ## 2026-10-10 — ORIENT-WEAR-PULSE-BRIDGE-008
 
 Watch6 Pulse transport / native wrist perception primitive finalized.
