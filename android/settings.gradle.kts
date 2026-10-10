@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "orient"
 include(":app")
+include(":wear")

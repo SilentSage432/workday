@@ -1,5 +1,17 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-WEAR-PULSE-BRIDGE-002
+
+Native Watch6 Pulse perception edge implemented (not physically accepted).
+
+- `:wear` headless module: `applicationId` `com.teamlab.orient`, namespace `com.teamlab.orient.wear`, SDK 37/36/30, ABI `armeabi-v7a`.
+- Phone forwards only after JWT/RLS reread + phone claim CLAIMED via MessageClient path `/orient/pulse/express` (capability `orient_pulse_perception`).
+- Watch: WearableListenerService → SQLite INSERT OR IGNORE → one 40ms `USAGE_NOTIFICATION` haptic. No Supabase/FCM/evaluator/secrets on watch.
+- First proof tolerates phone + watch double perception. Watch face / companion UI deferred.
+- Environment: SM-R955U API 36 cleared in BRIDGE-001B; baseline restored in 001C.
+
+Record: [docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-002.md](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-002.md).
+
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-008I
 
 Native autonomous Pulse perception physically accepted (`52a8ed8`).

@@ -6,10 +6,12 @@ import androidx.work.WorkerParameters
 import com.teamlab.orient.auth.OrientSupabase
 import com.teamlab.orient.contract.PerceptionAuthority
 import com.teamlab.orient.contract.PulseOccurrenceId
+import com.teamlab.orient.wear.WearPulseForwarder
 
 /**
  * Continues FCM reception: session → authoritative reread → claim → express.
  * Retries only retrieval of already-established truth.
+ * Wear MessageClient forward runs only inside express (after phone claim).
  */
 class PulsePerceptionWorker(
     appContext: Context,
@@ -48,6 +50,8 @@ class PulsePerceptionWorker(
                         PerceptionTrace.hapticFailed(id.value, error)
                         throw error
                     }
+                    // Best-effort wrist transport. Must not fail phone perception.
+                    WearPulseForwarder.forwardAfterClaim(applicationContext, id)
                 },
             )
 

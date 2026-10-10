@@ -29,4 +29,17 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk-17.jdk/Contents/Home
 ./gradlew assembleDebug
 ```
 
-Wear OS is deferred.
+## Wear OS (`:wear`)
+
+Headless Watch Pulse perception edge (`applicationId` `com.teamlab.orient`).
+
+After phone claim, `:app` forwards `{pulse_occurrence_id}` via MessageClient path
+`/orient/pulse/express` to capability `orient_pulse_perception`. Watch dedupes in
+SQLite and expresses one 40ms `USAGE_NOTIFICATION` haptic.
+
+```bash
+./gradlew :wear:test :wear:assembleDebug
+```
+
+Do not install or physically accept wrist perception from this README alone.
+See [docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-002.md](../docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-002.md).

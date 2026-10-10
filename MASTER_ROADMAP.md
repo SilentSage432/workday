@@ -2,6 +2,7 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
+- **ORIENT-WEAR-PULSE-BRIDGE-002** — native Watch6 Pulse perception edge implemented (`:wear` + phone MessageClient forward after claim); not physically accepted
 - **ORIENT-ANDROID-PULSE-BRIDGE-007** — observability on `main` (`171c95a`); first Pulse reread failure diagnosed
 - **ORIENT-ANDROID-PULSE-BRIDGE-006** — token registration serialization fix on `main` (`54724f0`); S26 endpoint established
 - **ORIENT-ANDROID-PULSE-BRIDGE-005** — native Android perception edge (`android/`)
@@ -26,11 +27,12 @@
 
 ## Next evidence-backed items
 
-1. Deferred: generic notification icon / identity visual refinement
-2. Deferred: Wear OS / Watch6 / channel policy / in-app Pulse visual refinement
-3. Recurring-task physical acceptance (when ready)
-4. Google Calendar removal reconciliation
-5. Note Edit / Unretire only if evidence requires
+1. Physical acceptance: ORIENT-WEAR-PULSE-BRIDGE-002 Watch6 wrist haptic (implemented, not installed)
+2. Deferred: generic notification icon / identity visual refinement
+3. Deferred: Orient Watch companion / exclusive watch-face / channel policy / in-app Pulse visual refinement
+4. Recurring-task physical acceptance (when ready)
+5. Google Calendar removal reconciliation
+6. Note Edit / Unretire only if evidence requires
 
 ## Standing law
 

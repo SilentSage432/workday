@@ -2,18 +2,16 @@
 
 ## Current state (2026-10-09)
 
-**ORIENT-ANDROID-PULSE-BRIDGE-008** — native autonomous Pulse perception
-**physically accepted** on candidate `52a8ed8dea6eecb139f29d255e7b5a04a51e5f98`.
+**ORIENT-WEAR-PULSE-BRIDGE-002** — native Watch6 Pulse perception **implemented**
+(not physically accepted; not installed).
 
-Accepted occurrence: `76c91159-465d-4f30-b9b9-6cca9d4f1c5b`
+Phone authority gate unchanged (BRIDGE-008 physically accepted). After phone
+claim CLAIMED: MessageClient `/orient/pulse/express` + UUID → watch SQLite
+dedupe → one 40ms `USAGE_NOTIFICATION` wrist haptic. Capability
+`orient_pulse_perception`. Modules `:app` + `:wear` (`applicationId`
+`com.teamlab.orient`).
 
-Orient can autonomously express an authorized durable Pulse through native
-Android sight and touch while the user is not operating Orient.
-
-Accepted path (cold FCM process start): hosted occurrence → dispatcher transport
-→ FCM wake → session init (`Initializing` → await → `Authenticated` → refresh) →
-JWT/RLS reread → local claim once → silent notification → one 40ms
-`USAGE_NOTIFICATION` haptic (OS `FINISHED`; physically perceived).
+Prior phone acceptance: occurrence `76c91159` on `52a8ed8` (cold FCM path).
 
 ### Proven (Pulse)
 
@@ -23,16 +21,18 @@ JWT/RLS reread → local claim once → silent notification → one 40ms
 - S26 native autonomous notification + haptic perception (`76c91159`)
 - Session restore ordering vs auth-kt `Initializing` (008E) exercised on cold start
 - Semantic observability tag `OrientPulsePerception`
+- Watch6 environment clear (SM-R955U API 36); Wear bridge implemented in repo
 
 ### Next Pulse boundary
 
-1. Deferred visual: generic notification icon / identity refinement
-2. Deferred: Wear OS / Watch6 / perceptual language / channel policy
-3. Freecess/thawed lifecycle variants not fully proven (cold-start acceptance only)
+1. Physical Watch6 Pulse transport acceptance (install + one real occurrence)
+2. Deferred visual: generic notification icon / identity refinement
+3. Deferred: Orient Watch companion / exclusive watch-face / channel policy
+4. Freecess/thawed lifecycle variants not fully proven (cold-start acceptance only)
 
 ### Still deferred elsewhere
 
-- Wear OS / Watch6
+- Orient Watch face / Watch section UI
 - Recurring-task physical acceptance
 - Google Calendar removal reconciliation
 - Note Edit / Unretire UI / Archive browser
