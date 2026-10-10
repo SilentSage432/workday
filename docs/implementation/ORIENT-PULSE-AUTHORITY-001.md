@@ -8,7 +8,7 @@ Discovery only. No runtime mutation. No schema migration. No device change. No c
 
 **Prior accepted Pulse stack:** Commitment-start Interrupt Grant → hosted establishment → phone/watch perception edges. Phase 2 and Phase 3 closed ([ORIENT-WEAR-PULSE-BRIDGE-008](ORIENT-WEAR-PULSE-BRIDGE-008.md)).
 
-**Status of this document:** discovery reasoning and classification. Recommendations are **not** accepted architecture.
+**Status of this document:** discovery reasoning and classification. Physical acceptance of the general grammar for timed Commitment-start and timed Block-start is recorded in [ORIENT-PULSE-AUTHORITY-005.md](ORIENT-PULSE-AUTHORITY-005.md). Further source kinds remain unaccepted; haptic language remains undesigned.
 
 ---
 

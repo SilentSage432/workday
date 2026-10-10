@@ -6,7 +6,7 @@
 
 **Failed physical acceptance:** `ORIENT-PULSE-BLOCK-START-PHYSICAL-ACCEPTANCE-FAILED` (AUTHORITY-003)
 
-**Status:** Source correction only. Forward migration **not** applied to production. Physical general authority remains **UNACCEPTED**.
+**Status:** Production **repaired**. Forward migration `20261010154000` applied exactly once on canonical Orient (`ksmhgaamyheyhefbyglb`) under candidate `e3ec23c`. Autonomous cron healthy after repair. Physical general authority acceptance is recorded separately in [ORIENT-PULSE-AUTHORITY-005.md](ORIENT-PULSE-AUTHORITY-005.md) — not claimed by this repair tranche alone.
 
 ---
 
@@ -26,6 +26,7 @@ Failed at hosted establishment:
 - Matching `pulse_occurrences` for that grant: **0**
 - Perception path (dispatcher → FCM → phone → Wear → watch) was **not** exercised
 - Failed Block/grant rows are preserved as evidence; do not mutate them to look successful
+- After repair, autonomous cron may establish recovery occurrence `7fadd828-d12c-4213-a9f5-1ddf7e66692e` for that historical grant — classified **POST-REPAIR RECOVERY OF HISTORICAL ELIGIBLE AUTHORITY** only; does **not** change AUTHORITY-003’s FAILED verdict
 
 ---
 
@@ -52,9 +53,13 @@ Executable regression: `scripts/pulse-hosted-evaluator-ambiguity-regression.sh` 
 
 ---
 
+## Production apply (004B)
+
+Applied `20261010154000_pulse_hosted_evaluator_ambiguity_correction.sql` from `e3ec23c`. First autonomous success tick `2026-10-10T15:57:00Z`; continued healthy ticks observed. AUTHORITY-003 remains FAILED.
+
 ## Explicit non-claims
 
-- Not physical generalization acceptance
+- This repair is not itself physical generalization acceptance (see AUTHORITY-005)
 - Not haptic-language work
-- Not production apply
-- Not repair of the failed AUTHORITY-003 Pulse
+- Not a rewrite of historical `20261010093000`
+- Not a retroactive success for AUTHORITY-003

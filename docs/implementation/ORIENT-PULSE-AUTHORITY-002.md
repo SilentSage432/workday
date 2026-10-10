@@ -8,7 +8,7 @@ Implements the smallest bounded proof that Pulse interrupt authority can operate
 
 **Discovery basis:** [ORIENT-PULSE-AUTHORITY-001.md](ORIENT-PULSE-AUTHORITY-001.md) (`ORIENT-PULSE-GENERAL-AUTHORITY-MODEL-CLEAR`).
 
-**Status:** Corrected migration applied in production as candidate `aa2cdcb` (`20261010093000`). Physical acceptance (**003**) **failed** at hosted establishment (PL/pgSQL `source_starts_on` ambiguity). Forward repair is **004** (`20261010154000`); not yet applied. Physical general authority **UNACCEPTED**.
+**Status:** Timed Block-start **physically proven** through AUTHORITY-005 on candidate `e3ec23c` (`ORIENT-PULSE-GENERAL-AUTHORITY-PHYSICALLY-ACCEPTED`). Implementation migration `20261010093000` plus evaluator repair `20261010154000` are live. Historical AUTHORITY-003 remains **FAILED** (does not retroactively succeed). Acceptance record: [ORIENT-PULSE-AUTHORITY-005.md](ORIENT-PULSE-AUTHORITY-005.md).
 
 ---
 
@@ -50,7 +50,7 @@ Migration: `supabase/migrations/20261010093000_pulse_block_start_authority.sql`
 - Occurrence uniqueness unchanged
 - No delivery / FCM / device tables touched
 
-**Not applied to hosted production.** 002B left production pre-002; 002C corrects the migration source only.
+Applied on production after 002C/002D/002E; evaluator ambiguity repaired by **004** (`20261010154000`). Physical proof is AUTHORITY-005 (not 003).
 
 ---
 
@@ -71,10 +71,5 @@ Migration: `supabase/migrations/20261010093000_pulse_block_start_authority.sql`
 - No absolute “Reach me at…”
 - No preferred phone/watch routing, haptic language, visual Pulse language, watch face
 - No agent-created grants
-- No physical acceptance claim in this document
 
----
-
-## Verification stance
-
-Typecheck, lint, build, and focused tests must pass before publication. Hosted migration apply and physical closed-client / device acceptance are later programs.
+Physical acceptance of Block-start (and general authority across Commitment + Block) is recorded in [ORIENT-PULSE-AUTHORITY-005.md](ORIENT-PULSE-AUTHORITY-005.md).

@@ -2,6 +2,7 @@
 
 ## Accepted foundations (closed)
 
+- **ORIENT-PULSE-GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED** — timed Commitment-start + timed Block-start physically accepted under one grammar on `e3ec23c` (occurrence `a2dae150`; [005](docs/implementation/ORIENT-PULSE-AUTHORITY-005.md)); AUTHORITY-003 remains FAILED
 - **ORIENT-WEAR-PULSE-NATIVE-WRIST-PERCEPTION-ACCEPTANCE-FINALIZED** — Phase 3 closed; Watch6 notification-class wrist perception on `c76b982` (occurrence `24aad0ab`; [007](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-007.md) / [008](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-008.md))
 - **ORIENT-WEAR-PULSE-NOTIFICATION-ACTUATOR-PHYSICALLY-ACCEPTED** — NM actuator + OS `USAGE_NOTIFICATION` FINISHED + human WATCH HAPTIC FELT
 - **ORIENT-WEAR-PULSE-BRIDGE-006** — Watch6 NotificationManager actuator published (`c76b982`); direct Vibrator removed
@@ -21,16 +22,14 @@
 - Phone LOOK progressive disclosure (MOBILE-LOOK-PROGRESSIVE-DISCLOSURE-001)
 - Center ADD plus correction (MOBILE-CENTER-PLUS-CORRECTION-001)
 
-## Discovery / local implementation (awaiting publish + hosted apply + physical acceptance)
+## Discovery / next Pulse boundary
 
-- **ORIENT-PULSE-AUTHORITY-001** — general Interrupt Authority model clear. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-001.md](docs/implementation/ORIENT-PULSE-AUTHORITY-001.md).
-- **ORIENT-PULSE-AUTHORITY-002 / 002C / 002D / 002E** — timed Block-start on production candidate `aa2cdcb` (`20261010093000` applied once). Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-002.md](docs/implementation/ORIENT-PULSE-AUTHORITY-002.md).
-- **ORIENT-PULSE-AUTHORITY-003** — Block-start physical acceptance **FAILED** at hosted establishment (ambiguous `source_starts_on`); perception not exercised; failed Block/grant preserved.
-- **ORIENT-PULSE-AUTHORITY-004** — forward migration `20261010154000` corrects PL/pgSQL locals; uncommitted; **not** applied to production. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-004.md](docs/implementation/ORIENT-PULSE-AUTHORITY-004.md). Physical general authority **UNACCEPTED**.
+- **Pulse semantic expression** — before adding Task / Protected Time / further source kinds: does the existing single haptic mean the same thing for accepted Commitment-start and Block-start? Haptic language UNDESIGNED / UNIMPLEMENTED; do not map `source_kind` → pattern by presumption. Basis: [005](docs/implementation/ORIENT-PULSE-AUTHORITY-005.md).
+- Historical: AUTHORITY-003 FAILED; 004 production repaired; 002 Block-start implemented — see authority docs under `docs/implementation/ORIENT-PULSE-AUTHORITY-*.md`.
 
 ## Next evidence-backed items
 
-1. Publish + apply `20261010154000`; new human Block/grant physical acceptance (do not reuse failed 003 rows)
+1. Pulse semantic expression discovery (Commitment vs Block haptic meaning) — before further source-kind generalization
 2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
 3. Deferred: Orient Watch face / visual Pulse expression (observer of local claim; no interruption authority)
 4. Deferred: richer Orient Watch companion
