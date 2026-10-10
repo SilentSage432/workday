@@ -220,6 +220,10 @@ describe("hosted Block-start extension contract", () => {
     "supabase/migrations/20261010093000_pulse_block_start_authority.sql",
     "utf8",
   );
+  const ambiguitySql = readFileSync(
+    "supabase/migrations/20261010154000_pulse_hosted_evaluator_ambiguity_correction.sql",
+    "utf8",
+  );
 
   it("extends hosted evaluator for Block-start without client or delivery coupling", () => {
     expect(blockSql).toContain("ORIENT-PULSE-AUTHORITY-002");
@@ -230,5 +234,16 @@ describe("hosted Block-start extension contract", () => {
     expect(blockSql).toContain("on conflict (grant_id, source_starts_on, source_start_local) do nothing");
     expect(blockSql).not.toMatch(/notification|vibrate|wear|push|kotlin|fcm/i);
     expect(blockSql).not.toMatch(/grant execute[\s\S]*to authenticated/);
+  });
+
+  it("forward-corrects occurrence-identity EXISTS PL/pgSQL ambiguity without rewriting history", () => {
+    expect(blockSql).toContain("and po.source_starts_on = source_starts_on");
+    expect(ambiguitySql).toContain("ORIENT-PULSE-AUTHORITY-004");
+    expect(ambiguitySql).toContain("v_source_starts_on date");
+    expect(ambiguitySql).toContain("po.source_starts_on = v_source_starts_on");
+    expect(ambiguitySql).toContain("po.source_start_local = v_source_start_local");
+    expect(ambiguitySql).toContain("on conflict (grant_id, source_starts_on, source_start_local) do nothing");
+    expect(ambiguitySql).not.toMatch(/and po\.source_starts_on = source_starts_on\b/);
+    expect(ambiguitySql).not.toMatch(/cron\.schedule|notification|vibrate|wear|fcm/i);
   });
 });

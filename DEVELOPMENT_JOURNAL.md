@@ -1,5 +1,16 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-AUTHORITY-004
+
+Hosted evaluator PL/pgSQL ambiguity correction after failed Block-start physical acceptance.
+
+- AUTHORITY-003: human Block + grant OK; hosted establishment failed (`source_starts_on` ambiguous); zero occurrence; perception not exercised. Failed Block `68a7e475…` / grant `996699be…` preserved.
+- Forward migration `20261010154000_pulse_hosted_evaluator_ambiguity_correction.sql` renames colliding locals (`v_source_starts_on` / `v_source_start_local`). Historical `20261010093000` left immutable.
+- Ephemeral PostgreSQL regression reproduces ambiguity then proves Block + Commitment exactly-once establishment.
+- Production untouched; physical general authority remains UNACCEPTED.
+
+Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-004.md](docs/implementation/ORIENT-PULSE-AUTHORITY-004.md).
+
 ## 2026-10-10 — ORIENT-PULSE-AUTHORITY-002C
 
 Live-history migration correction after 002B production establishment blocked.

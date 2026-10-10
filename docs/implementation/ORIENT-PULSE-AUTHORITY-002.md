@@ -8,7 +8,7 @@ Implements the smallest bounded proof that Pulse interrupt authority can operate
 
 **Discovery basis:** [ORIENT-PULSE-AUTHORITY-001.md](ORIENT-PULSE-AUTHORITY-001.md) (`ORIENT-PULSE-GENERAL-AUTHORITY-MODEL-CLEAR`).
 
-**Status:** Implementation published as candidate `86be59f`. Production establishment (**002B**) correctly **stopped** before mutation: the reviewed migration re-added `blocks_id_user_key`, which already exists from `20261005170800_execution_direction.sql`. **002C** corrects the migration artifact to depend on that predecessor constraint (no duplicate ADD). Corrected migration still **not** applied to production. Physical acceptance **not** declared.
+**Status:** Corrected migration applied in production as candidate `aa2cdcb` (`20261010093000`). Physical acceptance (**003**) **failed** at hosted establishment (PL/pgSQL `source_starts_on` ambiguity). Forward repair is **004** (`20261010154000`); not yet applied. Physical general authority **UNACCEPTED**.
 
 ---
 

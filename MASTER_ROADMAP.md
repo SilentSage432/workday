@@ -24,12 +24,13 @@
 ## Discovery / local implementation (awaiting publish + hosted apply + physical acceptance)
 
 - **ORIENT-PULSE-AUTHORITY-001** — general Interrupt Authority model clear. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-001.md](docs/implementation/ORIENT-PULSE-AUTHORITY-001.md).
-- **ORIENT-PULSE-AUTHORITY-002** — timed Block-start Interrupt Grant candidate `86be59f`; 002B production apply correctly blocked (duplicate `blocks_id_user_key`).
-- **ORIENT-PULSE-AUTHORITY-002C** — migration corrected to depend on predecessor `blocks_id_user_key`; production still pre-002; uncommitted. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-002.md](docs/implementation/ORIENT-PULSE-AUTHORITY-002.md).
+- **ORIENT-PULSE-AUTHORITY-002 / 002C / 002D / 002E** — timed Block-start on production candidate `aa2cdcb` (`20261010093000` applied once). Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-002.md](docs/implementation/ORIENT-PULSE-AUTHORITY-002.md).
+- **ORIENT-PULSE-AUTHORITY-003** — Block-start physical acceptance **FAILED** at hosted establishment (ambiguous `source_starts_on`); perception not exercised; failed Block/grant preserved.
+- **ORIENT-PULSE-AUTHORITY-004** — forward migration `20261010154000` corrects PL/pgSQL locals; uncommitted; **not** applied to production. Record: [docs/implementation/ORIENT-PULSE-AUTHORITY-004.md](docs/implementation/ORIENT-PULSE-AUTHORITY-004.md). Physical general authority **UNACCEPTED**.
 
 ## Next evidence-backed items
 
-1. Publish 002C; apply hosted Block-start migration; physical acceptance
+1. Publish + apply `20261010154000`; new human Block/grant physical acceptance (do not reuse failed 003 rows)
 2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
 3. Deferred: Orient Watch face / visual Pulse expression (observer of local claim; no interruption authority)
 4. Deferred: richer Orient Watch companion
