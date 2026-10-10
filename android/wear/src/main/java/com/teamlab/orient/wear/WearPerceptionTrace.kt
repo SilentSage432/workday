@@ -39,6 +39,32 @@ object WearPerceptionTrace {
         }
     }
 
+    fun notificationAuthorityCheck(occurrenceId: String) {
+        emit("stage=expression event=notification_authority_check occ=$occurrenceId")
+    }
+
+    fun notificationPermissionGranted(
+        occurrenceId: String,
+        granted: Boolean,
+    ) {
+        val value = if (granted) "yes" else "no"
+        emit(
+            "stage=expression event=notification_permission_granted " +
+                "occ=$occurrenceId granted=$value",
+        )
+    }
+
+    fun notificationsEnabled(
+        occurrenceId: String,
+        enabled: Boolean,
+    ) {
+        val value = if (enabled) "yes" else "no"
+        emit(
+            "stage=expression event=notifications_enabled " +
+                "occ=$occurrenceId enabled=$value",
+        )
+    }
+
     fun claimAttempted(occurrenceId: String) {
         emit("stage=expression event=claim_attempted occ=$occurrenceId")
     }
@@ -55,12 +81,26 @@ object WearPerceptionTrace {
         emit("stage=expression event=claim_result occ=$occurrenceId result=$label")
     }
 
-    fun hapticAttempted(occurrenceId: String) {
-        emit("stage=expression event=haptic_attempted occ=$occurrenceId")
+    fun channelEnsured(channelId: String) {
+        emit("stage=expression event=channel_ensured channel=$channelId")
     }
 
-    fun hapticInvoked(occurrenceId: String) {
-        emit("stage=expression event=haptic_invoked occ=$occurrenceId")
+    fun notificationPostAttempted(occurrenceId: String) {
+        emit("stage=expression event=notification_post_attempted occ=$occurrenceId")
+    }
+
+    fun notificationPosted(occurrenceId: String) {
+        emit("stage=expression event=notification_posted occ=$occurrenceId")
+    }
+
+    fun notificationPostFailed(
+        occurrenceId: String,
+        reason: String,
+    ) {
+        emit(
+            "stage=expression event=notification_post_failed " +
+                "occ=$occurrenceId reason=$reason",
+        )
     }
 
     fun decision(
@@ -71,6 +111,8 @@ object WearPerceptionTrace {
             when (outcome) {
                 WearPulsePerceptionPipeline.Outcome.Expressed -> "expressed"
                 WearPulsePerceptionPipeline.Outcome.Duplicate -> "duplicate"
+                WearPulsePerceptionPipeline.Outcome.Unavailable -> "unavailable"
+                WearPulsePerceptionPipeline.Outcome.PostFailed -> "post_failed"
                 WearPulsePerceptionPipeline.Outcome.Malformed -> "malformed"
                 WearPulsePerceptionPipeline.Outcome.WrongPath -> "wrong_path"
             }

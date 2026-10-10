@@ -4,11 +4,11 @@ Native Watch6 Pulse perception edge (implementation).
 
 ## One sentence
 
-After the phone authoritatively rereads and newly claims a Pulse occurrence, it forwards only `pulse_occurrence_id` over Wear OS MessageClient; the watch dedupes locally and expresses one 40ms notification-class wrist haptic.
+After the phone authoritatively rereads and newly claims a Pulse occurrence, it forwards only `pulse_occurrence_id` over Wear OS MessageClient; the watch dedupes locally and expresses via a local NotificationManager Pulse notification (channel-mediated haptic). See [ORIENT-WEAR-PULSE-BRIDGE-006](ORIENT-WEAR-PULSE-BRIDGE-006.md) for the actuator correction.
 
 ## Status
 
-**Implemented in repository. Not physically accepted. Not installed on Watch6.**
+**Transport + claim edge implemented. Actuator corrected in BRIDGE-006 (NotificationManager). Not physically accepted. Not installed on Watch6.**
 
 Prior:
 
@@ -24,10 +24,12 @@ Prior:
 [TRANSPORT] FCM { pulse_occurrence_id } → phone
 [PHONE GATE] session → JWT/RLS reread → visible → phone claim CLAIMED
 [PHONE → WATCH] MessageClient /orient/pulse/express { uuid }
-[WATCH] path/UUID validate → SQLite claim → one USAGE_NOTIFICATION haptic
+[WATCH] path/UUID validate → notification authority → SQLite claim → local Pulse notification (OS channel haptic)
 ```
 
 Watch does **not** establish Pulse truth, evaluate grants/timing, use Supabase/FCM, or hold secrets.
+
+Direct watch `Vibrator` + `USAGE_NOTIFICATION` was API-valid but physically suppressed on Watch6 (`IGNORED_APP_OPS`; on-wrist counterfactual failed). BRIDGE-006 replaces that actuator with NotificationManager.
 
 ## Modules
 
@@ -52,18 +54,19 @@ Watch does **not** establish Pulse truth, evaluate grants/timing, use Supabase/F
 - Node selection: CapabilityClient `orient_pulse_perception` + FILTER_REACHABLE + nearby; first sorted node id
 - Disconnected / no node: safe log; no retry ledger; phone perception unchanged
 
-## Watch haptic
+## Watch expression (BRIDGE-006)
 
-- API 36 path: `VibratorManager` + `VibrationEffect.createOneShot(40, DEFAULT_AMPLITUDE)` + `VibrationAttributes.USAGE_NOTIFICATION`
-- minSdk 30 keeps AudioAttributes notification fallback below API 33 for lint-clean builds
-- No watch notification, sound, or alarm usage
+- Actuator: local `NotificationManager` notification on channel `orient_pulse`
+- Channel: `IMPORTANCE_DEFAULT`, sound none, vibration `[0, 40]`, no DND bypass
+- Human boundary: minimal Wear activity requests `POST_NOTIFICATIONS`
+- Direct `WearPulseHaptic` / `VibratorManager` removed from Pulse path
 
 ## First-proof perception policy
 
-Phone notification + phone haptic remain. Watch may also haptic. Double perception tolerated for diagnostic acceptance. No preferred-surface policy yet.
+Phone notification + phone haptic remain. Watch may also express via local notification. Double perception tolerated for diagnostic acceptance. No preferred-surface policy yet.
 
 ## Deferred
 
-- Physical wrist acceptance
-- Orient Watch companion / exclusive watch-face (classic elegant near-black/navy + warm gold bloom direction recorded only)
-- DataClient persistence, watch notifications, watch Supabase/FCM, surface preference policy
+- Physical wrist acceptance (install + permission grant + one real occurrence)
+- Orient Watch companion / exclusive watch-face (classic elegant near-black/navy + warm gold bloom direction recorded only; face remains observer of local claim)
+- DataClient persistence, watch Supabase/FCM, surface preference policy

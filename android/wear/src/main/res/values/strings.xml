@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Orient</string>
+    <string name="pulse_channel_name">Pulse</string>
+    <string name="pulse_channel_description">Authorized Orient temporal reminders</string>
+    <string name="pulse_notification_title">Orient</string>
+    <string name="pulse_notification_body">Pulse</string>
+    <string name="permission_explanation">Orient can express authorized Pulses on this watch. Android requires notification permission for wrist interruption.</string>
+    <string name="permission_request">Allow notifications</string>
+    <string name="status_checking">Checking notification authority…</string>
+    <string name="status_ready">Wrist Pulse expression ready</string>
+    <string name="status_unavailable">Wrist Pulse expression unavailable — notification permission required</string>
 </resources>

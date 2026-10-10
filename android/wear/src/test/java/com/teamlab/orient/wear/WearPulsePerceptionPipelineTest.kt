@@ -10,74 +10,110 @@ class WearPulsePerceptionPipelineTest {
     private val id = PulseOccurrenceId.parse("550e8400-e29b-41d4-a716-446655440000")!!
     private val payload = id.value.toByteArray(Charsets.UTF_8)
 
+    private fun availableAuthority() =
+        WearPulseNotificationAuthority.Snapshot(
+            permissionGranted = true,
+            notificationsEnabled = true,
+        )
+
+    private fun unavailablePermission() =
+        WearPulseNotificationAuthority.Snapshot(
+            permissionGranted = false,
+            notificationsEnabled = true,
+        )
+
+    private fun notificationsDisabled() =
+        WearPulseNotificationAuthority.Snapshot(
+            permissionGranted = true,
+            notificationsEnabled = false,
+        )
+
     @Test
     fun correctPathValidUuidNewClaimExpressesOnce() {
-        val haptics = AtomicInteger(0)
+        val posts = AtomicInteger(0)
         var claimed = false
         val pipeline =
             WearPulsePerceptionPipeline(
+                notificationAuthority = { availableAuthority() },
                 tryClaim = {
                     if (claimed) return@WearPulsePerceptionPipeline ExpressionClaimResult.AlreadyClaimed
                     claimed = true
                     ExpressionClaimResult.Claimed
                 },
-                express = { haptics.incrementAndGet() },
+                express = { posts.incrementAndGet() },
             )
         assertThat(pipeline.onMessage(WearPulseMessage.PATH, payload))
             .isEqualTo(WearPulsePerceptionPipeline.Outcome.Expressed)
-        assertThat(haptics.get()).isEqualTo(1)
+        assertThat(posts.get()).isEqualTo(1)
     }
 
     @Test
-    fun duplicateOccurrenceDoesNotHapticAgain() {
-        val haptics = AtomicInteger(0)
+    fun duplicateOccurrenceDoesNotNotifyAgain() {
+        val posts = AtomicInteger(0)
         val claimed = mutableSetOf<String>()
         val pipeline =
             WearPulsePerceptionPipeline(
+                notificationAuthority = { availableAuthority() },
                 tryClaim = { occ ->
                     if (!claimed.add(occ.value)) ExpressionClaimResult.AlreadyClaimed
                     else ExpressionClaimResult.Claimed
                 },
-                express = { haptics.incrementAndGet() },
+                express = { posts.incrementAndGet() },
             )
         assertThat(pipeline.onMessage(WearPulseMessage.PATH, payload))
             .isEqualTo(WearPulsePerceptionPipeline.Outcome.Expressed)
         assertThat(pipeline.onMessage(WearPulseMessage.PATH, payload))
             .isEqualTo(WearPulsePerceptionPipeline.Outcome.Duplicate)
-        assertThat(haptics.get()).isEqualTo(1)
+        assertThat(posts.get()).isEqualTo(1)
     }
 
     @Test
-    fun malformedUuidRemainsSilent() {
-        val haptics = AtomicInteger(0)
+    fun permissionDeniedDoesNotClaimOrNotify() {
+        val posts = AtomicInteger(0)
+        val claims = AtomicInteger(0)
         val pipeline =
             WearPulsePerceptionPipeline(
-                tryClaim = { ExpressionClaimResult.Claimed },
-                express = { haptics.incrementAndGet() },
+                notificationAuthority = { unavailablePermission() },
+                tryClaim = {
+                    claims.incrementAndGet()
+                    ExpressionClaimResult.Claimed
+                },
+                express = { posts.incrementAndGet() },
             )
-        assertThat(pipeline.onMessage(WearPulseMessage.PATH, "nope".toByteArray()))
-            .isEqualTo(WearPulsePerceptionPipeline.Outcome.Malformed)
-        assertThat(haptics.get()).isEqualTo(0)
+        assertThat(pipeline.onMessage(WearPulseMessage.PATH, payload))
+            .isEqualTo(WearPulsePerceptionPipeline.Outcome.Unavailable)
+        assertThat(claims.get()).isEqualTo(0)
+        assertThat(posts.get()).isEqualTo(0)
     }
 
     @Test
-    fun wrongPathRemainsSilent() {
-        val haptics = AtomicInteger(0)
+    fun notificationsDisabledDoesNotClaimOrNotify() {
+        val posts = AtomicInteger(0)
+        val claims = AtomicInteger(0)
         val pipeline =
             WearPulsePerceptionPipeline(
-                tryClaim = { ExpressionClaimResult.Claimed },
-                express = { haptics.incrementAndGet() },
+                notificationAuthority = { notificationsDisabled() },
+                tryClaim = {
+                    claims.incrementAndGet()
+                    ExpressionClaimResult.Claimed
+                },
+                express = { posts.incrementAndGet() },
             )
-        assertThat(pipeline.onMessage("/other", payload))
-            .isEqualTo(WearPulsePerceptionPipeline.Outcome.WrongPath)
-        assertThat(haptics.get()).isEqualTo(0)
+        assertThat(pipeline.onMessage(WearPulseMessage.PATH, payload))
+            .isEqualTo(WearPulsePerceptionPipeline.Outcome.Unavailable)
+        assertThat(claims.get()).isEqualTo(0)
+        assertThat(posts.get()).isEqualTo(0)
     }
 
     @Test
-    fun claimOccursBeforeExpression() {
+    fun claimOccursBeforeNotificationPost() {
         val order = mutableListOf<String>()
         val pipeline =
             WearPulsePerceptionPipeline(
+                notificationAuthority = {
+                    order += "authority"
+                    availableAuthority()
+                },
                 tryClaim = {
                     order += "claim"
                     ExpressionClaimResult.Claimed
@@ -85,33 +121,79 @@ class WearPulsePerceptionPipelineTest {
                 express = { order += "express" },
             )
         pipeline.onMessage(WearPulseMessage.PATH, payload)
-        assertThat(order).containsExactly("claim", "express").inOrder()
+        assertThat(order).containsExactly("authority", "claim", "express").inOrder()
+    }
+
+    @Test
+    fun postFailureAfterClaimDoesNotRetryOrEscalate() {
+        val claims = AtomicInteger(0)
+        val pipeline =
+            WearPulsePerceptionPipeline(
+                notificationAuthority = { availableAuthority() },
+                tryClaim = {
+                    claims.incrementAndGet()
+                    ExpressionClaimResult.Claimed
+                },
+                express = { error("post failed") },
+            )
+        assertThat(pipeline.onMessage(WearPulseMessage.PATH, payload))
+            .isEqualTo(WearPulsePerceptionPipeline.Outcome.PostFailed)
+        assertThat(claims.get()).isEqualTo(1)
+    }
+
+    @Test
+    fun malformedUuidRemainsSilent() {
+        val posts = AtomicInteger(0)
+        val pipeline =
+            WearPulsePerceptionPipeline(
+                notificationAuthority = { availableAuthority() },
+                tryClaim = { ExpressionClaimResult.Claimed },
+                express = { posts.incrementAndGet() },
+            )
+        assertThat(pipeline.onMessage(WearPulseMessage.PATH, "nope".toByteArray()))
+            .isEqualTo(WearPulsePerceptionPipeline.Outcome.Malformed)
+        assertThat(posts.get()).isEqualTo(0)
+    }
+
+    @Test
+    fun wrongPathRemainsSilent() {
+        val posts = AtomicInteger(0)
+        val pipeline =
+            WearPulsePerceptionPipeline(
+                notificationAuthority = { availableAuthority() },
+                tryClaim = { ExpressionClaimResult.Claimed },
+                express = { posts.incrementAndGet() },
+            )
+        assertThat(pipeline.onMessage("/other", payload))
+            .isEqualTo(WearPulsePerceptionPipeline.Outcome.WrongPath)
+        assertThat(posts.get()).isEqualTo(0)
     }
 
     @Test
     fun localDedupeSemanticsSurviveStoreReopen() {
-        // Mirrors SQLite INSERT OR IGNORE durability across process death.
         val durable = mutableSetOf<String>()
         fun store(): (PulseOccurrenceId) -> ExpressionClaimResult =
             { occ ->
                 if (!durable.add(occ.value)) ExpressionClaimResult.AlreadyClaimed
                 else ExpressionClaimResult.Claimed
             }
-        val haptics = AtomicInteger(0)
+        val posts = AtomicInteger(0)
         val first =
             WearPulsePerceptionPipeline(
+                notificationAuthority = { availableAuthority() },
                 tryClaim = store(),
-                express = { haptics.incrementAndGet() },
+                express = { posts.incrementAndGet() },
             )
         assertThat(first.onMessage(WearPulseMessage.PATH, payload))
             .isEqualTo(WearPulsePerceptionPipeline.Outcome.Expressed)
         val afterReopen =
             WearPulsePerceptionPipeline(
+                notificationAuthority = { availableAuthority() },
                 tryClaim = store(),
-                express = { haptics.incrementAndGet() },
+                express = { posts.incrementAndGet() },
             )
         assertThat(afterReopen.onMessage(WearPulseMessage.PATH, payload))
             .isEqualTo(WearPulsePerceptionPipeline.Outcome.Duplicate)
-        assertThat(haptics.get()).isEqualTo(1)
+        assertThat(posts.get()).isEqualTo(1)
     }
 }

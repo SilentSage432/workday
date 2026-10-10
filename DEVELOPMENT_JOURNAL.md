@@ -1,12 +1,24 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-WEAR-PULSE-BRIDGE-006
+
+Watch Pulse actuator corrected to NotificationManager (not physically accepted).
+
+- Direct Watch6 `USAGE_NOTIFICATION` vibrator was API-valid but physically suppressed (`IGNORED_APP_OPS` / `audio=ignore`; on-wrist 004C falsified off-body-only hypothesis).
+- Watch expression path: authority check → SQLite claim → local `orient_pulse` channel notification (`IMPORTANCE_DEFAULT`, sound none, vibration `[0,40]`); OS owns haptic.
+- Minimal `WearPulsePermissionActivity` requests `POST_NOTIFICATIONS`. `WearPulseHaptic` removed.
+- Claim ordering: do not consume exactly-once claim when notification authority already unavailable. Face remains observer of local claim.
+- Automated tests/assemble/lint green. Not installed. No physical acceptance claimed.
+
+Record: [docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-006.md](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-006.md).
+
 ## 2026-10-09 — ORIENT-WEAR-PULSE-BRIDGE-002
 
 Native Watch6 Pulse perception edge implemented (not physically accepted).
 
 - `:wear` headless module: `applicationId` `com.teamlab.orient`, namespace `com.teamlab.orient.wear`, SDK 37/36/30, ABI `armeabi-v7a`.
 - Phone forwards only after JWT/RLS reread + phone claim CLAIMED via MessageClient path `/orient/pulse/express` (capability `orient_pulse_perception`).
-- Watch: WearableListenerService → SQLite INSERT OR IGNORE → one 40ms `USAGE_NOTIFICATION` haptic. No Supabase/FCM/evaluator/secrets on watch.
+- Watch: WearableListenerService → SQLite INSERT OR IGNORE → expression actuator later corrected in BRIDGE-006 to NotificationManager. No Supabase/FCM/evaluator/secrets on watch.
 - First proof tolerates phone + watch double perception. Watch face / companion UI deferred.
 - Environment: SM-R955U API 36 cleared in BRIDGE-001B; baseline restored in 001C.
 

@@ -55,6 +55,8 @@ kotlin {
 dependencies {
     implementation("com.google.android.gms:play-services-wearable:20.0.1")
     implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.activity:activity-ktx:1.10.1")
+    implementation("androidx.fragment:fragment-ktx:1.8.6")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.google.truth:truth:1.4.4")

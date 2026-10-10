@@ -2,7 +2,8 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
-- **ORIENT-WEAR-PULSE-BRIDGE-002** — native Watch6 Pulse perception edge implemented (`:wear` + phone MessageClient forward after claim); not physically accepted
+- **ORIENT-WEAR-PULSE-BRIDGE-006** — Watch6 Pulse actuator = local NotificationManager (`orient_pulse` channel); direct Vibrator removed; not physically accepted
+- **ORIENT-WEAR-PULSE-BRIDGE-002** — native Watch6 Pulse transport/claim edge implemented (`:wear` + phone MessageClient forward after claim); actuator corrected in 006
 - **ORIENT-ANDROID-PULSE-BRIDGE-007** — observability on `main` (`171c95a`); first Pulse reread failure diagnosed
 - **ORIENT-ANDROID-PULSE-BRIDGE-006** — token registration serialization fix on `main` (`54724f0`); S26 endpoint established
 - **ORIENT-ANDROID-PULSE-BRIDGE-005** — native Android perception edge (`android/`)
@@ -27,7 +28,7 @@
 
 ## Next evidence-backed items
 
-1. Physical acceptance: ORIENT-WEAR-PULSE-BRIDGE-002 Watch6 wrist haptic (implemented, not installed)
+1. Physical acceptance: ORIENT-WEAR-PULSE-BRIDGE-006 Watch6 local Pulse notification + channel haptic (implemented, not installed)
 2. Deferred: generic notification icon / identity visual refinement
 3. Deferred: Orient Watch companion / exclusive watch-face / channel policy / in-app Pulse visual refinement
 4. Recurring-task physical acceptance (when ready)

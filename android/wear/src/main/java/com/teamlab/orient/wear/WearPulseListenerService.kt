@@ -12,8 +12,11 @@ class WearPulseListenerService : WearableListenerService() {
         val store = ExpressionClaimStore(ExpressionClaimDatabase.get(applicationContext))
         val pipeline =
             WearPulsePerceptionPipeline(
+                notificationAuthority = {
+                    WearPulseNotificationAuthority.snapshot(applicationContext)
+                },
                 tryClaim = { id -> store.tryClaim(id) },
-                express = { WearPulseHaptic.expressOnce(applicationContext) },
+                express = { id -> WearPulseNotification.post(applicationContext, id) },
             )
         pipeline.onMessage(messageEvent.path, messageEvent.data)
     }
