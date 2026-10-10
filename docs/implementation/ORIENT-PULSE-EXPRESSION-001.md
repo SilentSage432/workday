@@ -549,13 +549,7 @@ Section 18’s single-word adequacy trial remains an optional lived check, not t
 
 **ORIENT-PULSE-EXPRESSION-002 — ARRIVAL SEMANTIC AUTHORITY DISCOVERY**
 
-Core question:
-
-> Is “the authorized temporal boundary has arrived” a deterministic, human-relevant relationship distinct from the currently accepted positive-lead threshold relationship, and if so, can it truthfully earn independent interruption authority and eventually a distinct physical word?
-
-This is **not** approval of lead=0.  
-This is **not** approval of a second haptic pattern.  
-This is **not** source-kind generalization.
+Completed as discovery: [ORIENT-PULSE-EXPRESSION-002.md](ORIENT-PULSE-EXPRESSION-002.md) (`ORIENT-PULSE-ARRIVAL-SEMANTICS-CLEAR`). ARRIVAL is semantically distinct and may earn independent authority / candidate word status; lead=0 remains unauthorized; no haptic morphology accepted.
 
 Continue deferring: preferred-surface routing, watch-face visual Pulse, richer companion, further source kinds.
 

@@ -1,5 +1,30 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-002A
+
+Arrival semantic discovery published + product decision (docs only).
+
+- Baseline `fb5cf0f`; project `ksmhgaamyheyhefbyglb`.
+- Tyson accepts ARRIVAL semantic relationship for continued development; Interrupt Grant / occurrence / haptic not implemented; physical word candidate only; morphology not designed; physical acceptance not performed.
+- Independent authority both directions; Commitment/Block same ARRIVAL meaning; magic zero rejected; silence principle canonized.
+- Next boundary: ORIENT-PULSE-EXPRESSION-003 Arrival expression timeliness discovery.
+- Verdict: `ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-002.md](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md).
+
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-002
+
+Arrival semantic authority discovery (docs only).
+
+- Baseline `fb5cf0f` = `origin/main`, clean tree; project `ksmhgaamyheyhefbyglb`.
+- Current positive-lead meaning: human-authorized pre-boundary threshold became true (APPROACH not accepted name).
+- ARRIVAL candidate: authoritative temporal boundary itself has become present — distinct relationship; independent authority; no inheritance.
+- Candidate physical-word status earned; lead=0/haptics not implemented.
+- Prefer explicit relationship identity over magic zero; silence when unauthorized is part of the language.
+- Discovery verdict: `ORIENT-PULSE-ARRIVAL-SEMANTICS-CLEAR` (published in 002A).
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-002.md](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-001A
 
 Semantic expression discovery published (docs only).

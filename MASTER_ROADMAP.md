@@ -2,6 +2,7 @@
 
 ## Accepted foundations (closed)
 
+- **ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED** — EXPRESSION-002/002A on baseline `fb5cf0f`; ARRIVAL semantic relationship accepted for development; independent authority; candidate word only; no grant/haptic/lead=0 impl ([EXPRESSION-002](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md))
 - **ORIENT-PULSE-EXPRESSION-SEMANTICS-PUBLISHED** — EXPRESSION-001/001A docs on baseline `c3b8ce4`; current word = authorized occurrence requesting perception; Commitment ≡ Block same word; source-kind/intensity rejected; durable expression principles canonized; vocabulary still undesigned ([EXPRESSION-001](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md))
 - **ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** — LIFECYCLE-001/002/003 closed; `20261010170000` SECURITY DEFINER live; Block pulse 003 UI delete physically accepted on `413da67` (occurrence `7fadd828` retained; [003](docs/implementation/ORIENT-PULSE-LIFECYCLE-003.md) / [002](docs/implementation/ORIENT-PULSE-LIFECYCLE-002.md))
 - **ORIENT-PULSE-GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED** — timed Commitment-start + timed Block-start physically accepted under one grammar on `e3ec23c` (occurrence `a2dae150`; [005](docs/implementation/ORIENT-PULSE-AUTHORITY-005.md)); AUTHORITY-003 establishment remains FAILED historically
@@ -27,12 +28,12 @@
 
 ## Discovery / next Pulse boundary
 
-- **ORIENT-PULSE-EXPRESSION-002 — ARRIVAL SEMANTIC AUTHORITY DISCOVERY** — is “the authorized temporal boundary has arrived” a distinct deterministic relationship from positive-lead threshold, and can it earn independent interruption authority / eventually a distinct physical word? Not lead=0 approval. Not second haptic approval. Basis: [EXPRESSION-001](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md).
+- **ORIENT-PULSE-EXPRESSION-003 — ARRIVAL EXPRESSION TIMELINESS DISCOVERY** — once boundary arrives at `T`, for how long can Orient truthfully/usefully physically express ARRIVAL? Durable truth vs establishment/dispatch/delivery/expression latency; bounded window? where policy belongs? No haptic design. Basis: [EXPRESSION-002](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md).
 - Historical: AUTHORITY-003 FAILED; 004 production repaired; 002 Block-start implemented — see authority docs under `docs/implementation/ORIENT-PULSE-AUTHORITY-*.md`.
 
 ## Next evidence-backed items
 
-1. ORIENT-PULSE-EXPRESSION-002 — Arrival semantic authority discovery (docs only; no lead=0; no haptic patterns)
+1. ORIENT-PULSE-EXPRESSION-003 — Arrival expression timeliness discovery (docs only; no haptic; no lead=0; no Arrival grant impl)
 2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
 3. Deferred: Orient Watch face / visual Pulse expression (observer of local claim; no interruption authority; touch/light shared semantic event remains direction only)
 4. Deferred: richer Orient Watch companion

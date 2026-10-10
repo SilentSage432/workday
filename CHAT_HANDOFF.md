@@ -2,47 +2,48 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-EXPRESSION-SEMANTICS-PUBLISHED**
+**ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED**
 
-Published from baseline `c3b8ce4f88884ee2fa97417dfd7cb1bd2254637a`  
+Published from baseline `fb5cf0fb3e126a71449495e637104df1ac82ff74`  
 Project: `ksmhgaamyheyhefbyglb`
 
-Discovery record: [ORIENT-PULSE-EXPRESSION-001](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md)
+Discovery record: [ORIENT-PULSE-EXPRESSION-002](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md)
 
-### Current physical word
+### Product decision (002A)
 
-> An already-established, human-authorized Pulse occurrence is requesting perception.
+Tyson accepts **ARRIVAL** as a valid Pulse **semantic relationship** for continued development.
 
-“Worthy of perception” is **rejected** as canonical language (implies judgment Pulse did not establish).
+> The authoritative temporal boundary itself has become present.
 
-Does **not** mean: Commitment, Block, urgency, importance, MustDo, alarm, immediate action required, acknowledgement, delivery success, perception success.
+| Layer | Status |
+| --- | --- |
+| Semantic relationship | Accepted for development |
+| Interruption authority form | Not yet implemented |
+| Physical word | Candidate only |
+| Haptic morphology | Not designed |
+| Physical acceptance | Not performed |
 
-Commitment timed-start positive-lead and Block timed-start positive-lead currently express the **same** perceptual meaning.
+Independent authority both directions. Commitment/Block share the same ARRIVAL meaning when independently authorized. Source type is not part of the word. Silence when unauthorized is correct. Magic zero is **not** the preferred representation.
 
-Durable principles: source type ≠ haptic word; word = relationship not DB object; same meaning → same word across sources; new word must earn screenless usefulness; express only established truth + human authority; attention ≠ importance; interruption authority ≠ urgency.
-
-Touch/light coherence: **direction only**, not accepted contract.
-
-Haptic vocabulary remains **UNDESIGNED / UNIMPLEMENTED**. Positive lead is the only accepted temporal relationship form. Arrival / lead=0 unauthorized and undiscovered.
+**Not authorized / not done:** `lead_offset_seconds = 0` impl, schema/runtime/evaluator, Arrival Interrupt Grant, second haptic, Android/Wear, production mutation.
 
 ### Still true (do not conflate)
 
-**ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** — LIFECYCLE-001/002/003 closed; migration `20261010170000` live; [003](docs/implementation/ORIENT-PULSE-LIFECYCLE-003.md)
+**ORIENT-PULSE-EXPRESSION-SEMANTICS-PUBLISHED** — [EXPRESSION-001](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md)
 
-**ORIENT-PULSE-GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED** (005 / 005A) on `e3ec23c`:
+Current physical word: already-established human-authorized Pulse occurrence requesting perception. Positive-lead pre-boundary relationship remains the only implemented grant form (unnamed; APPROACH not accepted vocabulary).
 
-- Block Pulse 005: Block `0b0db1c6…`, grant `6e9adb35…`, occurrence `a2dae150…`
-- AUTHORITY-003 establishment remains FAILED historically; disposable Block deleted in LIFECYCLE-003; recovery occurrence `7fadd828…` retained as historical evidence only
+**ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** — [003](docs/implementation/ORIENT-PULSE-LIFECYCLE-003.md)
+
+**ORIENT-PULSE-GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED** (005 / 005A) on `e3ec23c`
 
 ### Next discovery boundary
 
-**ORIENT-PULSE-EXPRESSION-002 — ARRIVAL SEMANTIC AUTHORITY DISCOVERY**
+**ORIENT-PULSE-EXPRESSION-003 — ARRIVAL EXPRESSION TIMELINESS DISCOVERY**
 
-Core question: is “the authorized temporal boundary has arrived” a deterministic, human-relevant relationship distinct from the currently accepted positive-lead threshold relationship, and if so, can it truthfully earn independent interruption authority and eventually a distinct physical word?
+Core question: once an authoritative temporal boundary arrives at `T`, for how long can Orient truthfully and usefully physically express ARRIVAL? Distinguish durable historical truth vs establishment/dispatch/delivery/expression latency; whether a bounded expression window is required and where that policy belongs. Do **not** design the haptic.
 
-Not approval of lead=0. Not approval of a second haptic pattern. Not source-kind generalization.
-
-Do **not** implement haptic language next. Do **not** generalize additional Pulse source kinds yet. Do **not** implement lead=0.
+Do **not** implement lead=0. Do **not** implement a second haptic pattern. Do **not** implement an Arrival Interrupt Grant yet.
 
 ### Still deferred elsewhere
 
