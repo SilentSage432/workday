@@ -62,7 +62,11 @@ export function BlockPulseAuthority({
       {grant && grant.revokedAt === null ? (
         <>
           <p className="orient-note">
-            Reach me · {leadOffsetLabel(grant.leadOffsetSeconds)} before start
+            Reach me ·{" "}
+            {grant.leadOffsetSeconds !== null
+              ? leadOffsetLabel(grant.leadOffsetSeconds)
+              : "—"}{" "}
+            before start
           </p>
           <button
             type="button"

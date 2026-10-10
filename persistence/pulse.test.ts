@@ -32,6 +32,10 @@ const SOURCE_DELETE_AUTHORITY_MIGRATION = join(
   process.cwd(),
   "supabase/migrations/20261010170000_pulse_interrupt_grants_source_delete_authority.sql",
 );
+const RELATIONSHIP_MIGRATION = join(
+  process.cwd(),
+  "supabase/migrations/20261010200000_pulse_authorized_temporal_relationships.sql",
+);
 
 function timedCommitment(): Commitment {
   return {
@@ -54,6 +58,7 @@ function grantRow(overrides: Partial<PulseInterruptGrantRow> = {}): PulseInterru
     source_kind: "commitment",
     source_id: COMMITMENT,
     transition_kind: "start",
+    relationship: "relative_before",
     lead_offset_seconds: 900,
     established_at: "2026-10-08T12:00:00.000Z",
     revoked_at: null,
@@ -109,6 +114,7 @@ describe("pulse persistence mapping", () => {
       sourceKind: "commitment",
       sourceId: COMMITMENT,
       transitionKind: "start",
+      relationship: "relative_before",
       leadOffsetSeconds: 900,
       establishedAt: "2026-10-08T12:00:00.000Z",
       revokedAt: null,
@@ -119,6 +125,7 @@ describe("pulse persistence mapping", () => {
       grant_id: GRANT,
       source_kind: "commitment",
       source_id: COMMITMENT,
+      relationship: "relative_before",
       source_starts_on: "2026-10-08",
       source_start_local: "15:00:00",
       threshold_at: "2026-10-08T20:45:00.000Z",
@@ -126,6 +133,7 @@ describe("pulse persistence mapping", () => {
       established_at: "2026-10-08T20:45:00.000Z",
     };
     expect(rowToPulseOccurrence(occurrenceRow).sourceStartLocal).toBe("15:00");
+    expect(rowToPulseOccurrence(occurrenceRow).relationship).toBe("relative_before");
   });
 
   it("establishes a grant only for timed Commitments and refuses a second active grant", async () => {
@@ -162,6 +170,7 @@ describe("pulse persistence mapping", () => {
               : { data: grantRow(), error: null },
           insert(row: Record<string, unknown>) {
             inserts += 1;
+            expect(row.relationship).toBe("relative_before");
             expect(row.lead_offset_seconds).toBe(900);
             expect(row.revoked_at).toBeNull();
             return {
@@ -241,6 +250,7 @@ describe("pulse persistence mapping", () => {
       grantId: GRANT,
       sourceKind: "commitment",
       sourceId: COMMITMENT,
+      relationship: "relative_before",
       sourceStartsOn: "2026-10-08",
       sourceStartLocal: "15:00",
       thresholdAt: "2026-10-08T20:45:00.000Z",
@@ -267,6 +277,7 @@ describe("pulse persistence mapping", () => {
                             grant_id: GRANT,
                             source_kind: "commitment",
                             source_id: COMMITMENT,
+                            relationship: "relative_before",
                             source_starts_on: "2026-10-08",
                             source_start_local: "15:00:00",
                             threshold_at: occurrence.thresholdAt,
@@ -293,6 +304,7 @@ describe("pulse persistence mapping", () => {
               grant_id: GRANT,
               source_kind: "commitment",
               source_id: COMMITMENT,
+              relationship: "relative_before",
               source_starts_on: "2026-10-08",
               source_start_local: "15:00:00",
               threshold_at: occurrence.thresholdAt,
@@ -337,6 +349,7 @@ describe("pulse persistence mapping", () => {
       grantId: GRANT,
       sourceKind: "commitment",
       sourceId: COMMITMENT,
+      relationship: "relative_before",
       sourceStartsOn: "2026-10-08",
       sourceStartLocal: "15:00",
       thresholdAt: "2026-10-08T20:45:00.000Z",
@@ -359,6 +372,7 @@ describe("pulse persistence mapping", () => {
                       grant_id: GRANT,
                       source_kind: "commitment",
                       source_id: COMMITMENT,
+                      relationship: "relative_before",
                       source_starts_on: "2026-10-08",
                       source_start_local: "15:00:00",
                       threshold_at: occurrence.thresholdAt,
@@ -434,12 +448,66 @@ function blockGrantRow(overrides: Partial<PulseInterruptGrantRow> = {}): PulseIn
     source_kind: "block",
     source_id: BLOCK,
     transition_kind: "start",
+    relationship: "relative_before",
     lead_offset_seconds: 900,
     established_at: "2026-10-08T12:00:00.000Z",
     revoked_at: null,
     ...overrides,
   };
 }
+
+describe("pulse authorized temporal relationship migration", () => {
+  const sql = readFileSync(RELATIONSHIP_MIGRATION, "utf8");
+
+  it("adds explicit relationship identity without ARRIVAL UI or native coupling", () => {
+    expect(sql).toContain("ORIENT-PULSE-EXPRESSION-005-I");
+    expect(sql).toContain("relative_before");
+    expect(sql).toContain("arrival");
+    expect(sql).toContain("pulse_interrupt_grants_relationship_lead");
+    expect(sql).toContain("set relationship = 'relative_before'");
+    expect(sql).toContain("threshold_at := source_start_at");
+    expect(sql).not.toMatch(/add constraint blocks_id_user_key/i);
+    expect(sql).not.toMatch(/grant delete on table public\.pulse_interrupt_grants/i);
+    expect(sql).not.toMatch(/notification|vibrate|wear|fcm|kotlin/i);
+  });
+});
+
+describe("pulse relationship persistence mapping", () => {
+  it("maps arrival grants with null lead and fails closed on unknown relationship", () => {
+    expect(
+      rowToInterruptGrant(
+        grantRow({
+          relationship: "arrival",
+          lead_offset_seconds: null,
+        }),
+      ),
+    ).toMatchObject({
+      relationship: "arrival",
+      leadOffsetSeconds: null,
+    });
+    expect(() => rowToInterruptGrant(grantRow({ relationship: "approach" }))).toThrow(
+      /unsupported relationship/i,
+    );
+    expect(() =>
+      rowToInterruptGrant(grantRow({ relationship: "arrival", lead_offset_seconds: 900 })),
+    ).toThrow(/does not take a lead/i);
+    expect(() =>
+      rowToPulseOccurrence({
+        id: "44444444-4444-4444-4444-444444444444",
+        user_id: USER,
+        grant_id: GRANT,
+        source_kind: "commitment",
+        source_id: COMMITMENT,
+        relationship: "approach",
+        source_starts_on: "2026-10-08",
+        source_start_local: "15:00:00",
+        threshold_at: "2026-10-08T21:00:00.000Z",
+        source_start_at: "2026-10-08T21:00:00.000Z",
+        established_at: "2026-10-08T21:00:00.000Z",
+      }),
+    ).toThrow(/unsupported relationship/i);
+  });
+});
 
 describe("pulse source-deletion authority migration", () => {
   const sql = readFileSync(SOURCE_DELETE_AUTHORITY_MIGRATION, "utf8");
@@ -533,6 +601,7 @@ describe("pulse Block-start persistence", () => {
             inserts += 1;
             expect(row.source_kind).toBe("block");
             expect(row.source_id).toBe(BLOCK);
+            expect(row.relationship).toBe("relative_before");
             expect(row.lead_offset_seconds).toBe(900);
             return {
               select() {
@@ -573,6 +642,7 @@ describe("pulse Block-start persistence", () => {
       grantId: GRANT,
       sourceKind: "block",
       sourceId: BLOCK,
+      relationship: "relative_before",
       sourceStartsOn: "2026-10-08",
       sourceStartLocal: "15:00",
       thresholdAt: "2026-10-08T20:45:00.000Z",
@@ -600,6 +670,7 @@ describe("pulse Block-start persistence", () => {
                             grant_id: GRANT,
                             source_kind: "block",
                             source_id: BLOCK,
+                            relationship: "relative_before",
                             source_starts_on: "2026-10-08",
                             source_start_local: "15:00:00",
                             threshold_at: occurrence.thresholdAt,
@@ -626,6 +697,7 @@ describe("pulse Block-start persistence", () => {
               grant_id: GRANT,
               source_kind: "block",
               source_id: BLOCK,
+              relationship: "relative_before",
               source_starts_on: "2026-10-08",
               source_start_local: "15:00:00",
               threshold_at: occurrence.thresholdAt,
@@ -684,6 +756,7 @@ describe("pulse Block-start persistence", () => {
                       grant_id: GRANT,
                       source_kind: "commitment",
                       source_id: COMMITMENT,
+                      relationship: "relative_before",
                       source_starts_on: "2026-10-08",
                       source_start_local: "15:00:00",
                       threshold_at: "2026-10-08T20:45:00.000Z",

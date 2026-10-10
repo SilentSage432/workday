@@ -2,49 +2,48 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-PUBLISHED**
+**ORIENT-PULSE-ARRIVAL-RELATIONSHIP-FOUNDATION-CANDIDATE** (EXPRESSION-005-I)
 
-Published from baseline `c76a97b8443338628c17df9a79ae56bf5eb8dca7`  
-Project: `ksmhgaamyheyhefbyglb`
+Baseline was `832dc2a94f58f8e1cddf33f8bc13111dc5ca87ce`.  
+Project: `ksmhgaamyheyhefbyglb`  
+Wealth Engine untouched: `nklmgzxxdhuvqayhcigp`
 
-Design record: [ORIENT-PULSE-EXPRESSION-005](docs/implementation/ORIENT-PULSE-EXPRESSION-005.md)
+Implementation record: [ORIENT-PULSE-EXPRESSION-005-I](docs/implementation/ORIENT-PULSE-EXPRESSION-005-I.md)  
+Design: [ORIENT-PULSE-EXPRESSION-005](docs/implementation/ORIENT-PULSE-EXPRESSION-005.md)
 
-### Accepted design (not implemented)
+### Implemented in candidate
 
-- `relationship` text + CHECK: `relative_before` / `arrival`
-- Lead: relative_before `> 0` NOT NULL; arrival NULL
-- Uniqueness includes relationship; occurrence provenance survives grant deletion
-- Backfill existing rows → relative_before only; no silent expansion
-- One evaluator: relative_before `T−L`, arrival `T`
-- FCM + Wear remain id-only
-- ARRIVAL may exist before physical pronunciation; must never reuse relative_before haptic; unknown fail closed
-- LIFECYCLE-003 / RLS preserved
-- Numeric eligibility **not** blocking 005-I; not chosen
+- Grant/occurrence `relationship` (`relative_before` / `arrival`)
+- Lead invariants; active uniqueness includes relationship
+- Hosted evaluator: relative_before `T−L`, arrival `T`
+- Human Reach-me / Reminder still writes **relative_before only**
+- ARRIVAL human UI **not** exposed
+- Android / Wear **unchanged**
+- Production migration **not** applied
 
-### Canonical implementation order
+### Canonical remaining order
 
 ```text
-005-I   SCHEMA / PROVENANCE / EVALUATOR FOUNDATION
 005-II  NATIVE RELATIONSHIP-AWARE SILENCE GATE
 005-III HUMAN ARRIVAL AUTHORITY SURFACE
 005-IV  ARRIVAL EXPRESSION ELIGIBILITY + PHYSICAL MORPHOLOGY
 ```
 
-**005-I must NOT** expose ARRIVAL UI, change phone/Watch pronunciation, teach a second haptic, or choose numeric eligibility. ARRIVAL remains unavailable as normal human-grantable production authority after 005-I.
-
 ### Still true (do not conflate)
 
-**ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED** — [EXPRESSION-004](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md)
+**ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-PUBLISHED** — EXPRESSION-005/005A
 
-**ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED** — [EXPRESSION-003](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md)
+**ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED** — EXPRESSION-004
 
-**ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED** / **EXPRESSION-SEMANTICS-PUBLISHED**
+**ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED** — EXPRESSION-003
 
 **ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** / **GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED**
 
 ### Next implementation tranche
 
-**ORIENT-PULSE-EXPRESSION-005-I** — when explicitly authorized. Inspect production migration state before writing SQL.
+**ORIENT-PULSE-EXPRESSION-005-II** — native relationship-aware silence (after reviewed migration application of 005-I if required by that tranche’s gate).
+
+Do **not** expose ARRIVAL UI before native silence is accepted.
 
 ### Still deferred elsewhere
 

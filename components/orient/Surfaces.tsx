@@ -742,6 +742,7 @@ function FactDetail({
                   entry.sourceKind === "commitment" &&
                   entry.sourceId === commitment.id &&
                   entry.transitionKind === "start" &&
+                  entry.relationship === "relative_before" &&
                   entry.revokedAt === null,
               ) ?? null;
             return (
@@ -772,6 +773,7 @@ function FactDetail({
                   entry.sourceKind === "block" &&
                   entry.sourceId === block.id &&
                   entry.transitionKind === "start" &&
+                  entry.relationship === "relative_before" &&
                   entry.revokedAt === null,
               ) ?? null;
             return (

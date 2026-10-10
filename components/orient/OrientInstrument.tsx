@@ -27,7 +27,11 @@ import type {
 } from "@/domain/externalTemporal";
 import type { BlockPriorityService, TaskPriorityService } from "@/domain/executionDirection";
 import type { InterruptGrant, PulseOccurrence } from "@/domain/pulse";
-import { isActiveInterruptGrant, pulseOccurrenceStillBeforeStart } from "@/domain/pulse";
+import {
+  isActiveInterruptGrant,
+  PULSE_RELATIONSHIP_RELATIVE_BEFORE,
+  pulseOccurrenceStillBeforeStart,
+} from "@/domain/pulse";
 import type { Priority } from "@/domain/priority";
 import type { ProtectedTime } from "@/domain/protectedTime";
 import type {
@@ -108,10 +112,17 @@ function expressiblePulses(input: {
   timeZone: string;
 }): ExpressiblePulse[] {
   const activeGrantIds = new Set(
-    input.grants.filter(isActiveInterruptGrant).map((grant) => grant.id),
+    input.grants
+      .filter(
+        (grant) =>
+          isActiveInterruptGrant(grant) &&
+          grant.relationship === PULSE_RELATIONSHIP_RELATIVE_BEFORE,
+      )
+      .map((grant) => grant.id),
   );
   const items: ExpressiblePulse[] = [];
   for (const occurrence of input.occurrences) {
+    if (occurrence.relationship !== PULSE_RELATIONSHIP_RELATIVE_BEFORE) continue;
     if (occurrence.grantId === null || !activeGrantIds.has(occurrence.grantId)) continue;
     if (!pulseOccurrenceStillBeforeStart({ occurrence, now: input.now, timeZone: input.timeZone })) {
       continue;

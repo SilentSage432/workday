@@ -6,12 +6,20 @@ export const PULSE_SOURCE_KIND_COMMITMENT = "commitment" as const;
 export const PULSE_SOURCE_KIND_BLOCK = "block" as const;
 export const PULSE_TRANSITION_KIND_START = "start" as const;
 
+export const PULSE_RELATIONSHIP_RELATIVE_BEFORE = "relative_before" as const;
+export const PULSE_RELATIONSHIP_ARRIVAL = "arrival" as const;
+
 export type PulseSourceKind =
   | typeof PULSE_SOURCE_KIND_COMMITMENT
   | typeof PULSE_SOURCE_KIND_BLOCK;
 export type PulseTransitionKind = typeof PULSE_TRANSITION_KIND_START;
 
-/** Bounded lead choices for relative start authority. Seconds. */
+/** Closed authorized temporal relationship identity. Unknown values fail closed. */
+export type PulseRelationship =
+  | typeof PULSE_RELATIONSHIP_RELATIVE_BEFORE
+  | typeof PULSE_RELATIONSHIP_ARRIVAL;
+
+/** Bounded lead choices for relative_before start authority. Seconds. */
 export const PULSE_LEAD_OFFSET_CHOICES_SECONDS = [5 * 60, 15 * 60, 30 * 60, 60 * 60] as const;
 
 export type PulseLeadOffsetSeconds = (typeof PULSE_LEAD_OFFSET_CHOICES_SECONDS)[number];
@@ -22,7 +30,9 @@ export type InterruptGrant = {
   sourceKind: PulseSourceKind;
   sourceId: string;
   transitionKind: PulseTransitionKind;
-  leadOffsetSeconds: number;
+  relationship: PulseRelationship;
+  /** Positive seconds for relative_before; null for arrival. */
+  leadOffsetSeconds: number | null;
   establishedAt: string;
   revokedAt: string | null;
 };
@@ -41,6 +51,7 @@ export type PulseOccurrence = {
   grantId: string | null;
   sourceKind: PulseSourceKind;
   sourceId: string | null;
+  relationship: PulseRelationship;
   sourceStartsOn: string;
   sourceStartLocal: string;
   thresholdAt: string;
@@ -66,6 +77,13 @@ export function requirePulseSourceKind(value: string): PulseSourceKind {
   throw new Error("This interrupt grant has an unsupported source kind.");
 }
 
+export function requirePulseRelationship(value: string): PulseRelationship {
+  if (value === PULSE_RELATIONSHIP_RELATIVE_BEFORE || value === PULSE_RELATIONSHIP_ARRIVAL) {
+    return value;
+  }
+  throw new Error("This interrupt grant has an unsupported relationship.");
+}
+
 export function requirePulseLeadOffsetSeconds(value: number): number {
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error("A reminder lead time must be a positive number of seconds.");
@@ -81,8 +99,29 @@ export function requirePulseLeadChoice(value: number): PulseLeadOffsetSeconds {
   return seconds as PulseLeadOffsetSeconds;
 }
 
+/** Fail closed: relationship + lead must match accepted invariants. */
+export function requireGrantLeadForRelationship(
+  relationship: PulseRelationship,
+  leadOffsetSeconds: number | null,
+): number | null {
+  if (relationship === PULSE_RELATIONSHIP_RELATIVE_BEFORE) {
+    if (leadOffsetSeconds === null) {
+      throw new Error("A reminder lead time must be a positive number of seconds.");
+    }
+    return requirePulseLeadOffsetSeconds(leadOffsetSeconds);
+  }
+  if (leadOffsetSeconds !== null) {
+    throw new Error("Arrival interrupt authority does not take a lead offset.");
+  }
+  return null;
+}
+
 export function isActiveInterruptGrant(grant: InterruptGrant): boolean {
   return grant.revokedAt === null;
+}
+
+export function isRelativeBeforeInterruptGrant(grant: InterruptGrant): boolean {
+  return grant.relationship === PULSE_RELATIONSHIP_RELATIVE_BEFORE;
 }
 
 export function sourceTemporalIdentityFromTimedStart(source: {
@@ -119,6 +158,26 @@ export function occurrenceMatchesIdentity(
   );
 }
 
+function thresholdInstantForGrant(input: {
+  grant: InterruptGrant;
+  startInstant: Date;
+}): Date | null {
+  const relationship = input.grant.relationship;
+  if (relationship === PULSE_RELATIONSHIP_RELATIVE_BEFORE) {
+    const leadSeconds = requireGrantLeadForRelationship(
+      relationship,
+      input.grant.leadOffsetSeconds,
+    );
+    if (leadSeconds === null) return null;
+    return new Date(input.startInstant.getTime() - leadSeconds * 1000);
+  }
+  if (relationship === PULSE_RELATIONSHIP_ARRIVAL) {
+    requireGrantLeadForRelationship(relationship, input.grant.leadOffsetSeconds);
+    return input.startInstant;
+  }
+  return null;
+}
+
 function evaluateTimedStartPulseCondition(input: {
   grant: InterruptGrant | null;
   expectedSourceKind: PulseSourceKind;
@@ -133,6 +192,12 @@ function evaluateTimedStartPulseCondition(input: {
   if (input.grant.revokedAt !== null) return "inactive";
   if (input.grant.sourceKind !== input.expectedSourceKind) return "inactive";
   if (input.grant.transitionKind !== PULSE_TRANSITION_KIND_START) return "inactive";
+  if (
+    input.grant.relationship !== PULSE_RELATIONSHIP_RELATIVE_BEFORE &&
+    input.grant.relationship !== PULSE_RELATIONSHIP_ARRIVAL
+  ) {
+    return "inactive";
+  }
   if (input.source === null) return "inactive";
   if (input.source.id !== input.grant.sourceId) return "inactive";
 
@@ -151,8 +216,18 @@ function evaluateTimedStartPulseCondition(input: {
     return "withhold";
   }
 
-  const leadSeconds = requirePulseLeadOffsetSeconds(input.grant.leadOffsetSeconds);
-  const thresholdInstant = new Date(startInstant.getTime() - leadSeconds * 1000);
+  let thresholdInstant: Date;
+  try {
+    const derived = thresholdInstantForGrant({
+      grant: input.grant,
+      startInstant,
+    });
+    if (derived === null) return "inactive";
+    thresholdInstant = derived;
+  } catch {
+    return "inactive";
+  }
+
   const identity = sourceTemporalIdentityFromTimedStart(input.source);
   const matching = input.occurrences.some((occurrence) =>
     occurrenceMatchesIdentity(occurrence, input.grant!.id, identity),
@@ -238,6 +313,9 @@ export function evaluateBlockStartPulseCondition(input: {
  * is due whenever the authorized threshold has been reached and the identity is
  * not yet satisfied: `eligible | elapsed`.
  *
+ * For arrival, threshold = T, so due states collapse to `elapsed` when now >= T
+ * (and `eligible` is empty). Same due predicate still applies.
+ *
  * `satisfied` means an occurrence already exists for this grant + current source
  * temporal identity — same meaning for Block-start as for Commitment-start.
  */
@@ -252,14 +330,19 @@ export const startPulseIsDueForEstablishment = commitmentStartPulseIsDueForEstab
 export function deriveTimedStartThreshold(input: {
   startsOn: string;
   startLocal: string;
-  leadOffsetSeconds: number;
+  relationship: PulseRelationship;
+  leadOffsetSeconds: number | null;
   timeZone: string;
 }): { thresholdAt: Date; sourceStartAt: Date; identity: PulseSourceTemporalIdentity } {
   const zone = requireIanaTimeZone(input.timeZone);
   const sourceStartAt = instantFromZonedLocal(input.startsOn, input.startLocal, zone);
-  const leadSeconds = requirePulseLeadOffsetSeconds(input.leadOffsetSeconds);
+  const lead = requireGrantLeadForRelationship(input.relationship, input.leadOffsetSeconds);
+  const thresholdAt =
+    input.relationship === PULSE_RELATIONSHIP_ARRIVAL
+      ? sourceStartAt
+      : new Date(sourceStartAt.getTime() - (lead as number) * 1000);
   return {
-    thresholdAt: new Date(sourceStartAt.getTime() - leadSeconds * 1000),
+    thresholdAt,
     sourceStartAt,
     identity: sourceTemporalIdentityFromTimedStart({
       startsOn: input.startsOn,
@@ -276,6 +359,7 @@ export function deriveCommitmentStartThreshold(input: {
   return deriveTimedStartThreshold({
     startsOn: input.commitment.startsOn,
     startLocal: input.commitment.startLocal,
+    relationship: PULSE_RELATIONSHIP_RELATIVE_BEFORE,
     leadOffsetSeconds: input.leadOffsetSeconds,
     timeZone: input.timeZone,
   });
@@ -289,6 +373,7 @@ export function deriveBlockStartThreshold(input: {
   return deriveTimedStartThreshold({
     startsOn: input.block.startsOn,
     startLocal: input.block.startLocal,
+    relationship: PULSE_RELATIONSHIP_RELATIVE_BEFORE,
     leadOffsetSeconds: input.leadOffsetSeconds,
     timeZone: input.timeZone,
   });

@@ -2,6 +2,7 @@
 
 ## Accepted foundations (closed)
 
+- **ORIENT-PULSE-ARRIVAL-RELATIONSHIP-FOUNDATION-CANDIDATE** — EXPRESSION-005-I on baseline `832dc2a`; grant/occurrence `relationship`; evaluator T−L vs T; ARRIVAL human UI/native/haptic not exposed; production migration not applied ([EXPRESSION-005-I](docs/implementation/ORIENT-PULSE-EXPRESSION-005-I.md))
 - **ORIENT-PULSE-ARRIVAL-IMPLEMENTATION-DESIGN-PUBLISHED** — EXPRESSION-005/005A on baseline `c76a97b`; `relationship` text+CHECK; order 005-I foundation → 005-II native silence → 005-III human ARRIVAL UI → 005-IV eligibility+morphology; ARRIVAL UI forbidden until native silence ([EXPRESSION-005](docs/implementation/ORIENT-PULSE-EXPRESSION-005.md))
 - **ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED** — EXPRESSION-004/004A on baseline `8107f8e`; tokens `relative_before` + `arrival`; one grant/one relationship; lead parameter of relative_before only; magic zero / APPROACH / NULL-as-ARRIVAL rejected ([EXPRESSION-004](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md))
 - **ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED** — EXPRESSION-003/003A on baseline `c33538a`; durable truth ≠ physical expression lifetime; expression eligibility canonized; shared policy / local evaluation; numeric window deferred ([EXPRESSION-003](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md))
@@ -31,13 +32,12 @@
 
 ## Discovery / next Pulse boundary
 
-- **ORIENT-PULSE-EXPRESSION-005-I** — ARRIVAL relationship foundation (schema/provenance/evaluator) when authorized; no ARRIVAL UI; no native pronunciation change; no haptic; no numeric eligibility. Basis: [EXPRESSION-005](docs/implementation/ORIENT-PULSE-EXPRESSION-005.md).
-- Then 005-II native silence → 005-III human ARRIVAL authority → 005-IV eligibility + morphology.
+- **ORIENT-PULSE-EXPRESSION-005-II** — native relationship-aware silence gate (after reviewed 005-I migration application as required). Then 005-III human ARRIVAL authority → 005-IV eligibility + morphology.
 - Historical: AUTHORITY-003 FAILED; 004 production repaired; 002 Block-start implemented — see authority docs under `docs/implementation/ORIENT-PULSE-AUTHORITY-*.md`.
 
 ## Next evidence-backed items
 
-1. ORIENT-PULSE-EXPRESSION-005-I — relationship foundation implementation when authorized (inspect production migrations first; no ARRIVAL UI)
+1. Review/apply 005-I migration to Orient production when authorized; then ORIENT-PULSE-EXPRESSION-005-II native silence
 2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
 3. Deferred: Orient Watch face / visual Pulse expression / ambient Presence (observer; momentary ARRIVAL word distinct; no Presence authorized)
 4. Deferred: richer Orient Watch companion

@@ -5,11 +5,14 @@ import {
   commitmentStartPulseIsDueForEstablishment,
   deriveBlockStartThreshold,
   deriveCommitmentStartThreshold,
+  deriveTimedStartThreshold,
   evaluateBlockStartPulseCondition,
   evaluateCommitmentStartPulseCondition,
   occurrenceMatchesIdentity,
   pulseOccurrenceStillBeforeStart,
+  requireGrantLeadForRelationship,
   requirePulseLeadChoice,
+  requirePulseRelationship,
   type InterruptGrant,
   type PulseOccurrence,
 } from "@/domain/pulse";
@@ -41,6 +44,7 @@ function grant(overrides: Partial<InterruptGrant> = {}): InterruptGrant {
     sourceKind: "commitment",
     sourceId: COMMITMENT,
     transitionKind: "start",
+    relationship: "relative_before",
     leadOffsetSeconds: 15 * 60,
     establishedAt: "2026-10-08T12:00:00.000Z",
     revokedAt: null,
@@ -55,6 +59,7 @@ function occurrence(overrides: Partial<PulseOccurrence> = {}): PulseOccurrence {
     grantId: GRANT,
     sourceKind: "commitment",
     sourceId: COMMITMENT,
+    relationship: "relative_before",
     sourceStartsOn: "2026-10-08",
     sourceStartLocal: "15:00",
     thresholdAt: "2026-10-08T20:45:00.000Z",
@@ -368,6 +373,7 @@ function blockGrant(overrides: Partial<InterruptGrant> = {}): InterruptGrant {
     sourceKind: "block",
     sourceId: BLOCK,
     transitionKind: "start",
+    relationship: "relative_before",
     leadOffsetSeconds: 15 * 60,
     establishedAt: "2026-10-08T12:00:00.000Z",
     revokedAt: null,
@@ -382,6 +388,7 @@ function blockOccurrence(overrides: Partial<PulseOccurrence> = {}): PulseOccurre
     grantId: GRANT,
     sourceKind: "block",
     sourceId: BLOCK,
+    relationship: "relative_before",
     sourceStartsOn: "2026-10-08",
     sourceStartLocal: "15:00",
     thresholdAt: "2026-10-08T20:45:00.000Z",
@@ -562,5 +569,116 @@ describe("deriveBlockStartThreshold", () => {
     });
     expect(derived.sourceStartAt.toISOString()).toBe(denver("15:00").toISOString());
     expect(derived.thresholdAt.toISOString()).toBe(denver("14:45").toISOString());
+  });
+});
+
+describe("authorized temporal relationships (EXPRESSION-005-I)", () => {
+  it("parses only the closed relationship set and fails closed on unknown", () => {
+    expect(requirePulseRelationship("relative_before")).toBe("relative_before");
+    expect(requirePulseRelationship("arrival")).toBe("arrival");
+    expect(() => requirePulseRelationship("approach")).toThrow(/unsupported relationship/i);
+    expect(() => requirePulseRelationship("")).toThrow(/unsupported relationship/i);
+  });
+
+  it("enforces relationship/lead invariants without inferring arrival from null lead alone", () => {
+    expect(requireGrantLeadForRelationship("relative_before", 900)).toBe(900);
+    expect(() => requireGrantLeadForRelationship("relative_before", null)).toThrow(/positive/i);
+    expect(() => requireGrantLeadForRelationship("relative_before", 0)).toThrow(/positive/i);
+    expect(requireGrantLeadForRelationship("arrival", null)).toBeNull();
+    expect(() => requireGrantLeadForRelationship("arrival", 0)).toThrow(/does not take a lead/i);
+    expect(() => requireGrantLeadForRelationship("arrival", 900)).toThrow(/does not take a lead/i);
+  });
+
+  it("evaluates relative_before threshold as T − L and arrival threshold as T", () => {
+    const commitment = timedCommitment();
+    if (commitment.kind !== "timed") throw new Error("timed");
+
+    expect(
+      evaluateCommitmentStartPulseCondition({
+        grant: grant({ relationship: "relative_before", leadOffsetSeconds: 15 * 60 }),
+        commitment,
+        timeZone: ZONE,
+        now: denver("14:44"),
+        occurrences: [],
+        readsComplete: true,
+      }),
+    ).toBe("not_yet");
+    expect(
+      evaluateCommitmentStartPulseCondition({
+        grant: grant({ relationship: "relative_before", leadOffsetSeconds: 15 * 60 }),
+        commitment,
+        timeZone: ZONE,
+        now: denver("14:45"),
+        occurrences: [],
+        readsComplete: true,
+      }),
+    ).toBe("eligible");
+
+    expect(
+      evaluateCommitmentStartPulseCondition({
+        grant: grant({ relationship: "arrival", leadOffsetSeconds: null }),
+        commitment,
+        timeZone: ZONE,
+        now: denver("14:59"),
+        occurrences: [],
+        readsComplete: true,
+      }),
+    ).toBe("not_yet");
+    expect(
+      evaluateCommitmentStartPulseCondition({
+        grant: grant({ relationship: "arrival", leadOffsetSeconds: null }),
+        commitment,
+        timeZone: ZONE,
+        now: denver("15:00"),
+        occurrences: [],
+        readsComplete: true,
+      }),
+    ).toBe("elapsed");
+    expect(
+      commitmentStartPulseIsDueForEstablishment(
+        evaluateCommitmentStartPulseCondition({
+          grant: grant({ relationship: "arrival", leadOffsetSeconds: null }),
+          commitment,
+          timeZone: ZONE,
+          now: denver("15:00"),
+          occurrences: [],
+          readsComplete: true,
+        }),
+      ),
+    ).toBe(true);
+
+    const arrivalDerived = deriveTimedStartThreshold({
+      startsOn: "2026-10-08",
+      startLocal: "15:00",
+      relationship: "arrival",
+      leadOffsetSeconds: null,
+      timeZone: ZONE,
+    });
+    expect(arrivalDerived.thresholdAt.toISOString()).toBe(arrivalDerived.sourceStartAt.toISOString());
+    expect(arrivalDerived.thresholdAt.toISOString()).toBe(denver("15:00").toISOString());
+  });
+
+  it("evaluates Block arrival with the same T threshold semantics", () => {
+    const block = timedBlock();
+    expect(
+      evaluateBlockStartPulseCondition({
+        grant: blockGrant({ relationship: "arrival", leadOffsetSeconds: null }),
+        block,
+        timeZone: ZONE,
+        now: denver("14:59"),
+        occurrences: [],
+        readsComplete: true,
+      }),
+    ).toBe("not_yet");
+    expect(
+      evaluateBlockStartPulseCondition({
+        grant: blockGrant({ relationship: "arrival", leadOffsetSeconds: null }),
+        block,
+        timeZone: ZONE,
+        now: denver("15:00"),
+        occurrences: [],
+        readsComplete: true,
+      }),
+    ).toBe("elapsed");
   });
 });

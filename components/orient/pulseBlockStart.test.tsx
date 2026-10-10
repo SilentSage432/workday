@@ -36,6 +36,7 @@ function grant(): InterruptGrant {
     sourceKind: "block",
     sourceId: BLOCK,
     transitionKind: "start",
+    relationship: "relative_before",
     leadOffsetSeconds: 900,
     establishedAt: "2026-10-08T12:00:00.000Z",
     revokedAt: null,

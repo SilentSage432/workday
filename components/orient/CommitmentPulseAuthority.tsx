@@ -63,7 +63,11 @@ export function CommitmentPulseAuthority({
       {grant && grant.revokedAt === null ? (
         <>
           <p className="orient-note">
-            Reminder set · {leadOffsetLabel(grant.leadOffsetSeconds)} before start
+            Reminder set ·{" "}
+            {grant.leadOffsetSeconds !== null
+              ? leadOffsetLabel(grant.leadOffsetSeconds)
+              : "—"}{" "}
+            before start
           </p>
           <button
             type="button"

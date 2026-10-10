@@ -1,5 +1,17 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005-I
+
+Arrival relationship foundation candidate (schema / provenance / evaluator).
+
+- Baseline `832dc2a`; Orient `ksmhgaamyheyhefbyglb` inspected read-only; Wealth untouched.
+- Production evidence: 1 grant (positive lead), 15 occurrences all `threshold_at < source_start_at`; backfill → relative_before only.
+- Migration `20261010200000_pulse_authorized_temporal_relationships.sql`: relationship column, lead invariants, uniqueness+relationship, evaluator T−L vs T.
+- Human Reach-me remains relative_before-only; ARRIVAL UI/native/haptic not exposed; production migration not applied.
+- Verdict target: `ORIENT-PULSE-ARRIVAL-RELATIONSHIP-FOUNDATION-CANDIDATE-READY`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-005-I.md](docs/implementation/ORIENT-PULSE-EXPRESSION-005-I.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005A
 
 Arrival authority implementation design published (docs only).
