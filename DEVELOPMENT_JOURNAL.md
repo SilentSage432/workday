@@ -1,8 +1,19 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-008E
+
+Background session restoration ordering correction (uncommitted; not installed).
+
+- 008C: Pulse `c3267981` failed at session establishment; haptic correction not exercised.
+- 008D: root cause — `ensureSessionLoaded` called `refreshCurrentSession()` while still `Initializing` (auth-kt 3.8.0 throws).
+- 008E: await `awaitInitialization()` within 8s bound; refresh only after Authenticated; timeout/NotAuthenticated fail closed without refresh.
+- Haptic still not physically accepted. Freecess not claimed as root cause.
+
+Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md).
+
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-008
 
-Background haptic semantic correction (uncommitted; not installed).
+Background haptic semantic correction on `main` (`4b33c4b`; installed; not physically accepted).
 
 - 007E: autonomous native notification path established; explicit 40ms haptic invoked then ignored (`background` + `TOUCH`).
 - Cause: bare `vibrate(VibrationEffect)` → empty attributes → UNKNOWN→TOUCH.

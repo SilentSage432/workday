@@ -2,7 +2,8 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
-- **ORIENT-ANDROID-PULSE-BRIDGE-008** — background haptic `USAGE_NOTIFICATION` correction (uncommitted; not installed; not physically accepted)
+- **ORIENT-ANDROID-PULSE-BRIDGE-008E** — session restore ordering vs auth-kt Initializing (uncommitted; not installed)
+- **ORIENT-ANDROID-PULSE-BRIDGE-008** — background haptic `USAGE_NOTIFICATION` on `main` (`4b33c4b`; installed; not physically accepted — blocked by 008C session failure)
 - **ORIENT-ANDROID-PULSE-BRIDGE-007E** — second physical Pulse: native notification path established; haptic TOUCH rejected in background
 - **ORIENT-ANDROID-PULSE-BRIDGE-007** — observability on `main` (`171c95a`); first Pulse reread failure diagnosed
 - **ORIENT-ANDROID-PULSE-BRIDGE-006** — token registration serialization fix on `main` (`54724f0`); S26 endpoint established
@@ -26,7 +27,7 @@
 
 ## Next evidence-backed items
 
-1. Review/commit 008 → update-install S26 → one real Pulse → physical haptic acceptance
+1. Review/commit 008E → update-install S26 → one real Pulse → session + haptic acceptance
 2. Deferred: Wear OS / channel policy / in-app Pulse visual refinement
 3. Recurring-task physical acceptance (when ready)
 4. Google Calendar removal reconciliation

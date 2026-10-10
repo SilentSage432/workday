@@ -2,28 +2,27 @@
 
 ## Current state (2026-10-09)
 
-**ORIENT-ANDROID-PULSE-BRIDGE-008** — background haptic semantic correction (uncommitted; not installed).
+**ORIENT-ANDROID-PULSE-BRIDGE-008E** — background session restoration ordering (uncommitted; not installed).
 
-Native autonomous **notification** path established (007E) on candidate `171c95a`:
-occurrence `8134b3e8-7185-46fb-8c71-c338e2caa3a9` → dispatch → FCM → WM → reread → claim → notify.
+008 haptic (`USAGE_NOTIFICATION`) is on `main` at `4b33c4b` but **not physically accepted**.
+Pulse `c3267981` failed first at session establishment (`Initializing` → invalid refresh →
+`silent_no_session`); haptic path was not reached.
 
-Haptic subtype: **HAPTIC_INVOKED_BUT_NOT_PERCEIVED** — OS ignored background `TOUCH` usage.
-008 replaces attributes with `VibrationAttributes.USAGE_NOTIFICATION` only.
-
-Prior: 007B/C observability committed (`171c95a`); 007D S26 update-install; 006 endpoint; dispatcher `30edfb7`.
+008E awaits auth-kt `awaitInitialization()` within the worker bound; refreshes only from
+`Authenticated`; timeout / `NotAuthenticated` remain silent without refresh.
 
 ### Proven (Pulse)
 
 - Explicit Interrupt Grant + relative 5-minute Commitment-start authority
 - Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
 - Owner-scoped Android FCM token table + trusted dispatcher + webhook
-- S26 endpoint + autonomous native notification expression
+- S26 endpoint + autonomous native notification expression (8134b3e8)
 - Semantic observability tag `OrientPulsePerception`
 
 ### Next Pulse boundary
 
-1. Review/commit 008 → update-install S26 (preserve session)
-2. One real Pulse → confirm haptic perceived under background delivery
+1. Review/commit 008E → update-install S26 (preserve session)
+2. One real Pulse → confirm session restore + haptic perceived under background delivery
 3. Deferred: Wear OS / perceptual language / channel policy
 
 ### Still deferred elsewhere

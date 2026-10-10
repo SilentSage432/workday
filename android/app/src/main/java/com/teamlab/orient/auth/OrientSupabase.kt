@@ -11,8 +11,6 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Normal Orient user auth only — publishable key + user JWT.
@@ -36,7 +34,7 @@ class OrientSupabase private constructor(
 
     suspend fun hasAuthenticatedSession(): Boolean {
         ensureSessionLoaded()
-        val available = currentUserId() != null
+        val available = auth.currentUserOrNull()?.id != null
         PerceptionTrace.authenticatedUserAvailable(available)
         return available
     }
@@ -47,26 +45,26 @@ class OrientSupabase private constructor(
     }
 
     suspend fun ensureSessionLoaded() {
-        PerceptionTrace.sessionRestoreEntered()
-        PerceptionTrace.sessionStatusClass(
-            PerceptionTrace.sessionStatusClassName(auth.sessionStatus.value),
-        )
-        when (auth.sessionStatus.value) {
-            is SessionStatus.Authenticated,
-            is SessionStatus.NotAuthenticated,
-            -> return
-            else -> {
-                withTimeoutOrNull(8_000) {
-                    auth.sessionStatus.first {
-                        it is SessionStatus.Authenticated || it is SessionStatus.NotAuthenticated
-                    }
+        SessionRestore.ensureLoaded(
+            object : SessionRestore.Gateway {
+                override fun currentStatusClass(): String =
+                    PerceptionTrace.sessionStatusClassName(auth.sessionStatus.value)
+
+                override fun isAuthenticated(): Boolean =
+                    auth.sessionStatus.value is SessionStatus.Authenticated
+
+                override fun isNotAuthenticated(): Boolean =
+                    auth.sessionStatus.value is SessionStatus.NotAuthenticated
+
+                override suspend fun awaitInitialization() {
+                    auth.awaitInitialization()
                 }
-            }
-        }
-        // Refresh when a persisted session may be stale.
-        PerceptionTrace.refreshAttempted()
-        val refresh = runCatching { auth.refreshCurrentSession() }
-        PerceptionTrace.refreshResult(refresh.isSuccess, refresh.exceptionOrNull())
+
+                override suspend fun refreshCurrentSession() {
+                    auth.refreshCurrentSession()
+                }
+            },
+        )
     }
 
     companion object {

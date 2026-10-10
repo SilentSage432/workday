@@ -30,6 +30,18 @@ object PerceptionTrace {
         emit("stage=session event=status_class class=$statusClass")
     }
 
+    fun initializationWaitEntered() {
+        emit("stage=session event=initialization_wait_entered")
+    }
+
+    fun initializationResolved(statusClass: String) {
+        emit("stage=session event=initialization_resolved class=$statusClass")
+    }
+
+    fun initializationTimedOut() {
+        emit("stage=session event=initialization_timed_out")
+    }
+
     fun refreshAttempted() {
         emit("stage=session event=refresh_attempted")
     }
