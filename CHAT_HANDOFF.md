@@ -2,32 +2,34 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED**
+**ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED**
 
-Published from baseline `c33538a8c2d3380d5bf9b7b6402d0621bd2987a5`  
+Published from baseline `8107f8e688b74e0decbd7982fb0b54062d57d952`  
 Project: `ksmhgaamyheyhefbyglb`
 
-Discovery record: [ORIENT-PULSE-EXPRESSION-003](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md)
+Record: [ORIENT-PULSE-EXPRESSION-004](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md)
 
-### Published timeliness law (not implemented)
+### Accepted authority grammar (design only — not implemented)
 
 ```text
-DURABLE TRUTH LIFETIME ≠ PHYSICAL EXPRESSION LIFETIME
+source + source transition + authorized temporal relationship
++ relationship parameters + human Interrupt Grant
 ```
 
-Physical meaning: “The boundary has become present recently enough to orient to this transition.”
+One grant = one temporal relationship.
 
-**Expression eligibility** — whether an already-established occurrence may still be physically expressed without misleading present-oriented speech. Does not create/erase truth, change authority, or imply urgency/importance/MustDo.
+| Token | Meaning |
+| --- | --- |
+| `relative_before` | Pulse when selected point N before source transition becomes true; positive lead required; maps current accepted authority |
+| `arrival` | Pulse when source transition itself becomes present; no lead parameter; not implemented |
 
-- One shared deterministic eligibility policy; surfaces may evaluate it at different times
-- Phone timely / Watch later-stale → one occurrence, one truth
-- Late establishment may preserve durable truth; late delivery does not auto-justify speech
-- Unauthorized silence ≠ stale silence; silence may preserve truth better than late speech
-- Numeric eligibility duration **not** chosen; haptic/visual morphology **not** designed
+**APPROACH** not accepted. Magic zero rejected as identity. NULL lead does **not** mean ARRIVAL.
 
-**Not done:** ARRIVAL Interrupt Grant, occurrence form, haptic, schema/runtime, lead=0, Presence.
+Same `start` transition may have independently active `relative_before` and `arrival` grants. Independent revocation. Occurrence provenance must identify relationship even if `grant_id` becomes NULL. Existing grants map to `relative_before`; existing occurrences must not be reclassified as ARRIVAL; no silent authority expansion.
 
 ### Still true (do not conflate)
+
+**ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED** — [EXPRESSION-003](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md)
 
 **ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED** — [EXPRESSION-002](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md)
 
@@ -35,16 +37,14 @@ Physical meaning: “The boundary has become present recently enough to orient t
 
 **ORIENT-PULSE-SOURCE-DELETION-LIFECYCLE-FINALIZED** / **GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED**
 
-### Next discovery boundary
+### Next tranche
 
-**ORIENT-PULSE-EXPRESSION-004 — ARRIVAL AUTHORITY FORM DISCOVERY**
-
-How should “Reach me when this begins” be represented alongside “Reach me N before this begins” without magic zero, duplicated source semantics, or authority inheritance? Smallest truthful relationship identity and grant model before any ARRIVAL implementation. Do **not** choose a numeric eligibility window unless authority semantics genuinely require it.
+**ORIENT-PULSE-EXPRESSION-005 — ARRIVAL AUTHORITY IMPLEMENTATION DESIGN** (discovery/design only — no implementation; no haptic; no numeric eligibility window unless required for coherence)
 
 ### Still deferred elsewhere
 
 - Preferred perception-surface routing
-- Orient Watch face / visual Pulse expression / ambient Presence
+- Orient Watch face / visual Pulse / ambient Presence
 - Richer Orient Watch companion
 - Freecess/thaw lifecycle variants
 - Recurring-task physical acceptance

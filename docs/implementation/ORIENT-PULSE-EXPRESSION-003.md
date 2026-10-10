@@ -476,14 +476,7 @@ Open for later design:
 
 **ORIENT-PULSE-EXPRESSION-004 — ARRIVAL AUTHORITY FORM DISCOVERY**
 
-Core question:
-
-> How should Tyson's independent authority “Reach me when this begins” be represented alongside the existing positive-lead authority “Reach me N before this begins” without encoding ARRIVAL as magic zero, duplicating source semantics, or allowing authority inheritance?
-
-Determine the smallest truthful relationship identity and grant model before any ARRIVAL implementation.
-
-Do **not** choose a numeric expression-eligibility window during that discovery unless authority semantics genuinely require it.  
-Do **not** implement ARRIVAL, haptic morphology, schema, or production mutation as part of 004 discovery itself.
+Completed as discovery: [ORIENT-PULSE-EXPRESSION-004.md](ORIENT-PULSE-EXPRESSION-004.md) (`ORIENT-PULSE-ARRIVAL-AUTHORITY-FORM-CLEAR`). Explicit authorized temporal relationship identity; two grants; lead is parameter; magic zero / new `transition_kind` rejected; no ARRIVAL implementation.
 
 ---
 

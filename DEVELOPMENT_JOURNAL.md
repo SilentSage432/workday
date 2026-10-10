@@ -1,5 +1,29 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-004A
+
+Authorized temporal relationships design decision published (docs only).
+
+- Baseline `8107f8e`; project `ksmhgaamyheyhefbyglb`.
+- Accepted tokens: `relative_before` (positive lead required; maps current authority) and `arrival` (no lead parameter; not implemented).
+- APPROACH rejected; magic zero / NULL-as-ARRIVAL rejected; one grant/one relationship; independent coexistence + revocation; occurrence relationship provenance required.
+- Next: ORIENT-PULSE-EXPRESSION-005 Arrival authority implementation design (docs only).
+- Verdict: `ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-004.md](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md).
+
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-004
+
+Arrival authority form discovery (docs only).
+
+- Baseline `8107f8e` = `origin/main`, clean tree; project `ksmhgaamyheyhefbyglb`.
+- Missing concept: authorized temporal relationship (distinct from source transition and lead parameter).
+- Magic zero rejected as identity; ARRIVAL is not a new transition_kind.
+- Model: two grants; explicit relationship identity; lead parameter for relative_before only; occurrence carries relationship provenance.
+- Discovery verdict: `ORIENT-PULSE-ARRIVAL-AUTHORITY-FORM-CLEAR` (published in 004A).
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-004.md](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-003A
 
 Arrival expression timeliness published (docs only).

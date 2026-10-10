@@ -2,6 +2,7 @@
 
 ## Accepted foundations (closed)
 
+- **ORIENT-PULSE-AUTHORIZED-TEMPORAL-RELATIONSHIPS-PUBLISHED** — EXPRESSION-004/004A on baseline `8107f8e`; tokens `relative_before` + `arrival`; one grant/one relationship; lead parameter of relative_before only; magic zero / APPROACH / NULL-as-ARRIVAL rejected ([EXPRESSION-004](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md))
 - **ORIENT-PULSE-ARRIVAL-TIMELINESS-PUBLISHED** — EXPRESSION-003/003A on baseline `c33538a`; durable truth ≠ physical expression lifetime; expression eligibility canonized; shared policy / local evaluation; numeric window deferred ([EXPRESSION-003](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md))
 - **ORIENT-PULSE-ARRIVAL-SEMANTICS-PUBLISHED** — EXPRESSION-002/002A on baseline `fb5cf0f`; ARRIVAL semantic relationship accepted for development; independent authority; candidate word only; no grant/haptic/lead=0 impl ([EXPRESSION-002](docs/implementation/ORIENT-PULSE-EXPRESSION-002.md))
 - **ORIENT-PULSE-EXPRESSION-SEMANTICS-PUBLISHED** — EXPRESSION-001/001A docs on baseline `c3b8ce4`; current word = authorized occurrence requesting perception; Commitment ≡ Block same word; source-kind/intensity rejected; durable expression principles canonized; vocabulary still undesigned ([EXPRESSION-001](docs/implementation/ORIENT-PULSE-EXPRESSION-001.md))
@@ -29,12 +30,12 @@
 
 ## Discovery / next Pulse boundary
 
-- **ORIENT-PULSE-EXPRESSION-004 — ARRIVAL AUTHORITY FORM DISCOVERY** — represent “Reach me when this begins” beside positive-lead without magic zero, duplicated source semantics, or authority inheritance; smallest truthful relationship identity + grant model before any ARRIVAL impl. Do not choose numeric eligibility window unless authority semantics require it. Basis: [EXPRESSION-003](docs/implementation/ORIENT-PULSE-EXPRESSION-003.md).
+- **ORIENT-PULSE-EXPRESSION-005 — ARRIVAL AUTHORITY IMPLEMENTATION DESIGN** — smallest safe evolution to explicit relationship identity (`relative_before` / `arrival`); coherent migration/runtime plan; discovery/design only — no implementation; no haptic; no numeric eligibility window unless required for coherence. Basis: [EXPRESSION-004](docs/implementation/ORIENT-PULSE-EXPRESSION-004.md).
 - Historical: AUTHORITY-003 FAILED; 004 production repaired; 002 Block-start implemented — see authority docs under `docs/implementation/ORIENT-PULSE-AUTHORITY-*.md`.
 
 ## Next evidence-backed items
 
-1. ORIENT-PULSE-EXPRESSION-004 — Arrival authority form discovery (docs only; no ARRIVAL impl; no haptic; no numeric eligibility window unless required)
+1. ORIENT-PULSE-EXPRESSION-005 — Arrival authority implementation design (docs only; no schema/runtime/ARRIVAL impl)
 2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
 3. Deferred: Orient Watch face / visual Pulse expression / ambient Presence (observer; momentary ARRIVAL word distinct; no Presence authorized)
 4. Deferred: richer Orient Watch companion
