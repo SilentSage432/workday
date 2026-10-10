@@ -2,44 +2,39 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED** (005 / 005A)
+**ORIENT-PULSE-LIFECYCLE-002** — source deletion authority correction authored (not production-applied).
 
-Production candidate: `e3ec23c1126a0d7bec293c2833381e909f05081e`  
-Migrations: `20261010093000` + `20261010154000` each once on `ksmhgaamyheyhefbyglb`.
+Baseline: `d33e3f1a2c89987e8bce611b97c71602b7bf549a`  
+Linked Orient project: `ksmhgaamyheyhefbyglb`
 
-Timed Commitment-start and timed Block-start are both physically accepted under the same general Interrupt Authority grammar.
+Forward migration: `supabase/migrations/20261010170000_pulse_interrupt_grants_source_delete_authority.sql`  
+Makes `pulse_interrupt_grants_cascade_source_delete()` SECURITY DEFINER with pinned `search_path`. Restores Commitment/Block source-delete grant cleanup without granting authenticated DELETE on grants.
 
-Authority discovery: [docs/implementation/ORIENT-PULSE-AUTHORITY-001.md](docs/implementation/ORIENT-PULSE-AUTHORITY-001.md)  
-Block-start implementation: [docs/implementation/ORIENT-PULSE-AUTHORITY-002.md](docs/implementation/ORIENT-PULSE-AUTHORITY-002.md)  
-Evaluator repair: [docs/implementation/ORIENT-PULSE-AUTHORITY-004.md](docs/implementation/ORIENT-PULSE-AUTHORITY-004.md)  
-Physical acceptance: [docs/implementation/ORIENT-PULSE-AUTHORITY-005.md](docs/implementation/ORIENT-PULSE-AUTHORITY-005.md)
+Executable proof: `scripts/pulse-source-deletion-authority-regression.sh`  
+Record: [docs/implementation/ORIENT-PULSE-LIFECYCLE-002.md](docs/implementation/ORIENT-PULSE-LIFECYCLE-002.md)
 
-### Accepted AUTHORITY-005 evidence
+**Do not claim physical acceptance.** Migration not applied to production. Production AUTHORITY-005 evidence rows not mutated.
 
-- Block `0b0db1c6-7d7b-4170-b446-9110fabedf61` (Block Pulse 005)
-- Grant `6e9adb35-fb7d-435e-84ed-99eb1dc56b1e`
-- Occurrence `a2dae150-b9db-40fd-98a3-1513725a01bd`
-- Human: Watch6 haptic felt; watch notification visible; phone expression perceived; no duplicates; arrived at expected threshold/cadence
+### Prior accepted Pulse state (still true; do not conflate)
 
-### Historical (do not conflate)
+**ORIENT-PULSE-GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED** (005 / 005A) on candidate `e3ec23c`:
 
-- AUTHORITY-003 **FAILED** — Block `68a7e475…` / grant `996699be…`
-- Recovery occurrence `7fadd828…` is post-repair recovery only — not 003 success, not 005 evidence
+- Migrations live: `20261010093000` + `20261010154000`
+- Block Pulse 005: Block `0b0db1c6…`, grant `6e9adb35…`, occurrence `a2dae150…`
+- AUTHORITY-003 remains FAILED; recovery `7fadd828…` is not 005 evidence
 
-### Proven (Pulse)
+Authority docs:
 
-- Explicit Interrupt Grant + relative Commitment-start authority (prior)
-- Explicit Interrupt Grant + relative Block-start authority (005)
-- Hosted evaluation establishes durable Pulse with Orient fully closed
-- Same perception path (dispatcher → FCM → phone claim → Wear → watch NM haptic) for both source kinds; no Block-specific downstream logic
-- Distinct authorities: Wrist Presence ≠ Wrist Attention ≠ Pulse Authority
-- Haptic language remains UNDESIGNED / UNIMPLEMENTED
+- [001](docs/implementation/ORIENT-PULSE-AUTHORITY-001.md)
+- [002](docs/implementation/ORIENT-PULSE-AUTHORITY-002.md)
+- [004](docs/implementation/ORIENT-PULSE-AUTHORITY-004.md)
+- [005](docs/implementation/ORIENT-PULSE-AUTHORITY-005.md)
+- Lifecycle correction: [LIFECYCLE-002](docs/implementation/ORIENT-PULSE-LIFECYCLE-002.md)
 
-### Next discovery boundary
+### Next boundary
 
-Do **not** immediately add Task / Protected Time / other source kinds.
-
-Investigate whether the existing single haptic expression carries the same perceptual meaning for accepted Commitment-start and Block-start. Do not presume `source_kind` → haptic pattern.
+1. Apply LIFECYCLE-002 migration to production when ready; verify source delete UX with grant present (do not treat as Pulse perception re-acceptance).
+2. Pulse semantic expression discovery (shared haptic meaning for Commitment vs Block) before more source kinds — still deferred and distinct from this lifecycle fix.
 
 ### Still deferred elsewhere
 

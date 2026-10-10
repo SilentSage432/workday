@@ -2,6 +2,7 @@
 
 ## Accepted foundations (closed)
 
+- **ORIENT-PULSE-LIFECYCLE-002** — source-deletion cascade authority correction authored (`20261010170000` SECURITY DEFINER); executable regression clear; **not production-applied**; not physical acceptance ([LIFECYCLE-002](docs/implementation/ORIENT-PULSE-LIFECYCLE-002.md))
 - **ORIENT-PULSE-GENERAL-AUTHORITY-ACCEPTANCE-FINALIZED** — timed Commitment-start + timed Block-start physically accepted under one grammar on `e3ec23c` (occurrence `a2dae150`; [005](docs/implementation/ORIENT-PULSE-AUTHORITY-005.md)); AUTHORITY-003 remains FAILED
 - **ORIENT-WEAR-PULSE-NATIVE-WRIST-PERCEPTION-ACCEPTANCE-FINALIZED** — Phase 3 closed; Watch6 notification-class wrist perception on `c76b982` (occurrence `24aad0ab`; [007](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-007.md) / [008](docs/implementation/ORIENT-WEAR-PULSE-BRIDGE-008.md))
 - **ORIENT-WEAR-PULSE-NOTIFICATION-ACTUATOR-PHYSICALLY-ACCEPTED** — NM actuator + OS `USAGE_NOTIFICATION` FINISHED + human WATCH HAPTIC FELT
@@ -24,20 +25,22 @@
 
 ## Discovery / next Pulse boundary
 
+- **Apply LIFECYCLE-002** — production application of `20261010170000` and UX verification that owned Commitment/Block delete succeeds when an Interrupt Grant exists. Distinct from perception re-acceptance. Basis: [LIFECYCLE-002](docs/implementation/ORIENT-PULSE-LIFECYCLE-002.md).
 - **Pulse semantic expression** — before adding Task / Protected Time / further source kinds: does the existing single haptic mean the same thing for accepted Commitment-start and Block-start? Haptic language UNDESIGNED / UNIMPLEMENTED; do not map `source_kind` → pattern by presumption. Basis: [005](docs/implementation/ORIENT-PULSE-AUTHORITY-005.md).
 - Historical: AUTHORITY-003 FAILED; 004 production repaired; 002 Block-start implemented — see authority docs under `docs/implementation/ORIENT-PULSE-AUTHORITY-*.md`.
 
 ## Next evidence-backed items
 
-1. Pulse semantic expression discovery (Commitment vs Block haptic meaning) — before further source-kind generalization
-2. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
-3. Deferred: Orient Watch face / visual Pulse expression (observer of local claim; no interruption authority)
-4. Deferred: richer Orient Watch companion
-5. Deferred: generic notification icon / identity visual refinement
-6. Freecess/thaw lifecycle variants (when ready)
-7. Recurring-task physical acceptance (when ready)
-8. Google Calendar removal reconciliation
-9. Note Edit / Unretire only if evidence requires
+1. Apply LIFECYCLE-002 source-deletion authority correction to production; verify delete UX with grants
+2. Pulse semantic expression discovery (Commitment vs Block haptic meaning) — before further source-kind generalization
+3. Deferred: preferred perception-surface routing (phone/watch); dual expression remains first-proof behavior
+4. Deferred: Orient Watch face / visual Pulse expression (observer of local claim; no interruption authority)
+5. Deferred: richer Orient Watch companion
+6. Deferred: generic notification icon / identity visual refinement
+7. Freecess/thaw lifecycle variants (when ready)
+8. Recurring-task physical acceptance (when ready)
+9. Google Calendar removal reconciliation
+10. Note Edit / Unretire only if evidence requires
 
 ## Standing law
 

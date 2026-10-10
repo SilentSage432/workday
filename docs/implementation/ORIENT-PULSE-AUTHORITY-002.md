@@ -52,6 +52,8 @@ Migration: `supabase/migrations/20261010093000_pulse_block_start_authority.sql`
 
 Applied on production after 002C/002D/002E; evaluator ambiguity repaired by **004** (`20261010154000`). Physical proof is AUTHORITY-005 (not 003).
 
+**Lifecycle follow-up:** the 002 cascade function shipped as SECURITY INVOKER and broke authenticated source DELETE (`42501`). Correction is [ORIENT-PULSE-LIFECYCLE-002](ORIENT-PULSE-LIFECYCLE-002.md) (`20261010170000`, SECURITY DEFINER + pinned `search_path`; not production-applied in that tranche).
+
 ---
 
 ## Domain / persistence / UI

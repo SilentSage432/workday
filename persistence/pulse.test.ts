@@ -28,6 +28,10 @@ const BLOCK_MIGRATION = join(
   process.cwd(),
   "supabase/migrations/20261010093000_pulse_block_start_authority.sql",
 );
+const SOURCE_DELETE_AUTHORITY_MIGRATION = join(
+  process.cwd(),
+  "supabase/migrations/20261010170000_pulse_interrupt_grants_source_delete_authority.sql",
+);
 
 function timedCommitment(): Commitment {
   return {
@@ -436,6 +440,26 @@ function blockGrantRow(overrides: Partial<PulseInterruptGrantRow> = {}): PulseIn
     ...overrides,
   };
 }
+
+describe("pulse source-deletion authority migration", () => {
+  const sql = readFileSync(SOURCE_DELETE_AUTHORITY_MIGRATION, "utf8");
+
+  it("corrects cascade cleanup to SECURITY DEFINER without authenticated DELETE", () => {
+    expect(sql).toContain("ORIENT-PULSE-LIFECYCLE-002");
+    expect(sql).toContain("security definer");
+    expect(sql).toContain("set search_path = public");
+    expect(sql).toContain("pulse_interrupt_grants_cascade_source_delete");
+    expect(sql).toContain("delete from public.pulse_interrupt_grants");
+    expect(sql).toContain("source_kind = tg_argv[0]");
+    expect(sql).toContain("source_id = old.id");
+    expect(sql).toContain("user_id = old.user_id");
+    expect(sql).toContain("grant execute on function public.pulse_interrupt_grants_cascade_source_delete()");
+    expect(sql).toContain("revoke all on function public.pulse_interrupt_grants_cascade_source_delete()");
+    expect(sql).not.toMatch(/grant delete on table public\.pulse_interrupt_grants/i);
+    expect(sql).not.toMatch(/create policy[\s\S]*for delete/i);
+    expect(sql).not.toMatch(/drop trigger/i);
+  });
+});
 
 describe("pulse Block-start authority migration", () => {
   const sql = readFileSync(BLOCK_MIGRATION, "utf8");
