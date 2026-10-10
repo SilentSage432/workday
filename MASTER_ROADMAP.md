@@ -2,9 +2,6 @@
 
 ## Recently completed (candidate / pending physical acceptance)
 
-- **ORIENT-ANDROID-PULSE-BRIDGE-008E** — session restore ordering vs auth-kt Initializing (uncommitted; not installed)
-- **ORIENT-ANDROID-PULSE-BRIDGE-008** — background haptic `USAGE_NOTIFICATION` on `main` (`4b33c4b`; installed; not physically accepted — blocked by 008C session failure)
-- **ORIENT-ANDROID-PULSE-BRIDGE-007E** — second physical Pulse: native notification path established; haptic TOUCH rejected in background
 - **ORIENT-ANDROID-PULSE-BRIDGE-007** — observability on `main` (`171c95a`); first Pulse reread failure diagnosed
 - **ORIENT-ANDROID-PULSE-BRIDGE-006** — token registration serialization fix on `main` (`54724f0`); S26 endpoint established
 - **ORIENT-ANDROID-PULSE-BRIDGE-005** — native Android perception edge (`android/`)
@@ -13,7 +10,9 @@
 
 ## Accepted foundations (closed)
 
-- **ORIENT-ANDROID-PULSE-NATIVE-NOTIFICATION-PATH-ESTABLISHED** — autonomous notify on S26 (007E); haptic pending 008 physical acceptance
+- **ORIENT-ANDROID-PULSE-NATIVE-HAPTIC-PHYSICALLY-ACCEPTED** — autonomous native sight + touch on S26 (`52a8ed8`; occurrence `76c91159`); FCM transport only; cold-start path; Freecess/thaw variants not fully proven
+- **ORIENT-ANDROID-PULSE-BRIDGE-008 / 008E** — `USAGE_NOTIFICATION` haptic + auth-kt initialization ordering; physically accepted on `52a8ed8`
+- **ORIENT-ANDROID-PULSE-NATIVE-NOTIFICATION-PATH-ESTABLISHED** — autonomous notify on S26 (007E); haptic later accepted in 008
 - **ORIENT-PULSE-HOSTED-ESTABLISHMENT-001** — hosted `pg_cron` establishes authorized Pulse occurrences with Orient fully closed; physically accepted (`b8ba8b8`)
 - **ORIENT-ANDROID-PULSE-TOKEN-HOSTED-AUTHORITY-CLEAR** — `orient_device_push_tokens` live
 - **ORIENT-ANDROID-PULSE-ZERO-TARGET-AUTONOMY-ACCEPTED** — webhook → dispatch → `no_targets` with empty token table
@@ -27,8 +26,8 @@
 
 ## Next evidence-backed items
 
-1. Review/commit 008E → update-install S26 → one real Pulse → session + haptic acceptance
-2. Deferred: Wear OS / channel policy / in-app Pulse visual refinement
+1. Deferred: generic notification icon / identity visual refinement
+2. Deferred: Wear OS / Watch6 / channel policy / in-app Pulse visual refinement
 3. Recurring-task physical acceptance (when ready)
 4. Google Calendar removal reconciliation
 5. Note Edit / Unretire only if evidence requires

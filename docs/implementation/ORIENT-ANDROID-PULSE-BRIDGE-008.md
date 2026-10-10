@@ -1,91 +1,87 @@
 # ORIENT-ANDROID-PULSE-BRIDGE-008
 
-Background haptic semantic correction + session restoration ordering (008E).
+Background haptic semantic correction + session restoration ordering.
 
 ## Status
 
-**008 haptic: implemented on `main` (`4b33c4b`); not yet physically accepted.**  
-**008E session ordering: implemented for review (uncommitted; not installed).**
+**Physically accepted** on candidate `52a8ed8dea6eecb139f29d255e7b5a04a51e5f98`.
 
-Baseline for 008E: `4b33c4b29f235e736e4d513e3be36b293d76dfa9`
+Accepted occurrence: `76c91159-465d-4f30-b9b9-6cca9d4f1c5b`
 
-## Prior physical evidence (007E)
+Verdict: **ORIENT-ANDROID-PULSE-NATIVE-HAPTIC-PHYSICALLY-ACCEPTED**
 
-Occurrence `8134b3e8-7185-46fb-8c71-c338e2caa3a9` established the autonomous native notification path.
+## Architectural milestone
 
-The explicit 40ms vibrator call reached Android and was rejected:
+Orient can autonomously express an explicitly authorized durable Pulse through
+native Android sight and touch while the user is not actively operating Orient.
+
+Authority chain (preserved):
+
+1. human authorization (Interrupt Grant)
+2. deterministic temporal condition
+3. durable hosted Pulse occurrence
+4. transport of occurrence identity (FCM is transport only — not authority)
+5. authenticated native reread under the user JWT
+6. RLS visibility
+7. atomic local expression claim
+8. native notification
+9. one restrained haptic
+
+The native client is a **perception edge**. It does not evaluate temporal
+eligibility and does not create the Pulse. Notification delivery does not create
+the Pulse.
+
+## Evidence hierarchy (accepted occurrence)
+
+1. **Direct physical perception** — user reported the haptic was felt.
+2. **OS vibration evidence** — `VibratorManagerService`:
+   `VibrationAttributes{mUsage=NOTIFICATION}`, AppOp allow, effect
+   `Step{amplitude=-1.0, duration=40}`, ended `FINISHED` (no background reject).
+3. **Native trace** (`OrientPulsePerception`) — session restore → JWT SELECT
+   visible → claim once → notification posted → haptic attempted/invoked →
+   `decision=expressed`.
+4. **Hosted/transport evidence** — durable occurrence identity transported via
+   dispatcher (`POST /api/pulse/dispatch`) → FCM cold process wake → single
+   successful `PulsePerceptionWorker` attempt.
+
+## Session correction (008E) — physically exercised
+
+Cold FCM process start path:
 
 ```
-Ignoring incoming vibration as process with uid=10035 is background,
-attrs= VibrationAttributes{mUsage=TOUCH ...}
+Initializing
+→ initialization_wait_entered
+→ initialization_resolved Authenticated
+→ refresh_attempted / refresh_result ok=yes
+→ authenticated_user available=yes
 ```
 
-Subtype: **HAPTIC_INVOKED_BUT_NOT_PERCEIVED**
+Refresh occurred only after Authenticated. No refresh while Initializing.
 
-Cause: `Vibrator.vibrate(VibrationEffect)` delegates to empty
-`VibrationAttributes.Builder()` → `USAGE_UNKNOWN`, which the device converted
-to `TOUCH` — blocked for background processes. `AppOps VIBRATE=allow`.
+**Qualification:** this acceptance run was a **cold FCM process start**. Do not
+claim every Samsung Freecess/thawed lifecycle is proven. The prior
+Freecess-associated failure (`c3267981`) exposed invalid session ordering, which
+is corrected; Freecess itself was never established as the root cause.
 
-Channel vibration disabled and `setSilent(true)` are unrelated; the explicit
-application haptic is a separate perception expression.
+## Haptic correction (008) — physically accepted
 
-## Correction (008)
-
-`PulseHaptic.expressOnce` vibrates with:
+`PulseHaptic.expressOnce` uses notification-class vibration:
 
 - `VibrationAttributes.USAGE_NOTIFICATION` (API 30+)
 - `AudioAttributes.USAGE_NOTIFICATION` fallback (API 26–29)
+- 40ms, `DEFAULT_AMPLITUDE`, one invocation
 
-Preserved: 40ms, `DEFAULT_AMPLITUDE`, one invocation, silent notification channel,
-`setSilent(true)`, claim/reread/WM/FCM semantics.
+Prior failure (`8134b3e8`): OS saw `TOUCH` and rejected background vibration
+(**HAPTIC_INVOKED_BUT_NOT_PERCEIVED**). Accepted run: OS saw `NOTIFICATION` and
+finished the effect; user perceived it.
 
-**Not used:** `USAGE_ALARM` (would bypass restrictions for the wrong semantic).
+## Prior failed attempt (008C)
 
-## Physical acceptance attempt after 008 install (008C)
+Occurrence `c3267981-1c7c-49c5-b3e0-4b97bccacdc3` failed at session establishment
+before expression (invalid refresh while `Initializing`). Haptic correction was
+not exercised on that run.
 
-Occurrence `c3267981-1c7c-49c5-b3e0-4b97bccacdc3` failed before expression.
+## Deferred
 
-The failed physical haptic acceptance attempt **did not exercise** the haptic correction.
-
-First failed boundary: **session establishment** (`SESSION_NOT_ESTABLISHED` / `silent_no_session`).
-
-No authoritative SELECT, claim, notification, or haptic.
-
-## Root cause (008D)
-
-Invalid Orient ordering against auth-kt 3.8.0:
-
-- `SessionStatus.Initializing` is the pre-restoration state
-- persisted-session restoration is owned by `AuthImpl.init()` + `autoLoadFromStorage`
-- `refreshCurrentSession()` requires an already-loaded current session
-- while `Initializing`, `currentSessionOrNull()` is null
-- Orient waited ≤8s for Authenticated/NotAuthenticated, then **always** called
-  `refreshCurrentSession()` — including when still `Initializing`
-- library threw `IllegalStateException("No refresh token found in current session")`
-
-Freecess thaw was observed in the failed run context; **Freecess itself is not
-established as the root cause.**
-
-## Correction (008E)
-
-Worker-time `SessionRestore` / `ensureSessionLoaded`:
-
-1. Await terminal initialization via `auth.awaitInitialization()` within the
-   existing 8s bound
-2. On timeout / unresolved → **no refresh** → fail closed (silence)
-3. On `NotAuthenticated` → **no refresh** → silence
-4. On `Authenticated` (after leaving `Initializing`) → existing refresh may run
-5. Already terminal Authenticated/NotAuthenticated → early return (unchanged)
-
-Invariant: `refreshCurrentSession()` is never invoked while status is `Initializing`.
-
-`autoLoadFromStorage` remains the owner of persisted-session restoration.
-No MainActivity dependency, no second store, no FCM authority, no RLS weakening.
-
-Observability: `initialization_wait_entered`, `initialization_resolved class=…`,
-`initialization_timed_out`.
-
-## Physical acceptance
-
-Haptic **not** marked accepted. Requires 008E review → commit → update-install →
-one real Pulse that clears session establishment and reaches expression.
+Generic Android notification icon / white-circle identity — visual refinement
+only; **not** part of this acceptance. Wear OS / Watch6 remains deferred.

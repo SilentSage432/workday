@@ -2,28 +2,33 @@
 
 ## Current state (2026-10-09)
 
-**ORIENT-ANDROID-PULSE-BRIDGE-008E** — background session restoration ordering (uncommitted; not installed).
+**ORIENT-ANDROID-PULSE-BRIDGE-008** — native autonomous Pulse perception
+**physically accepted** on candidate `52a8ed8dea6eecb139f29d255e7b5a04a51e5f98`.
 
-008 haptic (`USAGE_NOTIFICATION`) is on `main` at `4b33c4b` but **not physically accepted**.
-Pulse `c3267981` failed first at session establishment (`Initializing` → invalid refresh →
-`silent_no_session`); haptic path was not reached.
+Accepted occurrence: `76c91159-465d-4f30-b9b9-6cca9d4f1c5b`
 
-008E awaits auth-kt `awaitInitialization()` within the worker bound; refreshes only from
-`Authenticated`; timeout / `NotAuthenticated` remain silent without refresh.
+Orient can autonomously express an authorized durable Pulse through native
+Android sight and touch while the user is not operating Orient.
+
+Accepted path (cold FCM process start): hosted occurrence → dispatcher transport
+→ FCM wake → session init (`Initializing` → await → `Authenticated` → refresh) →
+JWT/RLS reread → local claim once → silent notification → one 40ms
+`USAGE_NOTIFICATION` haptic (OS `FINISHED`; physically perceived).
 
 ### Proven (Pulse)
 
 - Explicit Interrupt Grant + relative 5-minute Commitment-start authority
 - Hosted evaluation establishes durable Pulse occurrence with Orient fully closed
-- Owner-scoped Android FCM token table + trusted dispatcher + webhook
-- S26 endpoint + autonomous native notification expression (8134b3e8)
+- Owner-scoped Android FCM token table + trusted dispatcher + webhook (transport)
+- S26 native autonomous notification + haptic perception (`76c91159`)
+- Session restore ordering vs auth-kt `Initializing` (008E) exercised on cold start
 - Semantic observability tag `OrientPulsePerception`
 
 ### Next Pulse boundary
 
-1. Review/commit 008E → update-install S26 (preserve session)
-2. One real Pulse → confirm session restore + haptic perceived under background delivery
-3. Deferred: Wear OS / perceptual language / channel policy
+1. Deferred visual: generic notification icon / identity refinement
+2. Deferred: Wear OS / Watch6 / perceptual language / channel policy
+3. Freecess/thawed lifecycle variants not fully proven (cold-start acceptance only)
 
 ### Still deferred elsewhere
 

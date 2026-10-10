@@ -48,4 +48,5 @@ Autonomous path succeeded through native notification for occurrence
 rejected as background + `TOUCH` usage → **HAPTIC_INVOKED_BUT_NOT_PERCEIVED**.
 
 Correction: [ORIENT-ANDROID-PULSE-BRIDGE-008](ORIENT-ANDROID-PULSE-BRIDGE-008.md)
-(notification-class `VibrationAttributes` only; haptic not yet physically accepted).
+(notification-class `VibrationAttributes`; physically accepted on `52a8ed8` /
+occurrence `76c91159`).

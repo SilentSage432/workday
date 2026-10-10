@@ -1,24 +1,35 @@
 # Development journal
 
+## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-008I
+
+Native autonomous Pulse perception physically accepted (`52a8ed8`).
+
+- Occurrence `76c91159-465d-4f30-b9b9-6cca9d4f1c5b`: cold FCM wake → session init await → Authenticated → refresh → JWT/RLS SELECT visible → claim once → silent notification → one 40ms `USAGE_NOTIFICATION` haptic (`FINISHED`; physically perceived).
+- Milestone: Orient autonomously expresses an authorized durable Pulse through native Android sight and touch while the user is not operating Orient.
+- FCM is transport only; native client is perception edge (not a second temporal evaluator).
+- Freecess/thaw variants not fully proven. Generic notification icon still deferred.
+
+Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md).
+
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-008E
 
-Background session restoration ordering correction (uncommitted; not installed).
+Background session restoration ordering correction on `main` (`52a8ed8`).
 
 - 008C: Pulse `c3267981` failed at session establishment; haptic correction not exercised.
 - 008D: root cause — `ensureSessionLoaded` called `refreshCurrentSession()` while still `Initializing` (auth-kt 3.8.0 throws).
 - 008E: await `awaitInitialization()` within 8s bound; refresh only after Authenticated; timeout/NotAuthenticated fail closed without refresh.
-- Haptic still not physically accepted. Freecess not claimed as root cause.
+- Physically exercised on accepted cold-start Pulse `76c91159`. Freecess not claimed as root cause.
 
 Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md).
 
 ## 2026-10-09 — ORIENT-ANDROID-PULSE-BRIDGE-008
 
-Background haptic semantic correction on `main` (`4b33c4b`; installed; not physically accepted).
+Background haptic semantic correction on `main` (`52a8ed8`; physically accepted).
 
 - 007E: autonomous native notification path established; explicit 40ms haptic invoked then ignored (`background` + `TOUCH`).
 - Cause: bare `vibrate(VibrationEffect)` → empty attributes → UNKNOWN→TOUCH.
 - Fix: `VibrationAttributes.USAGE_NOTIFICATION` (not `USAGE_ALARM`); duration/amplitude/silent notification unchanged.
-- Haptic not marked physically accepted.
+- Physically accepted on occurrence `76c91159` (OS `NOTIFICATION` / `FINISHED` + direct perception).
 
 Record: [docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md](docs/implementation/ORIENT-ANDROID-PULSE-BRIDGE-008.md).
 
