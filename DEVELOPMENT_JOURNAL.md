@@ -1,14 +1,26 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-LIFECYCLE-003 / 003A
+
+Pulse source-deletion lifecycle physically accepted and finalized.
+
+- Candidate `413da67`; migration `20261010170000` live once; function SECURITY DEFINER.
+- Tyson deleted Block pulse 003 (`68a7e475…`) via normal production Orient UI; prior `42501` did not appear; Block disappeared.
+- Grant `996699be…` hard-cleaned; occurrence `7fadd828…` retained (`grant_id` NULL) with full temporal provenance.
+- Soft revoke vs source-delete hard-cleanup semantics preserved; no authenticated grant DELETE; AUTHORITY-005 evidence untouched.
+- Optional human Commitment deletion not performed. Lifecycle defect CLOSED. Next boundary: Pulse semantic expression.
+
+Record: [docs/implementation/ORIENT-PULSE-LIFECYCLE-003.md](docs/implementation/ORIENT-PULSE-LIFECYCLE-003.md).
+
 ## 2026-10-10 — ORIENT-PULSE-LIFECYCLE-002
 
-Source-deletion cleanup authority correction (not production-applied).
+Source-deletion cleanup authority correction (later production-established and physically accepted).
 
 - Symptom after AUTHORITY-005: authenticated delete of owned Commitment/Block with Interrupt Grant failed `permission denied for table pulse_interrupt_grants` (SQLSTATE `42501`).
 - Cause: `20261010093000` replaced Commitment FK `ON DELETE CASCADE` with INVOKER trigger DELETE while authenticated intentionally lacks DELETE on `pulse_interrupt_grants` (soft revoke only).
 - Forward migration `20261010170000_pulse_interrupt_grants_source_delete_authority.sql`: SECURITY DEFINER + `search_path = public`, same narrow predicate; no authenticated DELETE grant; no DELETE RLS; triggers unchanged.
 - Executable PostgreSQL regression proves INVOKER failure, then Commitment/Block cleanup, occurrence retention (`grant_id` NULL), soft revoke, direct DELETE forbidden, cross-user isolation.
-- Runtime/UI/device untouched. Physical acceptance not claimed.
+- Runtime/UI/device untouched by the correction. Physical acceptance: LIFECYCLE-003.
 
 Record: [docs/implementation/ORIENT-PULSE-LIFECYCLE-002.md](docs/implementation/ORIENT-PULSE-LIFECYCLE-002.md).
 

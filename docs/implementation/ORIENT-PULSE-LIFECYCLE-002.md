@@ -3,8 +3,9 @@
 ## Source deletion authority correction
 
 **Baseline:** `d33e3f1a2c89987e8bce611b97c71602b7bf549a`  
+**Candidate:** `413da6774f2ae81025fbf00f0559e00186692b9d`  
 **Discovery:** ORIENT-PULSE-LIFECYCLE-001 → `ORIENT-PULSE-SOURCE-DELETION-DEFECT-CLEAR`  
-**Status:** Correction authored and regression-proven. **Not applied to production. Physical acceptance not claimed.**
+**Status:** **CLOSED** — correction authored, production-established (`20261010170000` once on `ksmhgaamyheyhefbyglb`), physically accepted via [LIFECYCLE-003](ORIENT-PULSE-LIFECYCLE-003.md).
 
 ---
 
@@ -92,9 +93,10 @@ Proves:
 
 ---
 
-## Explicit non-claims
+## Production / acceptance (later tranches)
 
-- Migration **not** applied to `ksmhgaamyheyhefbyglb` in this tranche
-- Production test Blocks / Commitments / grants / occurrences not mutated
-- Runtime / UI / Android / Wear unchanged
-- Physical re-acceptance of source deletion UX not claimed here
+- **002A** published candidate `413da67`
+- **002B** applied `20261010170000` exactly once; live function SECURITY DEFINER + `search_path=public`; authenticated DELETE still absent
+- **003** physical acceptance: [ORIENT-PULSE-LIFECYCLE-003.md](ORIENT-PULSE-LIFECYCLE-003.md)
+
+Runtime / UI / Android / Wear unchanged by the correction itself.
