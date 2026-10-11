@@ -30,6 +30,31 @@ object PerceptionTrace {
         emit("stage=session event=status_class class=$statusClass")
     }
 
+    fun sessionRestorationRequested() {
+        emit("stage=session event=restoration_requested")
+    }
+
+    fun loadFromStorageStarted() {
+        emit("stage=session event=load_from_storage_started")
+    }
+
+    fun loadFromStorageConverged(found: Boolean?, error: Throwable?) {
+        when {
+            error != null ->
+                emit(
+                    "stage=session event=load_from_storage_converged found=error " +
+                        safeErrorFields(error),
+                )
+            found == null ->
+                emit("stage=session event=load_from_storage_converged found=unknown")
+            else ->
+                emit(
+                    "stage=session event=load_from_storage_converged " +
+                        "found=${yesNo(found)}",
+                )
+        }
+    }
+
     fun initializationWaitEntered() {
         emit("stage=session event=initialization_wait_entered")
     }

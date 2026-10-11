@@ -1,5 +1,17 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005-IIE
+
+Background session authority restoration correction.
+
+- Baseline `7e6fe7e`; 005-IIC physical ARRIVAL silence acceptance remained FAILED (`silent_no_session` before gate).
+- 005-IID root cause: auth-kt lifecycle can force `Initializing` while backgrounded; Worker only awaited init with no restore in flight.
+- Correction: `SessionRestore` single-flight `loadFromStorage()` when Initializing; fail closed on absent storage; BRIDGE-008 refresh-after-Authenticated preserved; 8s timeout unchanged; `enableLifecycleCallbacks` not disabled.
+- Pulse relationship / ARRIVAL / Wear / haptics untouched; production and 005-IIC fixtures untouched; no install / no physical re-acceptance this tranche.
+- Verdict target: `ORIENT-PULSE-BACKGROUND-SESSION-AUTHORITY-CORRECTION-CANDIDATE-READY`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-005-IIE.md](docs/implementation/ORIENT-PULSE-EXPRESSION-005-IIE.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005-II
 
 Native relationship-aware silence gate candidate.
@@ -10,6 +22,7 @@ Native relationship-aware silence gate candidate.
 - Wear id-only transport preserved; ARRIVAL never forwarded from phone express path.
 - Human ARRIVAL authority still unavailable; no morphology/freshness; no production mutation; no device install.
 - Verdict target: `ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-GATE-CANDIDATE-READY`.
+- Later: 005-IIC physical acceptance FAILED upstream at session authority; silence gate not disproven (005-IID/IIE).
 
 Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md](docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md).
 

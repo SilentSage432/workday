@@ -56,6 +56,9 @@ class OrientSupabase private constructor(
                 override fun isNotAuthenticated(): Boolean =
                     auth.sessionStatus.value is SessionStatus.NotAuthenticated
 
+                override suspend fun loadFromStorage(): Boolean =
+                    auth.loadFromStorage()
+
                 override suspend fun awaitInitialization() {
                     auth.awaitInitialization()
                 }
