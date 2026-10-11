@@ -1,5 +1,19 @@
 # Development journal
 
+## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005-IIC-R2
+
+Native ARRIVAL silence gate physically accepted on corrected session-authority candidate.
+
+- Candidate `50378b8` (005-IIE) installed on S26; Watch unchanged.
+- First 005-IIC (`7e6fe7e`) remains historically FAILED upstream at session; 005-IID/IIE closed that defect.
+- Warm/background Worker: `Initializing` → `load_from_storage` → `Authenticated` → JWT reread (no foreground rescue).
+- ARRIVAL occ `76688b52`: silence gate + claim; Tyson nothing on phone/Watch; replay `already_claimed` silent.
+- relative_before occ `f43049f7`: phone+Watch haptic physically confirmed; notification-mediated Watch path.
+- Acceptance fixtures cleaned (commitments/grants); historical occurrences retained (`grant_id` NULL).
+- Verdict: `ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-PHYSICALLY-ACCEPTED`.
+
+Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md](docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005-IIE
 
 Background session authority restoration correction.
@@ -7,8 +21,8 @@ Background session authority restoration correction.
 - Baseline `7e6fe7e`; 005-IIC physical ARRIVAL silence acceptance remained FAILED (`silent_no_session` before gate).
 - 005-IID root cause: auth-kt lifecycle can force `Initializing` while backgrounded; Worker only awaited init with no restore in flight.
 - Correction: `SessionRestore` single-flight `loadFromStorage()` when Initializing; fail closed on absent storage; BRIDGE-008 refresh-after-Authenticated preserved; 8s timeout unchanged; `enableLifecycleCallbacks` not disabled.
-- Pulse relationship / ARRIVAL / Wear / haptics untouched; production and 005-IIC fixtures untouched; no install / no physical re-acceptance this tranche.
-- Verdict target: `ORIENT-PULSE-BACKGROUND-SESSION-AUTHORITY-CORRECTION-CANDIDATE-READY`.
+- Later physically exercised in 005-IIC-R2.
+- Verdict: `ORIENT-PULSE-BACKGROUND-SESSION-AUTHORITY-CORRECTION-CANDIDATE-READY` (then physically closed via IIC-R2).
 
 Record: [docs/implementation/ORIENT-PULSE-EXPRESSION-005-IIE.md](docs/implementation/ORIENT-PULSE-EXPRESSION-005-IIE.md).
 

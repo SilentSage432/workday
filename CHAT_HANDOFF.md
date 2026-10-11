@@ -2,41 +2,34 @@
 
 ## Current state (2026-10-10)
 
-**ORIENT-PULSE-BACKGROUND-SESSION-AUTHORITY-CORRECTION-CANDIDATE** (EXPRESSION-005-IIE)
+**ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-PHYSICALLY-ACCEPTED** (EXPRESSION-005-II / 005-IIC-R2)
 
-Baseline before correction: `7e6fe7e41cd69b52c6072554a2b7e0d53225d753`  
+Accepted candidate: `50378b8d1c5603859daf8294dee8a25808943807`  
 Project: `ksmhgaamyheyhefbyglb`  
-Implementation: [ORIENT-PULSE-EXPRESSION-005-IIE](docs/implementation/ORIENT-PULSE-EXPRESSION-005-IIE.md)
+Implementation: [ORIENT-PULSE-EXPRESSION-005-II](docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md)  
+Session correction: [ORIENT-PULSE-EXPRESSION-005-IIE](docs/implementation/ORIENT-PULSE-EXPRESSION-005-IIE.md)
 
-### Still true / unchanged
+### History (do not erase)
 
-**ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-GATE-CANDIDATE** (EXPRESSION-005-II) — semantics unchanged; physical acceptance **not** achieved.
+1. **005-IIC** on `7e6fe7e` — FAILED (`silent_no_session` before ARRIVAL gate)
+2. **005-IID** — background session restore race root cause clear
+3. **005-IIE** — durable `loadFromStorage` single-flight correction
+4. **005-IIC-R2** — physical ARRIVAL silence + relative_before regression accepted
 
-Failed 005-IIC verdict remains:
+### Still true
 
-`ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-PHYSICAL-ACCEPTANCE-FAILED`
-
-Failure was upstream session authority (`Initializing` → 8s timeout → `silent_no_session`). The 005-II silence gate was never reached and is **not** disproven.
-
-### 005-IIE correction
-
-- Warm/background WorkManager initiates durable `loadFromStorage` via `SessionRestore`
-- Single-flight mutex among ensure callers
-- BRIDGE-008: never refresh while Initializing
-- 8s timeout retained as restore-bound safety
-- `enableLifecycleCallbacks` left enabled
-- No production mutation; 005-IIC fixtures preserved
+- ARRIVAL physical pronunciation **not** implemented
+- Human ARRIVAL authority **unavailable**
+- FCM + Wear remain occurrence-id-only
+- Production schema untouched by acceptance
 
 ### Canonical remaining order
 
 ```text
-005-IIC re-run   PHYSICAL ARRIVAL SILENCE ACCEPTANCE (after install of 005-IIE)
-005-III          HUMAN ARRIVAL AUTHORITY SURFACE
-005-IV           ARRIVAL EXPRESSION ELIGIBILITY + PHYSICAL MORPHOLOGY
+005-III HUMAN ARRIVAL AUTHORITY SURFACE
+005-IV  ARRIVAL EXPRESSION ELIGIBILITY + PHYSICAL MORPHOLOGY
 ```
-
-Do **not** expose ARRIVAL UI until native silence is physically accepted.
 
 ### Next
 
-Install 005-IIE candidate on phone; re-run controlled ARRIVAL physical acceptance (005-IIC protocol). Do not claim silence-gate acceptance from prior `silent_no_session` evidence.
+**005-III** — human ARRIVAL authority surface when authorized (do not expose until ready).

@@ -2,43 +2,58 @@
 
 ## Native relationship-aware silence gate
 
-**Candidate publication.** Native phone/Wear perception only.
+**Physically accepted** on corrected candidate `50378b8d1c5603859daf8294dee8a25808943807`
+(005-IIC-R2).
 
-**Baseline:** `95f5464d6153532838d737f2a18044c22a507a50`  
+**Original silence-gate candidate:** `7e6fe7e41cd69b52c6072554a2b7e0d53225d753`  
 **Production foundation:** `ORIENT-PULSE-ARRIVAL-RELATIONSHIP-FOUNDATION-PRODUCTION-ESTABLISHED`  
 **Canonical project:** `ksmhgaamyheyhefbyglb` (Orient)
 
 ---
 
-## Status markers
+## Acceptance history (preserve failure)
 
-| Concern | Status after 005-II candidate |
+| Tranche | Result |
 | --- | --- |
-| ARRIVAL native semantic recognition | **Implemented** |
-| ARRIVAL physical pronunciation | **Intentionally absent** |
-| ARRIVAL terminal silence | **Deliberate accepted candidate behavior** |
-| Human ARRIVAL authority | **Unavailable** |
-| Numeric ARRIVAL freshness eligibility | **Not chosen / not implemented** |
-| ARRIVAL haptic morphology | **Not implemented** |
-| Physical acceptance | **Not performed** |
-| Production schema / grants | **Untouched by this tranche** |
+| **005-IIC** (first attempt, `7e6fe7e`) | **FAILED** — WorkManager hit `Initializing` → 8s timeout → `silent_no_session` before ARRIVAL gate |
+| **005-IID** | Root cause clear — auth-kt lifecycle background wipe; Worker awaited without durable restore |
+| **005-IIE** (`50378b8`) | Session authority correction — single-flight `loadFromStorage` when Initializing |
+| **005-IIC-R2** | **PHYSICALLY ACCEPTED** on `50378b8` |
+
+Do not rewrite the first 005-IIC failure as success.
 
 ---
 
-## Native pipeline (inspected)
+## Status markers
+
+| Concern | Status after 005-IIC-R2 |
+| --- | --- |
+| ARRIVAL native semantic recognition | **Accepted** |
+| ARRIVAL physical pronunciation | **Intentionally absent / not implemented** |
+| ARRIVAL terminal silence | **Physically accepted** |
+| Human ARRIVAL authority | **Unavailable** |
+| Numeric ARRIVAL freshness eligibility | **Not chosen / not implemented** |
+| ARRIVAL haptic morphology | **Not implemented** |
+| Background session restoration (005-IIE) | **Physically exercised** |
+| relative_before phone + Watch | **Regression physically accepted** |
+| Production schema | **Untouched** |
+
+---
+
+## Native pipeline
 
 ```text
 FCM {pulse_occurrence_id}
 → OrientFirebaseMessagingService
 → PulsePerceptionScheduler / WorkManager
 → PulsePerceptionWorker
-→ OccurrenceReread (JWT) → pulse_occurrences id, relationship, source_start_at
+→ SessionRestore (durable load when Initializing)
+→ OccurrenceReread (JWT) → id, relationship, source_start_at
 → PerceptionAuthority (+ PulsePronunciationGate)
 → ExpressionClaimStore (SQLite)
 → phone PulseNotification + PulseHaptic   [relative_before only]
 → WearPulseForwarder MessageClient id-only
 → WearPulseListenerService
-→ WearPulsePerceptionPipeline
 → Wear local claim → WearPulseNotification (OS haptic)
 ```
 
@@ -53,27 +68,36 @@ FCM {pulse_occurrence_id}
 | unknown / incomplete | fail closed | yes (terminal) | no | no |
 | transient reread failure | retry | no | no | no |
 
-Unknown choice: authoritative row visible but closed parse fails →
-`SuppressUnrecognizedRelationship` → claim/consume → silence (never default to relative_before).
+---
+
+## 005-IIC-R2 physical evidence (summary)
+
+**Devices:** SM-S948U API 37 (`R3GYC07NBZN`); SM-R955U API 36 (Watch6).
+
+**Session correction (warm/background):** Worker observed `Initializing` →
+`load_from_storage_started` → `found=yes` → `Authenticated` → refresh after
+Authenticated → JWT reread. No Activity foreground required for Worker recovery.
+
+**ARRIVAL (accepted occ `76688b52-…`, grant fixture cleaned):** authoritative
+reread `relationship=arrival` → pronunciation unavailable → claim →
+`silent_arrival_no_pronunciation`. Tyson: nothing on phone or Watch. Replay:
+`already_claimed` / still silent.
+
+**relative_before regression (occ `f43049f7-…`):** background session restore →
+reread → claim → phone notify+haptic → Wear forward → Watch claim +
+notification-mediated express. Tyson: haptic on phone and Watch.
 
 ---
 
-## Wear architecture solution
+## Wear architecture
 
 Id-only MessageClient preserved. Watch has no Supabase/relationship reread.
-
-ARRIVAL cannot use Watch pronunciation because the phone never reaches `express`
-(and therefore never forwards) for pronunciation-unavailable relationships.
-
-Wear unit tests prove: id-only payload, no Supabase authority in Wear sources,
-no direct Vibrator actuator.
+ARRIVAL never reaches phone `express`, so never forwards.
 
 ---
 
-## Non-goals
+## Remaining / next
 
-- Human ARRIVAL UI (005-III)
-- ARRIVAL morphology / freshness window (005-IV)
-- FCM or Wear payload expansion
-- Production migration / ARRIVAL grant creation
-- Device install / physical acceptance
+- Human ARRIVAL authority surface (**005-III**)
+- ARRIVAL expression eligibility + physical morphology (**005-IV**)
+- ARRIVAL physical pronunciation remains **not** implemented
