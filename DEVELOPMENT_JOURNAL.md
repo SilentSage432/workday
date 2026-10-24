@@ -1,5 +1,21 @@
 # Development journal
 
+## 2026-10-24 — ORIENT-FLOOR-COMMAND-002 observation projection
+
+Local fixture projection only. No schema, route, credential, network, notification, or deploy.
+
+`applyFloorCommandRead` and `projectFloorCommandObservation` keep Floor Command's ISO week, Monday handoff deadline, and source ids. A repeated revision does not add a handoff. An unavailable read keeps the last snapshot and marks it stale. Dismissal hides one revision and does not complete the handoff. The reading view is not mounted on LOOK or the Work schedule. Live connection remains **NO-GO**.
+
+Record: [docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md).
+
+## 2026-10-24 — ORIENT-FLOOR-COMMAND-001 external commitment consumer discovery
+
+Discovery only. No schema, route, credential, adapter, notification, or commit.
+
+Orient can later observe Floor Command's published week, one Monday Zebra handoff, and confirmed SMART dates. The producer snapshot already exists locally in Floor Command and is not a route. Orient's Commitment, Task, Google calendar fact, stewardship satisfaction, and Pulse sources do not fit that snapshot. A repeated revision must not create a second record. An unavailable read must not become an empty week. Seeing a revision is not Zebra completion. The smallest future path is a server pull of that snapshot, after a store-scoped read-only credential exists. Verdict: **NO-GO** for implementation.
+
+Record: [docs/discovery/ORIENT-FLOOR-COMMAND-001-DISCOVERY.md](docs/discovery/ORIENT-FLOOR-COMMAND-001-DISCOVERY.md).
+
 ## 2026-10-10 — ORIENT-PULSE-EXPRESSION-005-IIC-R2
 
 Native ARRIVAL silence gate physically accepted on corrected session-authority candidate.

@@ -1,6 +1,14 @@
 # Chat handoff
 
-## Current state (2026-10-10)
+## Current state (2026-10-24)
+
+**ORIENT-FLOOR-COMMAND-002 — FIXTURE OBSERVATION PROJECTION — LOCAL ONLY.**
+
+A pure in-memory projection reads a Floor Command snapshot into one Monday Zebra handoff. It does not create a Task, Commitment, or stewardship satisfaction, and it does not use the Saturday-first Work week. The view is fixture-tested and is not mounted. No network, table, credential, or Pulse. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md).
+
+Pulse sequence is unchanged: 005-III, then 005-IV.
+
+## Previous state (2026-10-10)
 
 **ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-PHYSICALLY-ACCEPTED** (EXPRESSION-005-II / 005-IIC-R2)
 

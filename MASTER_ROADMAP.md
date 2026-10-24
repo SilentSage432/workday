@@ -34,6 +34,11 @@
 - Phone LOOK progressive disclosure (MOBILE-LOOK-PROGRESSIVE-DISCLOSURE-001)
 - Center ADD plus correction (MOBILE-CENTER-PLUS-CORRECTION-001)
 
+## External operational observation
+
+- **ORIENT-FLOOR-COMMAND-001** — How Orient can observe a Floor Command week without owning it (**DISCOVERY COMPLETE**). Live connector **NO-GO**. — [ORIENT-FLOOR-COMMAND-001-DISCOVERY.md](docs/discovery/ORIENT-FLOOR-COMMAND-001-DISCOVERY.md)
+- **ORIENT-FLOOR-COMMAND-002** — Fixture observation projection (**LOCAL ONLY**). In-memory reading of the producer snapshot. Not mounted. No credential, table, or Pulse. — [ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md)
+
 ## Discovery / next Pulse boundary
 
 - **ORIENT-PULSE-EXPRESSION-005-III** — human ARRIVAL authority surface (ARRIVAL physical pronunciation still absent until 005-IV).
