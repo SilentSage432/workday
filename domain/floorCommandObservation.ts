@@ -8,6 +8,9 @@
 
 export const FLOOR_COMMAND_SOURCE = "deptsync.floor-command.orient.v1" as const;
 
+/** The only Floor Command purpose an operator can approve. */
+export const FLOOR_COMMAND_READ_PURPOSE = "orient_published_week_read" as const;
+
 export const FLOOR_COMMAND_THIS_WEEK_HREF = "https://deptsync-hub.vercel.app/dashboard" as const;
 
 export const FLOOR_COMMAND_WEEK_IDENTITY = "floor_command_iso_week" as const;
@@ -132,6 +135,16 @@ export function isFloorCommandSnapshot(value: FloorCommandSnapshot): boolean {
   if (handoff.deadline_policy !== "monday_of_operational_week") return false;
   if (!CIVIL_DATE.test(handoff.deadline_date)) return false;
   if (!Array.isArray(value.entries) || !Array.isArray(value.retired)) return false;
+  if (
+    !value.retired.every(
+      (row) =>
+        Boolean(row?.id && row.assignment_id && row.bay_id) &&
+        row.reason === "cleared" &&
+        (row.roster_specialist_id === null || typeof row.roster_specialist_id === "string"),
+    )
+  ) {
+    return false;
+  }
   if (value.deadlines?.availability !== "ready" && value.deadlines?.availability !== "unavailable") return false;
   if (!Array.isArray(value.deadlines.commitments)) return false;
   if (!value.freshness?.revision || !value.freshness.read_at) return false;

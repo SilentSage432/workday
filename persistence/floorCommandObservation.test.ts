@@ -261,7 +261,7 @@ describe("floor command observation persistence", () => {
   it("writes through the operator id and leaves dismissal free of a store id", async () => {
     const eqs: string[] = [];
     const rpcs: Array<{ name: string; args: Record<string, unknown> }> = [];
-    function clientFor(binding: { store_number: string } | null) {
+    function clientFor(binding: { store_number: string; source?: string; purpose?: string } | null) {
       return {
         from(table: string) {
           const builder = {
@@ -289,7 +289,11 @@ describe("floor command observation persistence", () => {
       };
     }
 
-    const client = clientFor({ store_number: "02587" });
+    const client = clientFor({
+      store_number: "02587",
+      source: "deptsync.floor-command.orient.v1",
+      purpose: "orient_published_week_read",
+    });
     await expect(
       recordFloorCommandObservation(
         client as unknown as SupabaseClient,

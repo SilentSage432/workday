@@ -2,6 +2,10 @@
 
 ## Current state (2026-10-24)
 
+**ORIENT-FLOOR-COMMAND-004 — CONNECTION BOUNDARY — LOCAL ONLY. NO-GO.**
+
+An operator approval binds the signed-in user to the server-configured store, the Floor Command source, and the read-only purpose. The bearer is an environment secret and is not returned to the client. The pull stays disabled unless `ORIENT_FLOOR_COMMAND_PULL_ENABLED=1`, and `deptsync-hub.vercel.app` is refused. Source-reported cleared assignments stay visible as retired. The view is not mounted on Work. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md](docs/discovery/ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md).
+
 **ORIENT-FLOOR-COMMAND-003 — INTEGRATION READINESS — AUDIT ONLY. NO-GO.**
 
 `main` is five commits ahead of `origin/main` `9ff9f84`. The observation can accept a later week sequence and can keep the last snapshot when a read is withheld. There is no operator approval, server token, pull, or mounted view. Floor Command's read is not yet one database snapshot. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-003-READINESS.md](docs/discovery/ORIENT-FLOOR-COMMAND-003-READINESS.md).

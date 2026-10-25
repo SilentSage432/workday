@@ -55,6 +55,7 @@ function HandoffSummary({
   onDismiss?: (handoffId: string, revision: string) => void;
 }) {
   const current = handoff.assignments.filter((row) => row.lifecycle === "current");
+  const retired = handoff.assignments.filter((row) => row.lifecycle === "retired");
   const removed = handoff.assignments.filter((row) => row.lifecycle === "superseded");
   return (
     <article data-floor-command-handoff={handoff.handoffId} data-revision={handoff.revision}>
@@ -89,6 +90,15 @@ function HandoffSummary({
             {removed.map((row) => (
               <li key={row.id}>
                 Removed in Floor Command · {row.associateName || "Name not in Floor Command"} · bay {row.bayId}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {retired.length > 0 ? (
+          <ul aria-label="Cleared in Floor Command">
+            {retired.map((row) => (
+              <li key={row.id}>
+                Cleared in Floor Command · bay {row.bayId}
               </li>
             ))}
           </ul>

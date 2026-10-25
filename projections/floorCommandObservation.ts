@@ -21,7 +21,10 @@ export type FloorCommandAttemptReason =
   | "cross_store"
   | "invalid_snapshot"
   | "ordering_withheld"
-  | "sequence_conflict";
+  | "sequence_conflict"
+  | "credential_rejected"
+  | "source_unavailable"
+  | "forbidden";
 
 export type FloorCommandDismissal = {
   handoffId: string;
@@ -76,7 +79,7 @@ export type FloorCommandObservedAssignment = {
   /** Floor Command does not report associate task completion. This stays false. */
   zebraTaskCompleted: false;
   deadlineId: string | null;
-  lifecycle: "current" | "superseded";
+  lifecycle: "current" | "retired" | "superseded";
 };
 
 export type FloorCommandHandoffObservation = {
@@ -172,7 +175,7 @@ export function applyFloorCommandRead(
   const deadlinesReady = snapshot.deadlines.availability === "ready";
   const retained: FloorCommandRetainedHandoff = {
     snapshot,
-    supersededAssignments: mergeSuperseded(previous, snapshot.entries),
+    supersededAssignments: mergeSuperseded(previous, snapshot),
     deadlines: deadlinesReady ? snapshot.deadlines.commitments : (previous?.deadlines ?? []),
     deadlinesAvailability: deadlinesReady ? "ready" : "unavailable",
   };
@@ -191,6 +194,15 @@ export function applyFloorCommandRead(
       reason: null,
     },
   };
+}
+
+/** A failed attempt. The retained handoffs stay, including a withheld or unreachable source. */
+export function noteFloorCommandObservationFailure(
+  memory: FloorCommandObservationMemory,
+  readAt: string,
+  reason: FloorCommandAttemptReason,
+): FloorCommandObservationMemory {
+  return fail(memory, readAt, reason);
 }
 
 export function dismissFloorCommandRevision(
@@ -255,15 +267,23 @@ function fail(
 
 function mergeSuperseded(
   previous: FloorCommandRetainedHandoff | undefined,
-  entries: readonly FloorCommandAssignmentInput[],
+  snapshot: FloorCommandSnapshot,
 ): FloorCommandSupersededAssignment[] {
-  const currentIds = new Set(entries.map((entry) => entry.id));
-  const kept = (previous?.supersededAssignments ?? []).filter((row) => !currentIds.has(row.id));
+  const currentIds = new Set(snapshot.entries.map((entry) => entry.id));
+  const retiredIds = new Set(explicitlyRetired(snapshot).map((row) => row.id));
+  const kept = (previous?.supersededAssignments ?? []).filter(
+    (row) => !currentIds.has(row.id) && !retiredIds.has(row.id),
+  );
   const keptIds = new Set(kept.map((row) => row.id));
   const removed = (previous?.snapshot.entries ?? [])
-    .filter((entry) => !currentIds.has(entry.id) && !keptIds.has(entry.id))
+    .filter((entry) => !currentIds.has(entry.id) && !retiredIds.has(entry.id) && !keptIds.has(entry.id))
     .map(supersededFrom);
   return [...kept, ...removed].sort((a, b) => a.id.localeCompare(b.id));
+}
+
+function explicitlyRetired(snapshot: FloorCommandSnapshot): FloorCommandSnapshot["retired"] {
+  const currentIds = new Set(snapshot.entries.map((entry) => entry.id));
+  return snapshot.retired.filter((row) => row.reason === "cleared" && !currentIds.has(row.id));
 }
 
 function supersededFrom(entry: FloorCommandAssignmentInput): FloorCommandSupersededAssignment {
@@ -294,6 +314,20 @@ function projectHandoff(
       snapshot.handoff.status === "partial" ||
       reviewRequired);
   const current = snapshot.entries.map((entry) => projectAssignment(entry, "current"));
+  const retired = explicitlyRetired(snapshot).map(
+    (row): FloorCommandObservedAssignment => ({
+      id: row.id,
+      assignmentId: row.assignment_id,
+      bayId: row.bay_id,
+      department: "",
+      rosterSpecialistId: row.roster_specialist_id,
+      associateName: "",
+      zebraConfirmation: "unconfirmed",
+      zebraTaskCompleted: false,
+      deadlineId: null,
+      lifecycle: "retired",
+    }),
+  );
   const superseded = retained.supersededAssignments.map(
     (row): FloorCommandObservedAssignment => ({
       id: row.id,
@@ -324,7 +358,7 @@ function projectHandoff(
     publishedAssignmentCount: snapshot.handoff.required_count,
     remainingZebraEntries: snapshot.handoff.outstanding_count,
     confirmedZebraEntries: snapshot.handoff.confirmed_count,
-    assignments: [...current, ...superseded],
+    assignments: [...current, ...retired, ...superseded],
     deadlines,
     deadlinesAvailability: retained.deadlinesAvailability,
     reviewRequired,

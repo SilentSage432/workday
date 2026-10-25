@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  FLOOR_COMMAND_READ_PURPOSE,
+  FLOOR_COMMAND_SOURCE,
   floorCommandStoreIdentity,
   isFloorCommandSnapshot,
   type FloorCommandDeadlineInput,
@@ -8,6 +10,7 @@ import {
 } from "@/domain/floorCommandObservation";
 import {
   applyFloorCommandRead,
+  noteFloorCommandObservationFailure,
   type FloorCommandAttemptReason,
   type FloorCommandDismissal,
   type FloorCommandObservationMemory,
@@ -135,6 +138,18 @@ export function planFloorCommandObservationWrite(
   return { memory: next, write };
 }
 
+export function planFloorCommandObservationFailure(
+  stored: FloorCommandObservationStore,
+  input: { readAt: string; reason: FloorCommandAttemptReason },
+): { memory: FloorCommandObservationMemory; write: FloorCommandObservationWrite } {
+  const memory = noteFloorCommandObservationFailure(
+    floorCommandObservationMemoryFromStore(stored),
+    input.readAt,
+    input.reason,
+  );
+  return { memory, write: writeFor(memory) };
+}
+
 export function floorCommandObservationMemoryFromStore(
   stored: FloorCommandObservationStore,
 ): FloorCommandObservationMemory {
@@ -152,12 +167,15 @@ export async function loadFloorCommandObservationStore(
 ): Promise<FloorCommandObservationStore | null> {
   const binding = await client
     .from("floor_command_observation_bindings")
-    .select("store_number")
+    .select("store_number, source, purpose")
     .eq("user_id", userId)
     .maybeSingle();
   if (binding.error) throw new FloorCommandObservationPersistenceError(binding.error.message);
-  const bindingRow = binding.data as { store_number: string } | null;
+  const bindingRow = binding.data as { store_number: string; source?: string; purpose?: string } | null;
   if (!bindingRow) return null;
+  if (bindingRow.source !== FLOOR_COMMAND_SOURCE || bindingRow.purpose !== FLOOR_COMMAND_READ_PURPOSE) {
+    return null;
+  }
   const storeNumber = floorCommandStoreIdentity(bindingRow.store_number);
   if (!storeNumber) {
     throw new FloorCommandObservationPersistenceError("The bound Floor Command store is invalid.");
@@ -313,7 +331,10 @@ function reasonFrom(value: string | null): FloorCommandAttemptReason | null {
     value === "cross_store" ||
     value === "invalid_snapshot" ||
     value === "ordering_withheld" ||
-    value === "sequence_conflict"
+    value === "sequence_conflict" ||
+    value === "credential_rejected" ||
+    value === "source_unavailable" ||
+    value === "forbidden"
   ) {
     return value;
   }

@@ -17,6 +17,7 @@ describe("floor command observation persistence regression", () => {
         timeout: 120_000,
         env: process.env,
       });
+      expect(out).toContain("APPROVAL_OK");
       expect(out).toContain("FIRST_SNAPSHOT_OK");
       expect(out).toContain("REPLAY_OK");
       expect(out).toContain("NEW_REVISION_OK");

@@ -7,6 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MIGRATION="$ROOT/supabase/migrations/20261024210000_floor_command_observation.sql"
 SEQUENCE="$ROOT/supabase/migrations/20261024220000_floor_command_observation_sequence.sql"
+APPROVAL="$ROOT/supabase/migrations/20261024230000_floor_command_observation_approval.sql"
 PORT="${ORIENT_PG_REGRESSION_PORT:-55453}"
 TMP="$(mktemp -d /tmp/orient-floor-command-003-XXXXXX)"
 cleanup() {
@@ -20,6 +21,7 @@ command -v pg_ctl >/dev/null
 command -v psql >/dev/null
 test -f "$MIGRATION"
 test -f "$SEQUENCE"
+test -f "$APPROVAL"
 
 initdb -D "$TMP/data" --auth-local=trust --auth-host=trust -U postgres >/dev/null
 pg_ctl -D "$TMP/data" -o "-p $PORT -k $TMP" -l "$TMP/logfile" start >/dev/null
@@ -55,6 +57,7 @@ SQL
 
 "${PSQL[@]}" -f "$MIGRATION"
 "${PSQL[@]}" -f "$SEQUENCE"
+"${PSQL[@]}" -f "$APPROVAL"
 
 "${PSQL[@]}" <<SQL
 insert into auth.users (id) values
@@ -62,9 +65,57 @@ insert into auth.users (id) values
   ('$OWNER_B'),
   ('$OWNER_C');
 
-select public.bind_floor_command_observation('$OWNER_A', '02587');
-select public.bind_floor_command_observation('$OWNER_B', '1999');
-select public.bind_floor_command_observation('$OWNER_C', '2587');
+select public.bind_floor_command_observation('$OWNER_A', '02587', 'deptsync.floor-command.orient.v1', 'orient_published_week_read');
+select public.bind_floor_command_observation('$OWNER_B', '1999', 'deptsync.floor-command.orient.v1', 'orient_published_week_read');
+select public.bind_floor_command_observation('$OWNER_C', '2587', 'deptsync.floor-command.orient.v1', 'orient_published_week_read');
+
+do \$\$
+begin
+  perform public.bind_floor_command_observation(
+    '$OWNER_A', '2587', 'deptsync.floor-command.orient.v1', 'orient_published_week_read'
+  );
+  begin
+    perform public.bind_floor_command_observation(
+      '$OWNER_A', '1999', 'deptsync.floor-command.orient.v1', 'orient_published_week_read'
+    );
+    raise exception 'a second store was accepted';
+  exception
+    when others then
+      if sqlerrm is distinct from 'floor_command_observation_already_bound' then
+        raise;
+      end if;
+  end;
+  begin
+    perform public.bind_floor_command_observation(
+      '$OWNER_A', '2587', 'deptsync.floor-command.orient.v1', 'write'
+    );
+    raise exception 'a write purpose was accepted';
+  exception
+    when others then
+      if sqlerrm is distinct from 'floor_command_observation_approval_required' then
+        raise;
+      end if;
+  end;
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'floor_command_observation_bindings'
+      and column_name in ('token', 'token_hash', 'access_token', 'ciphertext')
+  ) then
+    raise exception 'the binding stores a credential';
+  end if;
+  begin
+    perform set_config('role', 'authenticated', true);
+    perform public.bind_floor_command_observation(
+      '$OWNER_A', '2587', 'deptsync.floor-command.orient.v1', 'orient_published_week_read'
+    );
+    raise exception 'authenticated bind was allowed';
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end \$\$;
 
 create function public.test_floor_command_handoff(
   p_revision text,
@@ -151,6 +202,7 @@ begin
   end if;
 end \$\$;
 SQL
+echo "APPROVAL_OK"
 echo "FIRST_SNAPSHOT_OK"
 echo "ISO_WEEK_OK"
 
@@ -568,7 +620,7 @@ echo "NO_PERSONAL_TABLES_OK"
 OWNER_D="44444444-4444-4444-8444-444444444444"
 "${PSQL[@]}" <<SQL
 insert into auth.users (id) values ('$OWNER_D');
-select public.bind_floor_command_observation('$OWNER_D', '2587');
+select public.bind_floor_command_observation('$OWNER_D', '2587', 'deptsync.floor-command.orient.v1', 'orient_published_week_read');
 
 create or replace function public.test_floor_command_sequenced(
   p_revision text,

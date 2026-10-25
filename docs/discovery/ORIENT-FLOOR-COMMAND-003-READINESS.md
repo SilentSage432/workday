@@ -1,6 +1,8 @@
 # ORIENT-FLOOR-COMMAND-003 — Integration readiness
 
-Audit only. No route, credential, pull, mount, or production migration was added.
+Audit only. No route, credential, pull, mount, or production migration was added in that pass.
+
+The disabled pull and operator approval now live in [ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md](ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md). The live connection remains **NO-GO**.
 
 Floor Command can compose a published week, and Orient can store one, but the two repositories are not connected. This note does not restate the snapshot. The producer plan is `carpet-auditor/docs/product/DEPTSYNC_FLOOR_COMMAND_ORIENT_003_READINESS.md`.
 

@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-24 — ORIENT-FLOOR-COMMAND-004 connection boundary
+
+Local only. No production migration, credential, or live call.
+
+An operator must approve the Floor Command source, the server-owned store, and the read-only published-week purpose before a pull. The bearer stays in server environment configuration and is not stored on the binding. The pull is off unless its flag is exactly `1`, and the hosted Floor Command origin is refused. A cleared assignment is kept on the first observation as retired, not as completion. HTTP 200 with `synchronization: withheld` is a failed attempt. The Work instrument does not mount the reading. Live connection remains **NO-GO**.
+
+Record: [docs/discovery/ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md](docs/discovery/ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md).
+
 ## 2026-10-24 — ORIENT-FLOOR-COMMAND-003 integration readiness
 
 Audit only. No schema, route, credential, pull, or mount.

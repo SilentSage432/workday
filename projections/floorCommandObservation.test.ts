@@ -271,6 +271,39 @@ describe("floor command observation projection", () => {
     expect(bay?.lifecycle).toBe("current");
   });
 
+  it("keeps a source-retired assignment on the first observation and a disappearance as superseded", () => {
+    const first = observe(ready(snapshot({
+      entries: [entry("a1")],
+      retired: [
+        {
+          id: "fc.assignment.cleared",
+          assignment_id: "cleared",
+          bay_id: "bay-cleared",
+          roster_specialist_id: "roster-cleared",
+          reason: "cleared",
+        },
+      ],
+    })));
+    const handoff = handoffOf(first.reading);
+    expect(handoff.assignments.find((row) => row.id === "fc.assignment.a1")?.lifecycle).toBe("current");
+    expect(handoff.assignments.find((row) => row.id === "fc.assignment.cleared")?.lifecycle).toBe("retired");
+    expect(handoff.assignments.find((row) => row.id === "fc.assignment.cleared")?.zebraTaskCompleted).toBe(false);
+    expect(handoff.summary).not.toContain("complete");
+
+    const removed = observe(
+      ready(snapshot({
+        entries: [entry("a1")],
+        retired: [],
+        freshness: { read_at: READ_AT, source_updated_at: READ_AT, revision: "rev-gone", matches_previous_revision: false, week_sequence: 2 },
+      })),
+      observe(ready(snapshot({
+        entries: [entry("a1"), entry("a2")],
+        freshness: { read_at: READ_AT, source_updated_at: READ_AT, revision: "rev-both", matches_previous_revision: null, week_sequence: 1 },
+      }))).memory,
+    );
+    expect(handoffOf(removed.reading).assignments.find((row) => row.id === "fc.assignment.a2")?.lifecycle).toBe("superseded");
+  });
+
   it("keeps a removed assignment as superseded and accepts its replacement", () => {
     const first = observe(ready(snapshot()));
     const replacement = snapshot({
@@ -287,8 +320,9 @@ describe("floor command observation projection", () => {
       freshness: { read_at: READ_AT, source_updated_at: READ_AT, revision: "rev-replaced", matches_previous_revision: false },
     });
     const handoff = handoffOf(observe(ready(replacement), first.memory).reading);
-    expect(handoff.assignments.find((row) => row.id === "fc.assignment.a2")?.lifecycle).toBe("superseded");
+    expect(handoff.assignments.find((row) => row.id === "fc.assignment.a2")?.lifecycle).toBe("retired");
     expect(handoff.assignments.find((row) => row.id === "fc.assignment.a3")?.lifecycle).toBe("current");
+    expect(handoff.assignments.find((row) => row.id === "fc.assignment.a2")?.zebraTaskCompleted).toBe(false);
     expect(handoff.publishedAssignmentCount).toBe(2);
     expect(handoff.revision).toBe("rev-replaced");
   });
@@ -535,7 +569,7 @@ describe("none stays distinct from complete", () => {
     expect(handoff.summary).toBe("Nothing published for this week.");
     expect(handoff.summary).not.toContain("entered in Zebra");
     expect(handoff.attention).toBe(false);
-    expect(handoff.assignments.every((row) => row.lifecycle === "superseded" && row.zebraTaskCompleted === false)).toBe(true);
+    expect(handoff.assignments.every((row) => row.lifecycle === "retired" && row.zebraTaskCompleted === false)).toBe(true);
   });
 
   it("returns a finished handoff to pending when every current bay is reassigned", () => {
