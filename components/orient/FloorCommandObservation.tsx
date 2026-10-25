@@ -6,15 +6,17 @@ import type {
 
 /**
  * Fixture-capable reading of one Floor Command handoff.
- * Not mounted on LOOK, the Work schedule, or the production instrument.
+ * Work mounts this with `placement="work"` inside the schedule surface.
  * Hiding a revision is not Zebra completion.
  */
 export function FloorCommandObservationView({
   reading,
   onDismiss,
+  placement = "reading",
 }: {
   reading: FloorCommandObservationReading;
   onDismiss?: (handoffId: string, revision: string) => void;
+  placement?: "reading" | "work";
 }) {
   if (reading.status === "unobserved") return null;
   if (reading.status === "unavailable") {
@@ -25,8 +27,18 @@ export function FloorCommandObservationView({
     );
   }
 
-  const visible = reading.handoffs.filter((handoff) => handoff.attention);
+  const visible =
+    placement === "work"
+      ? reading.handoffs.filter((handoff) => !handoff.dismissed)
+      : reading.handoffs.filter((handoff) => handoff.attention);
   if (visible.length === 0) {
+    if (placement === "work") {
+      return (
+        <section aria-label="Floor Command" data-floor-command-observation={reading.status}>
+          <p>This Floor Command revision is hidden. It was not marked complete.</p>
+        </section>
+      );
+    }
     if (reading.status === "fresh") return null;
     return (
       <section aria-label="Floor Command" data-floor-command-observation="stale">
@@ -41,7 +53,12 @@ export function FloorCommandObservationView({
         <p>Floor Command could not be read. Showing the last successful read.</p>
       ) : null}
       {visible.map((handoff) => (
-        <HandoffSummary key={handoff.handoffId} handoff={handoff} onDismiss={onDismiss} />
+        <HandoffSummary
+          key={handoff.handoffId}
+          handoff={handoff}
+          onDismiss={onDismiss}
+          placement={placement}
+        />
       ))}
     </section>
   );
@@ -50,9 +67,11 @@ export function FloorCommandObservationView({
 function HandoffSummary({
   handoff,
   onDismiss,
+  placement,
 }: {
   handoff: FloorCommandHandoffObservation;
   onDismiss?: (handoffId: string, revision: string) => void;
+  placement: "reading" | "work";
 }) {
   const current = handoff.assignments.filter((row) => row.lifecycle === "current");
   const retired = handoff.assignments.filter((row) => row.lifecycle === "retired");
@@ -64,6 +83,20 @@ function HandoffSummary({
       </h2>
       <p>{handoff.summary}</p>
       <p>Store {handoff.storeNumber}</p>
+      {placement === "work" ? (
+        <>
+          <p>{handoff.publicationStatus === "published" ? "Published in Floor Command" : "Not published in Floor Command"}</p>
+          <p>Monday Zebra-entry deadline · {formatCivilDateLabel(handoff.deadlineDate)}</p>
+          <p>
+            {handoff.confirmedZebraEntries} confirmed in Zebra. {handoff.remainingZebraEntries} still to enter.
+          </p>
+          <p>
+            {handoff.freshness === "fresh"
+              ? `Accepted at ${handoff.readAt}. This screen did not request a new read.`
+              : `Last accepted read is not current. Observed at ${handoff.readAt}.`}
+          </p>
+        </>
+      ) : null}
       {handoff.deadlinesAvailability === "unavailable" ? (
         <p>Deadline dates could not be read.</p>
       ) : null}

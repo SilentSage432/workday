@@ -8,13 +8,16 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FloorCommandObservationView } from "@/components/orient/FloorCommandObservation";
+import { FloorCommandWorkView } from "@/components/orient/FloorCommandWorkView";
 import { FLOOR_COMMAND_SOURCE, type FloorCommandSnapshot } from "@/domain/floorCommandObservation";
 import {
   applyFloorCommandRead,
   dismissFloorCommandRevision,
   emptyFloorCommandObservationMemory,
+  noteFloorCommandObservationFailure,
   projectFloorCommandObservation,
 } from "@/projections/floorCommandObservation";
+import { presentFloorCommandWork } from "@/projections/floorCommandWorkPresentation";
 
 const READ_AT = "2026-10-25T18:00:00.000Z";
 
@@ -224,17 +227,173 @@ describe("Floor Command observation view", () => {
     }
   });
 
-  it("is not mounted on the production instrument or the Work schedule", () => {
-    const files = [
-      "components/orient/OrientInstrument.tsx",
+  it("is mounted beside Work and stays off the schedule editor and the temporal field owner", () => {
+    const view = readFileSync("components/orient/OrientView.tsx", "utf8");
+    expect(view).toContain("FloorCommandWorkView");
+    expect(view).toContain('surface.kind === "work"');
+    for (const file of [
       "components/orient/Surfaces.tsx",
-      "components/orient/OrientView.tsx",
       "components/WorkOrientation.tsx",
       "components/TaskLoop.tsx",
+      "components/orient/WorkScheduleOperation.tsx",
       "app/page.tsx",
-    ];
-    for (const file of files) {
-      expect(readFileSync(file, "utf8")).not.toContain("FloorCommandObservation");
+    ]) {
+      expect(readFileSync(file, "utf8")).not.toContain("FloorCommand");
     }
+    expect(readFileSync("components/orient/OrientInstrument.tsx", "utf8")).not.toContain("pullFloorCommandPublishedWeek");
+  });
+
+  it("shows a retained week beside Work, including a cleared bay and a removed bay", () => {
+    const first = published();
+    const cleared = {
+      id: "fc.assignment.cleared",
+      assignment_id: "cleared",
+      bay_id: "9",
+      roster_specialist_id: null,
+      reason: "cleared" as const,
+    };
+    const opened = applyFloorCommandRead(emptyFloorCommandObservationMemory("2587"), {
+      availability: "ready",
+      synchronization: "comparable",
+      snapshot: {
+        ...first,
+        freshness: { ...first.freshness, revision: "rev-1", week_sequence: 1 },
+        retired: [cleared],
+      },
+    });
+    const reopened = applyFloorCommandRead(opened, {
+      availability: "ready",
+      synchronization: "comparable",
+      snapshot: {
+        ...first,
+        handoff: {
+          ...first.handoff,
+          status: "pending",
+          required_count: 1,
+          confirmed_count: 0,
+          outstanding_count: 1,
+        },
+        entries: [first.entries[0]],
+        freshness: { ...first.freshness, revision: "rev-2", week_sequence: 2 },
+        retired: [cleared],
+      },
+    });
+    const reading = presentFloorCommandWork({
+      operatorId: "operator-1",
+      stored: { userId: "operator-1", storeNumber: "2587", memory: reopened },
+      serverStore: { status: "configured", storeNumber: "2587", pullEnabled: false },
+    });
+    act(() => {
+      root?.render(<FloorCommandWorkView reading={reading} />);
+    });
+    const text = host?.textContent ?? "";
+    expect(host?.querySelector("details")?.getAttribute("open")).toBeNull();
+    expect(text).toContain("Floor Command · retained");
+    expect(text).toContain("Live reading is off");
+    expect(text).toContain("Published in Floor Command");
+    expect(text).toContain("Monday Zebra-entry deadline");
+    expect(text).toContain("0 confirmed in Zebra. 1 still to enter.");
+    expect(text).toContain("Cleared in Floor Command · bay 9");
+    expect(text).toContain("Removed in Floor Command");
+    expect(text).toContain("Needs review in Floor Command");
+    expect(text).not.toContain("completed");
+    expect(host?.querySelector("input[type='checkbox']")).toBeNull();
+    expect(text).not.toContain("ORIENT_FLOOR_COMMAND_READ_TOKEN");
+  });
+
+  it("names approval, configuration, revocation, withholding, and conflict without calling the week complete", () => {
+    const cases = [
+      presentFloorCommandWork({
+        operatorId: "operator-1",
+        stored: null,
+        serverStore: { status: "unconfigured", storeNumber: null, pullEnabled: false },
+      }),
+      presentFloorCommandWork({
+        operatorId: "operator-1",
+        stored: { userId: "operator-1", storeNumber: "2587", memory: emptyFloorCommandObservationMemory("2587") },
+        serverStore: { status: "unconfigured", storeNumber: null, pullEnabled: false },
+      }),
+      presentFloorCommandWork({
+        operatorId: "operator-1",
+        stored: {
+          userId: "operator-1",
+          storeNumber: "2587",
+          memory: noteFloorCommandObservationFailure(
+            applyFloorCommandRead(emptyFloorCommandObservationMemory("2587"), {
+              availability: "ready",
+              synchronization: "comparable",
+              snapshot: { ...published(), freshness: { ...published().freshness, week_sequence: 1 } },
+            }),
+            "2026-10-26T20:00:00.000Z",
+            "credential_rejected",
+          ),
+        },
+        serverStore: { status: "configured", storeNumber: "2587", pullEnabled: false },
+      }),
+    ];
+    act(() => {
+      root?.render(<FloorCommandWorkView reading={cases[0]} />);
+    });
+    expect(host?.textContent).toContain("not approved");
+    expect(host?.textContent).not.toContain("entered in Zebra");
+
+    act(() => {
+      root?.render(<FloorCommandWorkView reading={cases[1]} />);
+    });
+    expect(host?.textContent).toContain("not configured");
+    expect(host?.textContent).toContain("No week is retained");
+
+    act(() => {
+      root?.render(<FloorCommandWorkView reading={cases[2]} />);
+    });
+    expect(host?.textContent).toContain("The read credential was rejected.");
+    expect(host?.textContent).toContain("Live reading is off");
+    expect(host?.textContent).toContain("Last accepted read is not current");
+    expect(host?.textContent).not.toContain("completed");
+
+    const withheld = presentFloorCommandWork({
+      operatorId: "operator-1",
+      stored: {
+        userId: "operator-1",
+        storeNumber: "2587",
+        memory: noteFloorCommandObservationFailure(
+          applyFloorCommandRead(emptyFloorCommandObservationMemory("2587"), {
+            availability: "ready",
+            synchronization: "comparable",
+            snapshot: { ...published(), freshness: { ...published().freshness, week_sequence: 1 } },
+          }),
+          "2026-10-26T20:00:00.000Z",
+          "ordering_withheld",
+        ),
+      },
+      serverStore: { status: "configured", storeNumber: "2587", pullEnabled: false },
+    });
+    act(() => {
+      root?.render(<FloorCommandWorkView reading={withheld} />);
+    });
+    expect(host?.textContent).toContain("Floor Command withheld the snapshot.");
+
+    const conflict = presentFloorCommandWork({
+      operatorId: "operator-1",
+      stored: {
+        userId: "operator-1",
+        storeNumber: "2587",
+        memory: noteFloorCommandObservationFailure(
+          applyFloorCommandRead(emptyFloorCommandObservationMemory("2587"), {
+            availability: "ready",
+            synchronization: "comparable",
+            snapshot: { ...published(), freshness: { ...published().freshness, week_sequence: 1 } },
+          }),
+          "2026-10-26T20:00:00.000Z",
+          "sequence_conflict",
+        ),
+      },
+      serverStore: { status: "configured", storeNumber: "2587", pullEnabled: false },
+    });
+    act(() => {
+      root?.render(<FloorCommandWorkView reading={conflict} />);
+    });
+    expect(host?.textContent).toContain("Floor Command sent a conflicting sequence.");
+    expect(host?.querySelector("input[type='checkbox']")).toBeNull();
   });
 });

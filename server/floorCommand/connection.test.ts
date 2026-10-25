@@ -342,19 +342,31 @@ describe("Floor Command connection boundary", () => {
     logs.mockRestore();
   });
 
-  it("does not mount the reading on Work or import the bearer into the client", () => {
-    const files = [
+  it("mounts the retained reading on Work without the bearer or a live pull", () => {
+    const instrument = readFileSync("components/orient/OrientInstrument.tsx", "utf8");
+    const view = readFileSync("components/orient/OrientView.tsx", "utf8");
+    expect(instrument).toContain("loadFloorCommandWorkReading");
+    expect(view).toContain("FloorCommandWorkView");
+    expect(view).toContain('surface.kind === "work"');
+    for (const file of [
       "components/orient/OrientInstrument.tsx",
-      "components/orient/Surfaces.tsx",
       "components/orient/OrientView.tsx",
+      "components/orient/FloorCommandWorkView.tsx",
+      "components/orient/floorCommandWorkApi.ts",
+    ]) {
+      const source = readFileSync(file, "utf8");
+      expect(source).not.toContain("ORIENT_FLOOR_COMMAND_READ_TOKEN");
+      expect(source).not.toContain("pullFloorCommandPublishedWeek");
+    }
+    for (const file of [
+      "components/orient/Surfaces.tsx",
       "components/WorkOrientation.tsx",
       "components/TaskLoop.tsx",
+      "components/orient/WorkScheduleOperation.tsx",
       "app/page.tsx",
-    ];
-    for (const file of files) {
+    ]) {
       const source = readFileSync(file, "utf8");
-      expect(source).not.toContain("FloorCommandObservation");
-      expect(source).not.toContain("ORIENT_FLOOR_COMMAND_READ_TOKEN");
+      expect(source).not.toContain("FloorCommand");
       expect(source).not.toContain("pullFloorCommandPublishedWeek");
     }
     const pullSource = readFileSync("server/floorCommand/pull.ts", "utf8");

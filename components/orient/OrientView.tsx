@@ -25,6 +25,7 @@ import {
 } from "@/components/orient/fieldScroll";
 import { PhoneContinuity } from "@/components/orient/PhoneContinuity";
 import type { TemporalProposal } from "@/components/orient/temporalProposal";
+import type { FloorCommandWorkReading } from "@/projections/floorCommandWorkPresentation";
 import { OrientIdentity } from "@/components/orient/OrientIdentity";
 import { signatureScrollTop } from "@/components/orient/phoneSignature";
 import {
@@ -48,6 +49,7 @@ import {
 import { Landscape } from "@/components/orient/Landscape";
 import { ExternalCalendarsOperation } from "@/components/orient/ExternalCalendarsOperation";
 import { WorkScheduleOperation, type WorkScheduleDismiss } from "@/components/orient/WorkScheduleOperation";
+import { FloorCommandWorkView } from "@/components/orient/FloorCommandWorkView";
 import {
   ActSurface,
   AddChooser,
@@ -125,6 +127,7 @@ export function OrientView({
   tasks,
   thread,
   pulse,
+  floorCommand = null,
   capture: _capture,
   actions,
 }: {
@@ -138,6 +141,7 @@ export function OrientView({
   tasks: SourceRead<Task>;
   thread: ThreadReading;
   pulse: PulseReading;
+  floorCommand?: FloorCommandWorkReading | null;
   /** Retained for instrument bridge; establishment routes through ADD (DirectTask/DirectNote). */
   capture: CaptureBridge;
   actions: OrientActions;
@@ -1404,7 +1408,9 @@ export function OrientView({
             />
           ) : null}
           {surface.kind === "work" ? (
-            <WorkScheduleOperation
+            <>
+              {floorCommand ? <FloorCommandWorkView reading={floorCommand} /> : null}
+              <WorkScheduleOperation
               key={surface.weekStart}
               weekStart={surface.weekStart}
               timeZone={timeZone}
@@ -1414,6 +1420,7 @@ export function OrientView({
               onSave={actions.onSaveWorkWeek}
               onDismiss={finishClose}
             />
+            </>
           ) : null}
           {surface.kind === "external-calendars" ? (
             <ExternalCalendarsOperation

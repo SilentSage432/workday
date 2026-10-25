@@ -2,9 +2,13 @@
 
 ## Current state (2026-10-24)
 
+**ORIENT-FLOOR-COMMAND-005 — WORK PRESENTATION — LOCAL ONLY. NO-GO.**
+
+The retained Floor Command observation is shown beside the Work schedule. The signed-in route loads that operator's binding and does not pull. A disabled pull stays labeled as retained. Cleared and removed assignments stay distinct from completion. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-005_WORK_PRESENTATION.md](docs/discovery/ORIENT-FLOOR-COMMAND-005_WORK_PRESENTATION.md).
+
 **ORIENT-FLOOR-COMMAND-004 — CONNECTION BOUNDARY — LOCAL ONLY. NO-GO.**
 
-An operator approval binds the signed-in user to the server-configured store, the Floor Command source, and the read-only purpose. The bearer is an environment secret and is not returned to the client. The pull stays disabled unless `ORIENT_FLOOR_COMMAND_PULL_ENABLED=1`, and `deptsync-hub.vercel.app` is refused. Source-reported cleared assignments stay visible as retired. The view is not mounted on Work. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md](docs/discovery/ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md).
+An operator approval binds the signed-in user to the server-configured store, the Floor Command source, and the read-only purpose. The bearer is an environment secret and is not returned to the client. The pull stays disabled unless `ORIENT_FLOOR_COMMAND_PULL_ENABLED=1`, and `deptsync-hub.vercel.app` is refused. Source-reported cleared assignments stay visible as retired. The Work surface now shows the retained reading; see 005. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md](docs/discovery/ORIENT-FLOOR-COMMAND-004_CONNECTION_BOUNDARY.md).
 
 **ORIENT-FLOOR-COMMAND-003 — INTEGRATION READINESS — AUDIT ONLY. NO-GO.**
 

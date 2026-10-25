@@ -2935,6 +2935,10 @@ button.orient-fact {
   gap: 0.75rem;
 }
 
+.orient-floor-command {
+  margin-bottom: 0.75rem;
+}
+
 .orient-work-day {
   display: flex;
   flex-direction: column;

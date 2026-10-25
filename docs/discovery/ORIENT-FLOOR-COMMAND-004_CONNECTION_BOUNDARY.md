@@ -44,7 +44,7 @@ HTTP 200 is not acceptance. `synchronization: "withheld"` is a failed attempt an
 
 ## Work
 
-The observation view can render a reading. It is not mounted. `OrientInstrument` is a client component and does not receive a server reading. Mounting waits for a server parent that can pass the reading while the pull flag is the only gate. No notification or Pulse grant was added.
+The retained reading is mounted beside the Work schedule. The server boundary and the pull flag are described in [ORIENT-FLOOR-COMMAND-005_WORK_PRESENTATION.md](ORIENT-FLOOR-COMMAND-005_WORK_PRESENTATION.md). Opening Work does not call Floor Command. No notification or Pulse grant was added.
 
 ## Activation still required
 

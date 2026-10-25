@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-24 — ORIENT-FLOOR-COMMAND-005 Work presentation
+
+Local only. The pull stays off. No production migration, credential, or live call.
+
+The retained Floor Command week is loaded through `GET /api/integrations/floor-command/observation` for the signed-in operator and shown beside the Work schedule. The response has no bearer. A disabled pull is labeled as retained, not as a new check and not as completion. Live connection remains **NO-GO**.
+
+Record: [docs/discovery/ORIENT-FLOOR-COMMAND-005_WORK_PRESENTATION.md](docs/discovery/ORIENT-FLOOR-COMMAND-005_WORK_PRESENTATION.md).
+
 ## 2026-10-24 — ORIENT-FLOOR-COMMAND-004 connection boundary
 
 Local only. No production migration, credential, or live call.

@@ -11,8 +11,10 @@ import {
 } from "@/components/orient/canonicalCoherence";
 import { observeGoogleCalendars } from "@/components/orient/externalCalendarsApi";
 import { experienceLoadWindow, orientCivilDate } from "@/components/orient/grammar";
+import { loadFloorCommandWorkReading } from "@/components/orient/floorCommandWorkApi";
 import { OrientView } from "@/components/orient/OrientView";
 import type { ExpressiblePulse } from "@/components/orient/PulseExpression";
+import type { FloorCommandWorkReading } from "@/projections/floorCommandWorkPresentation";
 import type { OrientSources, PulseReading, ThreadReading } from "@/components/orient/types";
 import type { ActiveThread } from "@/domain/activeThread";
 import type { Block } from "@/domain/block";
@@ -188,6 +190,7 @@ export function OrientInstrument() {
   const [now, setNow] = useState<Date | null>(null);
   const [clockError, setClockError] = useState<string | null>(null);
   const [truth, setTruth] = useState<LoadedTruth | null>(null);
+  const [floorCommand, setFloorCommand] = useState<FloorCommandWorkReading | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
@@ -264,6 +267,16 @@ export function OrientInstrument() {
       unsubscribe?.();
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadFloorCommandWorkReading().then((reading) => {
+      if (!cancelled) setFloorCommand(reading);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadToken]);
 
   useEffect(() => {
     if (!timeZone || !anchor) return;
@@ -490,6 +503,7 @@ export function OrientInstrument() {
       tasks={truth.tasks}
       thread={threadReading(truth.activeThread, truth.tasks)}
       pulse={pulse}
+      floorCommand={floorCommand}
       capture={capture}
       actions={{
         onEstablish,

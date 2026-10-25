@@ -19,6 +19,7 @@ import type { Task } from "@/domain/task";
 import { experienceLoadWindow } from "@/components/orient/grammar";
 import { OrientView } from "@/components/orient/OrientView";
 import type { CaptureBridge, OrientActions, OrientSources, ThreadReading } from "@/components/orient/types";
+import type { FloorCommandWorkReading } from "@/projections/floorCommandWorkPresentation";
 import { EMPTY_EXTERNAL_ORIENT_SOURCES } from "@/components/orient/types";
 
 const ANCHOR = "2026-10-05";
@@ -156,6 +157,7 @@ async function renderView(overrides?: {
   thread?: ThreadReading;
   onAnchor?: (civilDate: string) => void;
   actions?: Partial<OrientActions>;
+  floorCommand?: FloorCommandWorkReading | null;
 }) {
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -176,6 +178,7 @@ async function renderView(overrides?: {
           overrides?.thread ?? { status: "ready", active: true, taskId: "task-1", resumeTitle: "Cycle counts" }
         }
         pulse={{ grants: { status: "ready", rows: [] }, occurrences: { status: "ready", rows: [] }, expressible: [] }}
+        floorCommand={overrides?.floorCommand}
         capture={captureBridge()}
         actions={actions(overrides?.actions)}
       />,
@@ -931,6 +934,19 @@ describe("work schedule authority", () => {
     });
     await settle();
   }
+
+  it("shows the retained Floor Command reading only after Work opens", async () => {
+    const view = await renderView({
+      sources: { ...sources(), work: ready([]) },
+      floorCommand: { posture: "unapproved" },
+    });
+    expect(view.querySelector("[data-floor-command-work]")).toBeNull();
+    await openManage(view);
+    expect(view.querySelector("[data-floor-command-work]")?.getAttribute("data-floor-command-work")).toBe("unapproved");
+    expect(view.querySelector("[data-work-schedule]")).not.toBeNull();
+    expect(view.textContent).toContain("Floor Command is not approved for this account.");
+    expect(view.querySelector("input[type='checkbox']")).toBeNull();
+  });
 
   it("reaches Work from nothing and keeps the reading in place", async () => {
     const anchors: string[] = [];
