@@ -74,7 +74,7 @@ Dismissal and the snapshot must not share a column with Tasks, Commitments, or s
 
 ## 6. Validation
 
-Focused suites: `projections/floorCommandObservation.test.ts` and `components/orient/floorCommandObservation.test.tsx`. 21 tests passed after 002A. ESLint on the observation files passed. `npm run typecheck` passed. `npm run build` passed. No Floor Command route was added.
+Focused suites: `projections/floorCommandObservation.test.ts` and `components/orient/floorCommandObservation.test.tsx`. 22 tests passed after 002A. ESLint on the observation files passed. `npm run typecheck` passed. `npm run build` passed. No Floor Command route was added.
 
 ## 7. Release
 

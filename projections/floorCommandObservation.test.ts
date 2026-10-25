@@ -538,6 +538,30 @@ describe("none stays distinct from complete", () => {
     expect(handoff.assignments.every((row) => row.lifecycle === "superseded" && row.zebraTaskCompleted === false)).toBe(true);
   });
 
+  it("returns a finished handoff to pending when every current bay is reassigned", () => {
+    const complete = observe(
+      ready(snapshot({
+        entries: confirmedEntries(),
+        freshness: timed("rev-complete", "2026-10-26T16:00:00.000Z"),
+      })),
+    );
+    const reopened = observe(
+      ready(snapshot({
+        entries: [
+          entry("a1", { zebra_confirmation: "unconfirmed", zebra_entered_at: null }),
+          entry("a2", { zebra_confirmation: "unconfirmed", zebra_entered_at: null }),
+        ],
+        freshness: timed("rev-all-reassigned", "2026-10-26T17:00:00.000Z"),
+      })),
+      complete.memory,
+    );
+    const handoff = handoffOf(reopened.reading);
+    expect(handoff.handoffStatus).toBe("pending");
+    expect(handoff.summary).toBe("None of 2 entered in Zebra.");
+    expect(handoff.attention).toBe(true);
+    expect(handoff.assignments.every((row) => row.zebraConfirmation === "unconfirmed" && row.zebraTaskCompleted === false)).toBe(true);
+  });
+
   it("keeps an unpublished new week from completing the previous week", () => {
     const done = observe(
       ready(snapshot({ entries: [
