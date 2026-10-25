@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-24 — ORIENT-FLOOR-COMMAND-003 observation storage
+
+Local schema and adapter only. The migration was not applied to production. No route, credential, network, notification, or deploy.
+
+Floor Command snapshots now have their own tables: one binding, one handoff row per handoff id, one latest attempt, and a separate dismissal of one revision. The projection still decides status and order. A missing source time does not become a newer revision. A failed read does not delete the retained snapshot. Dismissal does not complete the handoff. Live connection remains **NO-GO**.
+
+Record: [docs/discovery/ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md](docs/discovery/ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md).
+
 ## 2026-10-24 — ORIENT-FLOOR-COMMAND-002A status semantics
 
 Local correction only. No schema, route, credential, network, notification, or deploy.

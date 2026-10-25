@@ -39,7 +39,7 @@ Counts, status, and the deadline date come from the snapshot. `zebra_task_comple
 | New revision | The new revision is visible even when the old revision was dismissed |
 | Source unavailable, nothing retained | Status `unavailable`. No handoff is invented |
 | Source unavailable after a success | Status `stale`. The last handoff status is kept and is not freshly verified |
-| Older ready snapshot | A different revision with an earlier `source_updated_at`, or no source time after a timed revision, does not replace the retained handoff |
+| Older or unordered snapshot | A different revision replaces the retained handoff only when both source times are present and the incoming time is the same or later. A missing source time on either side does not establish order, so the retained handoff stays |
 | Deadline read unavailable | Assignment status stays. Last confirmed dates stay. They are not relabeled unconfirmed |
 | Dismissal | Records handoff id plus revision. Status and remaining count do not change |
 
@@ -61,16 +61,13 @@ The projection imports neither Pulse, stewardship, Task writers, nor Commitment 
 
 ## 5. Future persistence
 
-Still absent, and not part of this tranche:
+002 left storage absent. The local schema and adapter are [ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md](ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md). That migration is not applied to production. These are still absent:
 
 - A server-held, store-scoped, read-only Floor Command credential
 - A Floor Command read route for this snapshot
-- An Orient table, written by the server, keyed by user and handoff id, holding the last complete snapshot, superseded assignment ids, and the last confirmed deadlines
-- A separate user-owned dismissal of one revision
-- Browser select under row-level security, with no browser write of operational rows
 - A focus refresh that calls `applyFloorCommandRead`
 
-Dismissal and the snapshot must not share a column with Tasks, Commitments, or stewardship satisfaction. No migration is authorized here.
+Dismissal and the snapshot do not share a column with Tasks, Commitments, or stewardship satisfaction.
 
 ## 6. Validation
 

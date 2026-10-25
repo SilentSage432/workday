@@ -2,6 +2,10 @@
 
 ## Current state (2026-10-24)
 
+**ORIENT-FLOOR-COMMAND-003 — DURABLE OBSERVATION STORAGE — LOCAL ONLY. NOT APPLIED TO PRODUCTION.**
+
+The Floor Command reading can be stored apart from Commitments, Tasks, stewardship, and Pulse. One operator has one server-owned store binding, one snapshot per handoff id, one latest attempt, and a separate dismissal of one revision. A failed read keeps the snapshot. A missing source time does not count as a newer revision. No route, credential, poll, or notification was added. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md](docs/discovery/ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md).
+
 **ORIENT-FLOOR-COMMAND-002A — STATUS SEMANTICS — LOCAL ONLY.**
 
 `none` is an unpublished week. `complete` is every current assignment entered in Zebra. Those sentences no longer follow a zero count. A stale or older snapshot keeps the last status and is not a fresh verification. Clearing the week does not create completion history. Still in memory only. Not mounted. No credential, table, or Pulse. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md).

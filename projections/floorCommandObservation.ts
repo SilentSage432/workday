@@ -155,7 +155,7 @@ export function applyFloorCommandRead(
 
   const snapshot = structuredClone(read.snapshot);
   const previous = memory.handoffs.find((row) => row.snapshot.handoff.id === snapshot.handoff.id);
-  if (previous && isOlderSource(previous.snapshot, snapshot)) {
+  if (previous && retainsCurrentSnapshot(previous.snapshot, snapshot)) {
     return memory;
   }
   const deadlinesReady = snapshot.deadlines.availability === "ready";
@@ -358,12 +358,16 @@ function projectDeadline(row: FloorCommandDeadlineInput): FloorCommandObservedDe
   };
 }
 
-function isOlderSource(retained: FloorCommandSnapshot, incoming: FloorCommandSnapshot): boolean {
+/**
+ * A different revision replaces the retained snapshot only when both source
+ * times are present and the incoming time is the same or later. A missing
+ * time on either side does not establish order.
+ */
+function retainsCurrentSnapshot(retained: FloorCommandSnapshot, incoming: FloorCommandSnapshot): boolean {
   if (retained.freshness.revision === incoming.freshness.revision) return false;
   const previousAt = instantMs(retained.freshness.source_updated_at);
-  if (previousAt === null) return false;
   const incomingAt = instantMs(incoming.freshness.source_updated_at);
-  if (incomingAt === null) return true;
+  if (previousAt === null || incomingAt === null) return true;
   return incomingAt < previousAt;
 }
 

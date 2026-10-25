@@ -650,6 +650,21 @@ describe("none stays distinct from complete", () => {
       })),
     );
     expect(untimed).toBe(newer.memory);
+    const untimedRetained = observe(
+      ready(snapshot({
+        freshness: {
+          read_at: "2026-10-25T12:00:00.000Z",
+          source_updated_at: null,
+          revision: "rev-untimed-first",
+          matches_previous_revision: null,
+        },
+      })),
+    );
+    const timedAfterUntimed = applyFloorCommandRead(
+      untimedRetained.memory,
+      ready(snapshot({ freshness: timed("rev-later", "2026-10-26T16:00:00.000Z") })),
+    );
+    expect(timedAfterUntimed).toBe(untimedRetained.memory);
     expect(handoffOf(projectFloorCommandObservation(newer.memory)).revision).toBe("rev-complete");
   });
 
