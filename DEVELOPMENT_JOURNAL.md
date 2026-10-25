@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-24 — ORIENT-FLOOR-COMMAND-003 integration readiness
+
+Audit only. No schema, route, credential, pull, or mount.
+
+Orient can apply a sequenced Floor Command snapshot and refuse a withheld one. It still has no operator binding flow, server token, or pull. The producer read is not yet one database statement. Hosted state was not re-read. Live connection remains **NO-GO**.
+
+Record: [docs/discovery/ORIENT-FLOOR-COMMAND-003-READINESS.md](docs/discovery/ORIENT-FLOOR-COMMAND-003-READINESS.md).
+
 ## 2026-10-24 — ORIENT-FLOOR-COMMAND-002A week sequence
 
 Local consumer change only. A Floor Command `week_sequence` now orders a retained handoff. A later sequence applies when the source time is missing or earlier. The same sequence replays only when the content revision matches. A lower sequence and a withheld read keep the last snapshot and are not a successful refresh. Dismissal still does not complete the handoff. Migration `20261024220000` is not applied. No route or credential. Live connection remains **NO-GO**.
