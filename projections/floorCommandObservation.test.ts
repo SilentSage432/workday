@@ -419,3 +419,238 @@ describe("floor command observation projection", () => {
     expect(projectFloorCommandObservation(rejected).handoffs.map((row) => row.storeNumber)).toEqual(["2587", "2587"]);
   });
 });
+
+describe("none stays distinct from complete", () => {
+  function timed(revision: string, sourceUpdatedAt: string) {
+    return {
+      read_at: sourceUpdatedAt,
+      source_updated_at: sourceUpdatedAt,
+      revision,
+      matches_previous_revision: false,
+    };
+  }
+
+  function confirmedEntries() {
+    return [
+      entry("a1", { zebra_confirmation: "confirmed" as const, zebra_entered_at: "2026-10-26T16:00:00.000Z" }),
+      entry("a2", { zebra_confirmation: "confirmed" as const, zebra_entered_at: "2026-10-26T16:00:00.000Z" }),
+    ];
+  }
+
+  it("walks unpublished, pending, partial, complete, reopened, and cleared", () => {
+    const unpublished = snapshot({
+      entries: [],
+      freshness: timed("rev-none", "2026-10-25T12:00:00.000Z"),
+    });
+    let memory = observe(ready(unpublished)).memory;
+    let handoff = handoffOf(projectFloorCommandObservation(memory));
+    expect(handoff.handoffStatus).toBe("none");
+    expect(handoff.publicationStatus).toBe("unpublished");
+    expect(handoff.summary).toBe("Nothing published for this week.");
+    expect(handoff.attention).toBe(false);
+    expect(handoff.operationalWeek).toBe(WEEK);
+    expect(handoff.deadlineDate).toBe(MONDAY);
+
+    memory = applyFloorCommandRead(
+      memory,
+      ready(snapshot({ freshness: timed("rev-pending", "2026-10-25T18:00:00.000Z") })),
+    );
+    handoff = handoffOf(projectFloorCommandObservation(memory));
+    expect(handoff.handoffStatus).toBe("pending");
+    expect(handoff.publicationStatus).toBe("published");
+    expect(handoff.summary).toBe("None of 2 entered in Zebra.");
+    expect(handoff.attention).toBe(true);
+
+    memory = applyFloorCommandRead(
+      memory,
+      ready(
+        snapshot({
+          entries: [
+            entry("a1", { zebra_confirmation: "confirmed", zebra_entered_at: "2026-10-26T15:00:00.000Z" }),
+            entry("a2"),
+          ],
+          freshness: timed("rev-partial", "2026-10-26T15:00:00.000Z"),
+        }),
+      ),
+    );
+    handoff = handoffOf(projectFloorCommandObservation(memory));
+    expect(handoff.handoffStatus).toBe("partial");
+    expect(handoff.remainingZebraEntries).toBe(1);
+    expect(handoff.summary).toBe("1 of 2 still to enter in Zebra.");
+
+    memory = applyFloorCommandRead(
+      memory,
+      ready(snapshot({ entries: confirmedEntries(), freshness: timed("rev-complete", "2026-10-26T16:00:00.000Z") })),
+    );
+    handoff = handoffOf(projectFloorCommandObservation(memory));
+    expect(handoff.handoffStatus).toBe("complete");
+    expect(handoff.summary).toBe("All 2 entered in Zebra.");
+    expect(handoff.attention).toBe(false);
+    expect(handoff.assignments.every((row) => row.zebraTaskCompleted === false)).toBe(true);
+
+    const replay = applyFloorCommandRead(
+      memory,
+      ready(snapshot({ entries: confirmedEntries(), freshness: timed("rev-complete", "2026-10-26T16:00:00.000Z") })),
+    );
+    expect(projectFloorCommandObservation(replay)).toEqual(projectFloorCommandObservation(memory));
+
+    memory = applyFloorCommandRead(
+      memory,
+      ready(
+        snapshot({
+          entries: [
+            entry("a1", {
+              roster_specialist_id: "roster-new",
+              associate_name: "New associate",
+              zebra_confirmation: "unconfirmed",
+              zebra_entered_at: null,
+            }),
+            entry("a2", { zebra_confirmation: "confirmed", zebra_entered_at: "2026-10-26T16:00:00.000Z" }),
+          ],
+          freshness: timed("rev-reopen", "2026-10-26T17:00:00.000Z"),
+        }),
+      ),
+    );
+    handoff = handoffOf(projectFloorCommandObservation(memory));
+    expect(handoff.handoffStatus).toBe("partial");
+    expect(handoff.attention).toBe(true);
+    expect(handoff.assignments.find((row) => row.id === "fc.assignment.a1")?.zebraConfirmation).toBe("unconfirmed");
+
+    memory = applyFloorCommandRead(
+      memory,
+      ready(snapshot({ entries: confirmedEntries(), freshness: timed("rev-complete-again", "2026-10-26T18:00:00.000Z") })),
+    );
+    const cleared = snapshot({
+      entries: [],
+      retired: [
+        { id: "fc.assignment.a1", assignment_id: "a1", bay_id: "bay-a1", roster_specialist_id: "roster-a1", reason: "cleared" },
+        { id: "fc.assignment.a2", assignment_id: "a2", bay_id: "bay-a2", roster_specialist_id: "roster-a2", reason: "cleared" },
+      ],
+      freshness: timed("rev-cleared", "2026-10-26T19:00:00.000Z"),
+    });
+    memory = applyFloorCommandRead(memory, ready(cleared));
+    handoff = handoffOf(projectFloorCommandObservation(memory));
+    expect(handoff.handoffStatus).toBe("none");
+    expect(handoff.publicationStatus).toBe("unpublished");
+    expect(handoff.summary).toBe("Nothing published for this week.");
+    expect(handoff.summary).not.toContain("entered in Zebra");
+    expect(handoff.attention).toBe(false);
+    expect(handoff.assignments.every((row) => row.lifecycle === "superseded" && row.zebraTaskCompleted === false)).toBe(true);
+  });
+
+  it("keeps an unpublished new week from completing the previous week", () => {
+    const done = observe(
+      ready(snapshot({ entries: [
+        entry("a1", { zebra_confirmation: "confirmed", zebra_entered_at: READ_AT }),
+        entry("a2", { zebra_confirmation: "confirmed", zebra_entered_at: READ_AT }),
+      ], freshness: timed("rev-w44-done", "2026-10-26T16:00:00.000Z") })),
+    );
+    const next = snapshot({
+      operational_week: "2026-W45",
+      week_starting: "2026-11-02",
+      week_ending: "2026-11-08",
+      entries: [],
+      publication: { id: "fc.publication.2587.2026-W45", status: "unpublished" },
+      handoff: {
+        id: "fc.zebra-handoff.2587.2026-W45",
+        status: "none",
+        deadline_date: "2026-11-02",
+        deadline_policy: "monday_of_operational_week",
+        required_count: 0,
+        confirmed_count: 0,
+        outstanding_count: 0,
+      },
+      freshness: timed("rev-w45-none", "2026-11-01T18:00:00.000Z"),
+    });
+    const reading = observe(ready(next), done.memory).reading;
+    if (reading.status !== "fresh") throw new Error(reading.status);
+    expect(reading.handoffs.map((row) => [row.operationalWeek, row.handoffStatus])).toEqual([
+      ["2026-W45", "none"],
+      ["2026-W44", "complete"],
+    ]);
+    expect(reading.handoffs[0]?.summary).toBe("Nothing published for this week.");
+    expect(reading.handoffs[1]?.summary).toBe("All 2 entered in Zebra.");
+  });
+
+  it("keeps the last status when a later read fails", () => {
+    const pending = observe(ready(snapshot({ freshness: timed("rev-pending", "2026-10-25T18:00:00.000Z") })));
+    const pendingStale = observe(unavailable("2026-10-26T12:00:00.000Z"), pending.memory);
+    const pendingHandoff = handoffOf(pendingStale.reading);
+    expect(pendingStale.reading.status).toBe("stale");
+    expect(pendingHandoff.freshness).toBe("stale");
+    expect(pendingHandoff.handoffStatus).toBe("pending");
+    expect(pendingHandoff.summary).toBe("None of 2 entered in Zebra.");
+
+    const complete = observe(
+      ready(snapshot({
+        entries: [
+          entry("a1", { zebra_confirmation: "confirmed", zebra_entered_at: READ_AT }),
+          entry("a2", { zebra_confirmation: "confirmed", zebra_entered_at: READ_AT }),
+        ],
+        freshness: timed("rev-complete", "2026-10-26T16:00:00.000Z"),
+      })),
+    );
+    const completeStale = observe(unavailable("2026-10-26T20:00:00.000Z"), complete.memory);
+    const completeHandoff = handoffOf(completeStale.reading);
+    expect(completeStale.reading.status).toBe("stale");
+    expect(completeHandoff.freshness).toBe("stale");
+    expect(completeHandoff.handoffStatus).toBe("complete");
+    expect(completeHandoff.summary).toBe("All 2 entered in Zebra.");
+    expect(completeHandoff.attention).toBe(false);
+  });
+
+  it("does not let an older snapshot replace a newer revision", () => {
+    const newer = observe(
+      ready(snapshot({
+        entries: [
+          entry("a1", { zebra_confirmation: "confirmed", zebra_entered_at: READ_AT }),
+          entry("a2", { zebra_confirmation: "confirmed", zebra_entered_at: READ_AT }),
+        ],
+        freshness: timed("rev-complete", "2026-10-26T16:00:00.000Z"),
+      })),
+    );
+    const older = applyFloorCommandRead(
+      newer.memory,
+      ready(snapshot({ freshness: timed("rev-old-pending", "2026-10-25T18:00:00.000Z") })),
+    );
+    expect(older).toBe(newer.memory);
+    const untimed = applyFloorCommandRead(
+      newer.memory,
+      ready(snapshot({
+        freshness: {
+          read_at: "2026-10-27T12:00:00.000Z",
+          source_updated_at: null,
+          revision: "rev-untimed",
+          matches_previous_revision: false,
+        },
+      })),
+    );
+    expect(untimed).toBe(newer.memory);
+    expect(handoffOf(projectFloorCommandObservation(newer.memory)).revision).toBe("rev-complete");
+  });
+
+  it("keeps assignment status when deadline dates cannot be read", () => {
+    const known = observe(ready(snapshot({
+      entries: [
+        entry("a1", { zebra_confirmation: "confirmed", zebra_entered_at: READ_AT }),
+        entry("a2"),
+      ],
+      deadlines: { availability: "ready", commitments: [deadline("roster-a1")] },
+      freshness: timed("rev-dates", "2026-10-26T15:00:00.000Z"),
+    })));
+    const missing = observe(ready(snapshot({
+      entries: [
+        entry("a1", { zebra_confirmation: "confirmed", zebra_entered_at: READ_AT }),
+        entry("a2"),
+      ],
+      deadlines: { availability: "unavailable", commitments: [] },
+      freshness: timed("rev-dates-missing", "2026-10-26T18:00:00.000Z"),
+    })), known.memory);
+    const handoff = handoffOf(missing.reading);
+    expect(handoff.handoffStatus).toBe("partial");
+    expect(handoff.deadlinesAvailability).toBe("unavailable");
+    expect(handoff.deadlines[0]?.targetDate).toBe("2026-10-28");
+    expect(handoff.deadlines[0]?.finalDate).toBe("2026-10-30");
+    expect(missing.reading.status).toBe("fresh");
+  });
+});

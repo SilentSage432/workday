@@ -2,6 +2,10 @@
 
 ## Current state (2026-10-24)
 
+**ORIENT-FLOOR-COMMAND-002A — STATUS SEMANTICS — LOCAL ONLY.**
+
+`none` is an unpublished week. `complete` is every current assignment entered in Zebra. Those sentences no longer follow a zero count. A stale or older snapshot keeps the last status and is not a fresh verification. Clearing the week does not create completion history. Still in memory only. Not mounted. No credential, table, or Pulse. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md).
+
 **ORIENT-FLOOR-COMMAND-002 — FIXTURE OBSERVATION PROJECTION — LOCAL ONLY.**
 
 A pure in-memory projection reads a Floor Command snapshot into one Monday Zebra handoff. It does not create a Task, Commitment, or stewardship satisfaction, and it does not use the Saturday-first Work week. The view is fixture-tested and is not mounted. No network, table, credential, or Pulse. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md).

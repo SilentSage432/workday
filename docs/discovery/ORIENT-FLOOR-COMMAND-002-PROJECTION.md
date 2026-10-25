@@ -25,19 +25,21 @@ Counts, status, and the deadline date come from the snapshot. `zebra_task_comple
 
 | Input | Reading |
 | --- | --- |
-| No published assignments | `publicationStatus: unpublished`, handoff `none`, not an attention line |
+| No published assignments | Handoff `none`. Summary: "Nothing published for this week." Not an attention line, and not a completed handoff |
 | New published week | One handoff id, status from the snapshot, attention on while pending or partial |
-| Pending | "None of N entered in Zebra." |
-| Partial | "K of N still to enter in Zebra." |
-| Complete | Retained. Attention turns off. Associate task completion stays false |
-| Reassignment | Same handoff id and same assignment id. Roster and Zebra confirmation update. A dismissal of the previous revision does not hide the new revision |
+| Pending | Status `pending`. "None of N entered in Zebra." |
+| Partial | Status `partial`. "K of N still to enter in Zebra." |
+| Complete | Status `complete`. "All N entered in Zebra." Attention turns off. Associate task completion stays false |
+| Reassignment | Same handoff id and same assignment id. Roster and Zebra confirmation update. Status follows the snapshot, including `complete` back to `pending` or `partial` |
+| Cleared week | Status `none`. Previous bays are superseded. That is not completion history |
 | Removed bay | That assignment stays on the handoff as `superseded`. A replacement is a new assignment id |
 | Confirmed SMART dates | Target and final dates on the handoff. They are not the Monday deadline |
 | Review required | `reviewRequired` stays true and the handoff remains on the attention surface |
 | Identical snapshot | Same revision, same handoff count, no new superseded rows |
 | New revision | The new revision is visible even when the old revision was dismissed |
 | Source unavailable, nothing retained | Status `unavailable`. No handoff is invented |
-| Source unavailable after a success | Status `stale`. Last handoffs stay, including their week and counts |
+| Source unavailable after a success | Status `stale`. The last handoff status is kept and is not freshly verified |
+| Older ready snapshot | A different revision with an earlier `source_updated_at`, or no source time after a timed revision, does not replace the retained handoff |
 | Deadline read unavailable | Assignment status stays. Last confirmed dates stay. They are not relabeled unconfirmed |
 | Dismissal | Records handoff id plus revision. Status and remaining count do not change |
 
@@ -48,6 +50,8 @@ A newer operational week is a second handoff. It does not complete the earlier o
 `FloorCommandObservationView` renders the attention handoffs: one summary, expandable assignment details, confirmed dates, and a link to `https://deptsync-hub.vercel.app/dashboard`. "Hide this revision" calls the dismissal function. There is no checkbox.
 
 The view is exercised with fixtures. It is not mounted in `OrientInstrument`, LOOK, `OrientView`, the Work schedule, or `TaskLoop`. Those surfaces either edit the personal shift or compose established Orient facts. Putting this reading there would add a production source and a new operations destination. The later integration point is a read-only section beside Work inside LOOK, fed by a `SourceRead` of this projection. It is not a nav item, not an ACT row, and not a Task.
+
+A fresh `none` and a fresh `complete` both leave the attention surface. The observation still keeps those statuses apart. `none` reads "Nothing published for this week." `complete` reads "All N entered in Zebra." A stale reading says Floor Command could not be read. It does not present the retained status as a new verification.
 
 An unavailable reading says "Floor Command could not be read." A fresh week with nothing in attention renders nothing. That is not an empty published week.
 
@@ -70,7 +74,7 @@ Dismissal and the snapshot must not share a column with Tasks, Commitments, or s
 
 ## 6. Validation
 
-Focused suites: `projections/floorCommandObservation.test.ts` and `components/orient/floorCommandObservation.test.tsx`. 15 tests passed. ESLint on the new files passed. `npm run typecheck` passed. `npm run build` passed.
+Focused suites: `projections/floorCommandObservation.test.ts` and `components/orient/floorCommandObservation.test.tsx`. 21 tests passed after 002A. ESLint on the observation files passed. `npm run typecheck` passed. `npm run build` passed. No Floor Command route was added.
 
 ## 7. Release
 

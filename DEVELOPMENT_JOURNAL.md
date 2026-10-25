@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-24 — ORIENT-FLOOR-COMMAND-002A status semantics
+
+Local correction only. No schema, route, credential, network, notification, or deploy.
+
+The handoff sentence now follows producer status. `none` stays "Nothing published for this week." `complete` stays "All N entered in Zebra." A zero count no longer chooses the sentence. An older ready snapshot, or an untimed revision after a timed one, does not replace the retained handoff. A failed read keeps the last status and marks it stale. Clearing every assignment becomes `none` and does not write completion history. Live connection remains **NO-GO**.
+
+Record: [docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md).
+
 ## 2026-10-24 — ORIENT-FLOOR-COMMAND-002 observation projection
 
 Local fixture projection only. No schema, route, credential, network, notification, or deploy.

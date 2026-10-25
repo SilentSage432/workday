@@ -179,6 +179,51 @@ describe("Floor Command observation view", () => {
     }
   });
 
+  it("does not present a stale completed handoff as freshly verified or as an empty week", () => {
+    const complete = applyFloorCommandRead(emptyFloorCommandObservationMemory("2587"), {
+      availability: "ready",
+      snapshot: {
+        ...published(),
+        handoff: {
+          ...published().handoff,
+          status: "complete",
+          confirmed_count: 2,
+          outstanding_count: 0,
+        },
+        entries: published().entries.map((row) => ({
+          ...row,
+          zebra_confirmation: "confirmed" as const,
+          zebra_entered_at: READ_AT,
+        })),
+        deadlines: { availability: "ready" as const, commitments: [] },
+        freshness: {
+          read_at: READ_AT,
+          source_updated_at: READ_AT,
+          revision: "rev-complete",
+          matches_previous_revision: null,
+        },
+      },
+    });
+    const reading = projectFloorCommandObservation(
+      applyFloorCommandRead(complete, {
+        availability: "unavailable",
+        reason: "assignments_unavailable",
+        read_at: "2026-10-26T20:00:00.000Z",
+      }),
+    );
+    act(() => {
+      root?.render(<FloorCommandObservationView reading={reading} />);
+    });
+    expect(host?.getAttribute("data-floor-command-observation") ?? host?.querySelector("section")?.getAttribute("data-floor-command-observation")).toBe("stale");
+    expect(host?.textContent).toContain("Floor Command could not be read.");
+    expect(host?.textContent).not.toContain("Nothing published");
+    expect(host?.textContent).not.toContain("entered in Zebra");
+    if (reading.status === "stale") {
+      expect(reading.handoffs[0]?.handoffStatus).toBe("complete");
+      expect(reading.handoffs[0]?.freshness).toBe("stale");
+    }
+  });
+
   it("is not mounted on the production instrument or the Work schedule", () => {
     const files = [
       "components/orient/OrientInstrument.tsx",

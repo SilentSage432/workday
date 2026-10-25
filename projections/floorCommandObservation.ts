@@ -155,6 +155,9 @@ export function applyFloorCommandRead(
 
   const snapshot = structuredClone(read.snapshot);
   const previous = memory.handoffs.find((row) => row.snapshot.handoff.id === snapshot.handoff.id);
+  if (previous && isOlderSource(previous.snapshot, snapshot)) {
+    return memory;
+  }
   const deadlinesReady = snapshot.deadlines.availability === "ready";
   const retained: FloorCommandRetainedHandoff = {
     snapshot,
@@ -355,13 +358,28 @@ function projectDeadline(row: FloorCommandDeadlineInput): FloorCommandObservedDe
   };
 }
 
+function isOlderSource(retained: FloorCommandSnapshot, incoming: FloorCommandSnapshot): boolean {
+  if (retained.freshness.revision === incoming.freshness.revision) return false;
+  const previousAt = instantMs(retained.freshness.source_updated_at);
+  if (previousAt === null) return false;
+  const incomingAt = instantMs(incoming.freshness.source_updated_at);
+  if (incomingAt === null) return true;
+  return incomingAt < previousAt;
+}
+
+function instantMs(value: string | null): number | null {
+  if (!value) return null;
+  const ms = Date.parse(value);
+  return Number.isNaN(ms) ? null : ms;
+}
+
 function summaryFor(
   status: FloorCommandHandoffStatus,
   required: number,
   outstanding: number,
 ): string {
-  if (status === "none" || required === 0) return "Nothing published for this week.";
-  if (status === "complete" || outstanding === 0) return `All ${required} entered in Zebra.`;
+  if (status === "none") return "Nothing published for this week.";
+  if (status === "complete") return `All ${required} entered in Zebra.`;
   if (status === "pending") return `None of ${required} entered in Zebra.`;
   return `${outstanding} of ${required} still to enter in Zebra.`;
 }
