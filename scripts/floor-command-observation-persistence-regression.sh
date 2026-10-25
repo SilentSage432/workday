@@ -6,6 +6,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MIGRATION="$ROOT/supabase/migrations/20261024210000_floor_command_observation.sql"
+SEQUENCE="$ROOT/supabase/migrations/20261024220000_floor_command_observation_sequence.sql"
 PORT="${ORIENT_PG_REGRESSION_PORT:-55453}"
 TMP="$(mktemp -d /tmp/orient-floor-command-003-XXXXXX)"
 cleanup() {
@@ -18,6 +19,7 @@ command -v initdb >/dev/null
 command -v pg_ctl >/dev/null
 command -v psql >/dev/null
 test -f "$MIGRATION"
+test -f "$SEQUENCE"
 
 initdb -D "$TMP/data" --auth-local=trust --auth-host=trust -U postgres >/dev/null
 pg_ctl -D "$TMP/data" -o "-p $PORT -k $TMP" -l "$TMP/logfile" start >/dev/null
@@ -52,6 +54,7 @@ $$;
 SQL
 
 "${PSQL[@]}" -f "$MIGRATION"
+"${PSQL[@]}" -f "$SEQUENCE"
 
 "${PSQL[@]}" <<SQL
 insert into auth.users (id) values
@@ -559,7 +562,141 @@ begin
     raise exception 'personal temporal tables were created';
   end if;
 end $$;
-drop function public.test_floor_command_handoff(text, text, text, text, date, date, text, jsonb, jsonb);
 SQL
 echo "NO_PERSONAL_TABLES_OK"
+
+OWNER_D="44444444-4444-4444-8444-444444444444"
+"${PSQL[@]}" <<SQL
+insert into auth.users (id) values ('$OWNER_D');
+select public.bind_floor_command_observation('$OWNER_D', '2587');
+
+create or replace function public.test_floor_command_sequenced(
+  p_revision text,
+  p_sequence bigint,
+  p_updated text,
+  p_status text
+) returns jsonb
+language sql
+as \$\$
+  select jsonb_set(
+    public.test_floor_command_handoff(
+      p_revision, p_updated, p_status, '2026-W45', '2026-11-02', '2026-11-08', '2587',
+      case when p_status = 'none' then '[]'::jsonb else '$entry_json'::jsonb end,
+      '[]'::jsonb
+    ),
+    '{0,snapshot,freshness,week_sequence}',
+    to_jsonb(p_sequence)
+  );
+\$\$;
+
+select public.persist_floor_command_observation(
+  '$OWNER_D', '2026-11-01T12:00:00Z', 'success_complete', null,
+  public.test_floor_command_sequenced('rev-empty', 0, null, 'none')
+);
+select public.persist_floor_command_observation(
+  '$OWNER_D', '2026-11-02T12:00:00Z', 'success_complete', null,
+  public.test_floor_command_sequenced('rev-published', 1, null, 'pending')
+);
+do \$\$
+begin
+  if (select source_revision from public.floor_command_observation_handoffs
+      where user_id = '$OWNER_D') <> 'rev-published' then
+    raise exception 'sequence 0 did not yield to sequence 1 without a source time';
+  end if;
+end \$\$;
+SQL
+echo "SEQUENCE_ZERO_TO_PUBLISHED_OK"
+
+"${PSQL[@]}" <<SQL
+select public.persist_floor_command_observation(
+  '$OWNER_D', '2026-11-02T13:00:00Z', 'success_complete', null,
+  public.test_floor_command_sequenced('rev-published', 1, null, 'pending')
+);
+do \$\$
+begin
+  perform public.persist_floor_command_observation(
+    '$OWNER_D', '2026-11-02T14:00:00Z', 'success_complete', null,
+    public.test_floor_command_sequenced('rev-conflict', 1, null, 'pending')
+  );
+  raise exception 'same sequence with a different revision was accepted';
+exception
+  when others then
+    if sqlerrm <> 'floor_command_observation_sequence_conflict' then
+      raise;
+    end if;
+end \$\$;
+do \$\$
+begin
+  begin
+    perform public.persist_floor_command_observation(
+      '$OWNER_D', '2026-11-02T15:00:00Z', 'success_complete', null,
+      public.test_floor_command_sequenced('rev-old', 0, null, 'none')
+    );
+    raise exception 'lower sequence was accepted';
+  exception
+    when others then
+      if sqlerrm <> 'floor_command_observation_revision_older' then
+        raise;
+      end if;
+  end;
+  if (select source_revision from public.floor_command_observation_handoffs
+      where user_id = '$OWNER_D') <> 'rev-published' then
+    raise exception 'rejected sequence replaced the snapshot';
+  end if;
+end \$\$;
+SQL
+echo "SEQUENCE_REPLAY_CONFLICT_OLDER_OK"
+
+"${PSQL[@]}" <<SQL
+select public.persist_floor_command_observation(
+  '$OWNER_D', '2026-11-02T16:00:00Z', 'success_complete', null,
+  public.test_floor_command_sequenced('rev-deleted', 2, '2026-10-01T00:00:00Z', 'none')
+);
+select public.persist_floor_command_observation(
+  '$OWNER_D', '2026-11-02T17:00:00Z', 'failure', 'ordering_withheld', null
+);
+do \$\$
+begin
+  if (select source_revision from public.floor_command_observation_handoffs
+      where user_id = '$OWNER_D') <> 'rev-deleted' then
+    raise exception 'withheld read replaced the snapshot';
+  end if;
+  if (select last_attempt_result from public.floor_command_observation_attempts
+      where user_id = '$OWNER_D') <> 'failure' then
+    raise exception 'withheld read was stored as a success';
+  end if;
+  if (select snapshot -> 'handoff' ->> 'status'
+      from public.floor_command_observation_handoffs
+      where user_id = '$OWNER_D') <> 'none' then
+    raise exception 'sequence did not accept an earlier timestamp';
+  end if;
+end \$\$;
+SQL
+echo "SEQUENCE_DELETE_AND_WITHHELD_OK"
+
+"${PSQL[@]}" <<SQL
+begin;
+select set_config('request.jwt.claim.sub', '$OWNER_D', true);
+set local role authenticated;
+select public.dismiss_floor_command_observation_revision(
+  'fc.zebra-handoff.2587.2026-W45',
+  'rev-deleted'
+);
+commit;
+do \$\$
+begin
+  if (select snapshot -> 'handoff' ->> 'status'
+      from public.floor_command_observation_handoffs
+      where user_id = '$OWNER_D') <> 'none' then
+    raise exception 'dismissal changed handoff status';
+  end if;
+  if (select count(*) from public.floor_command_observation_dismissals
+      where user_id = '$OWNER_D' and source_revision = 'rev-deleted') <> 1 then
+    raise exception 'dismissal was not kept';
+  end if;
+end \$\$;
+drop function public.test_floor_command_sequenced(text, bigint, text, text);
+drop function public.test_floor_command_handoff(text, text, text, text, date, date, text, jsonb, jsonb);
+SQL
+echo "SEQUENCE_DISMISSAL_KEPT_OK"
 echo "ORIENT-FLOOR-COMMAND-003-PERSISTENCE-CLEAR"

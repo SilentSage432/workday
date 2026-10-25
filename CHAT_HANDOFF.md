@@ -2,6 +2,10 @@
 
 ## Current state (2026-10-24)
 
+**ORIENT-FLOOR-COMMAND-002A — WEEK SEQUENCE ORDERING — LOCAL ONLY. NOT APPLIED.**
+
+A sequenced Floor Command snapshot is ordered by `week_sequence`, not by a source clock. Sequence 0 can become sequence 1 without a source time. A lower sequence is rejected. The same sequence with a different content hash is a conflict and keeps the retained snapshot. A withheld read is a failure and does not refresh. Dismissal still does not complete the handoff. No route, credential, or poll. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-002A-ORDERING.md](docs/discovery/ORIENT-FLOOR-COMMAND-002A-ORDERING.md).
+
 **ORIENT-FLOOR-COMMAND-003 — DURABLE OBSERVATION STORAGE — LOCAL ONLY. NOT APPLIED TO PRODUCTION.**
 
 The Floor Command reading can be stored apart from Commitments, Tasks, stewardship, and Pulse. One operator has one server-owned store binding, one snapshot per handoff id, one latest attempt, and a separate dismissal of one revision. A failed read keeps the snapshot. A missing source time does not count as a newer revision. No route, credential, poll, or notification was added. Live connection remains **NO-GO**. Canonical: [docs/discovery/ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md](docs/discovery/ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md).

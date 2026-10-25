@@ -19,7 +19,9 @@ export type FloorCommandAttemptReason =
   | "invalid_week"
   | "store_required"
   | "cross_store"
-  | "invalid_snapshot";
+  | "invalid_snapshot"
+  | "ordering_withheld"
+  | "sequence_conflict";
 
 export type FloorCommandDismissal = {
   handoffId: string;
@@ -155,7 +157,16 @@ export function applyFloorCommandRead(
 
   const snapshot = structuredClone(read.snapshot);
   const previous = memory.handoffs.find((row) => row.snapshot.handoff.id === snapshot.handoff.id);
-  if (previous && retainsCurrentSnapshot(previous.snapshot, snapshot)) {
+  const sequenceOutcome = floorCommandSequenceOutcome(
+    previous?.snapshot ?? null,
+    snapshot,
+    read.synchronization,
+  );
+  if (sequenceOutcome === "reject_older") return memory;
+  if (sequenceOutcome === "ordering_withheld" || sequenceOutcome === "sequence_conflict") {
+    return fail(memory, snapshot.freshness.read_at, sequenceOutcome);
+  }
+  if (sequenceOutcome === "legacy" && previous && retainsCurrentSnapshot(previous.snapshot, snapshot)) {
     return memory;
   }
   const deadlinesReady = snapshot.deadlines.availability === "ready";
@@ -363,6 +374,34 @@ function projectDeadline(row: FloorCommandDeadlineInput): FloorCommandObservedDe
  * times are present and the incoming time is the same or later. A missing
  * time on either side does not establish order.
  */
+function weekSequenceOf(snapshot: FloorCommandSnapshot): number | null {
+  const value = snapshot.freshness.week_sequence;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) return null;
+  return value;
+}
+
+/**
+ * Sequence ordering applies when either side has a week sequence or the
+ * producer marked synchronization. Snapshots with neither keep the older
+ * timestamp rule so an unsequenced fixture still has a defined order.
+ */
+function floorCommandSequenceOutcome(
+  retained: FloorCommandSnapshot | null,
+  incoming: FloorCommandSnapshot,
+  synchronization: "comparable" | "withheld" | undefined,
+): "legacy" | "apply" | "reject_older" | "ordering_withheld" | "sequence_conflict" {
+  const next = weekSequenceOf(incoming);
+  const previous = retained ? weekSequenceOf(retained) : null;
+  if (synchronization == null && next === null && previous === null) return "legacy";
+  if (synchronization === "withheld" || next === null) return "ordering_withheld";
+  if (!retained) return "apply";
+  if (previous === null) return "ordering_withheld";
+  if (next > previous) return "apply";
+  if (next < previous) return "reject_older";
+  if (retained.freshness.revision === incoming.freshness.revision) return "apply";
+  return "sequence_conflict";
+}
+
 function retainsCurrentSnapshot(retained: FloorCommandSnapshot, incoming: FloorCommandSnapshot): boolean {
   if (retained.freshness.revision === incoming.freshness.revision) return false;
   const previousAt = instantMs(retained.freshness.source_updated_at);

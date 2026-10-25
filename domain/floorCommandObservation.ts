@@ -84,11 +84,16 @@ export type FloorCommandSnapshot = {
     source_updated_at: string | null;
     revision: string;
     matches_previous_revision: boolean | null;
+    week_sequence?: number | null;
   };
 };
 
 export type FloorCommandRead =
-  | { availability: "ready"; snapshot: FloorCommandSnapshot }
+  | {
+      availability: "ready";
+      snapshot: FloorCommandSnapshot;
+      synchronization?: "comparable" | "withheld";
+    }
   | {
       availability: "unavailable";
       reason: "assignments_unavailable" | "invalid_week" | "store_required";

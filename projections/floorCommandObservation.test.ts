@@ -693,3 +693,66 @@ describe("none stays distinct from complete", () => {
     expect(missing.reading.status).toBe("fresh");
   });
 });
+
+describe("source week sequence", () => {
+  function sequenced(
+    sequence: number,
+    revision: string,
+    entries: FloorCommandAssignmentInput[] = [entry("a1")],
+    synchronization: "comparable" | "withheld" = "comparable",
+  ) {
+    return {
+      availability: "ready" as const,
+      synchronization,
+      snapshot: snapshot({
+        entries,
+        freshness: {
+          read_at: READ_AT,
+          source_updated_at: null,
+          revision,
+          matches_previous_revision: null,
+          week_sequence: sequence,
+        },
+      }),
+    };
+  }
+
+  it("accepts publication after sequence zero and rejects an older or conflicting sequence", () => {
+    const empty = observe(sequenced(0, "rev-empty", []));
+    expect(handoffOf(empty.reading).handoffStatus).toBe("none");
+    const published = observe(sequenced(1, "rev-published"), empty.memory);
+    expect(handoffOf(published.reading).revision).toBe("rev-published");
+    expect(published.memory.lastAttempt?.result).toBe("success_complete");
+
+    const replay = applyFloorCommandRead(published.memory, sequenced(1, "rev-published"));
+    expect(replay.handoffs[0]?.snapshot.freshness.revision).toBe("rev-published");
+    expect(replay.lastAttempt?.result).toBe("success_complete");
+
+    const older = applyFloorCommandRead(replay, sequenced(0, "rev-empty", []));
+    expect(older).toBe(replay);
+
+    const conflict = applyFloorCommandRead(replay, sequenced(1, "rev-other"));
+    expect(conflict.handoffs[0]?.snapshot.freshness.revision).toBe("rev-published");
+    expect(conflict.lastAttempt).toMatchObject({ result: "failure", reason: "sequence_conflict" });
+
+    const withheld = applyFloorCommandRead(replay, sequenced(2, "rev-next", [entry("a1")], "withheld"));
+    expect(withheld.handoffs[0]?.snapshot.freshness.revision).toBe("rev-published");
+    expect(withheld.lastAttempt?.reason).toBe("ordering_withheld");
+
+    const deleted = observe(sequenced(2, "rev-deleted", []), replay);
+    expect(handoffOf(deleted.reading).revision).toBe("rev-deleted");
+    const dismissed = dismissFloorCommandRevision(deleted.memory, {
+      handoffId: "fc.zebra-handoff.2587.2026-W44",
+      revision: "rev-deleted",
+    });
+    expect(dismissed.handoffs[0]?.snapshot.handoff.status).toBe("none");
+    expect(dismissed.dismissals).toEqual([
+      { handoffId: "fc.zebra-handoff.2587.2026-W44", revision: "rev-deleted" },
+    ]);
+    const hidden = projectFloorCommandObservation(dismissed);
+    expect(hidden.status).toBe("fresh");
+    if (hidden.status !== "fresh") return;
+    expect(hidden.handoffs[0]?.handoffStatus).toBe("none");
+    expect(hidden.handoffs[0]?.attention).toBe(false);
+  });
+});

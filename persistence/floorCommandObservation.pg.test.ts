@@ -35,8 +35,12 @@ describe("floor command observation persistence regression", () => {
       expect(out).toContain("CLEARED_HISTORY_OK");
       expect(out).toContain("AUTHENTICATED_WRITE_FORBIDDEN_OK");
       expect(out).toContain("CREDENTIAL_REJECTED_OK");
-      expect(out).toContain("NO_PERSONAL_TABLES_OK");
-      expect(out).toContain("ORIENT-FLOOR-COMMAND-003-PERSISTENCE-CLEAR");
+    expect(out).toContain("NO_PERSONAL_TABLES_OK");
+    expect(out).toContain("SEQUENCE_ZERO_TO_PUBLISHED_OK");
+    expect(out).toContain("SEQUENCE_REPLAY_CONFLICT_OLDER_OK");
+    expect(out).toContain("SEQUENCE_DELETE_AND_WITHHELD_OK");
+    expect(out).toContain("SEQUENCE_DISMISSAL_KEPT_OK");
+    expect(out).toContain("ORIENT-FLOOR-COMMAND-003-PERSISTENCE-CLEAR");
     },
     120_000,
   );

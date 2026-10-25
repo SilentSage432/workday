@@ -311,7 +311,9 @@ function reasonFrom(value: string | null): FloorCommandAttemptReason | null {
     value === "invalid_week" ||
     value === "store_required" ||
     value === "cross_store" ||
-    value === "invalid_snapshot"
+    value === "invalid_snapshot" ||
+    value === "ordering_withheld" ||
+    value === "sequence_conflict"
   ) {
     return value;
   }

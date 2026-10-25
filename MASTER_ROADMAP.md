@@ -39,6 +39,7 @@
 - **ORIENT-FLOOR-COMMAND-001** — How Orient can observe a Floor Command week without owning it (**DISCOVERY COMPLETE**). Live connector **NO-GO**. — [ORIENT-FLOOR-COMMAND-001-DISCOVERY.md](docs/discovery/ORIENT-FLOOR-COMMAND-001-DISCOVERY.md)
 - **ORIENT-FLOOR-COMMAND-002** — Fixture observation projection (**LOCAL ONLY**). In-memory reading of the producer snapshot. Not mounted. No credential, table, or Pulse. — [ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md)
 - **ORIENT-FLOOR-COMMAND-002A** — `none` and `complete` stay distinct (**LOCAL ONLY**). Status owns the sentence. An older snapshot does not replace a newer revision. — [ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md)
+- **ORIENT-FLOOR-COMMAND-002A** — Week sequence ordering (**LOCAL ONLY**; migration not applied). `week_sequence` replaces source-time order when the snapshot has one. No credential, route, or Pulse. Live connection **NO-GO**. — [ORIENT-FLOOR-COMMAND-002A-ORDERING.md](docs/discovery/ORIENT-FLOOR-COMMAND-002A-ORDERING.md)
 - **ORIENT-FLOOR-COMMAND-003** — Durable observation storage (**LOCAL ONLY**; migration not applied). Separate tables for the snapshot, the attempt, and one dismissed revision. No credential, route, or Pulse. Live connection **NO-GO**. — [ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md](docs/discovery/ORIENT-FLOOR-COMMAND-003-PERSISTENCE.md)
 
 ## Discovery / next Pulse boundary
