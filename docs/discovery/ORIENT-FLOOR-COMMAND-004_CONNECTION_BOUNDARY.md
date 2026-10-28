@@ -1,6 +1,6 @@
 # ORIENT-FLOOR-COMMAND-004 — Connection boundary
 
-Local only. The pull is off unless `ORIENT_FLOOR_COMMAND_PULL_ENABLED` is exactly `1`, and this tranche still refuses `deptsync-hub.vercel.app`. No production credential was created. Live connection remains **NO-GO**.
+Local only. The pull is off unless `ORIENT_FLOOR_COMMAND_PULL_ENABLED` is exactly `1`. This tranche originally refused `deptsync-hub.vercel.app`. RELEASE-004B allows that exact HTTPS origin and still refuses every lookalike. No production credential was created. Live connection remains **NO-GO**.
 
 Floor Command remains the authority for assignments, Zebra entry, and confirmed SMART deadlines. Orient keeps its own week, and it does not create a Task, Commitment, Block, stewardship row, or Pulse grant.
 
@@ -25,7 +25,7 @@ Orient's own service-role key is used only to call the existing bind and persist
 
 | State | Meaning |
 | --- | --- |
-| Unconfigured | Token, store, or a usable base URL is missing. The production host is treated as missing. |
+| Unconfigured | Token, store, or a usable base URL is missing. A lookalike of the production host is treated as missing. The exact `https://deptsync-hub.vercel.app` origin is usable. |
 | Configured, pull off | The server can name the store. The default. No request is made. |
 | Revoked | The source answered 401. The last snapshot stays. The attempt reason is `credential_rejected`. |
 | Unavailable | Timeout, transport failure, or a body that is not the contract. The last snapshot stays. |
@@ -34,9 +34,9 @@ Floor Command uses one unauthorized response for expiry and revocation. Orient d
 
 ## Pull
 
-`pullFloorCommandPublishedWeek` asks for one ISO week. It does not choose the week from the clock. It sends the server store, checks the operator and the binding, and uses an eight-second timeout.
+`pullFloorCommandPublishedWeek` asks for one ISO week. It does not choose the week from the clock. It claims a database lease, then sends one GET for the server store. The timeout is eight seconds. `redirect` is `manual`. A snapshot week that differs from the requested week is an invalid snapshot.
 
-HTTP 200 is not acceptance. `synchronization: "withheld"` is a failed attempt and does not replace the snapshot. A lower sequence is rejected and is not recorded as a refresh. The same sequence and revision can be replayed. The same sequence with a different revision is a conflict. A comparable sequence of 0 can later become a published sequence.
+HTTP 200 is not acceptance. `synchronization: "withheld"` is a failed attempt and does not replace the snapshot. A lower sequence is rejected. The same sequence with a different revision is a conflict. After one committed success, another pull returns `already_succeeded` and does not fetch. A failed fetch releases the claim. A committed success does not.
 
 ## Retired assignments
 
@@ -49,9 +49,9 @@ The retained reading is mounted beside the Work schedule. The server boundary an
 ## Activation still required
 
 1. Floor Command's Sunday publication gate, then its unreleased migrations through the atomic read.
-2. Orient migrations `20261024210000`, `20261024220000`, and `20261024230000` on the Orient database. None of these is applied here.
+2. Orient migrations `20261024210000`, `20261024220000`, `20261024230000`, and `20261024240000` on the Orient database. None of these is applied to hosted Orient by the local application work.
 3. An operator approval for the server store.
-4. A later tranche that allows the hosted Floor Command origin. This one refuses it.
+4. The exact production origin is now accepted by local code. It is not activated here.
 5. The pull flag, set only after those gates. It is not set now.
 
 ## Remaining limits

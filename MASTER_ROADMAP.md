@@ -2,7 +2,8 @@
 
 ## Accepted foundations (closed)
 
-- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A** — Local claim migration validated. One controlled success can be fenced in the database. Application Gate A may resume locally. Hosted migration and live connection remain **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004B** — Local Gate A complete. Claim, one GET, persist, and release. Exact production origin allowed in code. **GO** to request Gate B preparation. Deploy and live connection remain **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A** — Local claim migration validated. Application Gate A then resumed in 004B. Hosted migration remains **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004** — Gate A **STOPPED** until 004A. The unfenced schema could not reserve one successful pull. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-003** — Activation plan. The check-then-write latch is superseded by RELEASE-004. **NO-GO** to connect. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-002** — Dark consumer deployed as `e44953b` / `dpl_8wHGrY4J1mZu51fCJgv5h6qKdz9M`. Pull disabled. The activation decision moved to RELEASE-003. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md)
@@ -43,6 +44,7 @@
 
 ## External operational observation
 
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004B** — Controlled pull application (**LOCAL ONLY**). One claim, one GET, one committed success. Work does not pull. Live connection **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A** — Controlled-pull claim (**LOCAL ONLY**). At most one successful controlled observation commits for the one-shot. Not exactly-once HTTP delivery. Live connection **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004** — One-success boundary (**STOPPED**, then addressed locally by 004A). Live connection **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-003** — Controlled activation plan (**PLAN ONLY**). Its application latch does not meet the atomic one-success requirement. Live connection **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md)

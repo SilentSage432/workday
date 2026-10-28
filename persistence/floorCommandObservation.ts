@@ -216,15 +216,20 @@ export async function loadFloorCommandObservationStore(
 /**
  * Loads the operator's bound store, applies the read, and persists the result.
  * The store argument is the binding, never a store number from the read.
+ * Success and failure both require the claim acquired before the fetch.
  */
 export async function recordFloorCommandObservation(
   client: SupabaseClient,
   userId: string,
   read: FloorCommandRead,
+  claimId: string,
 ): Promise<FloorCommandObservationMemory> {
   assertServerOnly("recordFloorCommandObservation");
   if (!userId.trim()) {
     throw new FloorCommandObservationPersistenceError("Operator identity is required.");
+  }
+  if (!claimId.trim()) {
+    throw new FloorCommandObservationPersistenceError("A Floor Command pull claim is required.");
   }
   const stored = await loadFloorCommandObservationStore(client, userId);
   if (!stored) throw new FloorCommandObservationUnboundError();
@@ -236,6 +241,7 @@ export async function recordFloorCommandObservation(
       p_attempt_result: plan.write.attemptResult,
       p_attempt_reason: plan.write.attemptReason,
       p_handoffs: plan.write.handoffs,
+      p_claim: claimId,
     });
     if (error) throw new FloorCommandObservationPersistenceError(error.message);
   }

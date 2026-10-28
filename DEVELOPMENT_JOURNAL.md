@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004B
+
+Local Gate A application. No push, hosted migration, credential, environment change, approval binding, or live pull.
+
+The six-argument persist function already records a failure while the caller holds the claim, so no second database function was added. `pullFloorCommandPublishedWeek` claims, fetches once with `redirect: "manual"`, checks the snapshot week, and persists with that claim. `busy`, `unbound`, and `already_succeeded` do not fetch. A stale claim cannot release a replacement. `POST /api/integrations/floor-command/approval` and `POST /api/integrations/floor-command/pull` require an Orient session and refuse a cross-site origin. The exact production origin is `https://deptsync-hub.vercel.app`. Disposable PostgreSQL, the Floor Command and Pulse unit tests, TypeScript, ESLint, and the production build passed. One TypeScript error on an optional wrong-store memory was fixed and the connection test was rerun. **GO** to request Gate B preparation. **NO-GO** to execute the deploy.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md).
+
 ## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A
 
 Local claim migration only. No hosted migration, route, origin allowlist, credential, environment change, approval binding, or live pull.

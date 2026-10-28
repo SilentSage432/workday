@@ -2,6 +2,12 @@
 
 ## Current state (2026-10-28)
 
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004B — LOCAL GATE A COMPLETE. DEPLOYMENT NOT REQUESTED TO RUN.**
+
+The pull acquires `claim_floor_command_controlled_pull` before one GET, persists with that claim, and releases it after a failure. `https://deptsync-hub.vercel.app` is the only production origin. Approval and pull are POST routes. Work does not call them. The pull flag still has to be exactly `1`. **GO** to request Gate B preparation that ships the application and `20261024240000` together with the flag unset. **NO-GO** to deploy, migrate hosted Orient, issue a credential, bind an operator, or pull. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md).
+
+## Previous state (2026-10-28)
+
 **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A — LOCAL CLAIM MIGRATION VALIDATED. APPLICATION GATE A NOT RESUMED.**
 
 Disposable PostgreSQL enforces one committed controlled success per operator. `floor_command_controlled_pull_claims` holds one lease. `claim_floor_command_controlled_pull`, `release_floor_command_controlled_pull`, and the six-argument `persist_floor_command_observation` are the only write path. The five-argument persist function is dropped. The hosted project was not migrated. Routes, the origin allowlist, credentials, and the live pull were not changed. **GO** to resume local Gate A application work. **NO-GO** to apply this migration to hosted Orient before those callers pass `p_claim`. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md).

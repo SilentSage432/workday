@@ -1,14 +1,14 @@
 # TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004
 
-**Status:** RELEASE-004 stopped before application code. RELEASE-004A then added a local claim migration and verified it on disposable PostgreSQL. Application Gate A has not resumed. Hosted Orient was not migrated.
+**Status:** RELEASE-004B completed the local application on `959903d1a775a15a35cbe3d90ec6b570f3433df1`. The pull claims before it fetches, persists with that claim, and releases the claim after a failure. Hosted Orient was not migrated. Nothing was deployed or pulled.
 
 **Date:** 2026-10-28
 
-**Base:** `e44953b181b612fbefe8661eb58c0366f324589e`
+**Base:** `959903d1a775a15a35cbe3d90ec6b570f3433df1`
 
 **Guarantee:** At most one successful controlled observation is committed for the authorized one-shot operation. This is not exactly-once HTTP delivery.
 
-**Recommendation:** **GO** to resume local application Gate A on top of this migration. **NO-GO** to apply the migration to hosted Orient, deploy, issue a credential, bind an operator, change environment, or pull.
+**Recommendation:** **GO** to request Gate B deployment preparation. **NO-GO** to deploy, apply the hosted migration, issue a credential, bind an operator, change environment, or pull.
 
 ## 1. Why the application gate stopped
 
@@ -124,7 +124,7 @@ The same script still prints the observation echoes, including `APPROVAL_OK`, `F
 
 `persistence/floorCommandObservation.pg.test.ts` requires both the old echoes and the 004A echoes.
 
-Application TypeScript still calls the five-argument RPC from `recordFloorCommandObservation` and from the pull failure writer. Those files were not changed. Hosted Orient still has the old function until a later, separate migration. The local tests do not import those callers.
+At the end of 004A, application TypeScript still called the five-argument RPC. RELEASE-004B changed `recordFloorCommandObservation` and the pull failure writer to pass `p_claim`. Hosted Orient still has the old function until the migration and this application ship together.
 
 ## 9. Remaining risks
 
@@ -144,3 +144,42 @@ No hosted migration. No application deployment. No production credential. No env
 **GO** for a later local Gate A implementation. That work calls `claim_floor_command_controlled_pull` before the fetch, passes the same claim to the six-argument persist, and calls `release_floor_command_controlled_pull` when the fetch fails. It still has to add the exact origin allowlist, the approval route, the pull route, manual redirect refusal, and the snapshot-week check. It must not apply this migration to hosted Orient until those callers ship with it.
 
 **NO-GO** for hosted migration, deployment, credential issuance, environment changes, approval binding, and any live pull.
+
+## 12. RELEASE-004B application
+
+Failure persistence did not need a new database function. A failed fetch calls the six-argument `persist_floor_command_observation` with the claim it already holds, then `release_floor_command_controlled_pull` with that same claim. `busy`, `unbound`, and `already_succeeded` return before any GET. An expired or replaced claim raises inside persist or release. The caller releases only its own claim id, and a mismatch does not delete the replacement.
+
+### Flow
+
+1. The route verifies the Orient session bearer.
+2. The server store comes from `ORIENT_FLOOR_COMMAND_STORE_NUMBER`.
+3. The approved binding must match that store.
+4. `ORIENT_FLOOR_COMMAND_PULL_ENABLED` must be exactly `1`.
+5. `claim_floor_command_controlled_pull` runs.
+6. Only `claimed` sends one GET, with `redirect: "manual"` and an 8-second timeout.
+7. The snapshot week must equal the requested week.
+8. Persist receives that claim id.
+9. A failure releases the claim when the database still recognizes it.
+10. The JSON result has no bearer.
+
+`POST /api/integrations/floor-command/approval` calls the existing bind. A body that supplies a store, source, or purpose is refused. `POST /api/integrations/floor-command/pull` accepts `{ "week" }` only. Cross-site `Origin` and `Sec-Fetch-Site: cross-site` are refused. Work does not call either route.
+
+`https://deptsync-hub.vercel.app` is the only production origin. It must be HTTPS, that exact hostname, with no userinfo and no explicit port. Other `vercel.app` hosts and names containing `deptsync-hub` are refused. `https://floor-command.test` and local `localhost` / `127.0.0.1` remain usable for tests. A redirect is a failed attempt. The bearer is not sent to the redirect target.
+
+### Verification
+
+Disposable claim regression, Floor Command contract and route tests, authentication tests, and the Pulse unit tests listed below passed. TypeScript, ESLint, and the production build passed. The build lists the approval and pull routes. No test called `deptsync-hub.vercel.app`.
+
+| Check | Result |
+| --- | --- |
+| `persistence/floorCommandObservation.pg.test.ts` | Passed, including the 004A claim echoes |
+| `server/floorCommand/connection.test.ts` | 7 passed after the type fix |
+| `server/floorCommand/routes.test.ts` | Passed |
+| `server/auth/requireAuthenticatedUser.test.ts` | Passed |
+| `persistence/floorCommandObservation.test.ts`, `projections/floorCommandObservation.test.ts`, `server/floorCommand/present.test.ts`, `components/orient/floorCommandObservation.test.tsx` | Passed |
+| `persistence/pulse.test.ts`, `domain/pulse.test.ts`, `domain/pulseHostedEstablishment.test.ts`, and the three Pulse component tests | Passed, 69 tests in that combined run with the claim regression |
+| TypeScript, ESLint, production build | Passed on the rerun after narrowing the wrong-store memory check |
+
+### Gate B
+
+Requesting preparation is **GO** only if that preparation keeps the pull flag unset, ships this application and `20261024240000` together, and does not issue a credential or bind an operator. Deploying the application without the migration makes the pull call a function the hosted database does not have. Applying the migration without this application removes the five-argument persist the previous application code calls. Executing that deploy is **NO-GO** in this tranche.

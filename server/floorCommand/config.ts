@@ -6,7 +6,7 @@ export const FLOOR_COMMAND_STORE_NUMBER_ENV = "ORIENT_FLOOR_COMMAND_STORE_NUMBER
 export const FLOOR_COMMAND_BASE_URL_ENV = "ORIENT_FLOOR_COMMAND_BASE_URL";
 export const FLOOR_COMMAND_PULL_ENABLED_ENV = "ORIENT_FLOOR_COMMAND_PULL_ENABLED";
 
-/** This tranche cannot call the hosted Floor Command app. */
+/** Exact Floor Command production host. Any other spelling is refused. */
 export const FLOOR_COMMAND_PRODUCTION_HOST = "deptsync-hub.vercel.app";
 
 export const FLOOR_COMMAND_PULL_TIMEOUT_MS = 8_000;
@@ -55,10 +55,21 @@ function usableBaseUrl(value: string | undefined): string | null {
   } catch {
     return null;
   }
-  if (url.username || url.password || url.hostname === FLOOR_COMMAND_PRODUCTION_HOST) return null;
-  const local = url.hostname === "127.0.0.1" || url.hostname === "localhost";
+  if (url.username || url.password) return null;
+  const hostname = url.hostname.toLowerCase();
+  if (hostname === FLOOR_COMMAND_PRODUCTION_HOST) {
+    if (url.protocol !== "https:" || url.port !== "") return null;
+    return url.origin;
+  }
+  if (isFloorCommandHostLookalike(hostname)) return null;
+  const local = hostname === "127.0.0.1" || hostname === "localhost";
+  if (!local && url.port !== "") return null;
   if (url.protocol === "https:" || (url.protocol === "http:" && local)) {
     return url.origin;
   }
   return null;
+}
+
+function isFloorCommandHostLookalike(hostname: string): boolean {
+  return hostname.endsWith(".vercel.app") || hostname.includes("deptsync-hub");
 }

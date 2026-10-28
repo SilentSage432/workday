@@ -299,18 +299,22 @@ describe("floor command observation persistence", () => {
         client as unknown as SupabaseClient,
         "",
         ready(snapshot("rev-1", "2026-10-25T18:00:00.000Z", [entry("a1")])),
+        "cccccccc-cccc-4ccc-8ccc-ccccccccccc1",
       ),
     ).rejects.toThrow(/operator/i);
 
+    const claimId = "cccccccc-cccc-4ccc-8ccc-ccccccccccc1";
     const memory = await recordFloorCommandObservation(
       client as unknown as SupabaseClient,
       USER,
       ready(snapshot("rev-1", "2026-10-25T18:00:00.000Z", [entry("a1")])),
+      claimId,
     );
     expect(memory.connectedStoreNumber).toBe("2587");
     expect(eqs.every((row) => row.endsWith(USER))).toBe(true);
     expect(rpcs[0]?.name).toBe("persist_floor_command_observation");
     expect(rpcs[0]?.args.p_user_id).toBe(USER);
+    expect(rpcs[0]?.args.p_claim).toBe(claimId);
     expect(rpcs[0]?.args).not.toHaveProperty("p_store_number");
     expect(memory.handoffs[0]?.snapshot.operational_week).toBe(WEEK);
 
@@ -331,6 +335,7 @@ describe("floor command observation persistence", () => {
         clientFor(null) as unknown as SupabaseClient,
         USER,
         ready(snapshot("rev-1", "2026-10-25T18:00:00.000Z", [entry("a1")])),
+        "cccccccc-cccc-4ccc-8ccc-ccccccccccc1",
       ),
     ).rejects.toBeInstanceOf(FloorCommandObservationUnboundError);
   });

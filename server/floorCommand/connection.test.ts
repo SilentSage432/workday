@@ -10,7 +10,12 @@ import {
 import { projectFloorCommandObservation, type FloorCommandAttemptReason } from "@/projections/floorCommandObservation";
 import { approveFloorCommandConnection } from "@/server/floorCommand/approve";
 import { describeFloorCommandConnection } from "@/server/floorCommand/config";
-import { pullFloorCommandPublishedWeek, type FloorCommandPullResult } from "@/server/floorCommand/pull";
+import {
+  pullFloorCommandPublishedWeek,
+  type FloorCommandClaimStatus,
+  type FloorCommandPullResult,
+  type FloorCommandReleaseStatus,
+} from "@/server/floorCommand/pull";
 
 const USER = "11111111-1111-4111-8111-111111111111";
 const TOKEN = "fc_orient_test_secret_value";
@@ -98,12 +103,51 @@ function harness(storeNumber = "2587") {
     dismissals: [],
     lastAttempt: null,
   };
+  let activeClaim: string | null = null;
+  let claimOverride: FloorCommandClaimStatus | null = null;
+  let applyError: string | null = null;
+  let releaseStatus: FloorCommandReleaseStatus = "released";
   const calls: string[] = [];
+  const releases: string[] = [];
   return {
     calls,
+    releases,
+    forceClaim(status: FloorCommandClaimStatus) {
+      claimOverride = status;
+    },
+    failApply(message: string) {
+      applyError = message;
+    },
+    forceRelease(status: FloorCommandReleaseStatus) {
+      releaseStatus = status;
+    },
+    keepHandoffWithoutSuccess() {
+      if (!stored) return;
+      stored = {
+        ...stored,
+        lastAttempt: { readAt: NOW, result: "failure", reason: "source_unavailable" },
+      };
+      activeClaim = null;
+    },
     commit: {
       load: async () => stored,
+      claim: async (_userId: string, claimId: string): Promise<FloorCommandClaimStatus> => {
+        if (claimOverride) return claimOverride;
+        if (stored?.lastAttempt?.result === "success_complete") return "already_succeeded";
+        if (activeClaim && activeClaim !== claimId) return "busy";
+        activeClaim = claimId;
+        return "claimed";
+      },
+      release: async (_userId: string, claimId: string): Promise<FloorCommandReleaseStatus> => {
+        releases.push(claimId);
+        if (releaseStatus !== "released") return releaseStatus;
+        if (stored?.lastAttempt?.result === "success_complete") return "already_succeeded";
+        if (activeClaim !== claimId) return "mismatch";
+        activeClaim = null;
+        return "released";
+      },
       applyRead: async (_userId: string, read: Parameters<typeof planFloorCommandObservationWrite>[1]) => {
+        if (applyError) throw new Error(applyError);
         if (!stored) throw new Error("unbound");
         const plan = planFloorCommandObservationWrite(stored, read);
         calls.push(plan.write ? plan.write.attemptResult : "no-write");
@@ -114,6 +158,7 @@ function harness(storeNumber = "2587") {
             dismissals: plan.memory.dismissals,
             lastAttempt: plan.memory.lastAttempt,
           };
+          activeClaim = null;
         } else if (plan.write?.attemptResult === "failure") {
           stored = { ...stored, lastAttempt: plan.memory.lastAttempt };
         }
@@ -148,9 +193,10 @@ async function pull(
   setup: ReturnType<typeof harness>,
   response: Response | Error,
   options: { userId?: string | null; env?: Record<string, string | undefined>; week?: string } = {},
-): Promise<{ result: FloorCommandPullResult; urls: string[]; headers: string[] }> {
+): Promise<{ result: FloorCommandPullResult; urls: string[]; headers: string[]; redirects: Array<RequestRedirect | undefined> }> {
   const urls: string[] = [];
   const headers: string[] = [];
+  const redirects: Array<RequestRedirect | undefined> = [];
   const result = await pullFloorCommandPublishedWeek(session(options.userId === undefined ? USER : options.userId), options.week ?? WEEK, {
     env: options.env ?? env(),
     now: NOW,
@@ -158,15 +204,16 @@ async function pull(
     fetchImpl: async (input, init) => {
       urls.push(String(input));
       headers.push(String(new Headers(init?.headers).get("authorization")));
+      redirects.push(init?.redirect);
       if (response instanceof Error) throw response;
       return response;
     },
   });
-  return { result, urls, headers };
+  return { result, urls, headers, redirects };
 }
 
 describe("Floor Command connection boundary", () => {
-  it("keeps the bearer in server configuration and refuses the production host", () => {
+  it("keeps the bearer in server configuration and allows only the exact production origin", () => {
     expect(describeFloorCommandConnection({})).toEqual({ status: "unconfigured" });
     expect(describeFloorCommandConnection(env({ ORIENT_FLOOR_COMMAND_PULL_ENABLED: undefined }))).toMatchObject({
       status: "configured",
@@ -176,7 +223,28 @@ describe("Floor Command connection boundary", () => {
     expect(JSON.stringify(describeFloorCommandConnection(env()))).not.toContain(TOKEN);
     expect(
       describeFloorCommandConnection(env({ ORIENT_FLOOR_COMMAND_BASE_URL: "https://deptsync-hub.vercel.app" })),
-    ).toEqual({ status: "unconfigured" });
+    ).toMatchObject({ status: "configured", baseUrl: "https://deptsync-hub.vercel.app", pullEnabled: true });
+    expect(
+      describeFloorCommandConnection(env({ ORIENT_FLOOR_COMMAND_BASE_URL: "https://deptsync-hub.vercel.app/api" })),
+    ).toMatchObject({ baseUrl: "https://deptsync-hub.vercel.app" });
+    for (const baseUrl of [
+      "http://deptsync-hub.vercel.app",
+      "https://deptsync-hub.vercel.app:8443",
+      "https://user:secret@deptsync-hub.vercel.app",
+      "https://deptsync-hub.vercel.app.example",
+      "https://not-deptsync-hub.vercel.app",
+      "https://evil.vercel.app",
+      "https://floor-command.test:8443",
+      "http://floor-command.test",
+    ]) {
+      expect(describeFloorCommandConnection(env({ ORIENT_FLOOR_COMMAND_BASE_URL: baseUrl }))).toEqual({
+        status: "unconfigured",
+      });
+    }
+    expect(describeFloorCommandConnection(env({ ORIENT_FLOOR_COMMAND_BASE_URL: "http://127.0.0.1:55474" }))).toMatchObject({
+      status: "configured",
+      baseUrl: "http://127.0.0.1:55474",
+    });
   });
 
   it("approves only the signed-in operator for the server store and read-only purpose", async () => {
@@ -259,17 +327,6 @@ describe("Floor Command connection boundary", () => {
   it("accepts a comparable week, rejects a withheld 200, and keeps the bearer out of the result", async () => {
     const setup = harness();
     const logs = vi.spyOn(console, "info").mockImplementation(() => undefined);
-    const unpublished = await pull(setup, jsonResponse(body(snapshot(0, "rev-0"))));
-    expect(unpublished.result.outcome).toBe("accepted");
-    expect(unpublished.urls[0]).toContain("week=2026-W44");
-    expect(unpublished.urls[0]).toContain("store=2587");
-    expect(unpublished.urls[0]).not.toContain(TOKEN);
-    expect(unpublished.headers).toEqual([`Bearer ${TOKEN}`]);
-    expect(JSON.stringify(unpublished.result)).not.toContain(TOKEN);
-    if (unpublished.result.outcome !== "accepted") return;
-    expect(unpublished.result.memory.handoffs[0]?.snapshot.publication.status).toBe("unpublished");
-    expect(unpublished.result.memory.handoffs[0]?.snapshot.freshness.week_sequence).toBe(0);
-
     const published = snapshot(1, "rev-1", [entry("a1")]);
     published.retired = [
       {
@@ -280,26 +337,38 @@ describe("Floor Command connection boundary", () => {
         reason: "cleared",
       },
     ];
-    const next = await pull(setup, jsonResponse(body(published)));
-    expect(next.result.outcome).toBe("accepted");
-    if (next.result.outcome !== "accepted") return;
-    const reading = projectFloorCommandObservation(next.result.memory);
+    const unpublished = await pull(setup, jsonResponse(body(published)));
+    expect(unpublished.result.outcome).toBe("accepted");
+    expect(unpublished.urls).toHaveLength(1);
+    expect(unpublished.redirects).toEqual(["manual"]);
+    expect(unpublished.urls[0]).toContain("week=2026-W44");
+    expect(unpublished.urls[0]).toContain("store=2587");
+    expect(unpublished.urls[0]).not.toContain(TOKEN);
+    expect(unpublished.headers).toEqual([`Bearer ${TOKEN}`]);
+    expect(JSON.stringify(unpublished.result)).not.toContain(TOKEN);
+    if (unpublished.result.outcome !== "accepted") return;
+    expect(unpublished.result.memory.handoffs[0]?.snapshot.freshness.week_sequence).toBe(1);
+    expect(setup.releases).toEqual([]);
+    const reading = projectFloorCommandObservation(unpublished.result.memory);
     if (reading.status !== "fresh") throw new Error(reading.status);
     expect(reading.handoffs[0]?.assignments.find((row) => row.id === "fc.assignment.cleared")?.lifecycle).toBe(
       "retired",
     );
     expect(reading.handoffs[0]?.assignments.find((row) => row.lifecycle === "retired")?.zebraTaskCompleted).toBe(false);
 
-    const replay = await pull(setup, jsonResponse(body(published)));
-    expect(replay.result.outcome).toBe("accepted");
-    if (replay.result.outcome !== "accepted") return;
-    expect(replay.result.memory.handoffs).toHaveLength(1);
-    expect(replay.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
+    const again = await pull(setup, jsonResponse(body(snapshot(2, "rev-2", [entry("a1")]))));
+    expect(again.result.outcome).toBe("already_succeeded");
+    expect(again.urls).toEqual([]);
+    if (again.result.outcome !== "already_succeeded") return;
+    expect(again.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
+    expect(again.result.memory.lastAttempt?.result).toBe("success_complete");
+    expect(setup.calls.filter((call) => call === "success_complete")).toHaveLength(1);
 
+    setup.keepHandoffWithoutSuccess();
     const older = await pull(setup, jsonResponse(body(snapshot(0, "rev-old"))));
     expect(older.result.outcome).toBe("rejected");
+    expect(older.urls).toHaveLength(1);
     if (older.result.outcome !== "rejected") return;
-    expect(older.result.memory.lastAttempt?.result).toBe("success_complete");
     expect(older.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
 
     const conflict = snapshot(1, "rev-other", [entry("a1")]);
@@ -307,39 +376,115 @@ describe("Floor Command connection boundary", () => {
     expect(conflicted.result.outcome).toBe("conflict");
     if (conflicted.result.outcome !== "conflict") return;
     expect(conflicted.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
-    expect(conflicted.result.memory.lastAttempt?.result).toBe("failure");
+    expect(conflicted.result.memory.lastAttempt?.reason).toBe("sequence_conflict");
 
-    const withheld = await pull(setup, jsonResponse(body(snapshot(2, "rev-2", [entry("a1")]), "withheld")));
+    const fresh = harness();
+    const withheld = await pull(fresh, jsonResponse(body(snapshot(2, "rev-2", [entry("a1")]), "withheld")));
     expect(withheld.result.outcome).toBe("withheld");
     if (withheld.result.outcome !== "withheld") return;
-    expect(withheld.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
+    expect(withheld.result.memory.handoffs).toHaveLength(0);
     expect(withheld.result.memory.lastAttempt?.reason).toBe("ordering_withheld");
-    expect(setup.calls.filter((call) => call === "success_complete").length).toBe(3);
+    expect(fresh.releases).toHaveLength(1);
 
-    const revoked = await pull(setup, jsonResponse({ error: "unauthorized" }, 401));
+    const wrongWeek = snapshot(1, "rev-week");
+    wrongWeek.operational_week = "2026-W45";
+    const mismatched = await pull(harness(), jsonResponse(body(wrongWeek)));
+    expect(mismatched.result.outcome).toBe("unavailable");
+    if (mismatched.result.outcome !== "unavailable") return;
+    expect(mismatched.result.memory.lastAttempt?.reason).toBe("invalid_snapshot");
+    expect(mismatched.result.memory.handoffs).toHaveLength(0);
+
+    const retained = harness();
+    const kept = await pull(retained, jsonResponse(body(snapshot(1, "rev-kept", [entry("a1")]))));
+    expect(kept.result.outcome).toBe("accepted");
+    retained.keepHandoffWithoutSuccess();
+    const revoked = await pull(retained, jsonResponse({ error: "unauthorized" }, 401));
     expect(revoked.result.outcome).toBe("revoked");
     if (revoked.result.outcome !== "revoked") return;
-    expect(revoked.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
+    expect(revoked.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-kept");
     expect(revoked.result.memory.lastAttempt?.reason).toBe("credential_rejected");
     expect(JSON.stringify(revoked.result)).not.toContain(TOKEN);
 
-    const timedOut = await pull(setup, new DOMException("The operation was aborted", "AbortError"));
+    const timedOut = await pull(retained, new DOMException("The operation was aborted", "AbortError"));
     expect(timedOut.result.outcome).toBe("unavailable");
     if (timedOut.result.outcome !== "unavailable") return;
     expect(timedOut.result.memory.lastAttempt?.reason).toBe("source_unavailable");
-    expect(timedOut.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
+    expect(timedOut.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-kept");
 
-    const malformed = await pull(setup, jsonResponse({ availability: "ready", snapshot: { source: "other" } }));
+    const malformed = await pull(retained, jsonResponse({ availability: "ready", snapshot: { source: "other" } }));
     expect(malformed.result.outcome).toBe("unavailable");
     if (malformed.result.outcome !== "unavailable") return;
     expect(malformed.result.memory.lastAttempt?.reason).toBe("invalid_snapshot");
-    expect(malformed.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
+    expect(malformed.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-kept");
 
-    const wrongStore = await pull(setup, jsonResponse({ error: "forbidden" }, 403));
+    const redirected = await pull(retained, jsonResponse({ ok: true }, 302));
+    expect(redirected.urls).toHaveLength(1);
+    expect(redirected.result.outcome).toBe("unavailable");
+    if (redirected.result.outcome !== "unavailable") return;
+    expect(redirected.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-kept");
+
+    const wrongStore = await pull(retained, jsonResponse({ error: "forbidden" }, 403));
     expect(wrongStore.result.outcome).toBe("wrong_store");
+    if (wrongStore.result.outcome !== "wrong_store" || !wrongStore.result.memory) return;
+    expect(wrongStore.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-kept");
     expect(JSON.stringify(wrongStore.result)).not.toContain(TOKEN);
     expect(logs.mock.calls.join(" ")).not.toContain(TOKEN);
     logs.mockRestore();
+  });
+
+  it("does not fetch when the claim is busy, and a stale claim cannot replace the observation", async () => {
+    const busy = harness();
+    busy.forceClaim("busy");
+    const blocked = await pull(busy, jsonResponse(body(snapshot(1, "rev-1"))));
+    expect(blocked.result.outcome).toBe("busy");
+    expect(blocked.urls).toEqual([]);
+
+    const setup = harness();
+    const accepted = await pull(setup, jsonResponse(body(snapshot(1, "rev-1", [entry("a1")]))));
+    expect(accepted.result.outcome).toBe("accepted");
+    setup.keepHandoffWithoutSuccess();
+    setup.failApply("floor_command_controlled_pull_claim_expired");
+    setup.forceRelease("mismatch");
+    const expired = await pull(setup, jsonResponse(body(snapshot(2, "rev-2", [entry("a1")]))));
+    expect(expired.result.outcome).toBe("unavailable");
+    if (expired.result.outcome !== "unavailable") return;
+    expect(expired.result.memory.handoffs[0]?.snapshot.freshness.revision).toBe("rev-1");
+    expect(expired.result.memory.lastAttempt?.result).toBe("failure");
+    expect(setup.releases).toEqual([expect.any(String)]);
+  });
+
+  it("lets one of two overlapping pulls fetch", async () => {
+    const setup = harness();
+    let releaseFetch: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      releaseFetch = resolve;
+    });
+    let fetches = 0;
+    const first = pullFloorCommandPublishedWeek(session(USER), WEEK, {
+      env: env(),
+      now: NOW,
+      commit: setup.commit,
+      fetchImpl: async () => {
+        fetches += 1;
+        if (fetches === 1) await gate;
+        return jsonResponse(body(snapshot(1, "rev-race", [entry("a1")])));
+      },
+    });
+    const second = pullFloorCommandPublishedWeek(session(USER), WEEK, {
+      env: env(),
+      now: NOW,
+      commit: setup.commit,
+      fetchImpl: async () => {
+        fetches += 1;
+        return jsonResponse(body(snapshot(1, "rev-other", [entry("a1")])));
+      },
+    });
+    await vi.waitFor(() => expect(fetches).toBe(1));
+    releaseFetch?.();
+    const results = await Promise.all([first, second]);
+    const outcomes = results.map((result) => result.outcome).sort();
+    expect(outcomes).toEqual(["accepted", "busy"]);
+    expect(fetches).toBe(1);
   });
 
   it("mounts the retained reading on Work without the bearer or a live pull", () => {
@@ -357,6 +502,8 @@ describe("Floor Command connection boundary", () => {
       const source = readFileSync(file, "utf8");
       expect(source).not.toContain("ORIENT_FLOOR_COMMAND_READ_TOKEN");
       expect(source).not.toContain("pullFloorCommandPublishedWeek");
+      expect(source).not.toContain("/api/integrations/floor-command/pull");
+      expect(source).not.toContain("/api/integrations/floor-command/approval");
     }
     for (const file of [
       "components/orient/Surfaces.tsx",
