@@ -1,5 +1,51 @@
 # Development journal
 
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A
+
+Local claim migration only. No hosted migration, route, origin allowlist, credential, environment change, approval binding, or live pull.
+
+`20261024240000_floor_command_controlled_pull_claim.sql` follows the three observation migrations and does not edit them. One claim row per operator stores the claim identity and database acquisition time. Store, source, and purpose stay on the binding. A 15-second lease uses `now()`. The same claim does not extend the lease. A different claim replaces it only after expiry. Success commits only for the current unexpired claim and then deletes that claim. A committed success stays `success_complete`; a later failure does not clear the snapshot or `last_successful_observed_at`. Release deletes only the current claim and does not delete a handoff. The five-argument persist function is dropped. Disposable PostgreSQL passed the existing observation echoes and the new concurrency, stale-claim, lease, restart, failure, privilege, and cross-operator checks. **GO** to resume local application Gate A. **NO-GO** to apply the migration to hosted Orient while `recordFloorCommandObservation` and the pull failure writer still omit `p_claim`.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004
+
+Gate A stopped before code changes. Orient remains `e44953b`. Disposable Postgres applied the three observation migrations and accepted two concurrent `persist_floor_command_observation` successes for one bound user. The attempt result check rejects a claim state, and `service_role` has select-only table grants. A PostgREST call cannot hold a row lock across the outbound fetch. A check of `success_complete` after restart works only once that row exists. **NO-GO** to implement the pull route or request Gate B. The next persistence piece is a claim table, claim and release functions, and a required claim argument on persist, with the old five-argument function removed.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md).
+
+## 2026-10-27 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-003
+
+Activation plan only. No credential, binding, environment change, deployment, or live pull.
+
+The live aliases are still Floor Command `ac533eb` / `dpl_JDGxBWMMaFpAwEbCm4kyBtrAdV6Y` and Orient `e44953b` / `dpl_8wHGrY4J1mZu51fCJgv5h6qKdz9M`. The published-week handler answers an unauthenticated GET with `{"error":"unauthorized"}`. The credential table has 0 rows. Store 2587 `2026-W44` is sequence 3, with Nick's three assignments confirmed in Zebra and Tracy's and Tyson's six still unconfirmed. The composer revision is `cedf9853523bd7f8`. Orient still refuses that production origin and has no route that can pull. The operator reports the signed-in Work checklist passed. This session did not capture the signed-in network log, and it could not re-read the Orient database. **GO** for a local implementation of the origin allow and one authenticated pull route. **NO-GO** to connect.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md).
+
+## 2026-10-26 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-002
+
+Dark consumer deployment. No credential, binding, origin allowlist, or pull.
+
+The baseline was still `9ff9f84`. A PostgreSQL 17.11 `public` backup restored into a scratch 17.11 cluster with all 27 table counts matching. The three observation migrations were applied in order to `ksmhgaamyheyhefbyglb`. The observation tables are empty and row-level security is on. `e44953b` is production as `dpl_8wHGrY4J1mZu51fCJgv5h6qKdz9M`. Unauthenticated observation, Pulse, and Google routes reject a missing session. The sign-in page does not call Floor Command. Signed-in Work smoke was not possible from this browser. **NO-GO** for integration activation until that smoke is recorded.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md).
+
+## 2026-10-26 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-001
+
+Read-only production audit and local release preparation. No hosted migration, credential, deploy, connection, or pull.
+
+Orient production is `9ff9f84` (`dpl_QMfa15AVQiDDGjSYLcJjyM635Per`). The observation tables are absent on `ksmhgaamyheyhefbyglb`, and the three local migrations are not in the remote list. Production has no Floor Command token, store, base URL, or pull flag. Local `main` `e44953b` is the isolated candidate: eight observation commits and no unrelated product commits. Disposable PostgreSQL 14.18 rehearsal covered order failures, a failure that keeps the last snapshot, an older sequence rejection, and a drop that leaves a sentinel table. Vitest, the pulse regressions, typecheck, lint, and the production build passed. One pulse database test failed only while its port was already in use, then passed alone. Signed-in browser smoke remains part of a later deployment. **GO** to request that dark deployment. **NO-GO** to execute it here.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_001.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_001.md).
+
+## 2026-10-25 — TEAMLAB-INTEGRATION-RELEASE-001 plan
+
+Planning only. No migration, credential, deploy, or pull.
+
+Orient `e44953b` is eight Floor Command commits ahead of production `9ff9f84`. Observation tables are not on `ksmhgaamyheyhefbyglb`. The pull flag and the refusal of `deptsync-hub.vercel.app` stay as they are. Executing the release is **NO-GO**.
+
+Record: [docs/discovery/TEAMLAB_FLOOR_COMMAND_ORIENT_RELEASE_001.md](docs/discovery/TEAMLAB_FLOOR_COMMAND_ORIENT_RELEASE_001.md).
+
 ## 2026-10-24 — ORIENT-FLOOR-COMMAND-005 Work presentation
 
 Local only. The pull stays off. No production migration, credential, or live call.

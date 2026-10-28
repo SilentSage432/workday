@@ -2,6 +2,13 @@
 
 ## Accepted foundations (closed)
 
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A** — Local claim migration validated. One controlled success can be fenced in the database. Application Gate A may resume locally. Hosted migration and live connection remain **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004** — Gate A **STOPPED** until 004A. The unfenced schema could not reserve one successful pull. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-003** — Activation plan. The check-then-write latch is superseded by RELEASE-004. **NO-GO** to connect. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-002** — Dark consumer deployed as `e44953b` / `dpl_8wHGrY4J1mZu51fCJgv5h6qKdz9M`. Pull disabled. The activation decision moved to RELEASE-003. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-001** — Candidate prepared, then deployed by RELEASE-002. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_001.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_001.md)
+- **TEAMLAB-INTEGRATION-RELEASE-001** — Earlier release plan. Superseded for the execute decision by the record above. Pointer: [TEAMLAB_FLOOR_COMMAND_ORIENT_RELEASE_001.md](docs/discovery/TEAMLAB_FLOOR_COMMAND_ORIENT_RELEASE_001.md).
+
 - **ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-PHYSICALLY-ACCEPTED** — EXPRESSION-005-II / 005-IIC-R2 on `50378b8`; ARRIVAL terminal silence + relative_before phone/Watch regression; first 005-IIC failure preserved as historical evidence ([EXPRESSION-005-II](docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md))
 - **ORIENT-PULSE-BACKGROUND-SESSION-AUTHORITY-CORRECTION** — EXPRESSION-005-IIE `50378b8`; warm/background `loadFromStorage` single-flight; physically exercised in IIC-R2 ([EXPRESSION-005-IIE](docs/implementation/ORIENT-PULSE-EXPRESSION-005-IIE.md))
 - **ORIENT-PULSE-NATIVE-ARRIVAL-SILENCE-GATE-CANDIDATE** — EXPRESSION-005-II on baseline `95f5464` / `7e6fe7e`; superseded for physical acceptance by IIC-R2 on `50378b8`; first 005-IIC FAILED upstream at session ([EXPRESSION-005-II](docs/implementation/ORIENT-PULSE-EXPRESSION-005-II.md))
@@ -36,6 +43,10 @@
 
 ## External operational observation
 
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A** — Controlled-pull claim (**LOCAL ONLY**). At most one successful controlled observation commits for the one-shot. Not exactly-once HTTP delivery. Live connection **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004** — One-success boundary (**STOPPED**, then addressed locally by 004A). Live connection **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-003** — Controlled activation plan (**PLAN ONLY**). Its application latch does not meet the atomic one-success requirement. Live connection **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md)
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-002** — Dark consumer is in production at `e44953b`. No credential, binding, or pull. Live connection **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md)
 - **ORIENT-FLOOR-COMMAND-001** — How Orient can observe a Floor Command week without owning it (**DISCOVERY COMPLETE**). Live connector **NO-GO**. — [ORIENT-FLOOR-COMMAND-001-DISCOVERY.md](docs/discovery/ORIENT-FLOOR-COMMAND-001-DISCOVERY.md)
 - **ORIENT-FLOOR-COMMAND-002** — Fixture observation projection (**LOCAL ONLY**). In-memory reading of the producer snapshot. Not mounted. No credential, table, or Pulse. — [ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md)
 - **ORIENT-FLOOR-COMMAND-002A** — `none` and `complete` stay distinct (**LOCAL ONLY**). Status owns the sentence. An older snapshot does not replace a newer revision. — [ORIENT-FLOOR-COMMAND-002-PROJECTION.md](docs/discovery/ORIENT-FLOOR-COMMAND-002-PROJECTION.md)

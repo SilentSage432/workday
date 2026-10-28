@@ -1,6 +1,40 @@
 # Chat handoff
 
-## Current state (2026-10-24)
+## Current state (2026-10-28)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004A — LOCAL CLAIM MIGRATION VALIDATED. APPLICATION GATE A NOT RESUMED.**
+
+Disposable PostgreSQL enforces one committed controlled success per operator. `floor_command_controlled_pull_claims` holds one lease. `claim_floor_command_controlled_pull`, `release_floor_command_controlled_pull`, and the six-argument `persist_floor_command_observation` are the only write path. The five-argument persist function is dropped. The hosted project was not migrated. Routes, the origin allowlist, credentials, and the live pull were not changed. **GO** to resume local Gate A application work. **NO-GO** to apply this migration to hosted Orient before those callers pass `p_claim`. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md).
+
+## Previous state (2026-10-28)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004 — GATE A STOPPED. NO MIGRATION AND NO PULL ROUTE.**
+
+`HEAD` is still `e44953b181b612fbefe8661eb58c0366f324589e`. The current attempt table can record `success_complete` or `failure` only, and `service_role` cannot write it except through `persist_floor_command_observation`. Two concurrent success calls both committed on disposable Postgres. A new connection still sees the committed success, but nothing can reserve the pull before the network call. **NO-GO** for the origin allowlist, the approval route, the pull route, and Gate B. The smallest missing persistence is a claim table plus a claim argument on persist. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md).
+
+## Previous state (2026-10-27)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-003 — ACTIVATION PLAN ONLY. LIVE INTEGRATION NO-GO.**
+
+Production identities match the expected baselines. Floor Command is `ac533eb` / `dpl_JDGxBWMMaFpAwEbCm4kyBtrAdV6Y`. Orient is `e44953b` / `dpl_8wHGrY4J1mZu51fCJgv5h6qKdz9M`. Store `2587` week `2026-W44` is sequence `3`, revision `cedf9853523bd7f8`, with three Zebra entry confirmations and no cleared rows. The credential table is empty. The operator reports the signed-in Work checklist passed; this session did not capture that browser's network log. **GO** for a separate local implementation. **NO-GO** to deploy, issue a credential, set environment variables, bind an operator, or pull. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_003.md).
+
+## Previous state (2026-10-26)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-002 — DARK CONSUMER DEPLOYED. WORK SMOKE OUTSTANDING.**
+
+Production is `e44953b181b612fbefe8661eb58c0366f324589e` (`dpl_8wHGrY4J1mZu51fCJgv5h6qKdz9M`, GitHub Production `7351184912`) at https://orient-cyan.vercel.app. The three observation migrations are on `ksmhgaamyheyhefbyglb`. Bindings, handoffs, attempts, and dismissals are empty. No Floor Command env var, credential, or pull. Unauthenticated observation returns 401. Signed-in Work smoke has not been done. **NO-GO** for integration activation. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_002.md).
+
+## Previous state (2026-10-26)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-001 — CANDIDATE PREPARED. DARK DEPLOY NOT EXECUTED.**
+
+Production is still `9ff9f847525af092926389121a2a9d640ce03fa1` (`dpl_QMfa15AVQiDDGjSYLcJjyM635Per` at https://orient-cyan.vercel.app). Observation migrations are absent on `ksmhgaamyheyhefbyglb`. Production has no `ORIENT_FLOOR_COMMAND_*` variables. The isolated candidate is local `e44953b181b612fbefe8661eb58c0366f324589e`, eight observation commits, not on `origin/main`. **GO** to request a separate dark deployment. **NO-GO** to deploy, migrate, issue a credential, or enable a pull from this tranche. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_001.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_001.md).
+
+## Previous state (2026-10-25)
+
+**TEAMLAB-INTEGRATION-RELEASE-001 — PLAN ONLY. NO-GO.**
+
+The release plan lives in Floor Command at `docs/product/TEAMLAB_FLOOR_COMMAND_ORIENT_RELEASE_001.md`. The Orient pointer is [docs/discovery/TEAMLAB_FLOOR_COMMAND_ORIENT_RELEASE_001.md](docs/discovery/TEAMLAB_FLOOR_COMMAND_ORIENT_RELEASE_001.md). Production remains `9ff9f84`. The eight local commits are the minimum deployable set, and they are not deployed. Do not set the pull flag. Do not allow the hosted Floor Command origin in this step.
 
 **ORIENT-FLOOR-COMMAND-005 — WORK PRESENTATION — LOCAL ONLY. NO-GO.**
 

@@ -82,3 +82,7 @@ Still required before a live read:
 - A server call that loads this store, applies one read, and persists through the function above
 
 None of those are authorized by this tranche.
+
+## 8. Later claim fence
+
+RELEASE-004A adds `20261024240000_floor_command_controlled_pull_claim.sql` after the three observation migrations. The five-argument `persist_floor_command_observation` described above is dropped. Success now requires the operator's current unexpired claim, and a committed `success_complete` is not rewritten by a later failure. The claim table does not copy store, source, or purpose. Those stay on the binding. Canonical record: [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md](TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_004.md). This later migration is also not applied to hosted Orient.

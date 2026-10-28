@@ -17,6 +17,7 @@ describe("floor command observation persistence regression", () => {
         timeout: 120_000,
         env: process.env,
       });
+      expect(out).toContain("MIGRATION_EMPTY_OK");
       expect(out).toContain("APPROVAL_OK");
       expect(out).toContain("FIRST_SNAPSHOT_OK");
       expect(out).toContain("REPLAY_OK");
@@ -41,7 +42,21 @@ describe("floor command observation persistence regression", () => {
     expect(out).toContain("SEQUENCE_REPLAY_CONFLICT_OLDER_OK");
     expect(out).toContain("SEQUENCE_DELETE_AND_WITHHELD_OK");
     expect(out).toContain("SEQUENCE_DISMISSAL_KEPT_OK");
+    expect(out).toContain("CLAIM_ONE_OF_TWO_OK");
+    expect(out).toContain("CLAIM_BUSY_OK");
+    expect(out).toContain("SIMULTANEOUS_SUCCESS_OK");
+    expect(out).toContain("STALE_PERSIST_REJECTED_OK");
+    expect(out).toContain("LEASE_REPLACEMENT_OK");
+    expect(out).toContain("STALE_RELEASE_REJECTED_OK");
+    expect(out).toContain("FAILURE_BEFORE_SUCCESS_OK");
+    expect(out).toContain("RESTART_AFTER_SUCCESS_OK");
+    expect(out).toContain("FAILURE_AFTER_SUCCESS_KEEPS_OK");
+    expect(out).toContain("CROSS_OPERATOR_CLAIM_REJECTED_OK");
+    expect(out).toContain("CROSS_STORE_CLAIM_REJECTED_OK");
+    expect(out).toContain("LEGACY_SIGNATURE_ABSENT_OK");
+    expect(out).toContain("CLAIM_PRIVILEGE_OK");
     expect(out).toContain("ORIENT-FLOOR-COMMAND-003-PERSISTENCE-CLEAR");
+    expect(out).toContain("ORIENT-FLOOR-COMMAND-004A-CLAIM-CLEAR");
     },
     120_000,
   );
