@@ -1,6 +1,6 @@
 # ORIENT-FLOOR-COMMAND-005 — Work presentation
 
-Local only. The pull stays off. Opening Work reads the retained observation and does not call Floor Command. Live connection remains **NO-GO**.
+Local only. Opening Work reads the retained observation and does not call Floor Command. The current presentation contract is [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_013.md](TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_013.md). A retained success is not a live reading.
 
 ## Server-to-client boundary
 
@@ -17,8 +17,7 @@ The route takes the signed-in operator from the existing Supabase access token. 
 | Not approved | No binding for this operator. |
 | Not configured | The operator is approved, and the server credential or base URL is missing. |
 | Store not authorized | The binding store is not the server store. No week is shown. |
-| Retained | A week may be shown. Live reading is off, or the last attempt failed. It is not a new check. |
-| Last accepted read | The pull is enabled and the last attempt succeeded. This screen still did not request a new one. |
+| Retained | A week may be shown. The sentence names when it was observed, the source sequence and revision, and that it is retained evidence. An enabled pull flag does not make it current. |
 | Not read | The retained row could not be loaded. |
 
 A rejected credential, an unreachable source, a withheld snapshot, and a sequence conflict keep the last week and say why. An unpublished week stays unpublished. A cleared assignment says "Cleared in Floor Command." A bay that disappeared without that report says "Removed in Floor Command." Neither is an Orient completion. There is no checkbox.
@@ -31,8 +30,8 @@ The reading does not become a Task, Commitment, Block, Protected Time, stewardsh
 2. Orient migrations `20261024210000`, `20261024220000`, and `20261024230000` on the Orient database. None of these is applied here.
 3. An operator approval for the server store.
 4. A later tranche that allows the hosted Floor Command origin. The pull still refuses `deptsync-hub.vercel.app`.
-5. The pull flag, set only after those gates. It is not set now.
+5. The pull flag, set only after those gates. RELEASE-008 left it absent. The credential and the operator binding now exist: [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_008.md](TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_008.md).
 
 ## Remaining limits
 
-The Work surface shows the last retained week. It does not refresh it. There is still no rate limit or read audit on the producer. Hosted migration state is unverified. No production credential exists.
+The Work surface shows the last accepted week. Opening it does not refresh that week. A separate week field inside the disclosure can ask for one named observation. Production still holds the `2026-W44` observation, and the pull flag is absent. The governed request migration is local only.

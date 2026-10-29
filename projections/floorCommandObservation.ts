@@ -12,7 +12,7 @@ import {
   type FloorCommandSnapshot,
 } from "@/domain/floorCommandObservation";
 
-export type FloorCommandFreshness = "fresh" | "stale" | "unavailable";
+export type FloorCommandFreshness = "retained" | "stale" | "unavailable";
 
 export type FloorCommandAttemptReason =
   | "assignments_unavailable"
@@ -56,6 +56,12 @@ export type FloorCommandRetainedHandoff = {
   /** Last confirmed SMART dates. Kept when a later deadline read is unavailable. */
   deadlines: readonly FloorCommandDeadlineInput[];
   deadlinesAvailability: "ready" | "unavailable";
+  /** When this snapshot body was accepted. Defaults to the snapshot read time. */
+  observedAt?: string;
+  /** When an unchanged governed read confirmed this revision. */
+  lastCheckedAt?: string | null;
+  /** Highest sequence checked for this revision. */
+  checkedSequence?: number | null;
 };
 
 export type FloorCommandObservedDeadline = {
@@ -104,6 +110,10 @@ export type FloorCommandHandoffObservation = {
   reviewRequired: boolean;
   revision: string;
   readAt: string;
+  observedAt: string;
+  lastCheckedAt: string | null;
+  checkedSequence: number | null;
+  sequence: number | null;
   sourceUpdatedAt: string | null;
   freshness: FloorCommandFreshness;
   dismissed: boolean;
@@ -127,7 +137,7 @@ export type FloorCommandObservationReading =
       reason: FloorCommandAttemptReason;
       handoffs: readonly FloorCommandHandoffObservation[];
     }
-  | { status: "fresh"; readAt: string; handoffs: readonly FloorCommandHandoffObservation[] };
+  | { status: "retained"; readAt: string; handoffs: readonly FloorCommandHandoffObservation[] };
 
 export function emptyFloorCommandObservationMemory(
   connectedStoreNumber: string,
@@ -237,7 +247,7 @@ export function projectFloorCommandObservation(
       handoffs: [],
     };
   }
-  const freshness: FloorCommandFreshness = attempt.result === "success_complete" ? "fresh" : "stale";
+  const freshness: FloorCommandFreshness = attempt.result === "success_complete" ? "retained" : "stale";
   const handoffs = memory.handoffs
     .map((row) => projectHandoff(row, memory.dismissals, freshness, attempt.readAt))
     .sort((a, b) => b.weekStarting.localeCompare(a.weekStarting) || a.handoffId.localeCompare(b.handoffId));
@@ -249,7 +259,7 @@ export function projectFloorCommandObservation(
       handoffs,
     };
   }
-  return { status: "fresh", readAt: attempt.readAt, handoffs };
+  return { status: "retained", readAt: attempt.readAt, handoffs };
 }
 
 function fail(
@@ -363,7 +373,11 @@ function projectHandoff(
     deadlinesAvailability: retained.deadlinesAvailability,
     reviewRequired,
     revision: snapshot.freshness.revision,
-    readAt: freshness === "fresh" ? snapshot.freshness.read_at : attemptReadAt,
+    readAt: freshness === "retained" ? (retained.observedAt ?? snapshot.freshness.read_at) : attemptReadAt,
+    observedAt: retained.observedAt ?? snapshot.freshness.read_at,
+    lastCheckedAt: retained.lastCheckedAt ?? null,
+    checkedSequence: retained.checkedSequence ?? null,
+    sequence: weekSequenceOf(snapshot),
     sourceUpdatedAt: snapshot.freshness.source_updated_at,
     freshness,
     dismissed,

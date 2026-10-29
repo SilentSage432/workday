@@ -140,7 +140,7 @@ describe("floor command observation projection", () => {
     Object.freeze(frozen);
     const { reading } = observe(ready(frozen));
     const handoff = handoffOf(reading);
-    expect(reading.status).toBe("fresh");
+    expect(reading.status).toBe("retained");
     expect(handoff.source).toBe(FLOOR_COMMAND_SOURCE);
     expect(handoff.weekIdentity).toBe("floor_command_iso_week");
     expect(handoff.storeNumber).toBe("2587");
@@ -439,8 +439,8 @@ describe("floor command observation projection", () => {
     });
     const both = observe(ready(nextWeek), current.memory);
     expect(both.memory.handoffs).toHaveLength(2);
-    expect(both.reading.status).toBe("fresh");
-    if (both.reading.status !== "fresh") return;
+    expect(both.reading.status).toBe("retained");
+    if (both.reading.status !== "retained") return;
     expect(both.reading.handoffs.map((row) => row.operationalWeek)).toEqual(["2026-W45", "2026-W44"]);
     expect(both.reading.handoffs.every((row) => row.attention)).toBe(true);
 
@@ -621,7 +621,7 @@ describe("none stays distinct from complete", () => {
       freshness: timed("rev-w45-none", "2026-11-01T18:00:00.000Z"),
     });
     const reading = observe(ready(next), done.memory).reading;
-    if (reading.status !== "fresh") throw new Error(reading.status);
+    if (reading.status !== "retained") throw new Error(reading.status);
     expect(reading.handoffs.map((row) => [row.operationalWeek, row.handoffStatus])).toEqual([
       ["2026-W45", "none"],
       ["2026-W44", "complete"],
@@ -724,7 +724,7 @@ describe("none stays distinct from complete", () => {
     expect(handoff.deadlinesAvailability).toBe("unavailable");
     expect(handoff.deadlines[0]?.targetDate).toBe("2026-10-28");
     expect(handoff.deadlines[0]?.finalDate).toBe("2026-10-30");
-    expect(missing.reading.status).toBe("fresh");
+    expect(missing.reading.status).toBe("retained");
   });
 });
 
@@ -784,8 +784,8 @@ describe("source week sequence", () => {
       { handoffId: "fc.zebra-handoff.2587.2026-W44", revision: "rev-deleted" },
     ]);
     const hidden = projectFloorCommandObservation(dismissed);
-    expect(hidden.status).toBe("fresh");
-    if (hidden.status !== "fresh") return;
+    expect(hidden.status).toBe("retained");
+    if (hidden.status !== "retained") return;
     expect(hidden.handoffs[0]?.handoffStatus).toBe("none");
     expect(hidden.handoffs[0]?.attention).toBe(false);
   });

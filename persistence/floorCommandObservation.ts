@@ -8,6 +8,7 @@ import {
   type FloorCommandRead,
   type FloorCommandSnapshot,
 } from "@/domain/floorCommandObservation";
+import type { FloorCommandGovernedRequestView } from "@/projections/floorCommandEvidenceCopy";
 import {
   applyFloorCommandRead,
   noteFloorCommandObservationFailure,
@@ -23,10 +24,12 @@ export const FLOOR_COMMAND_OBSERVATION_TABLES = [
   "floor_command_observation_handoffs",
   "floor_command_observation_attempts",
   "floor_command_observation_dismissals",
+  "floor_command_observation_requests",
+  "floor_command_observation_handoff_revisions",
 ] as const;
 
 export const FLOOR_COMMAND_HANDOFF_COLUMNS =
-  "user_id, handoff_id, store_number, operational_week, week_starting, week_ending, source_revision, source_updated_at, last_successful_observed_at, deadlines_availability, snapshot, superseded_assignments, retained_deadlines";
+  "user_id, handoff_id, store_number, operational_week, week_starting, week_ending, source_revision, source_updated_at, last_successful_observed_at, deadlines_availability, snapshot, superseded_assignments, retained_deadlines, last_checked_at, checked_sequence";
 
 export const FLOOR_COMMAND_ATTEMPT_COLUMNS =
   "user_id, last_attempted_at, last_attempt_result, last_attempt_reason, last_successful_observed_at";
@@ -72,7 +75,18 @@ export type FloorCommandObservationHandoffRow = {
   snapshot: FloorCommandSnapshot;
   superseded_assignments: unknown;
   retained_deadlines: unknown;
+  last_checked_at?: string | null;
+  checked_sequence?: number | string | null;
 };
+
+function integerColumn(value: number | string | null | undefined): number | null {
+  if (typeof value === "number" && Number.isInteger(value)) return value;
+  if (typeof value === "string" && /^[0-9]+$/.test(value)) {
+    const parsed = Number(value);
+    return Number.isSafeInteger(parsed) ? parsed : null;
+  }
+  return null;
+}
 
 export type FloorCommandObservationAttemptRow = {
   user_id: string;
@@ -213,6 +227,50 @@ export async function loadFloorCommandObservationStore(
   };
 }
 
+const GOVERNED_TERMINAL = new Set(["accepted_new", "unchanged", "revised", "failed", "rejected"]);
+
+/**
+ * Latest terminal governed request for each week. This does not call Floor Command.
+ * A missing table is a deployment failure: the migration has to exist before this select.
+ */
+export async function loadFloorCommandGovernedRequests(
+  client: SupabaseClient,
+  userId: string,
+): Promise<FloorCommandGovernedRequestView[]> {
+  const result = await client
+    .from("floor_command_observation_requests")
+    .select(
+      "operational_week, state, reason, terminal_at, previous_observed_at, previous_sequence, previous_revision",
+    )
+    .eq("user_id", userId);
+  if (result.error) throw new FloorCommandObservationPersistenceError(result.error.message);
+  const latest = new Map<string, FloorCommandGovernedRequestRow>();
+  for (const row of (result.data ?? []) as FloorCommandGovernedRequestRow[]) {
+    if (!GOVERNED_TERMINAL.has(row.state) || !row.terminal_at) continue;
+    const existing = latest.get(row.operational_week);
+    if (!existing || (existing.terminal_at ?? "") < row.terminal_at) latest.set(row.operational_week, row);
+  }
+  return [...latest.values()].map((row) => ({
+    operationalWeek: row.operational_week,
+    outcome: row.state as FloorCommandGovernedRequestView["outcome"],
+    reason: row.reason,
+    terminalAt: row.terminal_at ?? "",
+    previousObservedAt: row.previous_observed_at,
+    previousSequence: integerColumn(row.previous_sequence),
+    previousRevision: row.previous_revision,
+  }));
+}
+
+type FloorCommandGovernedRequestRow = {
+  operational_week: string;
+  state: string;
+  reason: string | null;
+  terminal_at: string | null;
+  previous_observed_at: string | null;
+  previous_sequence: number | string | null;
+  previous_revision: string | null;
+};
+
 /**
  * Loads the operator's bound store, applies the read, and persists the result.
  * The store argument is the binding, never a store number from the read.
@@ -314,6 +372,9 @@ function rowToRetainedHandoff(row: FloorCommandObservationHandoffRow) {
     supersededAssignments: supersededFrom(row.superseded_assignments),
     deadlines: deadlinesFrom(row.retained_deadlines),
     deadlinesAvailability,
+    observedAt: row.last_successful_observed_at,
+    lastCheckedAt: row.last_checked_at ?? null,
+    checkedSequence: integerColumn(row.checked_sequence),
   };
 }
 

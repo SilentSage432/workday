@@ -4,8 +4,10 @@ import { assertServerOnly } from "@/server/assertServerOnly";
 import { describeFloorCommandConnection } from "@/server/floorCommand/config";
 import {
   floorCommandObservationMemoryFromStore,
+  loadFloorCommandGovernedRequests,
   loadFloorCommandObservationStore,
 } from "@/persistence/floorCommandObservation";
+import { loadTemporalSettings } from "@/persistence/workSchedule";
 import {
   presentFloorCommandWork,
   type FloorCommandWorkReading,
@@ -34,9 +36,13 @@ export async function loadFloorCommandWorkReading(
         }
       : { status: "unconfigured" as const, storeNumber: null, pullEnabled: false };
   const stored = operatorId.trim() ? await loadFloorCommandObservationStore(client, operatorId) : null;
+  const settings = operatorId.trim() ? await loadTemporalSettings(client) : null;
+  const governedRequests = stored ? await loadFloorCommandGovernedRequests(client, operatorId) : [];
   return presentFloorCommandWork({
     operatorId,
     serverStore,
+    timeZone: settings?.timeZone ?? null,
+    governedRequests,
     stored: stored
       ? {
           userId: stored.userId,

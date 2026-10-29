@@ -128,6 +128,7 @@ export function OrientView({
   thread,
   pulse,
   floorCommand = null,
+  onFloorCommandRecorded,
   capture: _capture,
   actions,
 }: {
@@ -142,6 +143,7 @@ export function OrientView({
   thread: ThreadReading;
   pulse: PulseReading;
   floorCommand?: FloorCommandWorkReading | null;
+  onFloorCommandRecorded?: (reading: FloorCommandWorkReading) => void;
   /** Retained for instrument bridge; establishment routes through ADD (DirectTask/DirectNote). */
   capture: CaptureBridge;
   actions: OrientActions;
@@ -1409,7 +1411,9 @@ export function OrientView({
           ) : null}
           {surface.kind === "work" ? (
             <>
-              {floorCommand ? <FloorCommandWorkView reading={floorCommand} /> : null}
+              {floorCommand ? (
+                <FloorCommandWorkView reading={floorCommand} onRecorded={onFloorCommandRecorded} />
+              ) : null}
               <WorkScheduleOperation
               key={surface.weekStart}
               weekStart={surface.weekStart}

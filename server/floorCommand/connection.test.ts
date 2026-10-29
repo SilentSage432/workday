@@ -350,7 +350,7 @@ describe("Floor Command connection boundary", () => {
     expect(unpublished.result.memory.handoffs[0]?.snapshot.freshness.week_sequence).toBe(1);
     expect(setup.releases).toEqual([]);
     const reading = projectFloorCommandObservation(unpublished.result.memory);
-    if (reading.status !== "fresh") throw new Error(reading.status);
+    if (reading.status !== "retained") throw new Error(reading.status);
     expect(reading.handoffs[0]?.assignments.find((row) => row.id === "fc.assignment.cleared")?.lifecycle).toBe(
       "retired",
     );

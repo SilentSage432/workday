@@ -3,20 +3,22 @@ import {
   type FloorCommandObservationMemory,
   type FloorCommandObservationReading,
 } from "@/projections/floorCommandObservation";
+import type { FloorCommandGovernedRequestView } from "@/projections/floorCommandEvidenceCopy";
 
 /**
  * What Work may render. The bearer and the Floor Command base URL are absent.
- * `current` is a last accepted read while the pull is enabled. Rendering it
- * does not contact Floor Command.
+ * Rendering it does not contact Floor Command. A pull flag is not a live reading.
  */
 export type FloorCommandWorkReading =
   | { posture: "unapproved" }
   | { posture: "wrong_store" }
   | { posture: "unread" }
   | {
-      posture: "unconfigured" | "retained" | "current";
+      posture: "unconfigured" | "retained";
       storeNumber: string;
       pullEnabled: boolean;
+      timeZone: string | null;
+      governedRequests: readonly FloorCommandGovernedRequestView[];
       observation: FloorCommandObservationReading;
     };
 
@@ -30,6 +32,8 @@ export function presentFloorCommandWork(input: {
   operatorId: string;
   stored: { userId: string; storeNumber: string; memory: FloorCommandObservationMemory } | null;
   serverStore: FloorCommandWorkServerStore;
+  timeZone?: string | null;
+  governedRequests?: readonly FloorCommandGovernedRequestView[];
 }): FloorCommandWorkReading {
   const stored = input.stored;
   if (!input.operatorId.trim() || !stored || stored.userId !== input.operatorId) {
@@ -47,22 +51,17 @@ export function presentFloorCommandWork(input: {
       posture: "unconfigured",
       storeNumber: stored.storeNumber,
       pullEnabled: false,
-      observation,
-    };
-  }
-  const pullEnabled = input.serverStore.pullEnabled;
-  if (pullEnabled && observation.status === "fresh") {
-    return {
-      posture: "current",
-      storeNumber: stored.storeNumber,
-      pullEnabled: true,
+      timeZone: input.timeZone ?? null,
+      governedRequests: input.governedRequests ?? [],
       observation,
     };
   }
   return {
     posture: "retained",
     storeNumber: stored.storeNumber,
-    pullEnabled,
+    pullEnabled: input.serverStore.pullEnabled,
+    timeZone: input.timeZone ?? null,
+    governedRequests: input.governedRequests ?? [],
     observation,
   };
 }
@@ -73,27 +72,26 @@ export function isFloorCommandWorkReading(value: unknown): value is FloorCommand
   if (posture === "unapproved" || posture === "wrong_store" || posture === "unread") {
     return Object.keys(value).length === 1;
   }
-  if (posture !== "unconfigured" && posture !== "retained" && posture !== "current") return false;
+  if (posture !== "unconfigured" && posture !== "retained") return false;
   const row = value as {
     storeNumber?: unknown;
     pullEnabled?: unknown;
+    timeZone?: unknown;
+    governedRequests?: unknown;
     observation?: unknown;
   };
   if (typeof row.storeNumber !== "string" || row.storeNumber.trim().length === 0) return false;
   if (row.pullEnabled !== true && row.pullEnabled !== false) return false;
   if (posture === "unconfigured" && row.pullEnabled) return false;
-  if (posture === "current" && (!row.pullEnabled || !isFreshObservation(row.observation))) return false;
+  if (row.timeZone !== undefined && row.timeZone !== null && typeof row.timeZone !== "string") return false;
+  if (row.governedRequests !== undefined && !Array.isArray(row.governedRequests)) return false;
   return isObservation(row.observation);
-}
-
-function isFreshObservation(value: unknown): boolean {
-  return isObservation(value) && (value as { status?: unknown }).status === "fresh";
 }
 
 function isObservation(value: unknown): boolean {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const status = (value as { status?: unknown }).status;
   if (status === "unobserved") return Array.isArray((value as { handoffs?: unknown }).handoffs);
-  if (status !== "unavailable" && status !== "stale" && status !== "fresh") return false;
+  if (status !== "unavailable" && status !== "stale" && status !== "retained") return false;
   return Array.isArray((value as { handoffs?: unknown }).handoffs);
 }

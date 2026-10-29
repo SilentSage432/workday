@@ -1,4 +1,8 @@
 import { formatCivilDateLabel } from "@/domain/time/workFiscalWeek";
+import {
+  floorCommandEvidenceCopy,
+  type FloorCommandGovernedRequestView,
+} from "@/projections/floorCommandEvidenceCopy";
 import type {
   FloorCommandHandoffObservation,
   FloorCommandObservationReading,
@@ -13,10 +17,14 @@ export function FloorCommandObservationView({
   reading,
   onDismiss,
   placement = "reading",
+  timeZone = null,
+  governedRequests = [],
 }: {
   reading: FloorCommandObservationReading;
   onDismiss?: (handoffId: string, revision: string) => void;
   placement?: "reading" | "work";
+  timeZone?: string | null;
+  governedRequests?: readonly FloorCommandGovernedRequestView[];
 }) {
   if (reading.status === "unobserved") return null;
   if (reading.status === "unavailable") {
@@ -39,7 +47,7 @@ export function FloorCommandObservationView({
         </section>
       );
     }
-    if (reading.status === "fresh") return null;
+    if (reading.status === "retained") return null;
     return (
       <section aria-label="Floor Command" data-floor-command-observation="stale">
         <p>Floor Command could not be read.</p>
@@ -50,7 +58,11 @@ export function FloorCommandObservationView({
   return (
     <section aria-label="Floor Command" data-floor-command-observation={reading.status}>
       {reading.status === "stale" ? (
-        <p>Floor Command could not be read. Showing the last successful read.</p>
+        <p>
+          {placement === "work"
+            ? "The reading still shown is the last accepted one."
+            : "Floor Command could not be read. Showing the last successful read."}
+        </p>
       ) : null}
       {visible.map((handoff) => (
         <HandoffSummary
@@ -58,6 +70,8 @@ export function FloorCommandObservationView({
           handoff={handoff}
           onDismiss={onDismiss}
           placement={placement}
+          timeZone={timeZone}
+          request={governedRequests.find((row) => row.operationalWeek === handoff.operationalWeek) ?? null}
         />
       ))}
     </section>
@@ -68,10 +82,14 @@ function HandoffSummary({
   handoff,
   onDismiss,
   placement,
+  timeZone,
+  request,
 }: {
   handoff: FloorCommandHandoffObservation;
   onDismiss?: (handoffId: string, revision: string) => void;
   placement: "reading" | "work";
+  timeZone: string | null;
+  request: FloorCommandGovernedRequestView | null;
 }) {
   const current = handoff.assignments.filter((row) => row.lifecycle === "current");
   const retired = handoff.assignments.filter((row) => row.lifecycle === "retired");
@@ -90,11 +108,10 @@ function HandoffSummary({
           <p>
             {handoff.confirmedZebraEntries} confirmed in Zebra. {handoff.remainingZebraEntries} still to enter.
           </p>
-          <p>
-            {handoff.freshness === "fresh"
-              ? `Accepted at ${handoff.readAt}. This screen did not request a new read.`
-              : `Last accepted read is not current. Observed at ${handoff.readAt}.`}
-          </p>
+          <p>{evidenceFor(handoff, timeZone, request).ageSentence}</p>
+          {evidenceFor(handoff, timeZone, request).followUpSentence ? (
+            <p>{evidenceFor(handoff, timeZone, request).followUpSentence}</p>
+          ) : null}
         </>
       ) : null}
       {handoff.deadlinesAvailability === "unavailable" ? (
@@ -145,6 +162,21 @@ function HandoffSummary({
           Hide this revision
         </button>
       ) : null}
-    </article>
+      </article>
   );
+}
+
+function evidenceFor(
+  handoff: FloorCommandHandoffObservation,
+  timeZone: string | null,
+  request: FloorCommandGovernedRequestView | null,
+) {
+  return floorCommandEvidenceCopy({
+    observedAt: handoff.observedAt,
+    timeZone,
+    sequence: handoff.sequence,
+    revision: handoff.revision,
+    lastCheckedAt: handoff.lastCheckedAt,
+    request,
+  });
 }

@@ -165,7 +165,7 @@ describe("floor command observation persistence", () => {
       revision: "rev-equal",
     });
     expect(dismissed.handoffs[0]?.snapshot.handoff.status).toBe("pending");
-    expect(projectFloorCommandObservation(dismissed).status).toBe("fresh");
+    expect(projectFloorCommandObservation(dismissed).status).toBe("retained");
 
     const afterDismissal = planFloorCommandObservationWrite(
       {

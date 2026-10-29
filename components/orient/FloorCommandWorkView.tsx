@@ -1,28 +1,102 @@
+import { useState } from "react";
 import { FloorCommandObservationView } from "@/components/orient/FloorCommandObservation";
+import {
+  loadFloorCommandWorkReading,
+  requestFloorCommandObservation,
+} from "@/components/orient/floorCommandWorkApi";
 import type { FloorCommandAttemptReason } from "@/projections/floorCommandObservation";
+import {
+  floorCommandEvidenceCopy,
+  type FloorCommandGovernedRequestView,
+} from "@/projections/floorCommandEvidenceCopy";
 import type { FloorCommandWorkReading } from "@/projections/floorCommandWorkPresentation";
+
+const ISO_WEEK = /^\d{4}-W\d{2}$/;
 
 /**
  * Floor Command beside the Work schedule.
  * Closed until the operator asks. Per-bay rows stay inside the handoff details.
  * This does not create a Task, Commitment, Block, stewardship row, or Pulse grant.
+ * Opening this view does not request an observation.
  */
-export function FloorCommandWorkView({ reading }: { reading: FloorCommandWorkReading }) {
+export function FloorCommandWorkView({
+  reading,
+  onRecorded,
+}: {
+  reading: FloorCommandWorkReading;
+  onRecorded?: (reading: FloorCommandWorkReading) => void;
+}) {
   return (
     <details className="orient-floor-command" data-floor-command-work={reading.posture}>
       <summary>{summaryFor(reading)}</summary>
       <p>{sentenceFor(reading)}</p>
-      {reading.posture === "unconfigured" || reading.posture === "retained" || reading.posture === "current" ? (
+      {reading.posture === "unconfigured" || reading.posture === "retained" ? (
         <>
           {reading.observation.status === "stale" || reading.observation.status === "unavailable" ? (
             <p>{reasonSentence(reading.observation.reason)}</p>
           ) : null}
           {reading.observation.status === "unobserved" || reading.observation.status === "unavailable" ? null : (
-            <FloorCommandObservationView reading={reading.observation} placement="work" />
+            <FloorCommandObservationView
+              reading={reading.observation}
+              placement="work"
+              timeZone={reading.timeZone}
+              governedRequests={reading.governedRequests}
+            />
           )}
+          <ObservationRequest onRecorded={onRecorded} />
         </>
       ) : null}
     </details>
+  );
+}
+
+function ObservationRequest({ onRecorded }: { onRecorded?: (reading: FloorCommandWorkReading) => void }) {
+  const [week, setWeek] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  return (
+    <form
+      data-floor-command-request="week"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!ISO_WEEK.test(week) || pending) return;
+        setPending(true);
+        setMessage(null);
+        void requestFloorCommandObservation(week)
+          .then(async (result) => {
+            if (!result) {
+              setMessage("Floor Command could not be read.");
+              return;
+            }
+            if (result.outcome === "accepted_new" || result.outcome === "unchanged" || result.outcome === "revised") {
+              setMessage(`Floor Command observation recorded: ${result.outcome.split("_").join(" ")}.`);
+            } else if (result.outcome === "failed" || result.outcome === "rejected") {
+              setMessage(`Floor Command observation ${result.outcome}. The last accepted reading is unchanged.`);
+            } else {
+              setMessage("Floor Command observation was not started.");
+            }
+            if (onRecorded) {
+              const next = await loadFloorCommandWorkReading();
+              if (next && next.posture !== "unread") onRecorded(next);
+            }
+          })
+          .finally(() => setPending(false));
+      }}
+    >
+      <label>
+        Floor Command week
+        <input
+          name="week"
+          value={week}
+          autoComplete="off"
+          onChange={(event) => setWeek(event.target.value)}
+        />
+      </label>
+      <button type="submit" disabled={!ISO_WEEK.test(week) || pending}>
+        Observe this week
+      </button>
+      {message ? <p>{message}</p> : null}
+    </form>
   );
 }
 
@@ -31,7 +105,6 @@ function summaryFor(reading: FloorCommandWorkReading): string {
   if (reading.posture === "wrong_store") return "Floor Command · store not authorized";
   if (reading.posture === "unread") return "Floor Command · not read";
   if (reading.posture === "unconfigured") return "Floor Command · not configured";
-  if (reading.posture === "current") return "Floor Command · last accepted read";
   return "Floor Command · retained";
 }
 
@@ -46,17 +119,29 @@ function sentenceFor(reading: FloorCommandWorkReading): string {
       ? `Approved for store ${reading.storeNumber}. The connection is not configured. No week is retained.`
       : `Approved for store ${reading.storeNumber}. The connection is not configured, so this week was not checked again.`;
   }
-  if (reading.posture === "current") {
-    return `Last accepted Floor Command read for store ${reading.storeNumber}. This screen did not request a new one.`;
-  }
   if (reading.observation.status === "unobserved") {
-    return reading.pullEnabled
-      ? `Approved for store ${reading.storeNumber}. No week is retained.`
-      : `Approved for store ${reading.storeNumber}. Live reading is off. No week is retained.`;
+    return `Approved for store ${reading.storeNumber}. No week is retained.`;
   }
-  return reading.pullEnabled
-    ? `Retained from the last accepted read for store ${reading.storeNumber}. This screen did not request a new one.`
-    : `Retained from the last accepted read for store ${reading.storeNumber}. Live reading is off, so this is not a new check.`;
+  const handoff = reading.observation.status === "stale" || reading.observation.status === "retained"
+    ? reading.observation.handoffs[0]
+    : null;
+  if (!handoff) return "This is retained evidence, not a live Floor Command reading.";
+  const request = requestFor(reading.governedRequests, handoff.operationalWeek);
+  return floorCommandEvidenceCopy({
+    observedAt: handoff.observedAt,
+    timeZone: reading.timeZone,
+    sequence: handoff.sequence,
+    revision: handoff.revision,
+    lastCheckedAt: handoff.lastCheckedAt,
+    request,
+  }).observedSentence;
+}
+
+function requestFor(
+  requests: readonly FloorCommandGovernedRequestView[],
+  week: string,
+): FloorCommandGovernedRequestView | null {
+  return requests.find((request) => request.operationalWeek === week) ?? null;
 }
 
 function reasonSentence(reason: FloorCommandAttemptReason): string {

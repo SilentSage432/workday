@@ -177,7 +177,7 @@ describe("Floor Command observation view", () => {
       root?.render(<FloorCommandObservationView reading={hidden} onDismiss={onDismiss} />);
     });
     expect(host?.textContent ?? "").toBe("");
-    if (hidden.status === "fresh") {
+    if (hidden.status === "retained") {
       expect(hidden.handoffs[0]?.handoffStatus).toBe("partial");
     }
   });
@@ -289,7 +289,9 @@ describe("Floor Command observation view", () => {
     const text = host?.textContent ?? "";
     expect(host?.querySelector("details")?.getAttribute("open")).toBeNull();
     expect(text).toContain("Floor Command · retained");
-    expect(text).toContain("Live reading is off");
+    expect(text).toContain("retained evidence, not a live Floor Command reading");
+    expect(text).not.toContain("Live reading is off");
+    expect(text).not.toContain("up to date");
     expect(text).toContain("Published in Floor Command");
     expect(text).toContain("Monday Zebra-entry deadline");
     expect(text).toContain("0 confirmed in Zebra. 1 still to enter.");
@@ -347,8 +349,9 @@ describe("Floor Command observation view", () => {
       root?.render(<FloorCommandWorkView reading={cases[2]} />);
     });
     expect(host?.textContent).toContain("The read credential was rejected.");
-    expect(host?.textContent).toContain("Live reading is off");
-    expect(host?.textContent).toContain("Last accepted read is not current");
+    expect(host?.textContent).toContain("retained evidence, not a live Floor Command reading");
+    expect(host?.textContent).toContain("The reading still shown is the last accepted one.");
+    expect(host?.textContent).not.toContain("Last accepted read is not current");
     expect(host?.textContent).not.toContain("completed");
 
     const withheld = presentFloorCommandWork({

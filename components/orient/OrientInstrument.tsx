@@ -504,6 +504,7 @@ export function OrientInstrument() {
       thread={threadReading(truth.activeThread, truth.tasks)}
       pulse={pulse}
       floorCommand={floorCommand}
+      onFloorCommandRecorded={setFloorCommand}
       capture={capture}
       actions={{
         onEstablish,

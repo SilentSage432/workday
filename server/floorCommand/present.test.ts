@@ -129,14 +129,17 @@ describe("Floor Command work presentation", () => {
     expect(retained.posture).toBe("retained");
     if (retained.posture !== "retained") return;
     expect(retained.pullEnabled).toBe(false);
-    expect(retained.observation.status).toBe("fresh");
+    expect(retained.observation.status).toBe("retained");
 
-    const current = presentFloorCommandWork({
+    const enabled = presentFloorCommandWork({
       operatorId: OPERATOR,
       stored: stored(remembered()),
       serverStore: { status: "configured", storeNumber: "2587", pullEnabled: true },
     });
-    expect(current.posture).toBe("current");
+    expect(enabled.posture).toBe("retained");
+    if (enabled.posture !== "retained") return;
+    expect(enabled.pullEnabled).toBe(true);
+    expect(enabled.observation.status).toBe("retained");
 
     const stale = presentFloorCommandWork({
       operatorId: OPERATOR,
@@ -285,7 +288,7 @@ describe("Floor Command observation route", () => {
       expect(reading.posture).toBe("retained");
       if (reading.posture !== "retained") return;
       expect(reading.pullEnabled).toBe(false);
-      expect(reading.observation.status).toBe("fresh");
+      expect(reading.observation.status).toBe("retained");
       expect(eqs.every((row) => row.endsWith(OPERATOR))).toBe(true);
       expect(eqs.some((row) => row.includes(OTHER))).toBe(false);
       expect(JSON.stringify(reading)).not.toContain(TOKEN);
