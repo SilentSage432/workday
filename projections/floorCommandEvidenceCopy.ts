@@ -14,6 +14,9 @@ export type FloorCommandEvidenceCopy = {
   observedSentence: string;
   ageSentence: string;
   followUpSentence: string | null;
+  originallyObserved: string;
+  lastChecked: string;
+  retainedEvidence: string;
 };
 
 /**
@@ -26,6 +29,7 @@ export function floorCommandEvidenceCopy(input: {
   sequence: number | null;
   revision: string;
   lastCheckedAt: string | null;
+  checkedSequence?: number | null;
   request: FloorCommandGovernedRequestView | null;
 }): FloorCommandEvidenceCopy {
   const observed = formatFloorCommandObservedInstant(input.observedAt, input.timeZone);
@@ -33,18 +37,46 @@ export function floorCommandEvidenceCopy(input: {
     input.sequence === null
       ? `Source revision ${input.revision}.`
       : `Source sequence ${input.sequence}, revision ${input.revision}.`;
-  const observedSentence = `Observed ${observed}. ${identity} This is retained evidence, not a live Floor Command reading.`;
   const checked = input.lastCheckedAt
     ? formatFloorCommandObservedInstant(input.lastCheckedAt, input.timeZone)
     : null;
-  const ageSentence = checked
-    ? `Last checked ${checked}. Source changes since that check are not known.`
-    : `Not checked since ${observed}. Source changes since then are not known.`;
+  const checkedSequence =
+    typeof input.checkedSequence === "number" ? ` Checked sequence ${input.checkedSequence}.` : "";
+  const lastChecked = checked
+    ? `${checked}.${checkedSequence} Source changes since that check are not known.`
+    : "No later check is recorded. Source changes since the original observation are not known.";
+  const observedSentence = `Originally observed ${observed}. This is retained evidence, not a live Floor Command reading.`;
   return {
     observedSentence,
-    ageSentence,
-    followUpSentence: followUp(input, observed),
+    ageSentence: lastChecked,
+    followUpSentence: followUp(input),
+    originallyObserved: observed,
+    lastChecked,
+    retainedEvidence: identity,
   };
+}
+
+/**
+ * Names a terminal observation outcome after the server has returned it.
+ * The outcome token stays exact. This does not describe a request that has not finished.
+ */
+export function floorCommandObservationOutcomeSentence(outcome: string): string {
+  if (outcome === "accepted_new") {
+    return "Floor Command observation recorded: accepted_new. Orient accepted this reading.";
+  }
+  if (outcome === "unchanged") {
+    return "Floor Command observation recorded: unchanged. The retained revision matched this check. Floor Command can still change later.";
+  }
+  if (outcome === "revised") {
+    return "Floor Command observation recorded: revised. Orient accepted a newer reading. The earlier accepted reading remains in history.";
+  }
+  if (outcome === "rejected") {
+    return "Floor Command observation rejected. The last accepted reading is unchanged.";
+  }
+  if (outcome === "failed") {
+    return "Floor Command observation failed. The last accepted reading is unchanged.";
+  }
+  return "Floor Command observation was not started.";
 }
 
 export function formatFloorCommandObservedInstant(iso: string, timeZone: string | null): string {
@@ -93,18 +125,15 @@ export function floorCommandAttemptReasonSentence(reason: FloorCommandAttemptRea
   return floorCommandRequestReasonSentence(reason);
 }
 
-function followUp(
-  input: {
-    timeZone: string | null;
-    request: FloorCommandGovernedRequestView | null;
-  },
-  observed: string,
-): string | null {
+function followUp(input: {
+  timeZone: string | null;
+  request: FloorCommandGovernedRequestView | null;
+}): string | null {
   const request = input.request;
   if (!request) return null;
   const attempted = formatFloorCommandObservedInstant(request.terminalAt, input.timeZone);
   if (request.outcome === "unchanged") {
-    return `Last checked ${attempted}. The source revision was the same.`;
+    return "That check matched the retained revision. Floor Command can still change after it.";
   }
   if (request.outcome === "revised" && request.previousObservedAt && request.previousRevision) {
     const previous = formatFloorCommandObservedInstant(request.previousObservedAt, input.timeZone);
@@ -117,7 +146,7 @@ function followUp(
   if (request.outcome === "rejected") {
     return `Last attempt ${attempted} was not accepted (${floorCommandRequestReasonSentence(request.reason)}). The reading still shown is the last accepted one.`;
   }
-  return observed ? null : null;
+  return null;
 }
 
 function part(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string {

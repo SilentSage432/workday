@@ -2939,6 +2939,81 @@ button.orient-fact {
   margin-bottom: 0.75rem;
 }
 
+.orient-floor-command form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.orient-floor-command form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.orient-floor-command .orient-actions {
+  margin-top: 0.15rem;
+}
+
+.orient-floor-command .orient-action {
+  width: 100%;
+  justify-content: center;
+}
+
+.orient-floor-command .orient-action[data-emphasis="save"]:disabled,
+.orient-floor-command .orient-action[data-emphasis="save"]:disabled:hover {
+  background: rgb(244 239 230 / 0.06);
+  color: var(--orient-muted);
+  border-color: var(--orient-control-edge);
+  font-weight: 520;
+  opacity: 0.55;
+  transform: none;
+}
+
+.orient-floor-command .orient-action[data-floor-command-pending="true"] {
+  width: 100%;
+  justify-content: center;
+  opacity: 1;
+  color: #1c1712;
+  background: var(--orient-now);
+  border-color: transparent;
+  font-weight: 620;
+  cursor: wait;
+}
+
+.orient-floor-command-evidence {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0.75rem 0;
+}
+
+.orient-floor-command-evidence div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.orient-floor-command-evidence dt {
+  margin: 0;
+  font-family: var(--font-orient), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 560;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c8b5a4;
+}
+
+.orient-floor-command-evidence dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.orient-floor-command [data-floor-command-outcome] {
+  overflow-wrap: anywhere;
+}
+
 .orient-work-day {
   display: flex;
   flex-direction: column;

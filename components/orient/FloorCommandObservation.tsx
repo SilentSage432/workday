@@ -108,10 +108,7 @@ function HandoffSummary({
           <p>
             {handoff.confirmedZebraEntries} confirmed in Zebra. {handoff.remainingZebraEntries} still to enter.
           </p>
-          <p>{evidenceFor(handoff, timeZone, request).ageSentence}</p>
-          {evidenceFor(handoff, timeZone, request).followUpSentence ? (
-            <p>{evidenceFor(handoff, timeZone, request).followUpSentence}</p>
-          ) : null}
+          <EvidenceFacts handoff={handoff} timeZone={timeZone} request={request} />
         </>
       ) : null}
       {handoff.deadlinesAvailability === "unavailable" ? (
@@ -166,6 +163,37 @@ function HandoffSummary({
   );
 }
 
+function EvidenceFacts({
+  handoff,
+  timeZone,
+  request,
+}: {
+  handoff: FloorCommandHandoffObservation;
+  timeZone: string | null;
+  request: FloorCommandGovernedRequestView | null;
+}) {
+  const copy = evidenceFor(handoff, timeZone, request);
+  return (
+    <>
+      <dl className="orient-floor-command-evidence">
+        <div>
+          <dt>Originally observed</dt>
+          <dd>{copy.originallyObserved}</dd>
+        </div>
+        <div>
+          <dt>Last checked</dt>
+          <dd>{copy.lastChecked}</dd>
+        </div>
+        <div>
+          <dt>Retained evidence</dt>
+          <dd>{copy.retainedEvidence}</dd>
+        </div>
+      </dl>
+      {copy.followUpSentence ? <p>{copy.followUpSentence}</p> : null}
+    </>
+  );
+}
+
 function evidenceFor(
   handoff: FloorCommandHandoffObservation,
   timeZone: string | null,
@@ -177,6 +205,7 @@ function evidenceFor(
     sequence: handoff.sequence,
     revision: handoff.revision,
     lastCheckedAt: handoff.lastCheckedAt,
+    checkedSequence: handoff.checkedSequence,
     request,
   });
 }

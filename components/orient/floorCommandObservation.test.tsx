@@ -289,7 +289,25 @@ describe("Floor Command observation view", () => {
     const text = host?.textContent ?? "";
     expect(host?.querySelector("details")?.getAttribute("open")).toBeNull();
     expect(text).toContain("Floor Command · retained");
+    expect(text).toContain("Originally observed");
+    expect(text).toContain("Last checked");
+    expect(text).toContain("Retained evidence");
     expect(text).toContain("retained evidence, not a live Floor Command reading");
+    expect(text).not.toContain("Checked sequence");
+    const observe = host?.querySelector("[data-floor-command-request='week'] button");
+    expect(observe?.className).toContain("orient-action");
+    expect(observe?.getAttribute("data-emphasis")).toBe("save");
+    expect(observe?.hasAttribute("disabled")).toBe(true);
+    expect(observe?.textContent).toBe("Observe this week");
+    const week = host?.querySelector("input[name='week']") as HTMLInputElement;
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(week, "2026-W44");
+      week.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    const enabled = host?.querySelector("[data-floor-command-request='week'] button");
+    expect((host?.querySelector("input[name='week']") as HTMLInputElement).value).toBe("2026-W44");
+    expect(enabled?.hasAttribute("disabled")).toBe(false);
+    expect(enabled?.getAttribute("data-emphasis")).toBe("save");
     expect(text).not.toContain("Live reading is off");
     expect(text).not.toContain("up to date");
     expect(text).toContain("Published in Floor Command");

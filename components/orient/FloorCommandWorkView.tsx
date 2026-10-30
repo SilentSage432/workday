@@ -7,6 +7,7 @@ import {
 import type { FloorCommandAttemptReason } from "@/projections/floorCommandObservation";
 import {
   floorCommandEvidenceCopy,
+  floorCommandObservationOutcomeSentence,
   type FloorCommandGovernedRequestView,
 } from "@/projections/floorCommandEvidenceCopy";
 import type { FloorCommandWorkReading } from "@/projections/floorCommandWorkPresentation";
@@ -68,13 +69,7 @@ function ObservationRequest({ onRecorded }: { onRecorded?: (reading: FloorComman
               setMessage("Floor Command could not be read.");
               return;
             }
-            if (result.outcome === "accepted_new" || result.outcome === "unchanged" || result.outcome === "revised") {
-              setMessage(`Floor Command observation recorded: ${result.outcome.split("_").join(" ")}.`);
-            } else if (result.outcome === "failed" || result.outcome === "rejected") {
-              setMessage(`Floor Command observation ${result.outcome}. The last accepted reading is unchanged.`);
-            } else {
-              setMessage("Floor Command observation was not started.");
-            }
+            setMessage(floorCommandObservationOutcomeSentence(result.outcome));
             if (onRecorded) {
               const next = await loadFloorCommandWorkReading();
               if (next && next.posture !== "unread") onRecorded(next);
@@ -92,10 +87,23 @@ function ObservationRequest({ onRecorded }: { onRecorded?: (reading: FloorComman
           onChange={(event) => setWeek(event.target.value)}
         />
       </label>
-      <button type="submit" disabled={!ISO_WEEK.test(week) || pending}>
-        Observe this week
-      </button>
-      {message ? <p>{message}</p> : null}
+      <div className="orient-actions">
+        <button
+          type="submit"
+          className="orient-action"
+          data-emphasis={pending ? undefined : "save"}
+          data-floor-command-pending={pending ? "true" : undefined}
+          disabled={!ISO_WEEK.test(week) || pending}
+          aria-busy={pending || undefined}
+        >
+          {pending ? "Observing this week" : "Observe this week"}
+        </button>
+      </div>
+      {message ? (
+        <p role="status" data-floor-command-outcome="true">
+          {message}
+        </p>
+      ) : null}
     </form>
   );
 }
@@ -133,6 +141,7 @@ function sentenceFor(reading: FloorCommandWorkReading): string {
     sequence: handoff.sequence,
     revision: handoff.revision,
     lastCheckedAt: handoff.lastCheckedAt,
+    checkedSequence: handoff.checkedSequence,
     request,
   }).observedSentence;
 }
