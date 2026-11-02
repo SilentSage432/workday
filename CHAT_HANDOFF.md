@@ -1,6 +1,12 @@
 # Chat handoff
 
-## Current state (2026-11-01)
+## Current state (2026-11-02)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-025 — POLICY INFRASTRUCTURE DEPLOYED. PULL STAYS OFF.**
+
+Production `https://orient-cyan.vercel.app` serves `f987d4443993f3fe87c5947cd78a99f2e2af0f48` / `dpl_3yWeB4kag8jwaKeZwWWLy4m7ewst`. Migration `20261101120000` is applied once. Standing-policy rows are 0. The `2026-W44` handoff, the `unchanged` request, the `one_shot` history row, and the spent latch are unchanged. The pull flag is absent. **GO** to accept the infrastructure. **NO-GO** to approve a grant or observe from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_025.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_025.md).
+
+## Previous state (2026-11-01)
 
 **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-024 — DEPLOYMENT PREPARATION ONLY. PULL STAYS OFF.**
 

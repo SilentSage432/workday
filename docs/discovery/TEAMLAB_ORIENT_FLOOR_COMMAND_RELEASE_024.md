@@ -8,6 +8,8 @@ Read-only inspection of the working tree, an ephemeral database, and local check
 
 **GO** to request a separate production tranche whose only authority is section 7. That tranche re-reads the hosted baseline, applies this one migration, deploys the reviewed commit, and stops with the pull flag absent and zero standing-policy rows.
 
+[TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_025.md](TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_025.md), written 2026-11-02, is that later production tranche.
+
 ## 1. Verified implementation inventory
 
 Local `HEAD` is `b9cd3bd762a3dd3c7dd7e9390b556a0cad56e7d0`. That is the RELEASE-021 production commit. The policy files are uncommitted. `git diff HEAD` is empty for `server/floorCommand/governedObservation.ts`, `server/floorCommand/pull.ts`, `server/floorCommand/present.ts`, `persistence/floorCommandObservation.ts`, and the existing observation, approval, and pull routes. Orient has no `vercel.json`. No component references the standing policy. Floor Command was not edited.

@@ -2,6 +2,7 @@
 
 ## Accepted foundations (closed)
 
+- **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-025** — Standing-policy infrastructure deployed as `f987d44` / `dpl_3yWeB4kag8jwaKeZwWWLy4m7ewst`. Migration `20261101120000` applied once. Policy rows 0. Pull flag absent. Approving a grant or observing is **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_025.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_025.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-024** — Deployment preparation for the inert standing-policy migration. The recorded ledger stays intact on an ephemeral database. Hosted apply and a live observation are **NO-GO** until a separate tranche follows that procedure. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_024.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_024.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-023** — Local standing-observation policy. The grant can be proposed, approved, inspected, expired, and revoked. It does not read Floor Command. Migration `20261101120000` is not hosted. The pull flag stays absent. A live observation is **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_023.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_023.md)
 - **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-022** — Continuity discovery. The standing grant specified here is the local policy in RELEASE-023. The pull flag stays absent. Continuous observation is **NO-GO**. — [TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_022.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_022.md)

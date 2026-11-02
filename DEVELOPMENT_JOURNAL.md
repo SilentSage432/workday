@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-11-02 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-025
+
+Production deployment of the inert standing-observation policy. Supabase CLI dry-run listed only `20261101120000`. That migration was applied once. Commit `f987d44` is serving as `dpl_3yWeB4kag8jwaKeZwWWLy4m7ewst`. Policy rows are 0. The recorded `2026-W44` ledger is unchanged. The pull flag is absent. **GO** to accept the infrastructure. **NO-GO** to approve a grant or observe from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_025.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_025.md).
+
 ## 2026-11-01 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-024
 
 Deployment preparation only. The standing-policy migration adds new tables and does not rewrite the recorded `2026-W44` handoff, the `unchanged` request, the `one_shot` history row, or the spent latch. A second apply stops, and a failed transaction leaves no table. Typecheck, lint, the production build, and the local proofs passed. The migration was not applied to hosted Orient. The pull flag stays absent. **GO** to request a separate production tranche that follows the written procedure. **NO-GO** to apply, deploy, or observe from this record.
