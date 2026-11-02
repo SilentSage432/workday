@@ -1,5 +1,139 @@
 # Development journal
 
+## 2026-11-01 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-024
+
+Deployment preparation only. The standing-policy migration adds new tables and does not rewrite the recorded `2026-W44` handoff, the `unchanged` request, the `one_shot` history row, or the spent latch. A second apply stops, and a failed transaction leaves no table. Typecheck, lint, the production build, and the local proofs passed. The migration was not applied to hosted Orient. The pull flag stays absent. **GO** to request a separate production tranche that follows the written procedure. **NO-GO** to apply, deploy, or observe from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_024.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_024.md).
+
+## 2026-11-01 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-023
+
+Local standing-observation policy. An operator can propose, approve, inspect, expire, and revoke a grant limited to store `2587` and the published-week contract. Approval changes authority status. The row cannot start a source read, and no scheduler consumes it. Ephemeral Postgres, the existing governed regression, typecheck, lint, and the production build passed. The migration is not hosted. The pull flag stays absent. **GO** to request a later deployment-preparation review. **NO-GO** to apply the migration or to observe.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_023.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_023.md).
+
+## 2026-10-31 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-022
+
+Continuity discovery only. Orient can already classify one explicit published-week read as new, unchanged, revised, rejected, or failed, and Sunday publication still does not notify Orient. A standing grant is specified as an expiring, revocable policy over that same classifier. It was not implemented. The pull flag stays absent, and no observation was sent. **GO** to request a later local policy record that cannot read. **NO-GO** to activate continuous observation.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_022.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_022.md).
+
+## 2026-10-30 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-021
+
+The reviewed Work presentation is deployed as `b9cd3bd762a3dd3c7dd7e9390b556a0cad56e7d0` / `dpl_LzEcF65D1qQ1SChttiDGPW43aWDh`. The signed-in Work page showed the disabled Observe control, the original acceptance, the October 30 check, and sequence `8` / revision `c3a29fab9de35ca0`. Opening Work did not post an observation. The pull flag is absent and the unchanged request is unchanged. **NO-GO** to observe again from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_021.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_021.md).
+
+## 2026-10-30 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-020
+
+The Work Observe control now uses the existing Orient action button, with muted disabled and waiting pending states. Retained evidence is labeled as originally observed, last checked, and the stored sequence and revision. A null checked sequence is not invented. Local typecheck, lint, observation tests, and the production build passed. Nothing was deployed. **NO-GO** to deploy from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_020.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_020.md).
+
+## 2026-10-30 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-019
+
+The operator pressed Observe this week once for `2026-W44`. The visible result was unchanged, and the ledger has one terminal request `879a61f2-6179-479b-a9ad-15f150db44d3` with sequence `8` and revision `c3a29fab9de35ca0`. The accepted handoff, the `one_shot` copy, and `success_complete` are unchanged. `last_checked_at` is set. The pull flag was removed. Production is disabled `dpl_C6uGoDWowoeXkgh4hGbjr7ZKZYch` of commit `77ad973`. **NO-GO** to observe again from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_019.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_019.md).
+
+## 2026-10-30 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-018
+
+RELEASE-017 enabled the pull flag twice and never submitted the observation. The first window ended because the management API returned 403 before a session existed. The second window had the signed-in Work control enabled for `2026-W44` on the enabled alias, and the automated click did not submit. Local boundary tests passed. The production flag is still absent. The supported path is one human press of Observe this week, then deactivation with no retry. **NO-GO** to execute from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_018.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_018.md).
+
+## 2026-10-29 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-017
+
+The one governed observation of `2026-W44` was not sent. Preflight matched RELEASE-016: published, comparable, sequence `8`, revision `c3a29fab9de35ca0`. The pull flag was enabled twice and removed twice. The alias now serves disabled `dpl_2VL5JwM32MNfFRQV9YSDbKfZDiVf` of commit `77ad973`. Requests remain 0. The handoff, the `one_shot` copy, and `success_complete` are unchanged. **GO** to request the same one observation again. **NO-GO** to retry from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_017.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_017.md).
+
+## 2026-10-29 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-016
+
+The reviewed commit is on `origin/main` by fast-forward. Production alias `https://orient-cyan.vercel.app` now serves `dpl_AS4tCZrBsc96mBgSCafYYGtjvD3Y` of `77ad973`. The pull flag is absent. Migration `20261029010000` is still one row. The `2026-W44` handoff remains sequence `8`, revision `c3a29fab9de35ca0`, with one `one_shot` copy and `success_complete` unchanged. Requests and claims are 0. Floor Command still has that week published at sequence `8`, and `2026-W45` remains unpublished. No governed request was sent. **GO** to request one later observation of `2026-W44`. **NO-GO** to enable the flag or observe from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_016.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_016.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-015
+
+Governed observation is deployed and disabled. Commit `77ad9731bb6aa0cfc1a28e400603325f9ac2100b` is production `dpl_6s7zaTGfb6hkeFzRGRq3WZMVHjHH` on `https://orient-cyan.vercel.app`. Migration `20261029010000` is recorded once. The `2026-W44` handoff is still sequence `8`, revision `c3a29fab9de35ca0`, with one `one_shot` history copy and the `success_complete` attempt unchanged. Requests are 0. The pull flag is absent. Work shows the retained sentence and did not call Floor Command. **GO** to request one later named observation. **NO-GO** to enable the flag or observe from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_015.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_015.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-014
+
+Deployment preparation only. No hosted migration, deploy, flag, or pull. Orient production is still `7a1fbfb` / `dpl_F6dHd83UbZn8jgdxtxYPuYiCibcK`, and `20261029010000` is the only pending migration. The hosted `2026-W44` handoff is still sequence `8`, revision `c3a29fab9de35ca0`, with `success_complete` and the pull flag absent. An isolated backfill kept that identity and the Orient-owned counts. Typecheck, lint, production build, and the Floor Command suites passed. **GO** to request a later tranche that commits this tree, pushes that one migration, deploys, and stops with the flag absent. **NO-GO** to migrate or deploy from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_014.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_014.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-013
+
+Local implementation only. No hosted migration, deploy, flag, or pull. The new observation is one explicit request, one GET, and one terminal outcome. The one-shot claim still returns `already_succeeded`, and the `2026-W44` snapshot is not rewritten by a failed or rejected request. Work names the retained observation and does not read Floor Command when it opens. Typecheck passed. The governed ephemeral database and the existing one-shot regression passed. **GO** to request deployment preparation. **NO-GO** to migrate, deploy, enable the flag, or observe from this tranche.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_013.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_013.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-012
+
+Design contract only. No code, migration, flag, or pull. The `2026-W44` handoff stays sequence `8`, revision `c3a29fab9de35ca0`, accepted `2026-10-29T00:40:17.666Z`, and the operator `success_complete` row stays frozen. A later read requires a new explicit request for one named week. An unpublished week cannot become a successful observation. An equal revision cannot replace the handoff. **GO** to request a local implementation of that contract. **NO-GO** to apply it to hosted Orient or to read Floor Command from this tranche.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_012.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_012.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-011
+
+Discovery only. No pull, flag, credential, migration, or deploy. The retained `2026-W44` observation stays sequence `8`, revision `c3a29fab9de35ca0`, and the operator `success_complete` latch stays spent. Work already calls that reading retained while the observation status is still `fresh` with no age test. Nothing in either system can schedule a later read without a new authority. Operator-initiated re-observation is the only cadence that fits. Scheduled and source-triggered reads are not justified. **GO** to request a separate design contract. **NO-GO** to implement or to turn the pull flag on.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_011.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_011.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-010
+
+One controlled observation committed, then pulling was turned off. Store `2587` `2026-W44` was published and comparable at sequence `8`, revision `c3a29fab9de35ca0`. The enabled deployment `dpl_4yiisVTNbpFvpGixWe8Zodwrenrf` served one POST and returned `accepted` with `success_complete`. The disabled deployment `dpl_F6dHd83UbZn8jgdxtxYPuYiCibcK` is now production, still commit `7a1fbfb`, and the pull flag is absent. One handoff is retained. Claims are 0. Orient-owned counts stayed 39 tasks, 2 commitments, 0 blocks, and 0 protected time. Floor Command sequence stayed `8`. Work shows the retained handoff and did not request another read. **NO-GO** for a weekly cadence.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_010.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_010.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-009
+
+C2 preflight only. No flag, redeploy, credential change, binding change, or Orient pull.
+
+Production identities still match C1. Store `2587` `2026-W44` is sequence `8`, revision `c3a29fab9de35ca0`, published, comparable, and partial: 9 current assignments, 6 Zebra entry confirmations, 3 outstanding, 0 retired, and no `zebra_task_completed`. Two SMART deadlines are overridden and do not require review. `2026-W45` is unpublished but still comparable, so it can spend the one-shot if requested. Observation counts remain 0. Orient-owned baselines are 39 tasks, 2 commitments, 0 blocks, and 0 protected time. Local pull tests passed. **GO** to request one separately authorized `2026-W44` pull. **NO-GO** to execute it here.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_009.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_009.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-008
+
+Gate C1 executed after a separate authorization. One Floor Command credential and one Orient operator binding now exist. The pull flag was left absent, no published week was fetched, and no observation was written.
+
+Floor Command stayed `ac533eb` / `dpl_JDGxBWMMaFpAwEbCm4kyBtrAdV6Y`. Credential `1a418da4-1926-4c69-b6f9-334b55b82828` is store `2587`, purpose `orient_published_week_read`, and not revoked. Orient redeployed the same commit `7a1fbfb` as `dpl_36ZiA8xV5pRNcSoKVKyahYTNXnGm`. The signed-in approval returned 200 for that store, source, and purpose. Bindings are 1. Handoffs, attempts, dismissals, and claims are 0. Work still shows that no thread is established. **NO-GO** for C2.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_008.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_008.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-007
+
+Activation plan only. No credential, environment change, binding, pull, deploy, or migration.
+
+Floor Command production remains `ac533eb` / `dpl_JDGxBWMMaFpAwEbCm4kyBtrAdV6Y`. The credential table has 0 rows. A fresh composer read of store `2587` `2026-W44` is sequence `8`, revision `c3a29fab9de35ca0`, published, partial, 6 Zebra entry confirmations and 3 unconfirmed. `zebra_task_completed` is false on every current entry. `2026-W45` is unpublished. Orient production remains `7a1fbfb` with the claim migration applied and all observation counts at 0. The four Floor Command environment names are absent. Orient has one auth user and no approval or pull button. A same-origin session POST can call those routes. Approval and a disabled pull do not consume `success_complete`. One committed success blocks every later pull for that operator, including a later week. **C1 GO** to request. **C2 GO** only after C1, as a separate authorization. **NO-GO** to execute either from this tranche.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_007.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_007.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-006
+
+Dark production release. No credential, binding, activation variable, or live Floor Command read.
+
+Phase 0 re-read production before any write. Orient was `e44953b` / `dpl_8wHGrY4J1mZu51fCJgv5h6qKdz9M`. Supabase `ksmhgaamyheyhefbyglb` was PostgreSQL 17.11. The three observation migrations were applied, the five-argument persist function existed, and the claim table did not. Bindings, handoffs, attempts, and dismissals were 0. The four Floor Command environment names were absent. Observation GET without a session was 401.
+
+`7a1fbfbd92ae026d97448bc821ea403fa20ed96b` was pushed to `main` and became production as `dpl_G2bMZEzsTHjbov2PAuv9X536eRUE`. The alias is https://orient-cyan.vercel.app. Observation, approval, and pull return 401 without a session. The Work page returns 200. Pulse dispatch remains mounted. No integration environment variable was added.
+
+`20261024240000_floor_command_controlled_pull_claim.sql` was applied to that Supabase project only. The six-argument persist function is present, the five-argument function is absent, and the claim table has 0 rows. The four observation counts stayed 0. The query runner did not write migration history, so `20261024240000` was then recorded as applied. A dry run reports the remote database up to date. **GO** to plan the next activation gate. **NO-GO** to activate the connection.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_006.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_006.md).
+
+## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-005
+
+Gate B preparation only. No push, deployment, hosted migration, credential, environment change, approval binding, or live pull.
+
+Production is still `e44953b` / `dpl_8wHGrY4J1mZu51fCJgv5h6qKdz9M`. The four Floor Command environment names are absent. The deployed tree has the observation GET and no pull or approval route. The five-argument persist function is in that source, and no deployed route calls it. The hosted observation counts and PostgreSQL version could not be re-read: the management API denied this account, and a production env pull redacts the service-role key. Disposable PostgreSQL 14.18 applied the three observation migrations, kept a five-argument success, then applied `20261024240000` without deleting that handoff. The six-argument call and the claim function are absent before that migration and present after it. The new pull returns `unconfigured` or `disabled` before any claim while the flag is not exactly `1`. Floor Command, Work, and Pulse unit tests passed: 7 files, 77 tests. No repository change is required before a later execution. **GO** to request that execution. **NO-GO** to run it from this tranche.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_005.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_005.md).
+
 ## 2026-10-28 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-004B
 
 Local Gate A application. No push, hosted migration, credential, environment change, approval binding, or live pull.
