@@ -1,5 +1,98 @@
 # Development journal
 
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-044
+
+Controlled production dark deploy of Standing Coordination inspection. Scoped commit `f96b8c0` (inspect API + Work Standing Coordination only) pushed to `origin/main`; Vercel production `dpl_6oSj4RN6gaBSsgNtNre23nFb7qEG` serves `orient-cyan`. Unauth inspect POST 401 / bad Origin 403 / execute 404; gate off; pull flag absent; grants/claims/links 0; W44 and temporal unchanged. No production inspect RPC invoke, migration, env change, or Floor Command GET. **PASS / GO** to accept the dark app deploy. **NO-GO** to activate execution or begin RELEASE-045 without authorization. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_044.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_044.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-043
+
+Dark deployment readiness audit for Standing Coordination inspection. Traced Work → inspect API → service-role RPC; verified auth/Origin, zero/multiple-grant binding, non-consumption, automation independence, and production RPC compatibility (`20261104180000`). Read-only production baseline unchanged; typecheck/lint/build/64 focused tests passed. No deploy. **GO** to request a separately authorized dark app deploy. **NO-GO** to deploy from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_043.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_043.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-042
+
+Local Work-detail standing inspection UI. Standing Coordination in `FloorCommandWorkView` binds retained week + sole approved grant, calls the authenticated inspect API deliberately, and keeps eligibility advisory/non-consuming. No execute UI, deploy, or Floor Command GET. Typecheck, lint, build, and focused suites passed. **PASS / GO** to accept the local experience. **NO-GO** to deploy or activate execution. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_042.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_042.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-041
+
+Local authenticated standing-opportunity inspection API. `POST …/standing-opportunity/inspect` reuses the non-consuming inspect module and intent parser; Origin/auth validation; redacted no-store responses; no execution branch; no UI; no production changes. Typecheck, lint, build, and focused standing/FC suites passed. **PASS / GO** to accept the local boundary. **NO-GO** to deploy or activate execution. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_041.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_041.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-040
+
+Operator-facing inspection and confirmation-boundary discovery only. Mapped inspect RPC/module, confirmation-echo intent, Work FC surface, and API options. Recommended dedicated authenticated inspect POST and Floor Command Work detail placement; Stage B uses existing echo; Stage C remains later. No implementation, deploy, RPC invoke, or Floor Command GET. **GO** to request local inspect-route next. **NO-GO** to activate execution. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_040.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_040.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-039R
+
+Operator-assisted Vercel re-auth, full fresh preflight, and dark hosted apply of `20261104180000` to `workday` / `ksmhgaamyheyhefbyglb`. Pull flag absent. Gate remains disabled. Hardened attempt-mark and non-consuming inspect installed with `service_role` EXECUTE only. Zero claims/links. W44 and temporal ledgers unchanged. No deploy, RPC invoke, or Floor Command GET. **PASS / GO** to accept the dark install. **NO-GO** to enable gates or observe. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_039R.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_039R.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-039
+
+Controlled dark hosted apply of `20261104180000` stopped at mandatory preflight. Database checks passed (target `ksmhgaamyheyhefbyglb`, checksum match, sole pending migration, gate off, zero grants/claims/links, W44/temporal unchanged, no standing routes). Vercel production env-name listing failed authentication, so `ORIENT_FLOOR_COMMAND_PULL_ENABLED` absence was unverifiable. Migration not applied. No deploy, RPC invoke, or Floor Command GET. **FAIL / NO-GO.** Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_039.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_039.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-038
+
+Dark migration readiness review for `20261104180000`. Checksum `ba4e195c…afc68` verified. Window-A atomicity, inspection zero-mutation, privileges, executor/manual isolation, and upgrade compatibility re-proven locally. No hosted apply or route. **GO** to request a separately authorized DB-only dark apply with gates off. **NO-GO** to apply or activate from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_038.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_038.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-037
+
+Local Window-A hardening and non-consuming inspection. Migration `20261104180000` replaces attempt-mark with atomic claim→policy→gate reauthorization and adds `inspect_floor_command_standing_opportunity`. Confirmation-echo execution intent and local inspection module landed; no App Router route. Ephemeral race/inspection/execution/claim regressions, typecheck, lint, and build passed. Hosted apply not performed. **GO** to accept the local proof. **NO-GO** to host or activate execution. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_037.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_037.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-036
+
+Production execution-boundary readiness review only. Traced trust boundaries from operator intent through claim, revalidate, attempt mark, governed observation, and linkage. Defined non-consuming inspection vs consuming execution contracts with confirmation echo. Documented conjunctive authorization matrix and residual revalidate→attempt race. Local typecheck, lint, build, unit, and ephemeral claim/execution regressions passed; no standing-observe route. No production mutations. **GO** to accept the design and later request local Window-A hardening + inspection. **NO-GO** to activate execution. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_036.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_036.md).
+
+## 2026-11-04 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-035
+
+Dark hosted apply of `20261103210000` to Orient production `workday` / `ksmhgaamyheyhefbyglb`. Link/close RPCs installed. Gate remains disabled. Pull flag remains absent. Zero claims/links. W44 ledger and temporal counts unchanged. No application deploy and no claim/link RPC invocation. **GO** to accept the dark install. **NO-GO** to enable gates or observe. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_035.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_035.md).
+
+## 2026-11-03 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-034
+
+Dark deployment readiness review for RELEASE-033 / `20261103210000`. No hosted changes. Verified no externally reachable standing-execution path. Recommended next step: database-only dark apply with gates off. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_034.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_034.md).
+
+## 2026-11-03 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-033
+
+Local fake-source standing execution proof. Added observation link/close RPCs (`20261103210000`, not hosted), `executeStandingFloorCommandObservation` with required injected adapter, ephemeral sequencing regression, and unit proofs. No production route, gate enablement, or Floor Command GET. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_033.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_033.md).
+
+## 2026-11-03 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-032
+
+Operator-initiated standing execution discovery only. No implementation, deploy, claim, gate enablement, or Floor Command GET. Designed intent → claim → revalidate → durable source-attempt mark → governed open/GET/commit without holding DB locks across HTTP. Next tranche should be local fake-source proof only. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_032.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_032.md).
+
+## 2026-11-03 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-031
+
+Dark hosted apply of `20261103160000` to Orient production `workday` / `ksmhgaamyheyhefbyglb`. Gate remains disabled. Pull flag remains absent. Zero opportunity claims. Zero approved grants. W44 ledger and temporal counts unchanged. Claim/revalidate were not invoked. **GO** to accept the dark infrastructure. **NO-GO** to enable either gate or observe from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_031.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_031.md).
+
+## 2026-11-03 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-030
+
+Dark deployment-preparation review for opportunity claims. Local upgrade proof preserved the recorded W44 ledger, confirmed the standing-execution gate defaults off, verified gate independence from the pull flag, and showed second-apply stop plus grant restrictions. No hosted migration, gate enablement, claim, or observation. **GO** to request a separately authorized dark hosted apply that leaves both gates off. **NO-GO** to apply or activate from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_030.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_030.md).
+
+## 2026-11-03 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-029
+
+Local durable opportunity claims. Migration `20261103160000` adds an inert standing-execution gate (default off) and uniquely constrained opportunity claims. `claim_floor_command_standing_opportunity` locks the policy, validates the RELEASE-028 predicate, and inserts consumed authority without a source GET or governed request. Ephemeral proofs covered duplicates, concurrency, revoke/expiry ordering, reconciliation evidence, rollback, and non-execution. Typecheck, lint, build, and the existing standing-policy regression passed. Hosted Orient was not migrated. **GO** to request a later dark deployment-preparation review. **NO-GO** to apply, enable either gate, or observe from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_029.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_029.md).
+
+## 2026-11-03 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-028
+
+Discovery only. Designed the smallest safe execution boundary for a future bounded observation reader. A standing grant remains insufficient by itself. Authority requires the conjunctive predicate, a durable opportunity claim before any source GET, reuse of the existing governed classifier, and an explicit standing-execution gate distinct from the one-shot pull flag. No reader, scheduler, migration, deploy, grant, pull-flag change, or Floor Command GET was performed. **GO** to accept the contract and later request a local opportunity-claim tranche that still cannot observe. **NO-GO** to implement or activate automatic observation from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_028.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_028.md).
+
+
+## 2026-11-03 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-027
+
+One production Propose → Approve → Inspect → Revoke of standing policy `105abd9b-5da0-4506-a323-319ca217b8de`. Operator affirmed the non-execution sentence before approve. The grant ended `revoked` and is retained. Request count stayed 1 on the existing `2026-W44` unchanged row. Pull flag stayed absent. No Floor Command GET and no temporal writes. **GO** to accept that approval records permission without observation. **NO-GO** to enable the pull flag, create another grant, or implement an automatic reader from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_027.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_027.md).
+
+## 2026-11-02 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-026
+
+Verification only. Hosted policy tables remain empty, the recorded observation ledger is unchanged, and the pull flag is absent. The lifecycle is secure and inert in local proofs, but there is no signed-in policy UI. A controlled API exercise is specified and not run. **GO** to request that exercise separately. **NO-GO** to create a production grant or observe from this record.
+
+Record: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_026.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_026.md).
+
 ## 2026-11-02 — TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-025
 
 Production deployment of the inert standing-observation policy. Supabase CLI dry-run listed only `20261101120000`. That migration was applied once. Commit `f987d44` is serving as `dpl_3yWeB4kag8jwaKeZwWWLy4m7ewst`. Policy rows are 0. The recorded `2026-W44` ledger is unchanged. The pull flag is absent. **GO** to accept the infrastructure. **NO-GO** to approve a grant or observe from this record.

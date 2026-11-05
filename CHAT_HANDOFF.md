@@ -1,6 +1,126 @@
 # Chat handoff
 
-## Current state (2026-11-02)
+## Current state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-044 — CONTROLLED PRODUCTION DARK DEPLOY OF STANDING INSPECTION. PULL STAYS OFF.**
+
+Inspection-only application artifact `f96b8c0` / `dpl_6oSj4RN6gaBSsgNtNre23nFb7qEG` is serving on `https://orient-cyan.vercel.app`. Authenticated inspect route and Standing Coordination UI are live; unauthenticated and cross-site POSTs refuse; execute route absent; gate disabled; pull flag absent; grants/claims/links remain zero; W44 evidence unchanged. No production inspect RPC invoke and no Floor Command GET by this release. **PASS / GO** to accept the dark deploy. **NO-GO** to enable execution, approve grants, claim, or begin RELEASE-045 without explicit authorization. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_044.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_044.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-043 — DARK DEPLOY READINESS FOR STANDING INSPECTION. PULL STAYS OFF.**
+
+Audit only. Standing Coordination + inspect API + hosted inspect RPC are compatible and non-consuming; production has zero approved grants and gate off. **GO** to recommend a separately authorized dark app deploy of inspection only. **NO-GO** to deploy or activate from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_043.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_043.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-042 — LOCAL WORK DETAIL STANDING INSPECTION UI. PULL STAYS OFF.**
+
+Local only. Floor Command Work detail now has Standing Coordination with a deliberate inspect action over the RELEASE-041 API. No execute/confirm controls, no deploy, no claims, no Floor Command GET. Typecheck/lint/build and focused suites passed. **PASS / GO** to accept the local UI. **NO-GO** to deploy or activate execution. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_042.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_042.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-041 — LOCAL STANDING-OPPORTUNITY INSPECT API. PULL STAYS OFF.**
+
+Local only. Added `POST /api/integrations/floor-command/standing-opportunity/inspect` wrapping the non-consuming inspect module with auth, Origin gate, validation, redaction, and `Cache-Control: no-store`. No UI, deploy, gate change, claim, or Floor Command GET. Typecheck/lint/build and focused suites passed. **PASS / GO** to accept the local API. **NO-GO** to deploy or execute. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_041.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_041.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-040 — INSPECTION AND CONFIRMATION BOUNDARY DISCOVERY. PULL STAYS OFF.**
+
+Design only. Existing non-consuming inspect RPC/module and confirmation-echo intent are sufficient for a Stage A/B/C operator boundary. Recommend Floor Command Work detail as the inspect surface and a dedicated authenticated inspect POST (no route created). **GO** to request a later local inspect-route tranche. **NO-GO** to implement, deploy, or execute from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_040.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_040.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-039R — DARK HOSTED WINDOW-A MIGRATION APPLIED. PULL STAYS OFF.**
+
+Operator restored Vercel auth (`silentsage432` / `tyson-zauggs-projects` / `orient`). Full fresh preflight passed, including pull-flag absence. Applied `20261104180000` once to `workday` / `ksmhgaamyheyhefbyglb`. Hardened attempt + inspect installed; gate remains disabled; claims/links 0; W44/temporal unchanged; no RPC invoke, route, or Floor Command GET. **PASS / GO** to accept the dark install. **NO-GO** to enable gates or observe. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_039R.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_039R.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-039 — CONTROLLED DARK APPLY STOPPED. PULL FLAG UNVERIFIABLE.**
+
+Preflight against `workday` / `ksmhgaamyheyhefbyglb` matched the dark posture for checksum, sole pending migration, gate off, zero grants/claims/links, W44/temporal baselines, and no standing routes. Fresh Vercel env-name listing failed (`token is not valid`), so pull-flag absence was unverifiable. Migration `20261104180000` was **not** applied. No deploy, RPC invoke, or Floor Command GET. **FAIL / NO-GO.** Re-authorize after Vercel re-auth and full preflight. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_039.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_039.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-038 — DARK-DEPLOY READINESS FOR 20261104180000. PULL STAYS OFF.**
+
+Review only. Verified Window-A atomicity, non-consuming inspection, privileges, and local upgrade compatibility for `20261104180000`. No hosted apply, route, gate change, or Floor Command GET. **GO** to request a separately authorized DB-only dark apply. **NO-GO** to apply or activate from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_038.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_038.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-037 — WINDOW-A HARDENING + LOCAL INSPECTION. PULL STAYS OFF.**
+
+Local only. Hardened attempt-mark RPC atomically rechecks policy/gate/window under claim→policy→gate locks. Non-consuming inspect RPC/module added. Confirmation-echo execution intent required. No hosted apply, route, gate enablement, or Floor Command GET. **GO** to accept the local proof. **NO-GO** to apply hosted or activate execution. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_037.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_037.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-036 — EXECUTION-BOUNDARY READINESS. PULL STAYS OFF.**
+
+Review only. Conjunctive authorization design for a future operator-initiated standing-execution endpoint. Inspection vs execution contracts defined. Window A revoke-to-attempt race documented with recommended SQL closure. No production route, gate change, claim, or Floor Command GET. **GO** to accept the readiness record and later request local hardening. **NO-GO** to activate execution. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_036.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_036.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-035 — DARK HOSTED LINK MIGRATION APPLIED. PULL STAYS OFF.**
+
+Applied `20261103210000` once to production `workday` / `ksmhgaamyheyhefbyglb`. Link/close RPCs exist; standing-execution gate remains disabled; opportunity claims and links are 0; W44 ledger unchanged; pull flag absent; no observe route and no RPC invocation. **GO** to accept the dark install. **NO-GO** to enable either gate or observe. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_035.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_035.md).
+
+## Previous state (2026-11-03)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-034 — DARK DEPLOYMENT READINESS. PULL STAYS OFF.**
+
+Standing execution remains unreachable from App Router routes. `20261103210000` is locally upgrade-compatible and inert with the gate disabled. **GO** to request a separately authorized database-only dark apply. **NO-GO** to enable gates, add an observe route, or contact Floor Command. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_034.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_034.md).
+
+## Previous state (2026-11-03)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-033 — LOCAL FAKE-SOURCE STANDING EXECUTION PROOF. PULL STAYS OFF.**
+
+Implemented claim → revalidate → durable attempt mark → governed open/commit → claim link against an injected fake source only. No production route. Link migration not hosted. Gate remains disabled. **GO** to accept the local proof. **NO-GO** to deploy, enable gates, or observe for real. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_033.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_033.md).
+
+## Previous state (2026-11-03)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-032 — OPERATOR-INITIATED EXECUTION DISCOVERY ONLY. PULL STAYS OFF.**
+
+Designed the smallest operator-initiated standing observe path: explicit intent, durable claim, pre-GET revalidate, durable source-attempt mark before HTTP, reuse of governed classifier. No implementation. Standing gate remains disabled. **GO** to accept the contract. **NO-GO** to implement or observe. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_032.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_032.md).
+
+## Previous state (2026-11-03)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-031 — DARK HOSTED MIGRATION APPLIED. PULL STAYS OFF.**
+
+Applied `20261103160000` once to production `workday` / `ksmhgaamyheyhefbyglb`. Standing-execution gate row exists and is disabled. Opportunity claims are 0. Approved grants are 0. W44 observation ledger unchanged. Pull flag absent. No claim/revalidate invocation and no Floor Command GET. **GO** to accept the dark install. **NO-GO** to enable either gate or observe. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_031.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_031.md).
+
+## Previous state (2026-11-03)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-030 — DARK DEPLOYMENT-PREP ONLY. PULL STAYS OFF.**
+
+Opportunity-claim migration `20261103160000` is locally compatible with the standing-policy schema and defaults to a disabled standing-execution gate. Local ledger/gate/concurrency proofs passed. Hosted apply was not performed. **GO** to request a separately authorized dark hosted migration that leaves both gates off and creates no claims. **NO-GO** to apply, enable gates, or observe from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_030.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_030.md).
+
+## Previous state (2026-11-03)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-029 — LOCAL OPPORTUNITY CLAIMS ONLY. PULL STAYS OFF.**
+
+Migration `20261103160000` adds durable standing opportunity claims and a default-disabled standing-execution gate. Claiming consumes authorization only: no Floor Command GET, no governed request, no classifier, no scheduler. Ephemeral concurrency/revoke/reconciliation proofs passed. Hosted apply was not done. **GO** to request a later dark deployment-preparation review. **NO-GO** to apply, enable either gate, or observe. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_029.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_029.md).
+
+## Previous state (2026-11-03)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-028 — EXECUTION AUTHORITY DISCOVERY ONLY. PULL STAYS OFF.**
+
+Designed the bounded reader execution boundary. A standing grant is never enough by itself. Future observation requires the conjunctive authorization predicate, a durable opportunity claim before any Floor Command GET, the existing governed classifier, and an explicit standing-execution gate. Recommended next local tranche: opportunity-claim SQL that still cannot observe. No implementation, deploy, grant, pull-flag enablement, or source GET. **GO** to accept the contract. **NO-GO** to implement or activate automatic observation. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_028.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_028.md).
+
+## Previous state (2026-11-03)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-027 — CONTROLLED LIFECYCLE COMPLETE. PULL STAYS OFF.**
+
+One production grant `105abd9b-5da0-4506-a323-319ca217b8de` ran Propose → Approve → Inspect → Revoke on cyan `dpl_HqbsBH8mrrkMKLSAy5wgxcFKv3QG`. Operator affirmed **Approval records permission only. Automatic observation is not active.** before approve. Final state is one historical `revoked` row, zero approved grants, unchanged `2026-W44` request `879a61f2-6179-479b-a9ad-15f150db44d3`, pull flag absent. **GO** to accept that approval does not observe. **NO-GO** to enable the pull flag, create another grant, or implement an automatic reader from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_027.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_027.md).
+
+## Previous state (2026-11-02)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-026 — LIFECYCLE VERIFICATION ONLY. PULL STAYS OFF.**
+
+Hosted Orient still has migration `20261101120000`, zero standing-policy rows, and the unchanged `2026-W44` ledger. Cyan now serves docs commit `3ff12ce` / `dpl_HqbsBH8mrrkMKLSAy5wgxcFKv3QG` over the policy routes from `f987d44`. There is no standing-policy UI. A scripted API lifecycle exercise is designed and not executed. **GO** to request that exercise separately, with the non-execution sentence before approve. **NO-GO** to create a grant or observe from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_026.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_026.md).
+
+## Previous state (2026-11-02)
 
 **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-025 — POLICY INFRASTRUCTURE DEPLOYED. PULL STAYS OFF.**
 
