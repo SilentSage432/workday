@@ -46,6 +46,33 @@ export type StandingInspectionIntent = {
   correlationId: string;
 };
 
+/**
+ * Server-selected observe target shared by operator confirmation and unattended
+ * evaluation. Callers never supply store/source/purpose/baseUrl.
+ */
+export type StandingObserveTarget = {
+  policyId: string;
+  policyVersion: number;
+  operationalWeek: string;
+  opportunityKind: StandingOpportunityKind;
+  correlationId: string;
+};
+
+/** Unattended wake action. Distinct from operator observe confirmation. */
+export const STANDING_EVALUATE_ACTION = "evaluate_standing_opportunity" as const;
+
+export function standingObserveTargetFromExecutionIntent(
+  intent: StandingExecutionIntent,
+): StandingObserveTarget {
+  return {
+    policyId: intent.policyId,
+    policyVersion: intent.policyVersion,
+    operationalWeek: intent.operationalWeek,
+    opportunityKind: intent.opportunityKind,
+    correlationId: intent.correlationId,
+  };
+}
+
 export type StandingExecutionIntentParse =
   | { ok: true; intent: StandingExecutionIntent }
   | { ok: false; reason: string };

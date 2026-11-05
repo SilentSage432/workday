@@ -70,5 +70,17 @@ describe("standing execution dark deployment compatibility", () => {
       expect(source).not.toContain("standingSourceAdapter");
     }
     expect(existsSync(join(ROOT, "vercel.json"))).toBe(false);
+    expect(
+      existsSync(join(ROOT, "server/floorCommand/standingUnattendedEvaluateRoute.ts")),
+    ).toBe(true);
+    expect(
+      files.some((path) => path.includes(`${join("standing-opportunity", "evaluate")}`)),
+    ).toBe(false);
+    for (const path of files) {
+      const source = readFileSync(path, "utf8");
+      expect(source).not.toContain("handleStandingOpportunityEvaluateGet");
+      expect(source).not.toContain("handleStandingOpportunityEvaluatePost");
+      expect(source).not.toContain("evaluateStandingOpportunityUnattended");
+    }
   });
 });

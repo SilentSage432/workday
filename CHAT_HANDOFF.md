@@ -2,6 +2,30 @@
 
 ## Current state (2026-11-04)
 
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-048 — LOCAL HARDENING + PACKAGING (H1/H2/H3). PULL STAYS OFF.**
+
+Local only. Fixed inspect `p_as_of` null production path; Vercel-compatible GET/Bearer `CRON_SECRET` auth on unmounted handler; staged standing executor/unattended/claim-link closure (no commit). 96 focused tests PASS; evaluate still unmounted. **PASS / GO** to accept hardening and request a separately authorized commit. **NO-GO** to mount, schedule, deploy, enable gate, or observe. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_048.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_048.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-047 — UNATTENDED LOCAL SECURITY / DEPLOYMENT-READINESS AUDIT. PULL STAYS OFF.**
+
+Independent audit only. RELEASE-046 pathway preserves fail-closed scheduler auth, independent gate, sole-policy eligibility, Window-A claim/attempt core, fake-source containment; evaluate remains unmounted (build + production 404). High readiness gaps: inspect `p_as_of` misuse (fails closed), Vercel Cron auth/method mismatch, untracked packaging. **PASS / GO** to accept the audit and request local hardening/packaging. **NO-GO** to mount, dark-deploy, schedule, enable gate, or observe from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_047.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_047.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-046 — LOCAL UNATTENDED ENTRY + FAKE-SOURCE PROOF. PULL STAYS OFF.**
+
+Local only. Unmounted evaluate handler + eligibility discovery reuse the governed standing execution core with fake Floor Command source. Scheduler auth fails closed; duplicate wakes do not double-dispatch under tested mappings. No App Router evaluate route, no cron, no deploy, no gate/grant, no Floor Command GET. **PASS / GO** to accept the local proof. **NO-GO** to mount, schedule, or activate from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_046.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_046.md). **STOP.**
+
+## Previous state (2026-11-04)
+
+**TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-045 — UNATTENDED STANDING EXECUTION ARCHITECTURE. PULL STAYS OFF.**
+
+Discovery only. Reuse the local standing execution core under a Vercel Cron wake and DB conjunctive authority; do not reuse the pull route; keep gate/scheduler/first real GET as separately authorized steps. Production remains inspection-only (`f96b8c0`); gate off; grants/claims 0. **PASS / GO** to accept the architecture. **NO-GO** to implement, schedule, approve, enable, or observe from this record. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_045.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_045.md). **STOP.**
+
+## Previous state (2026-11-04)
+
 **TEAMLAB-ORIENT-FLOOR-COMMAND-RELEASE-044 — CONTROLLED PRODUCTION DARK DEPLOY OF STANDING INSPECTION. PULL STAYS OFF.**
 
 Inspection-only application artifact `f96b8c0` / `dpl_6oSj4RN6gaBSsgNtNre23nFb7qEG` is serving on `https://orient-cyan.vercel.app`. Authenticated inspect route and Standing Coordination UI are live; unauthenticated and cross-site POSTs refuse; execute route absent; gate disabled; pull flag absent; grants/claims/links remain zero; W44 evidence unchanged. No production inspect RPC invoke and no Floor Command GET by this release. **PASS / GO** to accept the dark deploy. **NO-GO** to enable execution, approve grants, claim, or begin RELEASE-045 without explicit authorization. Canonical: [docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_044.md](docs/discovery/TEAMLAB_ORIENT_FLOOR_COMMAND_RELEASE_044.md). **STOP.**
