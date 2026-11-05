@@ -4,6 +4,7 @@ import {
   loadFloorCommandWorkReading,
   requestFloorCommandObservation,
 } from "@/components/orient/floorCommandWorkApi";
+import { StandingCoordination } from "@/components/orient/StandingCoordination";
 import type { FloorCommandAttemptReason } from "@/projections/floorCommandObservation";
 import {
   floorCommandEvidenceCopy,
@@ -44,6 +45,7 @@ export function FloorCommandWorkView({
               governedRequests={reading.governedRequests}
             />
           )}
+          <StandingCoordination reading={reading} />
           <ObservationRequest onRecorded={onRecorded} />
         </>
       ) : null}

@@ -3014,6 +3014,37 @@ button.orient-fact {
   overflow-wrap: anywhere;
 }
 
+.orient-standing-coordination {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--orient-line);
+  min-width: 0;
+}
+
+.orient-standing-coordination h3 {
+  margin: 0;
+  font-family: var(--font-orient), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 560;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--orient-muted);
+}
+
+.orient-standing-coordination p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.orient-standing-coordination .orient-action[data-standing-coordination-pending="true"] {
+  width: 100%;
+  justify-content: center;
+  cursor: wait;
+}
+
 .orient-work-day {
   display: flex;
   flex-direction: column;

@@ -294,6 +294,11 @@ describe("Floor Command observation view", () => {
     expect(text).toContain("Retained evidence");
     expect(text).toContain("retained evidence, not a live Floor Command reading");
     expect(text).not.toContain("Checked sequence");
+    expect(host?.querySelector("[data-standing-coordination='true']")).toBeTruthy();
+    expect(text).toContain("Standing Coordination");
+    expect(text).toContain("Inspection not yet requested");
+    expect(text).not.toContain("Execute");
+    expect(text).not.toContain("Run Now");
     const observe = host?.querySelector("[data-floor-command-request='week'] button");
     expect(observe?.className).toContain("orient-action");
     expect(observe?.getAttribute("data-emphasis")).toBe("save");
